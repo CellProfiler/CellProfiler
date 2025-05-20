@@ -59,7 +59,7 @@ maven = ">=3.9.9,<4"
 [feature.mod.pypi-dependencies]
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
-cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
+cellprofiler = { path = "./src/frontend", extras = ["test", "docs"], editable = true }
 
 [feature.profile.pypi-dependencies]
 py-spy = "*"
@@ -68,3 +68,7 @@ memray = "*"
 [environments]
 dev = ["mod", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]
+
+[pypi-dependencies]
+sphinx-pydantic = ">=0.1.1, <0.2"
+autodoc-pydantic = ">=2.2.0, <3"

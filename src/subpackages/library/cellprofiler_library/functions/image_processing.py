@@ -596,3 +596,24 @@ def split_rgb(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale]
 def split_multichannel(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel")]:
      return split_rgb(input_image)
 
+
+
+
+def convert_image_to_objects(
+        data:           Annotated[Any, Field(description="Image to be converted to Objects")], 
+        cast_to_bool:   Annotated[bool, Field(description="Convert a grayscale image to binary before converting it to an object")], 
+        preserve_label: Annotated[bool, Field(description="Preserve original labels of objects")], 
+        background:     Annotated[int, Field(description="Pixel value of the background")], 
+        connectivity:   Annotated[Union[int, None], Field(description="Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor")]
+        ) -> Any:
+    # Compatibility with skimage
+    connectivity = None if connectivity == 0 else connectivity
+
+    caster = skimage.img_as_bool if cast_to_bool else skimage.img_as_uint
+    data = caster(data)
+
+    # If preservation is desired, just return the original labels
+    if preserve_label and not cast_to_bool:
+        return data
+
+    return skimage.measure.label(data, background=background, connectivity=connectivity)

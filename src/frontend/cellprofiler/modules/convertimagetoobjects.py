@@ -3,6 +3,7 @@ import skimage.measure
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_library.functions.image_processing import convert_image_to_objects
 
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.
@@ -110,7 +111,7 @@ If set to 0, a full connectivity of the input dimension is used.
         return __settings__
 
     def run(self, workspace):
-        self.function = lambda data, cast_to_bool, preserve_label, background, connectivity: convert_to_objects(
+        self.function = lambda data, cast_to_bool, preserve_label, background, connectivity: convert_image_to_objects(
             data, cast_to_bool, preserve_label, background, connectivity
         )
 
@@ -138,17 +139,3 @@ If set to 0, a full connectivity of the input dimension is used.
             x=1,
             y=0,
         )
-
-
-def convert_to_objects(data, cast_to_bool, preserve_label, background, connectivity):
-    # Compatibility with skimage
-    connectivity = None if connectivity == 0 else connectivity
-
-    caster = skimage.img_as_bool if cast_to_bool else skimage.img_as_uint
-    data = caster(data)
-
-    # If preservation is desired, just return the original labels
-    if preserve_label and not cast_to_bool:
-        return data
-
-    return skimage.measure.label(data, background=background, connectivity=connectivity)

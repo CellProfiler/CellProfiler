@@ -32,6 +32,7 @@ from cellprofiler_core.setting.choice import Choice, Colormap
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_library.modules._convertobjectstoimage import update_pixel_data
+from cellprofiler_library.opts.convertobjectstoimage import ImageMode
 
 DEFAULT_COLORMAP = "Default"
 
@@ -110,100 +111,13 @@ Preferences*.
 
         return settings
     
-    # @staticmethod
-    # def image_mode_black_and_white(pixel_data, mask, alpha, labels=None, colormap_value=None):
-    #     pixel_data[mask] = True
-    #     alpha[mask] = 1
-    #     return pixel_data, alpha
-
-    # @staticmethod
-    # def image_mode_grayscale(pixel_data, mask, alpha, labels, colormap_value=None):
-    #     pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
-    #     alpha[mask] = 1
-    #     return pixel_data, alpha
-    
-    # @staticmethod
-    # def image_mode_color(pixel_data, mask, alpha, labels, colormap_value):
-    #     if colormap_value == DEFAULT_COLORMAP:
-    #         cm_name = get_default_colormap()
-    #     elif colormap_value == "colorcube":
-    #         # Colorcube missing from matplotlib
-    #         cm_name = "gist_rainbow"
-    #     elif colormap_value == "lines":
-    #         # Lines missing from matplotlib and not much like it,
-    #         # Pretty boring palette anyway, hence
-    #         cm_name = "Pastel1"
-    #     elif colormap_value == "white":
-    #         # White missing from matplotlib, it's just a colormap
-    #         # of all completely white... not even different kinds of
-    #         # white. And, isn't white just a uniform sampling of
-    #         # frequencies from the spectrum?
-    #         cm_name = "Spectral"
-    #     else:
-    #         cm_name = colormap_value
-
-    #     cm = matplotlib.cm.get_cmap(cm_name)
-
-    #     mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-
-    #     if labels.ndim == 3:
-    #         for index, plane in enumerate(mask):
-    #             pixel_data[index, plane, :] = mapper.to_rgba(
-    #                 centrosome.cpmorphology.distance_color_labels(labels[index])
-    #             )[plane, :3]
-    #     else:
-    #         pixel_data[mask, :] += mapper.to_rgba(
-    #             centrosome.cpmorphology.distance_color_labels(labels)
-    #         )[mask, :3]
-
-    #     alpha[mask] += 1
-    #     return pixel_data, alpha
-
-    # @staticmethod
-    # def image_mode_uint16(pixel_data, mask, alpha, labels, colormap_value=None):
-    #     pixel_data[mask] = labels[mask]
-    #     alpha[mask] = 1
-    #     return pixel_data, alpha
-
-    # @staticmethod
-    # def update_pixel_data(image_mode, objects_labels, objects_shape, colormap_value=None):
-    #     alpha = numpy.zeros(objects_shape)
-
-    #     fn_map = {
-    #         "Binary (black & white)": ConvertObjectsToImage.image_mode_black_and_white,
-    #         "Grayscale": ConvertObjectsToImage.image_mode_grayscale,
-    #         "Color": ConvertObjectsToImage.image_mode_color,
-    #         "uint16": ConvertObjectsToImage.image_mode_uint16,
-    #     }
-
-    #     pixel_data_init_map = {
-    #         "Binary (black & white)": lambda: numpy.zeros(objects_shape, bool),
-    #         "Grayscale": lambda: numpy.zeros(objects_shape),
-    #         "Color": lambda: numpy.zeros(objects_shape + (3,)),
-    #         "uint16": lambda: numpy.zeros(objects_shape, numpy.int32),
-    #     }
-    #     pixel_data = pixel_data_init_map.get(image_mode, lambda: numpy.zeros(objects_shape + (3,)))
-    #     for labels, _ in objects_labels:
-    #         mask = labels != 0
-
-    #         if numpy.all(~mask):
-    #             continue
-    #         pixel_data, alpha = fn_map[image_mode](pixel_data, mask, alpha, labels, colormap_value)
-    #     mask = alpha > 0
-    #     if image_mode == "Color":
-    #         pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, numpy.newaxis]
-    #     elif image_mode != "Binary (black & white)":
-    #         pixel_data[mask] = pixel_data[mask] / alpha[mask]
-    #     return pixel_data
-
-
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        
-        pixel_data = update_pixel_data(self.image_mode.value, objects.labels, objects.shape, self.colormap.value)
+        object_labels = objects.get_labels()
+        pixel_data = update_pixel_data(self.image_mode.value, object_labels, objects.shape, self.colormap.value)
 
-        convert = True
+        convert = False if self.image_mode.value.casefold() == ImageMode.UINT16 else True
         image = Image(
             pixel_data,
             parent_image=objects.parent_image,

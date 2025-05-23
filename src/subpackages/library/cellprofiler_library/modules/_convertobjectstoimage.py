@@ -59,6 +59,7 @@ def image_mode_uint16(pixel_data, mask, alpha, labels, colormap_value=None):
     return pixel_data, alpha
 
 def update_pixel_data(image_mode, objects_labels, objects_shape, colormap_value=None):
+    
     alpha = numpy.zeros(objects_shape)
 
     fn_map = {
@@ -74,7 +75,7 @@ def update_pixel_data(image_mode, objects_labels, objects_shape, colormap_value=
         "Color": lambda: numpy.zeros(objects_shape + (3,)),
         "uint16": lambda: numpy.zeros(objects_shape, numpy.int32),
     }
-    pixel_data = pixel_data_init_map.get(image_mode, lambda: numpy.zeros(objects_shape + (3,)))
+    pixel_data = pixel_data_init_map.get(image_mode, lambda: numpy.zeros(objects_shape + (3,)))()
     for labels, _ in objects_labels:
         mask = labels != 0
 

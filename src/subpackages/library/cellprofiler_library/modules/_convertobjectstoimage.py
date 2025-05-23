@@ -1,6 +1,9 @@
 import numpy
 import matplotlib.cm
 import centrosome.cpmorphology
+from typing import Annotated, Any, Optional, Tuple, Callable
+from pydantic import Field, validate_call, BeforeValidator
+from cellprofiler_library.opts.convertobjectstoimage import ImageMode
 DEFAULT_COLORMAP = "Default"
 
 # TODO: Move appropriate functions to cellprofiler_library/functions
@@ -58,11 +61,16 @@ def image_mode_uint16(pixel_data, mask, alpha, labels, colormap_value=None):
     alpha[mask] = 1
     return pixel_data, alpha
 
-def update_pixel_data(image_mode, objects_labels, objects_shape, colormap_value=None):
+def update_pixel_data(
+        image_mode: Annotated[ImageMode, Field(description="Color format to be used for conversion")],
+        objects_labels : Annotated[Any, Field(description="Labels of the objects")],
+        objects_shape : Annotated[Any, Field(description="Shape of the objects")],
+        colormap_value : Annotated[Optional[str], Field(description="Colormap to be used for conversion")] = None
+        ):
     
     alpha = numpy.zeros(objects_shape)
 
-    fn_map = {
+    converter_fn_map = {
         "Binary (black & white)": image_mode_black_and_white,
         "Grayscale": image_mode_grayscale,
         "Color": image_mode_color,
@@ -81,7 +89,7 @@ def update_pixel_data(image_mode, objects_labels, objects_shape, colormap_value=
 
         if numpy.all(~mask):
             continue
-        pixel_data, alpha = fn_map[image_mode](pixel_data, mask, alpha, labels, colormap_value)
+        pixel_data, alpha = converter_fn_map[image_mode](pixel_data, mask, alpha, labels, colormap_value)
     mask = alpha > 0
     if image_mode == "Color":
         pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, numpy.newaxis]

@@ -165,6 +165,7 @@ class Pipeline:
         
         self.__undo_stack = []
         self.__volumetric = False
+        self.__tiled = False
 
         #
         # Dictionary mapping module objects to a list of image names
@@ -180,6 +181,12 @@ class Pipeline:
     def volumetric(self):
         return self.__volumetric
     
+    def set_tiled(self, value):
+        self.__tiled = value
+
+    def tiled(self):
+        return self.__tiled
+
     def set_needs_headless_extraction(self, value):
         self.__needs_headless_extraction = value
 
@@ -670,6 +677,7 @@ class Pipeline:
         module.set_settings_from_values(settings, variable_revision_number, module_name)
         if module_name == "NamesAndTypes":
             self.__volumetric = module.process_as_3d.value
+            self.__tiled = module.process_as_tiled.value
 
         return module
 

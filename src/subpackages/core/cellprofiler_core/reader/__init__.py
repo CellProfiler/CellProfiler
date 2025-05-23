@@ -3,6 +3,7 @@ import sys
 import traceback
 
 from ._reader import Reader
+from ._large_image_reader import LargeImageReader
 from ..constants.reader import ALL_READERS, builtin_readers, BAD_READERS, AVAILABLE_READERS
 
 import logging
@@ -114,7 +115,7 @@ def find_cp_reader(rdr):
     )
 
 
-def get_image_reader_class(image_file, use_cached_name=True, volume=False):
+def get_image_reader_class(image_file, use_cached_name=True, volume=False, tiled=False):
     if not AVAILABLE_READERS:
         raise Exception("No image readers are enabled.\n"
                         "Please check reader configuration in the File menu.")
@@ -125,7 +126,7 @@ def get_image_reader_class(image_file, use_cached_name=True, volume=False):
     best_reader = None
     best_value = 5
     for reader_name, reader_class in AVAILABLE_READERS.items():
-        result = reader_class.supports_format(image_file, volume=volume, allow_open=False)
+        result = reader_class.supports_format(image_file, volume=volume, tiled=tiled, allow_open=False)
         if result == 1:
             LOGGER.debug(f"Selected {reader_name}")
             image_file.preferred_reader = reader_name
@@ -139,8 +140,8 @@ def get_image_reader_class(image_file, use_cached_name=True, volume=False):
     return best_reader
 
 
-def get_image_reader(image_file, use_cached_name=True, volume=False):
-    reader_class = get_image_reader_class(image_file, use_cached_name=use_cached_name, volume=volume)
+def get_image_reader(image_file, use_cached_name=True, volume=False, tiled=False):
+    reader_class = get_image_reader_class(image_file, use_cached_name=use_cached_name, volume=volume, tiled=tiled)
     return reader_class(image_file)
 
 

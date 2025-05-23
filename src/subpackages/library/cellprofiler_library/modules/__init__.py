@@ -15,3 +15,26 @@ from ._reducenoise import reducenoise
 from ._watershed import watershed
 from ._measureimageoverlap import measureimageoverlap
 from ._gaussianfilter import gaussianfilter
+from ._colortogray import combine_colortogray
+from ._convertobjectstoimage import update_pixel_data
+
+__all__ = [
+    "medialaxis",
+    "combineobjects",
+    "expand_or_shrink_objects",
+    "fillobjects",
+    "enhanceedges",
+    "threshold",
+    "closing",
+    "opening",
+    "savecroppedobjects",
+    "overlayobjects",
+    "morphologicalskeleton",
+    "medianfilter",
+    "reducenoise",
+    "watershed",
+    "measureimageoverlap",
+    "gaussianfilter",
+    "combine_colortogray",
+    "update_pixel_data",
+]

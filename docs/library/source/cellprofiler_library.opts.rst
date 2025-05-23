@@ -4,6 +4,22 @@ cellprofiler\_library.opts package
 Submodules
 ----------
 
+cellprofiler\_library.opts.colortogray module
+---------------------------------------------
+
+.. automodule:: cellprofiler_library.opts.colortogray
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+cellprofiler\_library.opts.convertobjectstoimage module
+-------------------------------------------------------
+
+.. automodule:: cellprofiler_library.opts.convertobjectstoimage
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 cellprofiler\_library.opts.measureimageoverlap module
 -----------------------------------------------------
 

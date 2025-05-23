@@ -151,9 +151,8 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
     D = the number of pairs of elements in S that are in different sets
         in X and the same set in Y
 
-    The rand index is:   A + B
-                            -----
-                        A+B+C+D
+    The rand index is:   (A + B) / (A+B+C+D) 
+    $$ \\frac{A + B}{A+B+C+D} $$
 
 
     The adjusted rand index is the rand index adjusted for chance
@@ -405,10 +404,10 @@ def get_kmeans_points(src_ijv, dest_ijv, max_points):
 
     src_ijv - get some of the foreground points from the source ijv labeling
     dest_ijv - get the rest of the foreground points from the ijv labeling
-                objects
+    objects
 
     returns a vector of i coordinates of representatives and a vector
-            of j coordinates
+    of j coordinates
     """
 
     ijv = np.vstack((src_ijv, dest_ijv))

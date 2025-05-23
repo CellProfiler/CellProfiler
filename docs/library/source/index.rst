@@ -8,10 +8,13 @@ Welcome to CellProfiler-library's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: API Reference
 
-
-
+   cellprofiler_library
+   cellprofiler_library.functions
+   cellprofiler_library.opts
+   cellprofiler_library.modules
+   
 Indices and tables
 ==================
 

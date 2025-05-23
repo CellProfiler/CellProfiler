@@ -7,8 +7,12 @@ import sys
 
 import sphinx_rtd_theme
 
+
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
-sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "..", "subpackages", "library", "cellprofiler_library")))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src", "subpackages", "library", "cellprofiler_library")))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src", "subpackages", "library", "cellprofiler_library", "functions")))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src", "subpackages", "library", "cellprofiler_library", "modules")))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src", "subpackages", "library", "cellprofiler_library", "opts")))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -42,3 +46,25 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 autodoc_typehints = "description"
+
+
+import inspect
+
+def simplify_signature(app, what, name, obj, options, signature, return_annotation):
+    import inspect
+
+    if signature is None:
+        return None
+
+    try:
+        sig = inspect.signature(obj)
+    except Exception:
+        return signature, ""  # Remove return annotation anyway
+
+    param_names = [param.name for param in sig.parameters.values()]
+    simple_sig = "(" + ", ".join(param_names) + ")"
+
+    # Return signature with no return annotation
+    return simple_sig, ""
+def setup(app):
+    app.connect("autodoc-process-signature", simplify_signature)

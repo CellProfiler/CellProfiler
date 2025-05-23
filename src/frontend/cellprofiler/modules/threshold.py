@@ -47,6 +47,7 @@ from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
 from cellprofiler_library.modules import threshold
+import cellprofiler_library.opts.threshold as ThresholdOpts
 from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
@@ -870,12 +871,12 @@ staining.
             # Convert threshold method for CellProfiler Library
             if self.threshold_scope == "Global":
                 if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
+                    threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
                     threshold_method = self.convert_setting(self.global_operation.value)
             elif self.threshold_scope == "Adaptive":
                 if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
+                    threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
                     threshold_method = self.convert_setting(self.local_operation.value)
             final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(

@@ -21,7 +21,6 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-from math import pi
 import centrosome.cpmorphology
 import matplotlib.cm
 import numpy
@@ -115,7 +114,13 @@ Preferences*.
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         object_labels = objects.get_labels()
-        pixel_data = update_pixel_data(self.image_mode.value, object_labels, objects.shape, self.colormap.value)
+
+        # This part of the colormap code is here, instead of /library, because get_default_colormap() is part of core
+        colormap_value = self.colormap.value
+        if colormap_value == DEFAULT_COLORMAP:
+            colormap_value = get_default_colormap()
+
+        pixel_data = update_pixel_data(self.image_mode.value, object_labels, objects.shape, str(colormap_value))
 
         convert = False if self.image_mode.value.casefold() == ImageMode.UINT16 else True
         image = Image(

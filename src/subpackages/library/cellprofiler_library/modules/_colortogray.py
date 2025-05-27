@@ -1,6 +1,7 @@
 from pydantic import Field
 from typing import Annotated, Any, Iterable
 import numpy as np
+import matplotlib.colors
 
 def combine_colortogray(
     image: Annotated[Any, Field(description="Pixel data of image to threshold")],
@@ -18,3 +19,8 @@ def combine_colortogray(
     )
     return output_image
 
+def split_hsv(
+        input_image: Annotated[Any, Field(description="Pixel data of image to be split")],
+):
+     output_image = matplotlib.colors.rgb_to_hsv(input_image)
+     return output_image

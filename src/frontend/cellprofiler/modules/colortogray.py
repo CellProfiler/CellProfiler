@@ -28,7 +28,6 @@ See also **GrayToColor**.
 
 import re
 
-import matplotlib.colors
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -43,6 +42,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_library.modules._colortogray import combine_colortogray, split_hsv
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -556,15 +556,9 @@ Select the name of the output grayscale image.""",
         """
         input_image = image.pixel_data
         channels, contributions = list(zip(*self.channels_and_contributions()))
-        denominator = sum(contributions)
-        channels = numpy.array(channels, int)
-        contributions = numpy.array(contributions) / denominator
 
-        output_image = numpy.sum(
-            input_image[:, :, channels]
-            * contributions[numpy.newaxis, numpy.newaxis, :],
-            2,
-        )
+        output_image = combine_colortogray(input_image, channels, contributions)
+
         image = Image(output_image, parent_image=image)
         workspace.image_set.add(self.grayscale_name.value, image)
 
@@ -600,7 +594,7 @@ Select the name of the output grayscale image.""",
                 workspace.image_set.add(name, Image(output_image, parent_image=image))
                 disp_collection.append([output_image, name])
         elif self.rgb_or_channels == CH_HSV:
-            output_image = matplotlib.colors.rgb_to_hsv(input_image)
+            output_image = split_hsv(input_image)
             for index, name, title in self.channels_and_image_names():
                 workspace.image_set.add(
                     name, Image(output_image[:, :, index], parent_image=image)

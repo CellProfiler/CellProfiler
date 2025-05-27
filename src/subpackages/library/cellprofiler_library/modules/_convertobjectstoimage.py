@@ -4,12 +4,9 @@ import centrosome.cpmorphology
 from typing import Annotated, Any, Optional, Tuple, Callable
 from pydantic import Field, validate_call, BeforeValidator
 from cellprofiler_library.opts.convertobjectstoimage import ImageMode
-DEFAULT_COLORMAP = "Default"
 
 # TODO: Move appropriate functions to cellprofiler_library/functions
 
-def get_default_colormap():
-    return "jet"
 def image_mode_black_and_white(pixel_data, mask, alpha, labels=None, colormap_value=None):
     pixel_data[mask] = True
     alpha[mask] = 1
@@ -21,9 +18,7 @@ def image_mode_grayscale(pixel_data, mask, alpha, labels, colormap_value=None):
     return pixel_data, alpha
 
 def image_mode_color(pixel_data, mask, alpha, labels, colormap_value):
-    if colormap_value == DEFAULT_COLORMAP:
-        cm_name = get_default_colormap()
-    elif colormap_value == "colorcube":
+    if colormap_value == "colorcube":
         # Colorcube missing from matplotlib
         cm_name = "gist_rainbow"
     elif colormap_value == "lines":

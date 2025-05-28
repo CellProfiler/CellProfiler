@@ -2093,13 +2093,12 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/6f/bc/4dc914ead3fe6ddaef035341fee0fc956949bbd27335b611829292b89ee2/markupsafe-3.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5d/a7/bb01188fb4013d34d274caf44a2f8091255b0497438e8b6c0a7c1710c692/matplotlib-3.9.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/31/ba/44864ace035e063ceda016c8f32afe1bb62a46c3a1a1c8ed389459fe99fd/ndv-0.4.1-py3-none-any.whl
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6d/0f/0442e80d707b5dd2e177a9490c25b89aa6a6c44579de8ec223e78a8884da/numcodecs-0.12.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a5/a0/98a3630f0b57f77bae67716562513d3032ae70414fcaf02750279c389a9e/pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/79/ac273cbbf744691821a9cca88957257f41afe271637794975ca090b9588b/proto_plus-1.27.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9b/53/a9443aa3ca9ba8724fdfa02dd1887c1bcd8e89556b715cfbacca6b63dbec/protobuf-6.33.5-cp39-abi3-manylinux2014_x86_64.whl
@@ -2113,8 +2112,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/87/6b/796c72cbdccf9d2e36b63d178ec996e8d284ca9ec99fa1eaf13608304a07/pygfx-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/cb/3027a83504373499adb52656b23fad19fc1c534517fe8c0780b70da8b899/pylinalg-0.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/51/ff/f6e8b8f39e08547faece4bd80f89d5a8de68a38b2d179cc1c4490ffa3286/pytest-7.4.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/23/02/c85ca1e18e0c00d5ee45f4012f241098c8995294e1178367cb638a26b6c8/pytest_timeout-2.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d4/69/31c82567719b34d8f6b41077732589104883771d182a9f4ff3e71430999a/python_utils-3.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/73/b9/793686b2d54b531203c160ef12bec60228a0109c79bae6c1277961026770/pyyaml-6.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5e/00/861a4601e4685efd8161966cf35728806fb9df112b6951585bb194f74379/rapidfuzz-3.13.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -2287,13 +2285,12 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/56/eb/501b465c9fef28f158e414ea3a417913dc2ac748564c7ed41535f23445b4/matplotlib-3.9.4-cp39-cp39-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/68/810093cb579daae426794bbd9d88aa830fae296e85172d18cb0f0e5dd4bc/mysqlclient-2.2.7.tar.gz
-      - pypi: https://files.pythonhosted.org/packages/31/ba/44864ace035e063ceda016c8f32afe1bb62a46c3a1a1c8ed389459fe99fd/ndv-0.4.1-py3-none-any.whl
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/dd/3c/950f816b837fc7714102b45491e2612b10757106f9a8e3785d7b3806acd4/numcodecs-0.12.1-cp39-cp39-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9e/8e/9c089f01677d1264ab8648352dcb7773f37da6ad002542760c80107da816/pillow-11.3.0-cp39-cp39-macosx_10_10_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/79/ac273cbbf744691821a9cca88957257f41afe271637794975ca090b9588b/proto_plus-1.27.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a2/6b/e48dfc1191bc5b52950246275bf4089773e91cb5ba3592621723cdddca62/protobuf-6.33.5-cp39-abi3-macosx_10_9_universal2.whl
@@ -2307,8 +2304,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/87/6b/796c72cbdccf9d2e36b63d178ec996e8d284ca9ec99fa1eaf13608304a07/pygfx-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/cb/3027a83504373499adb52656b23fad19fc1c534517fe8c0780b70da8b899/pylinalg-0.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/51/ff/f6e8b8f39e08547faece4bd80f89d5a8de68a38b2d179cc1c4490ffa3286/pytest-7.4.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/23/02/c85ca1e18e0c00d5ee45f4012f241098c8995294e1178367cb638a26b6c8/pytest_timeout-2.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d4/69/31c82567719b34d8f6b41077732589104883771d182a9f4ff3e71430999a/python_utils-3.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9f/62/67fc8e68a75f738c9200422bf65693fb79a4cd0dc5b23310e5202e978090/pyyaml-6.0.3-cp39-cp39-macosx_10_13_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/24/23/fceeab4ed5d0ecddd573b19502547fdc9be80418628bb8947fc22e905844/rapidfuzz-3.13.0-cp39-cp39-macosx_10_9_x86_64.whl
@@ -2485,13 +2481,12 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/36/236fbd868b6c91309a5206bd90c3f881f4f44b2d997cd1d6239ef652f878/matplotlib-3.9.4-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/68/810093cb579daae426794bbd9d88aa830fae296e85172d18cb0f0e5dd4bc/mysqlclient-2.2.7.tar.gz
-      - pypi: https://files.pythonhosted.org/packages/31/ba/44864ace035e063ceda016c8f32afe1bb62a46c3a1a1c8ed389459fe99fd/ndv-0.4.1-py3-none-any.whl
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/2f/19f4f012f253ff33948a024e0a814c758ea137e3ba86118daac83a8d9123/numcodecs-0.12.1-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b5/a9/5749930caf674695867eb56a581e78eb5f524b7583ff10b01b6e5048acb3/pillow-11.3.0-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/79/ac273cbbf744691821a9cca88957257f41afe271637794975ca090b9588b/proto_plus-1.27.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a2/6b/e48dfc1191bc5b52950246275bf4089773e91cb5ba3592621723cdddca62/protobuf-6.33.5-cp39-abi3-macosx_10_9_universal2.whl
@@ -2505,8 +2500,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/87/6b/796c72cbdccf9d2e36b63d178ec996e8d284ca9ec99fa1eaf13608304a07/pygfx-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/cb/3027a83504373499adb52656b23fad19fc1c534517fe8c0780b70da8b899/pylinalg-0.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/51/ff/f6e8b8f39e08547faece4bd80f89d5a8de68a38b2d179cc1c4490ffa3286/pytest-7.4.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/23/02/c85ca1e18e0c00d5ee45f4012f241098c8995294e1178367cb638a26b6c8/pytest_timeout-2.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d4/69/31c82567719b34d8f6b41077732589104883771d182a9f4ff3e71430999a/python_utils-3.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ae/92/861f152ce87c452b11b9d0977952259aa7df792d71c1053365cc7b09cc08/pyyaml-6.0.3-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/f4/20/189c716da9e3c5a907b4620b6c326fc09c47dab10bf025b9482932b972ba/rapidfuzz-3.13.0-cp39-cp39-macosx_11_0_arm64.whl
@@ -2682,13 +2676,12 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/57/68/c2feb4667adbf882ffa4b3e0ac9967f848980d9f8b5bebd86644aa67ce6a/matplotlib-3.9.4-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0e/e0/524b0777524e0d410f71987f556dd6a0e3273fdb06cd6e91e96afade7220/mysqlclient-2.2.7-cp39-cp39-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/31/ba/44864ace035e063ceda016c8f32afe1bb62a46c3a1a1c8ed389459fe99fd/ndv-0.4.1-py3-none-any.whl
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/77/b6/345f8648874a81232bc1a87e55a771430488a832c68f873aa6ed23a1dedf/numcodecs-0.12.1-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/05/4106422f45a05716fd34ed21763f8ec182e8ea00af6e9cb05b93a247361a/pillow-11.3.0-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/79/ac273cbbf744691821a9cca88957257f41afe271637794975ca090b9588b/proto_plus-1.27.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/68/19/33d7dc2dc84439587fa1e21e1c0026c01ad2af0a62f58fd54002a7546307/protobuf-6.33.5-cp39-cp39-win_amd64.whl
@@ -2702,8 +2695,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/87/6b/796c72cbdccf9d2e36b63d178ec996e8d284ca9ec99fa1eaf13608304a07/pygfx-0.10.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/74/cb/3027a83504373499adb52656b23fad19fc1c534517fe8c0780b70da8b899/pylinalg-0.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/51/ff/f6e8b8f39e08547faece4bd80f89d5a8de68a38b2d179cc1c4490ffa3286/pytest-7.4.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/23/02/c85ca1e18e0c00d5ee45f4012f241098c8995294e1178367cb638a26b6c8/pytest_timeout-2.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d4/69/31c82567719b34d8f6b41077732589104883771d182a9f4ff3e71430999a/python_utils-3.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f0/0c/25113e0b5e103d7f1490c0e947e303fe4a696c10b501dea7a9f49d4e876c/pyyaml-6.0.3-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/aa/0f/b6a37389f33c777de96b26f0ae1362d3524cad3fb84468a46346c24b6a98/rapidfuzz-3.13.0-cp39-cp39-win_amd64.whl
@@ -4743,49 +4735,6 @@ packages:
   purls: []
   size: 989514
   timestamp: 1766415934926
-- pypi: ./src/frontend
-  name: cellprofiler
-  version: 5.0.0.dev416
-  sha256: 08e9e001f3c50e85bf4ebc08f57eb4dadf5ba956b5200e9286ea1a6ab6951356
-  requires_dist:
-  - cellprofiler-library>=5.dev0
-  - cellprofiler-core>=5.dev0
-  - boto3>=1.28.41
-  - centrosome>=1.3.0
-  - docutils==0.15.2
-  - h5py>=3.7.0
-  - imageio>=2.31.3
-  - jinja2>=3.1.2
-  - joblib>=1.3.2
-  - mahotas>=1.4.13
-  - matplotlib>=3.1.3,<4
-  - mysqlclient>=2.2.3
-  - numpy>=1.24.4,<2
-  - pillow>=10.0.0
-  - pyzmq>=22.3.0
-  - sentry-sdk~=2.8.0
-  - requests>=2.31.0
-  - scikit-image>=0.20.0
-  - scikit-learn>=1.3.0
-  - scipy>=1.9.1,<1.11
-  - scyjava>=1.9.1
-  - six>=1.16.0
-  - tifffile>=2022.4.8
-  - wxpython>=4.2.0
-  - rapidfuzz>=3.0.0
-  - packaging>=20.0
-  - importlib-metadata
-  - xmltodict>=0.14.0
-  - dask<=2025.3.0
-  - ndv[pygfx,wxpython]>=0.3.1
-  - build ; extra == 'build'
-  - pyinstaller ; extra == 'build'
-  - twine ; extra == 'build'
-  - sphinx>=3.1.1 ; extra == 'docs'
-  - sphinx-rtd-theme>=0.5.0 ; extra == 'docs'
-  - pytest~=7.4.1 ; extra == 'test'
-  - pooch>=1.3.0 ; extra == 'test'
-  requires_python: '>=3.9'
 - pypi: ./src/frontend
   name: cellprofiler
   version: 5.0.0.dev417
@@ -11906,6 +11855,51 @@ packages:
   purls: []
   size: 797030
   timestamp: 1738196177597
+- pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
+  name: ndv
+  version: 0.4.1.dev1+gfceccb1ec
+  requires_dist:
+  - cmap>=0.3
+  - numpy>=1.23
+  - psygnal>=0.10
+  - pydantic>=2.9
+  - typing-extensions>=4.0
+  - glfw>=2.4 ; extra == 'jup'
+  - imageio[tifffile]>=2.20 ; extra == 'jup'
+  - ipywidgets>=8.0.5 ; extra == 'jup'
+  - jupyter-rfb>=0.3.3 ; extra == 'jup'
+  - jupyter>=1.1 ; extra == 'jup'
+  - pygfx>=0.8.0 ; extra == 'jup'
+  - glfw>=2.4 ; extra == 'jupyter'
+  - ipywidgets>=8.0.5 ; extra == 'jupyter'
+  - jupyter-rfb>=0.3.3 ; extra == 'jupyter'
+  - jupyter>=1.1 ; extra == 'jupyter'
+  - pygfx>=0.8.0 ; extra == 'pygfx'
+  - pyqt6>=6.4,!=6.6 ; extra == 'pyqt'
+  - pyqt6>=6.5.3 ; python_full_version >= '3.12' and extra == 'pyqt'
+  - qtpy>=2 ; extra == 'pyqt'
+  - superqt[iconify]>=0.7.2 ; extra == 'pyqt'
+  - numpy>=1.23,<2 ; sys_platform == 'win32' and extra == 'pyside'
+  - pyside6==6.6.3 ; sys_platform == 'win32' and extra == 'pyside'
+  - pyside6>=6.4 ; extra == 'pyside'
+  - pyside6>=6.6 ; python_full_version >= '3.12' and extra == 'pyside'
+  - qtpy>=2 ; extra == 'pyside'
+  - superqt[iconify,pyside6]>=0.7.2 ; extra == 'pyside'
+  - imageio[tifffile]>=2.20 ; extra == 'qt'
+  - pygfx>=0.8.0 ; extra == 'qt'
+  - pyqt6>=6.4,!=6.6 ; extra == 'qt'
+  - pyqt6>=6.5.3 ; python_full_version >= '3.12' and extra == 'qt'
+  - qtpy>=2 ; extra == 'qt'
+  - superqt[iconify]>=0.7.2 ; extra == 'qt'
+  - pyopengl>=3.1 ; extra == 'vispy'
+  - vispy>=0.14.3 ; extra == 'vispy'
+  - imageio[tifffile]>=2.20 ; extra == 'wx'
+  - pyconify>=0.2.1 ; extra == 'wx'
+  - pygfx>=0.8.0 ; extra == 'wx'
+  - wxpython>=4.2.2 ; extra == 'wx'
+  - pyconify>=0.2.1 ; extra == 'wxpython'
+  - wxpython>=4.2.2 ; extra == 'wxpython'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/31/ba/44864ace035e063ceda016c8f32afe1bb62a46c3a1a1c8ed389459fe99fd/ndv-0.4.1-py3-none-any.whl
   name: ndv
   version: 0.4.1
@@ -12781,20 +12775,6 @@ packages:
   - paramiko>=2.7.0 ; extra == 'sftp'
   - xxhash>=1.4.3 ; extra == 'xxhash'
   requires_python: '>=3.7'
-- pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
-  name: pooch
-  version: 1.9.0
-  sha256: f265597baa9f760d25ceb29d0beb8186c243d6607b0f60b83ecf14078dbc703b
-  requires_dist:
-  - platformdirs>=2.5.0
-  - packaging>=20.0
-  - requests>=2.19.0
-  - tqdm>=4.41.0,<5.0.0 ; extra == 'progress'
-  - paramiko>=2.7.0 ; extra == 'sftp'
-  - xxhash>=1.4.3 ; extra == 'xxhash'
-  - pytest-httpserver ; extra == 'test'
-  - pytest-localftpserver ; extra == 'test'
-  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
   name: progressbar2
   version: 4.5.0
@@ -13652,6 +13632,26 @@ packages:
   - setuptools ; extra == 'testing'
   - xmlschema ; extra == 'testing'
   requires_python: '>=3.7'
+- pypi: https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl
+  name: pytest
+  version: 8.4.2
+  sha256: 872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79
+  requires_dist:
+  - colorama>=0.4 ; sys_platform == 'win32'
+  - exceptiongroup>=1 ; python_full_version < '3.11'
+  - iniconfig>=1
+  - packaging>=20
+  - pluggy>=1.5,<2
+  - pygments>=2.7.2
+  - tomli>=1 ; python_full_version < '3.11'
+  - argcomplete ; extra == 'dev'
+  - attrs>=19.2 ; extra == 'dev'
+  - hypothesis>=3.56 ; extra == 'dev'
+  - mock ; extra == 'dev'
+  - requests ; extra == 'dev'
+  - setuptools ; extra == 'dev'
+  - xmlschema ; extra == 'dev'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/23/02/c85ca1e18e0c00d5ee45f4012f241098c8995294e1178367cb638a26b6c8/pytest_timeout-2.1.0-py3-none-any.whl
   name: pytest-timeout
   version: 2.1.0

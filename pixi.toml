@@ -71,7 +71,7 @@ ipykernel = "*"
 ruff = "*"
 
 [feature.ndv.pypi-dependencies]
-ndv = { path = "../ndv", extras = ["pygfx", "wxpython"], editable = true }
+ndv = { git = "https://github.com/pyapp-kit/ndv.git", rev = "fceccb1", extras = ["pygfx", "wxpython"] }
 pytest = ">=8"
 
 [environments]

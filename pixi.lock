@@ -1138,6 +1138,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/53/8f/f339c98a178f3c1e545622206b40986a4c3307fe39f70ccd3d9df9a9e425/MarkupSafe-3.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5d/a7/bb01188fb4013d34d274caf44a2f8091255b0497438e8b6c0a7c1710c692/matplotlib-3.9.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/61/68/810093cb579daae426794bbd9d88aa830fae296e85172d18cb0f0e5dd4bc/mysqlclient-2.2.7.tar.gz
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6d/0f/0442e80d707b5dd2e177a9490c25b89aa6a6c44579de8ec223e78a8884da/numcodecs-0.12.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
@@ -1180,7 +1181,6 @@ environments:
       - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxpython-4.2.3-cp39-cp39-linux_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/d6/45/fc303eb433e8a2a271739c98e953728422fa61a3c1f36077a49e395c972e/xmltodict-0.14.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
-      - pypi: ../ndv
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
@@ -1323,6 +1323,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/a7/ea/9b1530c3fdeeca613faeb0fb5cbcf2389d816072fab72a71b45749ef6062/MarkupSafe-3.0.2-cp39-cp39-macosx_10_9_universal2.whl
       - pypi: https://files.pythonhosted.org/packages/56/eb/501b465c9fef28f158e414ea3a417913dc2ac748564c7ed41535f23445b4/matplotlib-3.9.4-cp39-cp39-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/61/68/810093cb579daae426794bbd9d88aa830fae296e85172d18cb0f0e5dd4bc/mysqlclient-2.2.7.tar.gz
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/dd/3c/950f816b837fc7714102b45491e2612b10757106f9a8e3785d7b3806acd4/numcodecs-0.12.1-cp39-cp39-macosx_10_9_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
@@ -1366,7 +1367,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ca/77/0baf8a17812185c15b47fad9acf19cdb609aacdccc7b7ba744de11797323/wxpython-4.2.3-cp39-cp39-macosx_10_10_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/d6/45/fc303eb433e8a2a271739c98e953728422fa61a3c1f36077a49e395c972e/xmltodict-0.14.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
-      - pypi: ../ndv
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
@@ -1512,6 +1512,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/4b/c2/fbdbfe48848e7112ab05e627e718e854d20192b674952d9042ebd8c9e5de/MarkupSafe-3.0.2-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/da/36/236fbd868b6c91309a5206bd90c3f881f4f44b2d997cd1d6239ef652f878/matplotlib-3.9.4-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/61/68/810093cb579daae426794bbd9d88aa830fae296e85172d18cb0f0e5dd4bc/mysqlclient-2.2.7.tar.gz
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/2f/19f4f012f253ff33948a024e0a814c758ea137e3ba86118daac83a8d9123/numcodecs-0.12.1-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
@@ -1555,7 +1556,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/11/73/8e041128db1765aa456a9ff1360dd9cf67f7255156c5cedc11f2bc9e6023/wxpython-4.2.3-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/d6/45/fc303eb433e8a2a271739c98e953728422fa61a3c1f36077a49e395c972e/xmltodict-0.14.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
-      - pypi: ../ndv
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
@@ -1697,6 +1697,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b3/73/085399401383ce949f727afec55ec3abd76648d04b9f22e1c0e99cb4bec3/MarkupSafe-3.0.2-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/57/68/c2feb4667adbf882ffa4b3e0ac9967f848980d9f8b5bebd86644aa67ce6a/matplotlib-3.9.4-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/0e/e0/524b0777524e0d410f71987f556dd6a0e3273fdb06cd6e91e96afade7220/mysqlclient-2.2.7-cp39-cp39-win_amd64.whl
+      - pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
       - pypi: https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/77/b6/345f8648874a81232bc1a87e55a771430488a832c68f873aa6ed23a1dedf/numcodecs-0.12.1-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/71/e7/40fb618334dcdf7c5a316c0e7343c5cd82d3d866edc100d98e29bc945ecd/partd-1.4.2-py3-none-any.whl
@@ -1739,7 +1740,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/3f/1a/0940baecfb919f31fab688ebc33efe9dbc43c69f5237921e8e1132967f34/wxpython-4.2.3-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/d6/45/fc303eb433e8a2a271739c98e953728422fa61a3c1f36077a49e395c972e/xmltodict-0.14.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
-      - pypi: ../ndv
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
@@ -2739,9 +2739,87 @@ packages:
   - pooch>=1.3.0 ; extra == 'test'
   requires_python: '>=3.9'
   editable: true
+- pypi: ./src/frontend
+  name: cellprofiler
+  version: 5.0.0.dev230
+  sha256: bf79156922cdcce06c2e48fa2b4c5a0b68042ecf3907a35692f3685f5d82ecf0
+  requires_dist:
+  - cellprofiler-library>=5.dev0
+  - cellprofiler-core>=5.dev0
+  - boto3>=1.28.41
+  - centrosome>=1.3.0
+  - docutils==0.15.2
+  - h5py>=3.7.0
+  - imageio>=2.31.3
+  - jinja2>=3.1.2
+  - joblib>=1.3.2
+  - mahotas>=1.4.13
+  - matplotlib>=3.1.3,<4
+  - mysqlclient>=2.2.3
+  - numpy>=1.24.4,<2
+  - pillow>=10.0.0
+  - pyzmq>=22.3.0
+  - sentry-sdk~=2.8.0
+  - requests>=2.31.0
+  - scikit-image>=0.20.0
+  - scikit-learn>=1.3.0
+  - scipy>=1.9.1,<1.11
+  - scyjava>=1.9.1
+  - six>=1.16.0
+  - tifffile>=2022.4.8
+  - wxpython>=4.2.0
+  - rapidfuzz>=3.0.0
+  - packaging>=20.0
+  - xmltodict>=0.14.0
+  - dask<=2025.3.0
+  - ndv[pygfx,wxpython]>=0.3.1
+  - build ; extra == 'build'
+  - pyinstaller ; extra == 'build'
+  - twine ; extra == 'build'
+  - sphinx>=3.1.1 ; extra == 'docs'
+  - sphinx-rtd-theme>=0.5.0 ; extra == 'docs'
+  - pytest~=7.4.1 ; extra == 'test'
+  - pooch>=1.3.0 ; extra == 'test'
+  requires_python: '>=3.9'
+  editable: true
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
   version: 5.0.0.dev215
+  sha256: 16e86a211b73db0fd0d22cec718d1598fc241918f4e1c0ff7ee59055bb4e17be
+  requires_dist:
+  - cellprofiler-library>=5.dev0
+  - boto3>=1.12.28
+  - centrosome>=1.3.0
+  - docutils>=0.15.2
+  - future>=0.18.2
+  - fsspec>=2021.11.0
+  - h5py>=3.7.0
+  - lxml>=4.6.4
+  - matplotlib>=3.1.3,<4
+  - numpy>=1.24.4,<2
+  - psutil>=5.9.5
+  - pyzmq>=22.3.0
+  - scikit-image>=0.20.0
+  - scipy>=1.9.1,<1.11
+  - scyjava>=1.9.1
+  - zarr>=2.16.1
+  - google-cloud-storage~=2.10.0
+  - packaging>=20.0
+  - xmltodict>=0.14.0
+  - dask<=2025.3.0
+  - build ; extra == 'build'
+  - pyinstaller ; extra == 'build'
+  - twine ; extra == 'build'
+  - sphinx>=3.1.1 ; extra == 'build'
+  - click>=7.1.2 ; extra == 'build'
+  - pytest~=7.4.1 ; extra == 'test'
+  - pytest-timeout~=2.1.0 ; extra == 'test'
+  - wxpython==4.2.0 ; extra == 'wx'
+  requires_python: '>=3.9'
+  editable: true
+- pypi: ./src/subpackages/core
+  name: cellprofiler-core
+  version: 5.0.0.dev230
   sha256: 16e86a211b73db0fd0d22cec718d1598fc241918f4e1c0ff7ee59055bb4e17be
   requires_dist:
   - cellprofiler-library>=5.dev0
@@ -6950,10 +7028,9 @@ packages:
   - pyconify>=0.2.1 ; extra == 'wxpython'
   - wxpython>=4.2.2 ; extra == 'wxpython'
   requires_python: '>=3.9'
-- pypi: ../ndv
+- pypi: git+https://github.com/pyapp-kit/ndv.git?rev=fceccb1#fceccb1ec73b7f3f81772bf3161c0033f30e0be4
   name: ndv
-  version: 0.3.2.dev13+g4cb0ec2
-  sha256: 66756e495f8dd6ef27afbc051315bbcbcd9b57b8ad5297438902e312a5e623fb
+  version: 0.4.1.dev1+gfceccb1
   requires_dist:
   - cmap>=0.3
   - numpy>=1.23
@@ -6996,7 +7073,6 @@ packages:
   - pyconify>=0.2.1 ; extra == 'wxpython'
   - wxpython>=4.2.2 ; extra == 'wxpython'
   requires_python: '>=3.9'
-  editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/nest-asyncio-1.6.0-pyhd8ed1ab_1.conda
   sha256: bb7b21d7fd0445ddc0631f64e66d91a179de4ba920b8381f29b9d006a42788c0
   md5: 598fd7d4d0de2455fb74f56063969a97

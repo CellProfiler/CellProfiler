@@ -422,9 +422,6 @@ You can set a different threshold for each image selected in the module.
         group.append("divider", Divider())
         self.save_mask_list.append(group)
 
-        
-        
-        
 
     def settings(self):
         """Return the settings to be saved in the pipeline"""
@@ -458,7 +455,6 @@ You can set a different threshold for each image selected in the module.
                 result += [save_mask.choose_object] 
             result += [save_mask.save_image_name]
 
-        
         return result
 
     def visible_settings(self):
@@ -571,7 +567,8 @@ You can set a different threshold for each image selected in the module.
         image2_dims = workspace.image_set.get_image(image_name2).dimensions
         if image1_dims != image2_dims:
             raise ValidationError(
-                f"Image dimensions do not match for {image_name1}({image1_dims}) and {image_name2}({image2_dims}). "
+                f"Image dimensions do not match for {image_name1}({image1_dims}) and {image_name2}({image2_dims}). ",
+                self.images_list
             )
         return image1_dims
 
@@ -604,10 +601,6 @@ You can set a different threshold for each image selected in the module.
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
-        if self.wants_objects():
-            helptext = "default"
-        else:
-            helptext = " "
         num_image_rows = 1 # for the original images
         num_image_cols = 2 # for the results table + padding before the results table to prevent overlap
         # For each image, create a new column and for each object, create a new row of subplot
@@ -756,7 +749,6 @@ You can set a different threshold for each image selected in the module.
             # Save the mask to the image set
             workspace.image_set.add(save_image_name, output_image)
             
-
 
     def get_image_threshold_value(self, image_name):
         if self.wants_channel_thresholds.value:

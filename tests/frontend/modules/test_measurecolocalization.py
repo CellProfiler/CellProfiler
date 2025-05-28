@@ -195,10 +195,6 @@ def test_load_v6():
     assert module.save_mask_list[1].save_image_name.value == "ColocalizationMask34"
     assert module.save_mask_list[1].image_name.value == "OrigStain2"
     assert module.save_mask_list[1].save_mask_wants_objects.value is False
-
-    
-
-
     assert len(module.objects_list.value) == 0
 
 

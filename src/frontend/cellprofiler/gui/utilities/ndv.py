@@ -126,6 +126,20 @@ def ndv_display(img, ndv_viewer=None):
 
         ndv_viewer = ArrayViewer(
             data_wrapper(img),
+            viewer_options={
+                'default_luts': [
+                    'magma',
+                    'red',
+                    'green',
+                    'blue',
+                    'cyan',
+                    'magenta',
+                    'yellow',
+                    'viridis',
+                    'gray',
+                ],
+                'show_roi_button': False,
+            },
             visible_axes=('Y', 'X'),
             channel_axis='C',
             channel_mode=ChannelMode.GRAYSCALE,
@@ -133,34 +147,9 @@ def ndv_display(img, ndv_viewer=None):
             luts=luts
         )
 
-        # TODO: ndv - hack to disable the ROI button
-        # remove once resolved: https://github.com/pyapp-kit/ndv/issues/191
-        #for child in ndv_viewer.widget().Children:
-        #    if child.GetLabel() == 'ROI':
-        #        child.Destroy()
-        #        break
-        ndv_viewer._viewer_model.show_roi_button = False
-
         LOGGER.debug("Rendering image for display in ndv")
         ndv_viewer.show()
 
-        # TODO: ndv - temporary
-        #ndv_viewer._async = False
-
-        # set color choices for dropdowns
-
-        # TODO: ndv - temporary hack to set the color choices in dropdowns
-        # remove once resolved: https://github.com/pyapp-kit/ndv/issues/189
-        def _set_channels_hack():
-            lut_dict = ndv_viewer._view._luts
-            for ch_idx in lut_dict.keys():
-                wx_combo = lut_dict[ch_idx]._wxwidget.cmap
-                #wx_combo.Clear()
-                #wx_combo.Set([])
-                wx_combo.Append(['magma'])
-
-        call_later(1000, _set_channels_hack)
-        ndv_viewer._view.channelModeChanged.connect(lambda: call_later(1000, _set_channels_hack))
     else:
         LOGGER.debug("Updating ndv data")
         ndv_viewer.data = img

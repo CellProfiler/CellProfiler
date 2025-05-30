@@ -1529,6 +1529,7 @@ requests an object selection.
         url = m.alter_url_post_create_batch(url)
 
         volume = self.process_as_3d.value
+        tiled = self.process_as_tiled.value
 
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None
 
@@ -1543,7 +1544,7 @@ requests an object selection.
                 volume=volume,
                 spacing=spacing,
                 z=z,
-                t=t
+                t=t,
             )
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImage(
@@ -1557,15 +1558,16 @@ requests an object selection.
                 volume=volume,
                 spacing=spacing,
                 z=z,
-                t=t
+                t=t,
+                tiled=tiled
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
             provider = MonochromeImage(
-                name, url, series, index, channel, rescale_range=NO_RESCALE, metadata_rescale=False, volume=volume, spacing=spacing, z=z, t=t
+                name, url, series, index, channel, rescale_range=NO_RESCALE, metadata_rescale=False, volume=volume, spacing=spacing, z=z, t=t, tiled=tiled
             )
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImage(
-                name, url, series, index, channel, volume=volume, spacing=spacing, z=z, t=t
+                name, url, series, index, channel, volume=volume, spacing=spacing, z=z, t=t, tiled=tiled
             )
         else:
             raise NotImplementedError(f"Unknown load choice: {load_choice}")

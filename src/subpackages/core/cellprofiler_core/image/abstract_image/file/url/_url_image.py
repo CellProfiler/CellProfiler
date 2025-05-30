@@ -19,7 +19,8 @@ class URLImage(FileImage):
         volume=False,
         spacing=None,
         z=None,
-        t=None
+        t=None,
+        tiled=False
     ):
         if url.lower().startswith("file:"):
             path = url2pathname(url)
@@ -39,7 +40,8 @@ class URLImage(FileImage):
             volume=volume,
             spacing=spacing,
             z=z,
-            t=t
+            t=t,
+            tiled=tiled
         )
         self.url = url
 

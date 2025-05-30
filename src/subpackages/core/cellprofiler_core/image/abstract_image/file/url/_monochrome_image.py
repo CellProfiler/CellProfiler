@@ -18,7 +18,8 @@ class MonochromeImage(URLImage):
         volume=False,
         spacing=None,
         z=None,
-        t=None
+        t=None,
+        tiled=False
     ):
         URLImage.__init__(
             self,
@@ -32,7 +33,8 @@ class MonochromeImage(URLImage):
             volume=volume,
             spacing=spacing,
             z=z,
-            t=t
+            t=t,
+            tiled=tiled
         )
 
     def provide_image(self, image_set):

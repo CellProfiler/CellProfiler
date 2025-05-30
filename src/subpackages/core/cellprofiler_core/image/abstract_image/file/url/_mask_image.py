@@ -13,7 +13,8 @@ class MaskImage(MonochromeImage):
                  volume=False,
                  spacing=None,
                  z=None,
-                 t=None
+                 t=None,
+                 tiled=False
                 ):
         MonochromeImage.__init__(
             self,
@@ -27,7 +28,8 @@ class MaskImage(MonochromeImage):
             volume=volume,
             spacing=spacing,
             z=z,
-            t=t
+            t=t,
+            tiled=tiled
         )
 
     def provide_image(self, image_set):

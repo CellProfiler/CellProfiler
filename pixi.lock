@@ -421,6 +421,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/d1/f9/a5687bf4583abdabea4a18335c08c687878ea3a741e9ef4a643a2eb2530b/imagecodecs-2024.12.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -573,6 +574,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/58/c2/601682aecd4f41e4f6ed3e506bae07f7d6ac75a7eabe3ec92c63f1c71250/imagecodecs-2024.12.30-cp39-cp39-macosx_10_14_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -729,6 +731,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/4f/5a/18b79571024b4d5c4936659c80384e6e2fe5d95ead4946f94897fd0c33a2/imagecodecs-2024.12.30-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -882,6 +885,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8b/b7/371021efe266fa3c205f415b1a0ea07b6d0876a9a35a0108866ecd7181de/imagecodecs-2024.12.30-1-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -1122,6 +1126,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/d1/f9/a5687bf4583abdabea4a18335c08c687878ea3a741e9ef4a643a2eb2530b/imagecodecs-2024.12.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -1307,6 +1312,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/58/c2/601682aecd4f41e4f6ed3e506bae07f7d6ac75a7eabe3ec92c63f1c71250/imagecodecs-2024.12.30-cp39-cp39-macosx_10_14_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -1496,6 +1502,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/4f/5a/18b79571024b4d5c4936659c80384e6e2fe5d95ead4946f94897fd0c33a2/imagecodecs-2024.12.30-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -1681,6 +1688,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8b/b7/371021efe266fa3c205f415b1a0ea07b6d0876a9a35a0108866ecd7181de/imagecodecs-2024.12.30-1-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl
@@ -1883,6 +1891,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/d1/f9/a5687bf4583abdabea4a18335c08c687878ea3a741e9ef4a643a2eb2530b/imagecodecs-2024.12.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -2046,6 +2055,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/58/c2/601682aecd4f41e4f6ed3e506bae07f7d6ac75a7eabe3ec92c63f1c71250/imagecodecs-2024.12.30-cp39-cp39-macosx_10_14_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -2213,6 +2223,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/4f/5a/18b79571024b4d5c4936659c80384e6e2fe5d95ead4946f94897fd0c33a2/imagecodecs-2024.12.30-cp39-cp39-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -2377,6 +2388,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/86/f1/62a193f0227cf15a920390abe675f386dec35f7ae3ffe6da582d3ade42c7/googleapis_common_protos-1.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/36/5bddefea3d7adf22a64f9aa9701492f8a9fe6948223f5cf2602c22ec9be7/hsluv-5.0.4-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8b/b7/371021efe266fa3c205f415b1a0ea07b6d0876a9a35a0108866ecd7181de/imagecodecs-2024.12.30-1-cp39-cp39-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/79/9d/0fb148dc4d6fa4a7dd1d8378168d9b4cd8d4560a6fbf6f0121c5fc34eb68/importlib_metadata-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a4/ed/1f1afb2e9e7f38a545d628f864d562a5ae64fe6f7a10e28ffb9b185b4e89/importlib_resources-6.5.2-py3-none-any.whl
@@ -2698,8 +2710,8 @@ packages:
   timestamp: 1718985592664
 - pypi: ./src/frontend
   name: cellprofiler
-  version: 5.0.0.dev215
-  sha256: bf79156922cdcce06c2e48fa2b4c5a0b68042ecf3907a35692f3685f5d82ecf0
+  version: 5.0.0.dev233
+  sha256: 933f0e0ee304bc0e7f7dae4e03872db62ca786478979d90407261060d816145f
   requires_dist:
   - cellprofiler-library>=5.dev0
   - cellprofiler-core>=5.dev0
@@ -2723,54 +2735,9 @@ packages:
   - scipy>=1.9.1,<1.11
   - scyjava>=1.9.1
   - six>=1.16.0
-  - tifffile>=2022.4.8
   - wxpython>=4.2.0
   - rapidfuzz>=3.0.0
   - packaging>=20.0
-  - xmltodict>=0.14.0
-  - dask<=2025.3.0
-  - ndv[pygfx,wxpython]>=0.3.1
-  - build ; extra == 'build'
-  - pyinstaller ; extra == 'build'
-  - twine ; extra == 'build'
-  - sphinx>=3.1.1 ; extra == 'docs'
-  - sphinx-rtd-theme>=0.5.0 ; extra == 'docs'
-  - pytest~=7.4.1 ; extra == 'test'
-  - pooch>=1.3.0 ; extra == 'test'
-  requires_python: '>=3.9'
-  editable: true
-- pypi: ./src/frontend
-  name: cellprofiler
-  version: 5.0.0.dev230
-  sha256: bf79156922cdcce06c2e48fa2b4c5a0b68042ecf3907a35692f3685f5d82ecf0
-  requires_dist:
-  - cellprofiler-library>=5.dev0
-  - cellprofiler-core>=5.dev0
-  - boto3>=1.28.41
-  - centrosome>=1.3.0
-  - docutils==0.15.2
-  - h5py>=3.7.0
-  - imageio>=2.31.3
-  - jinja2>=3.1.2
-  - joblib>=1.3.2
-  - mahotas>=1.4.13
-  - matplotlib>=3.1.3,<4
-  - mysqlclient>=2.2.3
-  - numpy>=1.24.4,<2
-  - pillow>=10.0.0
-  - pyzmq>=22.3.0
-  - sentry-sdk~=2.8.0
-  - requests>=2.31.0
-  - scikit-image>=0.20.0
-  - scikit-learn>=1.3.0
-  - scipy>=1.9.1,<1.11
-  - scyjava>=1.9.1
-  - six>=1.16.0
-  - tifffile>=2022.4.8
-  - wxpython>=4.2.0
-  - rapidfuzz>=3.0.0
-  - packaging>=20.0
-  - xmltodict>=0.14.0
   - dask<=2025.3.0
   - ndv[pygfx,wxpython]>=0.3.1
   - build ; extra == 'build'
@@ -2784,8 +2751,8 @@ packages:
   editable: true
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
-  version: 5.0.0.dev215
-  sha256: 16e86a211b73db0fd0d22cec718d1598fc241918f4e1c0ff7ee59055bb4e17be
+  version: 5.0.0.dev233
+  sha256: 71917eb491e3690a99b1bab898fd4d858a6a2416b257f100562702961c01b347
   requires_dist:
   - cellprofiler-library>=5.dev0
   - boto3>=1.12.28
@@ -2802,41 +2769,7 @@ packages:
   - scikit-image>=0.20.0
   - scipy>=1.9.1,<1.11
   - scyjava>=1.9.1
-  - zarr>=2.16.1
-  - google-cloud-storage~=2.10.0
-  - packaging>=20.0
-  - xmltodict>=0.14.0
-  - dask<=2025.3.0
-  - build ; extra == 'build'
-  - pyinstaller ; extra == 'build'
-  - twine ; extra == 'build'
-  - sphinx>=3.1.1 ; extra == 'build'
-  - click>=7.1.2 ; extra == 'build'
-  - pytest~=7.4.1 ; extra == 'test'
-  - pytest-timeout~=2.1.0 ; extra == 'test'
-  - wxpython==4.2.0 ; extra == 'wx'
-  requires_python: '>=3.9'
-  editable: true
-- pypi: ./src/subpackages/core
-  name: cellprofiler-core
-  version: 5.0.0.dev230
-  sha256: 16e86a211b73db0fd0d22cec718d1598fc241918f4e1c0ff7ee59055bb4e17be
-  requires_dist:
-  - cellprofiler-library>=5.dev0
-  - boto3>=1.12.28
-  - centrosome>=1.3.0
-  - docutils>=0.15.2
-  - future>=0.18.2
-  - fsspec>=2021.11.0
-  - h5py>=3.7.0
-  - lxml>=4.6.4
-  - matplotlib>=3.1.3,<4
-  - numpy>=1.24.4,<2
-  - psutil>=5.9.5
-  - pyzmq>=22.3.0
-  - scikit-image>=0.20.0
-  - scipy>=1.9.1,<1.11
-  - scyjava>=1.9.1
+  - tifffile[codecs]>=2022.4.8
   - zarr>=2.16.1
   - google-cloud-storage~=2.10.0
   - packaging>=20.0
@@ -4099,6 +4032,102 @@ packages:
   - pytest>=8.3.2 ; extra == 'all'
   - flake8>=7.1.1 ; extra == 'all'
   requires_python: '>=3.6'
+- pypi: https://files.pythonhosted.org/packages/4f/5a/18b79571024b4d5c4936659c80384e6e2fe5d95ead4946f94897fd0c33a2/imagecodecs-2024.12.30-cp39-cp39-macosx_11_0_arm64.whl
+  name: imagecodecs
+  version: 2024.12.30
+  sha256: 8c6e02e8081ac947d093f8578cf87c07c1b34231d3adf1120571f3c8e68fa8ce
+  requires_dist:
+  - numpy
+  - matplotlib ; extra == 'all'
+  - tifffile ; extra == 'all'
+  - numcodecs ; extra == 'all'
+  - pytest ; extra == 'test'
+  - tifffile ; extra == 'test'
+  - czifile ; extra == 'test'
+  - blosc ; extra == 'test'
+  - blosc2 ; extra == 'test'
+  - zstd ; extra == 'test'
+  - lz4 ; extra == 'test'
+  - pyliblzfse ; extra == 'test'
+  - python-lzf ; extra == 'test'
+  - python-snappy ; extra == 'test'
+  - bitshuffle ; extra == 'test'
+  - zopflipy ; extra == 'test'
+  - zarr<3 ; extra == 'test'
+  - numcodecs ; extra == 'test'
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/58/c2/601682aecd4f41e4f6ed3e506bae07f7d6ac75a7eabe3ec92c63f1c71250/imagecodecs-2024.12.30-cp39-cp39-macosx_10_14_x86_64.whl
+  name: imagecodecs
+  version: 2024.12.30
+  sha256: 834e088c915a9f2231ef1d49681560e50ba98260df1576f79b48ba5a1a7d0679
+  requires_dist:
+  - numpy
+  - matplotlib ; extra == 'all'
+  - tifffile ; extra == 'all'
+  - numcodecs ; extra == 'all'
+  - pytest ; extra == 'test'
+  - tifffile ; extra == 'test'
+  - czifile ; extra == 'test'
+  - blosc ; extra == 'test'
+  - blosc2 ; extra == 'test'
+  - zstd ; extra == 'test'
+  - lz4 ; extra == 'test'
+  - pyliblzfse ; extra == 'test'
+  - python-lzf ; extra == 'test'
+  - python-snappy ; extra == 'test'
+  - bitshuffle ; extra == 'test'
+  - zopflipy ; extra == 'test'
+  - zarr<3 ; extra == 'test'
+  - numcodecs ; extra == 'test'
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/8b/b7/371021efe266fa3c205f415b1a0ea07b6d0876a9a35a0108866ecd7181de/imagecodecs-2024.12.30-1-cp39-cp39-win_amd64.whl
+  name: imagecodecs
+  version: 2024.12.30
+  sha256: 3e3ca8531bb5f8b3b3c72bf0ef0e5d596e37b0a46dc4e37265039f3728ead1ae
+  requires_dist:
+  - numpy
+  - matplotlib ; extra == 'all'
+  - tifffile ; extra == 'all'
+  - numcodecs ; extra == 'all'
+  - pytest ; extra == 'test'
+  - tifffile ; extra == 'test'
+  - czifile ; extra == 'test'
+  - blosc ; extra == 'test'
+  - blosc2 ; extra == 'test'
+  - zstd ; extra == 'test'
+  - lz4 ; extra == 'test'
+  - pyliblzfse ; extra == 'test'
+  - python-lzf ; extra == 'test'
+  - python-snappy ; extra == 'test'
+  - bitshuffle ; extra == 'test'
+  - zopflipy ; extra == 'test'
+  - zarr<3 ; extra == 'test'
+  - numcodecs ; extra == 'test'
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/d1/f9/a5687bf4583abdabea4a18335c08c687878ea3a741e9ef4a643a2eb2530b/imagecodecs-2024.12.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: imagecodecs
+  version: 2024.12.30
+  sha256: e92b74e23ccb9fa58158bb8735e555a7aca97455e791f6f9fddce198dfde674c
+  requires_dist:
+  - numpy
+  - matplotlib ; extra == 'all'
+  - tifffile ; extra == 'all'
+  - numcodecs ; extra == 'all'
+  - pytest ; extra == 'test'
+  - tifffile ; extra == 'test'
+  - czifile ; extra == 'test'
+  - blosc ; extra == 'test'
+  - blosc2 ; extra == 'test'
+  - zstd ; extra == 'test'
+  - lz4 ; extra == 'test'
+  - pyliblzfse ; extra == 'test'
+  - python-lzf ; extra == 'test'
+  - python-snappy ; extra == 'test'
+  - bitshuffle ; extra == 'test'
+  - zopflipy ; extra == 'test'
+  - zarr<3 ; extra == 'test'
+  - numcodecs ; extra == 'test'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/cb/bd/b394387b598ed84d8d0fa90611a90bee0adc2021820ad5729f7ced74a8e2/imageio-2.37.0-py3-none-any.whl
   name: imageio
   version: 2.37.0

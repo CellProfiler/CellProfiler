@@ -145,7 +145,6 @@ class TiledImageReader(LargeImageReader):
             assert col_idx in standard_idxs
             assert channel_idx in standard_idxs
 
-            idxs: dict[int, slice] = dict()
             self.__dim_idxs["row_idx"] = row_idx
             self.__dim_idxs["col_idx"] = col_idx
             self.__dim_idxs["channel_idx"] = channel_idx

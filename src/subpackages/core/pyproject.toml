@@ -71,6 +71,7 @@ dependencies = [
     "scikit-image>=0.20.0",
     "scipy>=1.9.1,<1.11",
     "scyjava>=1.9.1",
+    "tifffile[codecs]>=2022.4.8",
     "zarr>=2.16.1",
     "google-cloud-storage~=2.10.0",
     "packaging>=20.0",

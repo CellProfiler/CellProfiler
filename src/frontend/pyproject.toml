@@ -80,11 +80,9 @@ dependencies = [
     "scipy>=1.9.1,<1.11",
     "scyjava>=1.9.1",
     "six>=1.16.0",
-    "tifffile>=2022.4.8",
     "wxPython>=4.2.0",
     "rapidfuzz>=3.0.0",
     "packaging>=20.0",
-    "xmltodict>=0.14.0",
     "dask<=2025.3.0",
     "ndv[pygfx,wxpython]>=0.3.1",
 ]

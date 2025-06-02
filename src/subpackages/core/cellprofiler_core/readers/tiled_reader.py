@@ -127,9 +127,15 @@ class TiledImageReader(LargeImageReader):
         Should return a data array with channel order [Z, ]Y, X[, C]
         """
         def order_dims(dask_array: dask.array.Array, level: int):
-            row_idx = self._res[level]["dims"].index("height")
-            col_idx = self._res[level]["dims"].index("width")
-            channel_idx = self._res[level]["dims"].index("sequence")
+            dims = self._res[level]["dims"]
+            row_idx = dims.index("height")
+            col_idx = dims.index("width")
+            if "channel" in dims:
+                channel_idx = dims.index("channel")
+            elif "sequence" in dims:
+                channel_idx = dims.index("sequence")
+            else:
+                channel_idx = set(0,1,2).difference((row_idx, col_idx)).pop()
 
             standard_idxs = (0, 1, 2)
             assert row_idx != col_idx
@@ -483,12 +489,12 @@ class TiledImageReader(LargeImageReader):
         c_size = int(pixels_meta["@SizeC"])
         t_size = int(pixels_meta["@SizeT"])
 
-        y_mag = float(pixels_meta["@PhysicalSizeY"])
-        y_mag_unit = str(pixels_meta["@PhysicalSizeYUnit"])
-        x_mag = float(pixels_meta["@PhysicalSizeX"])
-        x_mag_unit = str(pixels_meta["@PhysicalSizeXUnit"])
-        z_mag = float(pixels_meta["@PhysicalSizeZ"])
-        z_mag_unit = str(pixels_meta["@PhysicalSizeZUnit"])
+        y_mag = float(pixels_meta.get("@PhysicalSizeY", 1))
+        y_mag_unit = str(pixels_meta.get("@PhysicalSizeYUnit", 1))
+        x_mag = float(pixels_meta.get("@PhysicalSizeX", 1))
+        x_mag_unit = str(pixels_meta.get("@PhysicalSizeXUnit", 1))
+        z_mag = float(pixels_meta.get("PhysicalSizeZ", 1))
+        z_mag_unit = str(pixels_meta.get("PhysicalSizeZUnit", 1))
 
         shape = [1] * 5
         shape[y_idx] = y_size
@@ -500,7 +506,10 @@ class TiledImageReader(LargeImageReader):
 
         dtype = str(pixels_meta["@Type"])
 
-        channel_names = tuple(map(lambda channel_info: str(channel_info["@Name"]), pixels_meta["Channel"]))
+        channel_names = tuple(
+            channel_info.get("Name", channel_info.get("@ID", str(idx)))
+            for idx, channel_info in enumerate(pixels_meta.get("Channel", []))
+        )
 
         tile_height = int(full_meta["pages"][0]["tilelength"])
         tile_width = int(full_meta["pages"][0]["tilewidth"])
@@ -510,7 +519,12 @@ class TiledImageReader(LargeImageReader):
         levels_dim_order = tuple(map(lambda d: str(d), full_meta["series"][0]["dims"]))
         levels_height_idx = levels_dim_order.index("height")
         levels_width_idx = levels_dim_order.index("width")
-        levels_seq_idx = levels_dim_order.index("sequence")
+        if "channel" in levels_dim_order:
+            levels_ch_idx = levels_dim_order.index("channel")
+        elif "sequence" in levels_dim_order:
+            levels_ch_idx = levels_dim_order.index("sequence")
+        else:
+            levels_ch_idx = set(0,1,2).difference((levels_height_idx, levels_width_idx)).pop()
 
         levels = full_meta["series"][0]["pyramid"]["levels"]
         for i, level in enumerate(levels):
@@ -519,7 +533,7 @@ class TiledImageReader(LargeImageReader):
             level_dims = levels_dim_order
             level_height = level_shape[levels_height_idx]
             level_width = level_shape[levels_width_idx]
-            level_channels = level_shape[levels_seq_idx]
+            level_channels = level_shape[levels_ch_idx]
             level_max_tile_height = min(tile_height, level_height)
             level_max_tile_width = min(tile_width, level_width)
             level_n_tiles_y = ceil(level_height / level_max_tile_height)

@@ -11,13 +11,15 @@ from ..opts.threshold import (
     VarianceMethod,
 )
 
-from pydantic import BaseModel, Field, BeforeValidator, validate_call
+from ..types import ImageGrayscale, ImageGrayscaleMask
+
+from pydantic import BaseModel, Field, BeforeValidator, validate_call, ConfigDict
 from typing import Optional, Tuple, Annotated, Dict, Any, Union
 
-@validate_call
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def threshold(
-    image:                      Annotated[Any, Field(description="Image to threshold")],
-    mask:                       Annotated[Optional[Any], Field(description="Mask to apply to the image")] = None,
+    image:                      Annotated[ImageGrayscale, Field(description="Image to threshold")],
+    mask:                       Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
     threshold_scope:            Annotated[Scope, Field(description="Thresholding scope"), BeforeValidator(str.casefold)] = Field(default=Scope.GLOBAL),
     threshold_method:           Annotated[Method, Field(description="Thresholding method"), BeforeValidator(str.casefold)] = Field(default=Method.OTSU),
     assign_middle_to_foreground:Annotated[Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Field(default=Assignment.FOREGROUND),
@@ -39,7 +41,7 @@ def threshold(
     Annotated[Union[Any, float, int], Field(description="Final threshold")],
     Annotated[Union[Any, float, int], Field(description="Original threshold")],
     Annotated[Union[Any, float, int], Field(description="Guide threshold")],
-    Annotated[Any, Field(description="Binary image")],
+    Annotated[ImageGrayscaleMask, Field(description="Binary image")],
     Annotated[float, Field(description="Sigma value")],
 
 ]:

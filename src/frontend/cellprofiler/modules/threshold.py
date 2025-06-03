@@ -833,7 +833,7 @@ staining.
         converted_str = gui_setting_str
         for replacement in rep_list:
             converted_str = converted_str.replace(*replacement)
-        return converted_str
+        return converted_str.lower()
 
     def get_threshold(self, input_image, workspace, automatic=False):
         """
@@ -842,8 +842,8 @@ staining.
         # Handle manual and measurement thresholds, which are not supported
         # by cellprofiler_library
         if self.threshold_operation == TM_MANUAL:
-            final_threshold = self.manual_threshold.value 
-            orig_threshold = self.manual_threshold.value
+            final_threshold = float(self.manual_threshold.value) 
+            orig_threshold = float(self.manual_threshold.value)
             guide_threshold = None 
             binary_image, sigma = apply_threshold(
                 input_image.pixel_data,
@@ -858,7 +858,7 @@ staining.
                 )
             )
             final_threshold = orig_threshold
-            final_threshold *= self.threshold_correction_factor.value
+            final_threshold *= float(self.threshold_correction_factor.value)
             final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
             guide_threshold = None 
             binary_image, sigma = apply_threshold(
@@ -873,12 +873,14 @@ staining.
                 if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
                     threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
-                    threshold_method = self.convert_setting(self.global_operation.value)
+                    threshold_method = ThresholdOpts.Method(self.convert_setting(self.global_operation.value))
             elif self.threshold_scope == "Adaptive":
                 if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
                     threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
-                    threshold_method = self.convert_setting(self.local_operation.value)
+                    threshold_method = ThresholdOpts.Method(self.convert_setting(self.local_operation.value))
+            else:
+                raise NotImplementedError(f"Threshold scope {self.threshold_scope.value} is not supported.")
             final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,

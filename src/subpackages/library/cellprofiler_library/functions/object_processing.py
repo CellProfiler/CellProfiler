@@ -5,6 +5,7 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 import mahotas
+import matplotlib.cm
 
 
 def shrink_to_point(labels, fill):
@@ -451,3 +452,57 @@ def fill_convex_hulls(labels):
                 cmask
             ] = label
     return output
+
+#############################################################
+# Conversion functions
+#############################################################
+
+def image_mode_black_and_white(pixel_data, mask, alpha, labels=None, colormap_value=None):
+    pixel_data[mask] = True
+    alpha[mask] = 1
+    return pixel_data, alpha
+
+def image_mode_grayscale(pixel_data, mask, alpha, labels, colormap_value=None):
+    pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
+    alpha[mask] = 1
+    return pixel_data, alpha
+
+def image_mode_color(pixel_data, mask, alpha, labels, colormap_value):
+    if colormap_value == "colorcube":
+        # Colorcube missing from matplotlib
+        cm_name = "gist_rainbow"
+    elif colormap_value == "lines":
+        # Lines missing from matplotlib and not much like it,
+        # Pretty boring palette anyway, hence
+        cm_name = "Pastel1"
+    elif colormap_value == "white":
+        # White missing from matplotlib, it's just a colormap
+        # of all completely white... not even different kinds of
+        # white. And, isn't white just a uniform sampling of
+        # frequencies from the spectrum?
+        cm_name = "Spectral"
+    else:
+        cm_name = colormap_value
+
+    cm = matplotlib.cm.get_cmap(cm_name)
+
+    mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+
+    if labels.ndim == 3:
+        for index, plane in enumerate(mask):
+            pixel_data[index, plane, :] = mapper.to_rgba(
+                centrosome.cpmorphology.distance_color_labels(labels[index])
+            )[plane, :3]
+    else:
+        pixel_data[mask, :] += mapper.to_rgba(
+            centrosome.cpmorphology.distance_color_labels(labels)
+        )[mask, :3]
+
+    alpha[mask] += 1
+    return pixel_data, alpha
+
+def image_mode_uint16(pixel_data, mask, alpha, labels, colormap_value=None):
+    pixel_data[mask] = labels[mask]
+    alpha[mask] = 1
+    return pixel_data, alpha
+

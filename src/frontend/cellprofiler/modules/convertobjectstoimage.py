@@ -30,7 +30,7 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting.choice import Choice, Colormap
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import ImageName
-from cellprofiler_library.modules._convertobjectstoimage import update_pixel_data
+from cellprofiler_library.modules._convertobjectstoimage import convert_objects_to_image
 from cellprofiler_library.opts.convertobjectstoimage import ImageMode
 
 DEFAULT_COLORMAP = "Default"
@@ -120,7 +120,7 @@ Preferences*.
         if colormap_value == DEFAULT_COLORMAP:
             colormap_value = get_default_colormap()
 
-        pixel_data = update_pixel_data(self.image_mode.value, object_labels, objects.shape, str(colormap_value))
+        pixel_data = convert_objects_to_image(self.image_mode.value, object_labels, objects.shape, str(colormap_value))
 
         convert = False if self.image_mode.value.casefold() == ImageMode.UINT16 else True
         image = Image(

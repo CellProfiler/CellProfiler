@@ -445,6 +445,9 @@ class FileImage(AbstractImage):
                 # No file here - hash the image
                 image = self.provide_image(measurements)
                 hasher.update(image.pixel_data.tostring())
+            # TODO: LIS - temporary skip expensive hashing, see #5015
+            elif self.__tiled:
+                hasher.update(b"fakehash")
             else:
                 with open(self.get_full_name(), "rb") as fd:
                     while True:

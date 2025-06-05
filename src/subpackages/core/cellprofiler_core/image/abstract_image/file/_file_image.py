@@ -454,7 +454,7 @@ class FileImage(AbstractImage):
                         hasher.update(buf)
             if rdr is None:
                 return hasher.hexdigest()
-            # TODO - LIS: rdr.md5_hash is unused
+            # TODO: LIS - rdr.md5_hash is unused
             rdr.md5_hash = hasher.hexdigest()
         return rdr.md5_hash
 

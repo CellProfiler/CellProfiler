@@ -235,6 +235,7 @@ class Image:
         Convert the input into a numpy array. If the input is numeric,
         we convert it to boolean by testing each element for non-zero.
         """
+        # TODO: LIS - asarray this will trigger compute
         m = numpy.array(mask)
 
         if not (m.dtype.type is bool):

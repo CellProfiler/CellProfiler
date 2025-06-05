@@ -12,7 +12,7 @@ SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
 SEMI_SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps'}
 
-# TODO - LIS: Very much incomplete, and only (currently) usec for reading the example pipeline
+# TODO: LIS - Very much incomplete, and only (currently) used for reading the example pipeline
 # for example calling reader.get_length (extract image planes button in Images module) doesn't work
 # and will break
 class ImageIOReaderV3(Reader):

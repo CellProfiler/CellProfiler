@@ -1,4 +1,3 @@
-from typing import Literal
 
 import centrosome.cpmorphology
 import numpy
@@ -6,6 +5,8 @@ import scipy.ndimage
 import skimage.morphology
 import mahotas
 import matplotlib.cm
+import numpy.typing as npt
+from typing import Optional, Literal, Tuple
 
 
 def shrink_to_point(labels, fill):
@@ -454,20 +455,38 @@ def fill_convex_hulls(labels):
     return output
 
 #############################################################
-# Conversion functions
+# ConvertObjectsToImage
 #############################################################
 
-def image_mode_black_and_white(pixel_data, mask, alpha, labels=None, colormap_value=None):
+def image_mode_black_and_white(
+        pixel_data:     npt.NDArray, 
+        mask:           npt.NDArray, 
+        alpha:          npt.NDArray,
+        labels:         Optional[npt.NDArray] = None,
+        colormap_value: Optional[str] = None
+        ) -> Tuple[npt.NDArray, npt.NDArray]:
     pixel_data[mask] = True
     alpha[mask] = 1
     return pixel_data, alpha
 
-def image_mode_grayscale(pixel_data, mask, alpha, labels, colormap_value=None):
+def image_mode_grayscale(
+        pixel_data:     npt.NDArray, 
+        mask:           npt.NDArray,
+        alpha:          npt.NDArray,
+        labels:         npt.NDArray,
+        colormap_value: Optional[str] = None
+        ) -> Tuple[npt.NDArray, npt.NDArray]:
     pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
     alpha[mask] = 1
     return pixel_data, alpha
 
-def image_mode_color(pixel_data, mask, alpha, labels, colormap_value):
+def image_mode_color(
+        pixel_data:     npt.NDArray, 
+        mask:           npt.NDArray,
+        alpha:          npt.NDArray,
+        labels:         npt.NDArray,
+        colormap_value: str
+        ) -> Tuple[npt.NDArray, npt.NDArray]:
     if colormap_value == "colorcube":
         # Colorcube missing from matplotlib
         cm_name = "gist_rainbow"
@@ -501,7 +520,13 @@ def image_mode_color(pixel_data, mask, alpha, labels, colormap_value):
     alpha[mask] += 1
     return pixel_data, alpha
 
-def image_mode_uint16(pixel_data, mask, alpha, labels, colormap_value=None):
+def image_mode_uint16(
+        pixel_data:     npt.NDArray, 
+        mask:           npt.NDArray,
+        alpha:          npt.NDArray,
+        labels:         npt.NDArray,
+        colormap_value: Optional[str] = None
+        ) -> Tuple[npt.NDArray, npt.NDArray]:
     pixel_data[mask] = labels[mask]
     alpha[mask] = 1
     return pixel_data, alpha

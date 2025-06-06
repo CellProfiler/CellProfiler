@@ -42,7 +42,8 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_library.modules._colortogray import combine_colortogray, split_hsv
+from cellprofiler_library.modules._colortogray import color_to_gray
+from cellprofiler_library.opts.colortogray import ConversionMethod
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -540,10 +541,22 @@ Select the name of the output grayscale image.""",
             frame        - display within this frame (or None to not display)
         """
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=True)
-        if self.should_combine():
-            self.run_combine(workspace, image)
-        else:
-            self.run_split(workspace, image)
+
+        init_channels_and_contributions_fn = {
+            ConversionMethod.COMBINE: lambda : list(zip(*self.channels_and_contributions())),
+            ConversionMethod.SPLIT: lambda : (None, None),
+        }
+
+        add_to_workspace_fn = {
+            ConversionMethod.COMBINE: self.add_combined_image_to_workspace,
+            ConversionMethod.SPLIT: self.add_split_image_to_workspace,
+        }
+
+        combine_or_split = self.combine_or_split.value.casefold()
+
+        channels, contributions = init_channels_and_contributions_fn[combine_or_split]()
+        output = color_to_gray(image.pixel_data, self.rgb_or_channels.value.casefold(), self.should_combine(), channels, contributions)
+        add_to_workspace_fn[combine_or_split](workspace, image, output)
 
     def display(self, workspace, figure):
         if self.should_combine():
@@ -551,18 +564,14 @@ Select the name of the output grayscale image.""",
         else:
             self.display_split(workspace, figure)
 
-    def run_combine(self, workspace, image):
-        """Combine images to make a grayscale one
+    def add_combined_image_to_workspace(self, workspace, parent_image, output_image):
         """
-        input_image = image.pixel_data
-        channels, contributions = list(zip(*self.channels_and_contributions()))
-
-        output_image = combine_colortogray(input_image, channels, contributions)
-
-        image = Image(output_image, parent_image=image)
+        Adds the combined image to the workspace
+        """
+        image = Image(output_image, parent_image=parent_image)
         workspace.image_set.add(self.grayscale_name.value, image)
 
-        workspace.display_data.input_image = input_image
+        workspace.display_data.input_image = parent_image.pixel_data
         workspace.display_data.output_image = output_image
 
     def display_combine(self, workspace, figure):
@@ -583,24 +592,16 @@ Select the name of the output grayscale image.""",
             sharexy=figure.subplot(0, 0),
         )
 
-    def run_split(self, workspace, image):
-        """Split image into individual components
+    def add_split_image_to_workspace(self, workspace, image, output_image):
+        """
+        Adds the split image to the workspace
         """
         input_image = image.pixel_data
         disp_collection = []
-        if self.rgb_or_channels in (CH_RGB, CH_CHANNELS):
-            for index, name, title in self.channels_and_image_names():
-                output_image = input_image[:, :, index]
-                workspace.image_set.add(name, Image(output_image, parent_image=image))
-                disp_collection.append([output_image, name])
-        elif self.rgb_or_channels == CH_HSV:
-            output_image = split_hsv(input_image)
-            for index, name, title in self.channels_and_image_names():
-                workspace.image_set.add(
-                    name, Image(output_image[:, :, index], parent_image=image)
-                )
-                disp_collection.append([output_image[:, :, index], name])
-
+        for index, name, title in self.channels_and_image_names():
+            workspace.image_set.add(name, Image(output_image[index], parent_image=image))
+            disp_collection.append([output_image, name])
+        
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
 

@@ -18,29 +18,28 @@ def convert_objects_to_image(
     alpha = numpy.zeros(objects_shape)
 
     converter_fn_map = {
-        "Binary (black & white)": image_mode_black_and_white,
-        "Grayscale": image_mode_grayscale,
-        "Color": image_mode_color,
-        "uint16": image_mode_uint16,
+        ImageMode.BINARY: image_mode_black_and_white,
+        ImageMode.GRAYSCALE: image_mode_grayscale,
+        ImageMode.COLOR: image_mode_color,
+        ImageMode.UINT16: image_mode_uint16,
     }
 
     pixel_data_init_map = {
-        "Binary (black & white)": lambda: numpy.zeros(objects_shape, bool),
-        "Grayscale": lambda: numpy.zeros(objects_shape),
-        "Color": lambda: numpy.zeros(objects_shape + (3,)),
-        "uint16": lambda: numpy.zeros(objects_shape, numpy.int32),
+        ImageMode.BINARY: lambda: numpy.zeros(objects_shape, bool),
+        ImageMode.GRAYSCALE: lambda: numpy.zeros(objects_shape),
+        ImageMode.COLOR: lambda: numpy.zeros(objects_shape + (3,)),
+        ImageMode.UINT16: lambda: numpy.zeros(objects_shape, numpy.int32),
     }
     pixel_data = pixel_data_init_map.get(image_mode, lambda: numpy.zeros(objects_shape + (3,)))()
     for labels, _ in objects_labels:
         mask = labels != 0
-
         if numpy.all(~mask):
             continue
         pixel_data, alpha = converter_fn_map[image_mode](pixel_data, mask, alpha, labels, colormap_value)
     mask = alpha > 0
-    if image_mode == "Color":
+    if image_mode == ImageMode.COLOR:
         pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, numpy.newaxis]
-    elif image_mode != "Binary (black & white)":
+    elif image_mode != ImageMode.BINARY:
         pixel_data[mask] = pixel_data[mask] / alpha[mask]
     return pixel_data
 

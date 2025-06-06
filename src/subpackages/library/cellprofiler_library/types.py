@@ -62,6 +62,18 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
         return input_image
     return validate
 
+def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> np.ndarray:
+    if input_image.ndim != 6:
+        raise ValueError(f"Expected an array of shape (n, c, z, t, y, x), got {input_image.shape}")
+    return input_image  
+
+def validate_object_label_set(label_set: list) -> list:
+    # label set is a list of 2 tuples
+    for label in label_set:
+        if type(label) != tuple or len(label) != 2:
+            raise ValueError(f"Expected a list of tuples of length 2, got {label}")
+    return label_set
+
 # # TODO: Is there a better way to do this?
 Image2DColor = Annotated[np.ndarray, Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
 Image2DColorMask = Annotated[np.ndarray, Field(description="2D color mask"), AfterValidator(create_type_validator(False, True, False, np.bool_))]
@@ -72,6 +84,9 @@ Image3DColor = Annotated[np.ndarray, Field(description="3D image with multiple c
 Image3DColorMask = Annotated[np.ndarray, Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, np.bool_))]
 Image3DGrayscale = Annotated[np.ndarray, Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Union[np.float32, np.float64]))]
 Image3DGrayscaleMask = Annotated[np.ndarray, Field(description="3D grayscale mask"), AfterValidator(create_type_validator(True, False, False, np.bool_))]
+
+ObjectLabelsDense = Annotated[np.ndarray, Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
+ObjectLabelSet = Annotated[list, Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
 
 ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

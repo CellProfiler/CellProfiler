@@ -176,6 +176,10 @@ class Image:
     pixel_data = property(get_image, set_image)
 
     @property
+    def is_tiled_image(self):
+        return type(self.__image) == daskArray
+
+    @property
     def has_parent_image(self):
         """True if this image has a defined parent"""
         return self.parent_image is not None

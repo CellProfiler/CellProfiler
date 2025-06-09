@@ -105,7 +105,8 @@ class TiledImageReader(LargeImageReader):
 
     def read_tiled(self,
                    wants_metadata_rescale=False,
-                   # TODO: LIS - support c,z,t,xywh
+                   # TODO: LIS - support series,c,z,t,xywh
+                   series=None,
                    c=None,
                    z=None,
                    t=None,
@@ -116,6 +117,7 @@ class TiledImageReader(LargeImageReader):
         :param wants_metadata_rescale: if `True`, return a tuple of image and a
                tuple of (min, max) for range values of image dtype gathered from
                file metadata; if `False`, returns only the image
+        :param series: series (pyramid level)
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
@@ -173,9 +175,16 @@ class TiledImageReader(LargeImageReader):
         if channel_names is not None:
             channel_names.extend(self._meta["channel_names"])
 
-        self.level = len(self.__data) - 1
+        self.level = len(self.__data) - 1 if series is None else series
         self.channel = self._set_channel(start=0, stop=3, lvl=self.level)
         self.nth = 0
+
+        level_data = self.__data[self.level]
+        if c is not None and level_data.ndim == 3:
+            level_data = level_data[:,:,c]
+        if c is not None and level_data.ndim == 4:
+            # TODO: LIS - implement volumetric
+            raise NotImplementedError("Not yet implemented")
 
         if wants_metadata_rescale:
             dtype = self._meta["dtype"]
@@ -186,11 +195,9 @@ class TiledImageReader(LargeImageReader):
             else:
                 raise TypeError(f"Unsupported data type: {dtype}")
 
-            return self.__data[self.level], (float(info.min), float(info.max))
+            return level_data, (float(info.min), float(info.max))
 
-        # TODO: - LIS: Not sure what the best thing is to return here yet
-        # right now just the lowest resolution in the pyramid
-        return self.__data[self.level]
+        return level_data
 
     def current_tile(self, all_channels=False):
         nth = self.nth

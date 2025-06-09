@@ -448,6 +448,9 @@ class FileImage(AbstractImage):
             # TODO: LIS - temporary skip expensive hashing, see #5015
             elif self.__tiled:
                 hasher.update(b"fakehash")
+            # TODO: LIS - very temporary, do not commit
+            elif not self.__tiled:
+                hasher.update(b"fakehash")
             else:
                 with open(self.get_full_name(), "rb") as fd:
                     while True:
@@ -457,7 +460,6 @@ class FileImage(AbstractImage):
                         hasher.update(buf)
             if rdr is None:
                 return hasher.hexdigest()
-            # TODO: LIS - rdr.md5_hash is unused
             rdr.md5_hash = hasher.hexdigest()
         return rdr.md5_hash
 
@@ -617,6 +619,7 @@ class FileImage(AbstractImage):
         reader = self.get_reader(tiled=True)
         img, self.rescale_range = reader.read_tiled(
             wants_metadata_rescale=True,
+            series=self.series,
             c=self.channel,
             z=self.z,
             t=self.t,
@@ -631,7 +634,6 @@ class FileImage(AbstractImage):
             image=img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
-            dimensions=3,
             scale=self.__scale,
             spacing=self.__spacing,
         )

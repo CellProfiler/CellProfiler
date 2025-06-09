@@ -35,7 +35,8 @@ class LargeImageReader(Reader):
 
     def read_tiled(self,
                    wants_metadata_rescale=False,
-                   # TODO: LIS - support c,z,t,xywh
+                   # TODO: LIS - support series,c,z,t,xywh
+                   series=None,
                    c=None,
                    z=None,
                    t=None,
@@ -46,6 +47,7 @@ class LargeImageReader(Reader):
         :param wants_metadata_rescale: if `True`, return a tuple of image and a
                tuple of (min, max) for range values of image dtype gathered from
                file metadata; if `False`, returns only the image
+        :param series: series (pyramid level)
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index

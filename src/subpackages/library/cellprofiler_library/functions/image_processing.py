@@ -596,9 +596,6 @@ def split_rgb(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale]
 def split_multichannel(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel")]:
      return split_rgb(input_image)
 
-
-
-
 def convert_image_to_objects(
         data:           Annotated[Any, Field(description="Image to be converted to Objects")], 
         cast_to_bool:   Annotated[bool, Field(description="Convert a grayscale image to binary before converting it to an object")], 

@@ -732,7 +732,7 @@ class Figure(wx.Frame):
         self.clf()  # get rid of any existing subplots, menus, etc.
 
         self.dimensions = dimensions
-        self.tiled=tiled
+        self.tiled = tiled
 
         if max(subplots) > 3:
             self.many_plots = True

@@ -77,6 +77,7 @@ dependencies = [
     "packaging>=20.0",
     "xmltodict>=0.14.0",
     "dask<=2025.3.0",
+    "ome-zarr==0.10.2", # last version supporting 3.9
 ]
 dynamic = ["version"]
 

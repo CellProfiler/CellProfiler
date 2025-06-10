@@ -93,6 +93,9 @@ ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]
 
 ImageAny = Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale]
 
+Image2D = Union[Image2DColor, Image2DGrayscale]
+Image2DMask = Union[Image2DColorMask, Image2DGrayscaleMask]
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def sum_up_im(im: Annotated[Image2DColor, Field(description="2D image with multiple channels of type float32")]) -> float:
     return im.sum()

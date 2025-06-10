@@ -1,4 +1,3 @@
-import math
 import numpy
 from dask.array.core import Array as daskArray
 
@@ -70,6 +69,8 @@ class Image:
         channelstack=False
     ):
         self.__image = None
+        # only relevant for tiled images
+        self.__computed_image = None
 
         self.__mask = None
 
@@ -134,6 +135,26 @@ class Image:
     def get_image(self):
         """Return the primary image"""
         return self.__image
+
+    def get_image_data(self, cache=False):
+        """Return the primary image, computing if necessary"""
+        if self.__computed_image is not None:
+            return self.__computed_image
+
+        if self.is_tiled_image and cache:
+            self.__computed_image = self.__image.compute()
+        elif self.is_tiled_image:
+            return self.__image.compute()
+
+        return self.__image
+
+    @property
+    def computed_data(self):
+        return self.get_image_data(cache=False)
+
+    @property
+    def preserved_computed_data(self):
+        return self.get_image_data(cache=True)
 
     def set_image(self, image, convert=True):
         """Set the primary image

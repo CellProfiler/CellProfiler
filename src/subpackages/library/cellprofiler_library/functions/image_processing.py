@@ -1,3 +1,4 @@
+import re
 import numpy
 import skimage.color
 import skimage.morphology
@@ -8,9 +9,21 @@ import matplotlib
 from ..opts import threshold as Threshold
 from typing import Annotated, Any, Optional, Tuple, Callable, Union, Sequence
 from pydantic import Field, BeforeValidator, ConfigDict
-from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale
+from ..types import Image2D, ImageAny, ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale
 
 
+def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
+    pd = imag_pixels
+    pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
+    if (
+        pd.shape[-1] >= 3
+        and numpy.all(pd[0] == pd[1])
+        and numpy.all(pd[0] == pd[2])
+    ):
+        if imag_pixels.dtype.kind == "b":
+            return imag_pixels.astype(numpy.float64)
+        return imag_pixels[:, :, 0]
+    raise ValueError("Image must be grayscale, but it was color")
 
 def rgb_to_greyscale(image):
     if image.shape[-1] == 4:
@@ -614,3 +627,49 @@ def convert_image_to_objects(
         return data
 
     return skimage.measure.label(data, background=background, connectivity=connectivity)
+
+###########################################################################
+# CorrectIlluminationApply
+###########################################################################
+
+def apply_divide(image_pixels: Image2D, illum_function_pixel_data: Image2D) -> Image2D:
+    return image_pixels / illum_function_pixel_data
+
+def apply_subtract(image_pixels:Image2D, illum_function_pixel_data: Image2D) -> Image2D:
+    output_image = image_pixels - illum_function_pixel_data
+    output_image[output_image < 0] = 0
+    return output_image
+
+def clip_low(output_pixels: Image2D) -> Image2D:
+    return numpy.where(output_pixels < 0, 0, output_pixels)
+
+def clip_high(output_pixels: Image2D) -> Image2D:
+    return numpy.where(output_pixels > 1, 1, output_pixels)
+
+def fix_illumination_function(
+        input_image_shape: tuple,
+        illum_function_pixel_data: Image2D,
+        ) -> Image2D:
+    """
+    Fix the illumination function to be the same shape as the image
+    """
+    if len(input_image_shape) == 2:
+        if illum_function_pixel_data.ndim != 2:
+            illum_function_pixel_data = __must_be_grayscale(illum_function_pixel_data)
+    else:
+        if illum_function_pixel_data.ndim == 2:
+            illum_function_pixel_data = illum_function_pixel_data[
+                :, :, numpy.newaxis
+            ]
+    # Throw an error if image and illum data are incompatible
+    if input_image_shape[:2] != illum_function_pixel_data.shape[:2]:
+        raise ValueError(
+            "This module requires that the image and illumination function have equal dimensions.\n"
+            "The image and illumination function passed do not (%s vs %s).\n"
+            "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
+            % (
+                input_image_shape,
+                illum_function_pixel_data.shape,
+            )
+        )
+    return illum_function_pixel_data

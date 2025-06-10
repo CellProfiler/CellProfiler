@@ -37,9 +37,11 @@ from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName
+from cellprofiler_library.opts.correctilluminationapply import Method
+from cellprofiler_library.modules._correctilluminationapply import correct_illumination_apply
 
-DOS_DIVIDE = "Divide"
-DOS_SUBTRACT = "Subtract"
+DOS_DIVIDE = Method.DIVIDE
+DOS_SUBTRACT = Method.SUBTRACT
 
 ######################################
 #
@@ -248,50 +250,33 @@ somewhat empirical.
         orig_image = workspace.image_set.get_image(image_name)
         illum_function = workspace.image_set.get_image(illum_correct_name)
         illum_function_pixel_data = illum_function.pixel_data
-        if orig_image.pixel_data.ndim == 2:
-            illum_function = workspace.image_set.get_image(
-                illum_correct_name, must_be_grayscale=True
+        #
+        # Apply the illumination function
+        #
+        try:
+            output_pixels = correct_illumination_apply(
+                orig_image.pixel_data,
+                illum_function_pixel_data,
+                image.divide_or_subtract.value,
+                truncate_low=self.truncate_low.value,
+                truncate_high=self.truncate_high.value,
             )
-        else:
-            if illum_function_pixel_data.ndim == 2:
-                illum_function_pixel_data = illum_function_pixel_data[
-                    :, :, numpy.newaxis
-                ]
-        # Throw an error if image and illum data are incompatible
-        if orig_image.pixel_data.shape[:2] != illum_function_pixel_data.shape[:2]:
-            raise ValueError(
-                "This module requires that the image and illumination function have equal dimensions.\n"
-                "The %s image and %s illumination function do not (%s vs %s).\n"
-                "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
-                % (
-                    image_name,
-                    illum_correct_name,
-                    orig_image.pixel_data.shape,
-                    illum_function_pixel_data.shape,
+        except ValueError as e:
+            # Update error message to be more descriptive if the error is due to image and illum function being different shapes
+            if "This module requires that the image and illumination function have equal dimensions" in str(e):
+                raise ValueError(
+                    "This module requires that the image and illumination function have equal dimensions.\n"
+                    "The %s image and %s illumination function do not (%s vs %s).\n"
+                    "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
+                    % (
+                        image_name,
+                        illum_correct_name,
+                        orig_image.pixel_data.shape,
+                        illum_function_pixel_data.shape,
+                    )
                 )
-            )
-        #
-        # Either divide or subtract the illumination image from the original
-        #
-        if image.divide_or_subtract == DOS_DIVIDE:
-            output_pixels = orig_image.pixel_data / illum_function_pixel_data
-        elif image.divide_or_subtract == DOS_SUBTRACT:
-            output_pixels = orig_image.pixel_data - illum_function_pixel_data
-            output_pixels[output_pixels < 0] = 0
-        else:
-            raise ValueError(
-                "Unhandled option for divide or subtract: %s"
-                % image.divide_or_subtract.value
-            )
-        
-        #
-        # Optionally, clip high and low values
-        #
-        if self.truncate_low.value:
-            output_pixels = numpy.where(output_pixels < 0, 0, output_pixels)
-        if self.truncate_high.value:
-            output_pixels = numpy.where(output_pixels > 1, 1, output_pixels)
-        
+            else:
+                raise e
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.

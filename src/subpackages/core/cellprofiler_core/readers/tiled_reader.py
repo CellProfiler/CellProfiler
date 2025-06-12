@@ -9,7 +9,17 @@ from math import ceil
 from typing import TypedDict, Literal, Optional
 from collections import defaultdict
 
-from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, MD_SERIES_NAME
+from ..constants.image import (
+    MD_SIZE_S,
+    MD_SIZE_C,
+    MD_SIZE_Z,
+    MD_SIZE_T,
+    MD_SIZE_Y,
+    MD_SIZE_X,
+    MD_SERIES_NAME,
+    MD_TILE_SIZE_X,
+    MD_TILE_SIZE_Y,
+)
 from ..reader import LargeImageReader
 
 class Resolution(TypedDict):
@@ -339,26 +349,27 @@ class TiledImageReader(LargeImageReader):
         MD_SIZE_T - list of T dimension sizes, one element per series.
         MD_SERIES_NAME - list of series names, one element per series.
         """
-        full_meta = self._full_meta
         standard_meta = self._meta
         meta_dict = defaultdict(list)
 
-        meta_dict[MD_SIZE_S] = full_meta["num_series"]
-
-        reader = self.__get_reader()
-        series_count = reader.get_length()
+        series_count = len(standard_meta["resolutions"])
         meta_dict[MD_SIZE_S] = series_count
         for i in range(series_count):
-            meta_series = full_meta["series"][i]
+            meta_series = standard_meta["resolutions"][i]
             meta_series_shape = meta_series["shape"]
+            meta_series_dims = meta_series["dims"]
 
-            meta_dict[MD_SIZE_Z].append(standard_meta["size_z"])
-            meta_dict[MD_SIZE_T].append(standard_meta["size_t"])
-            # TODO: LIS - don't hardcode 0,1,2
-            meta_dict[MD_SIZE_C].append(meta_series_shape[0])
-            meta_dict[MD_SIZE_Y].append(meta_series_shape[1])
-            meta_dict[MD_SIZE_X].append(meta_series_shape[2])
-            meta_dict[MD_SERIES_NAME].append(meta_series["name"] or "<no_name>")
+            meta_dict[MD_SIZE_Z].append(standard_meta["z_size"])
+            meta_dict[MD_SIZE_T].append(standard_meta["t_size"])
+            series_c_idx = meta_series_dims.index("channel")
+            series_y_idx = meta_series_dims.index("height")
+            series_x_idx = meta_series_dims.index("width")
+            meta_dict[MD_SIZE_C].append(meta_series_shape[series_c_idx])
+            meta_dict[MD_SIZE_Y].append(meta_series_shape[series_y_idx])
+            meta_dict[MD_SIZE_X].append(meta_series_shape[series_x_idx])
+            #meta_dict[MD_SERIES_NAME].append(meta_series["name"] or "<no_name>")
+            meta_dict[MD_TILE_SIZE_Y].append(standard_meta["tile_height"])
+            meta_dict[MD_TILE_SIZE_X].append(standard_meta["tile_width"])
         return meta_dict
 
     def _tile_n(self, nth: int, channel: slice = slice(0,1,1), level: int = 0) -> daskArray:

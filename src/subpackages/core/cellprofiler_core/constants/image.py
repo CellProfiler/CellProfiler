@@ -167,7 +167,21 @@ MD_SIZE_Z = "SizeZ"
 MD_SIZE_T = "SizeT"
 MD_SIZE_X = "SizeX"
 MD_SIZE_Y = "SizeY"
+
+MD_TILE_SIZE_C = "TileSizeC"
+MD_TILE_SIZE_Z = "TileSizeZ"
+MD_TILE_SIZE_T = "TileSizeT"
+MD_TILE_SIZE_X = "TileSizeX"
+MD_TILE_SIZE_Y = "TileSizeY"
+
 MD_SERIES_NAME = "SeriesNames"
 MD_SIZE_KEYS = {MD_SIZE_S, MD_SIZE_X, MD_SIZE_Y, MD_SIZE_Z, MD_SIZE_C, MD_SIZE_T}
+MD_TILE_SIZE_KEYS = {
+    MD_TILE_SIZE_X,
+    MD_TILE_SIZE_Y,
+    MD_TILE_SIZE_Z,
+    MD_TILE_SIZE_C,
+    MD_TILE_SIZE_T
+}
 
 NO_RESCALE = (None, None)

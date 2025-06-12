@@ -7,7 +7,7 @@ from functools import cached_property
 import numpy
 
 from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
-    MD_SIZE_KEYS, MD_SERIES_NAME
+    MD_SIZE_KEYS, MD_SERIES_NAME, MD_TILE_SIZE_Y, MD_TILE_SIZE_X
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.reader import get_image_reader, Reader
@@ -79,11 +79,13 @@ class ImageFile:
             raise NotImplementedError("Unsupported comparison")
 
     def extract_planes(self, workspace=None):
-        if self._extracted:
-            return
+        if workspace:
+            tiled = workspace.pipeline.tiled()
+        else:
+            tiled = False
         # Figure out the number of planes, indexes or series in the file.
         try:
-            reader = self.get_reader()
+            reader = self.get_reader(tiled=tiled)
         except:
             LOGGER.error(f"May not be an image: {self.url}", exc_info=True)
             self.metadata[MD_SIZE_S] = 0
@@ -98,9 +100,19 @@ class ImageFile:
             meta_dict[MD_SERIES_NAME] = [''] * meta_dict[MD_SIZE_S]
         assert MD_SIZE_KEYS.issubset(meta_dict.keys()), "Returned metadata keys are incomplete"
         self.metadata.update(meta_dict)
-        for S, C, Z, T, Y, X, name in self.get_plane_iterator():
-            self._plane_details.append(f"Series {S:>2}{f' ({name})' if name else ''}"
-                                       f": {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
+
+        if self._extracted:
+            self._plane_details.clear()
+
+        if tiled:
+            for S, C, Z, T, Y, X, name, TILE_Y, TILE_X in self.get_plane_iterator(tiled=True):
+                self._plane_details.append(f"Series {S:>2}{f' ({name})' if name else ''}"
+                                           f": {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints"
+                                           f" (Chunk Size: {TILE_X:>5} x {TILE_Y:>5})")
+        else:
+            for S, C, Z, T, Y, X, name in self.get_plane_iterator(tiled=False):
+                self._plane_details.append(f"Series {S:>2}{f' ({name})' if name else ''}"
+                                           f": {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         if workspace is not None:
             metadata_array = numpy.transpose([
                 self.metadata[MD_SIZE_C],
@@ -216,9 +228,9 @@ class ImageFile:
     def metadata(self):
         return self._metadata_dict
 
-    def get_reader(self):
+    def get_reader(self, tiled=False):
         if self._reader is None:
-            self._reader = get_image_reader(self)
+            self._reader = get_image_reader(self, tiled=tiled)
         return self._reader
 
     def release_reader(self):
@@ -227,12 +239,15 @@ class ImageFile:
                 self._reader.close()
             self._reader = None
 
-    def get_plane_iterator(self):
+    def get_plane_iterator(self, tiled=False):
         # Returns an iterator which provides an entry for each series
         # in the file consisting of a tuple of the Series number, C, Z, T, Y and X dimension sizes.
-        return zip(range(self.metadata[MD_SIZE_S]), self.metadata[MD_SIZE_C], self.metadata[MD_SIZE_Z],
+        entries = (range(self.metadata[MD_SIZE_S]), self.metadata[MD_SIZE_C], self.metadata[MD_SIZE_Z],
                    self.metadata[MD_SIZE_T], self.metadata[MD_SIZE_Y], self.metadata[MD_SIZE_X],
                    self.metadata[MD_SERIES_NAME])
+        if tiled:
+            entries += (self.metadata[MD_TILE_SIZE_Y], self.metadata[MD_TILE_SIZE_X])
+        return zip(*entries)
 
     @property
     def plane_details_text(self):

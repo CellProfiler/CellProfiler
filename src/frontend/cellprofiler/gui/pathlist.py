@@ -331,7 +331,8 @@ class PathListCtrl(wx.TreeCtrl):
         for url in urls:
             file_id = self.file_id_map[url]
             file_object = self.GetItemData(file_id)
-            if file_object.extracted and self.GetChildrenCount(file_id) == 0:
+            if file_object.extracted:
+                self.DeleteChildren(file_id)
                 for detail in file_object.plane_details_text:
                     plane_id = self.AppendItem(file_id, detail, data=file_object)
                     self.SetItemFont(plane_id, self._plane_details_font)

@@ -1884,8 +1884,6 @@ class PipelineController(object):
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
 
     def on_extract_metadata(self, event=None):
-        if self.__path_list_ctrl.metadata_already_extracted:
-            return
         file_objects = self.__pipeline.get_filtered_file_list(self.__workspace)
         cap = len(file_objects)
 
@@ -1904,10 +1902,9 @@ class PipelineController(object):
             for idx, file_object in enumerate(file_objects):
                 if dlg.WasCancelled():
                     break
-                if not file_object.extracted:
-                    dlg.Update(idx, f"Working on {file_object.filename}")
-                    file_object.extract_planes(self.__workspace)
-                    urls.append(file_object.url)
+                dlg.Update(idx, f"Working on {file_object.filename}")
+                file_object.extract_planes(self.__workspace)
+                urls.append(file_object.url)
             self.__path_list_ctrl.update_metadata(urls)
             self.__path_list_ctrl.set_metadata_extracted(not dlg.WasCancelled())
 

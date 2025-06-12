@@ -7,7 +7,7 @@ This abstract class extends Reader for large image specific reading. Large image
 A LargeImageReader is (more) stateful compared to Reader. While Reader *may* keep state, such as the file handler,
 LargeImageReader keeps track of the current tile and pyramid level.
 """
-from typing import TypedDict, Optional, Union, Tuple
+from typing import TypedDict, Optional, Union
 
 from ._reader import Reader
 

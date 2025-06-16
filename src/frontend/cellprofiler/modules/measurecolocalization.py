@@ -422,7 +422,6 @@ You can set a different threshold for each image selected in the module.
         group.append("divider", Divider())
         self.save_mask_list.append(group)
 
-
     def settings(self):
         """Return the settings to be saved in the pipeline"""
         result = [
@@ -539,7 +538,6 @@ You can set a different threshold for each image selected in the module.
         del self.save_mask_list[save_image_count:]
         while len(self.save_mask_list) < save_image_count:
             self.add_save_mask(removable=True)
-
 
     def get_image_pairs(self):
         """Yield all permutations of pairs of images to correlate
@@ -733,7 +731,6 @@ You can set a different threshold for each image selected in the module.
                 output_image_arr = numpy.zeros_like(mask)
                 output_image_arr[mask] = (image_pixels >= scaled_image[labels - 1])
         return output_image_arr
-
 
     def save_requested_masks(self, workspace):
         # Iterate over the list of save masks
@@ -2029,7 +2026,6 @@ You can set a different threshold for each image selected in the module.
 
     def volumetric(self):
         return True
-
 
 def get_scale(scale_1, scale_2):
     if scale_1 is not None and scale_2 is not None:

@@ -523,8 +523,30 @@ You can set a different threshold for each image selected in the module.
 
         # compute the index at which the save image settings count is stored 
         # 4 fixed settings + <n settings for threshold> + 12 fixed settings
-        save_image_settings_count_idx = 4 + (threshold_count * THRESHOLD_SETTING_COUNT) + 12
-        
+        fixed_settings_set_1 = (
+            self.images_list,
+            self.thr,
+            self.wants_channel_thresholds,
+            self.thresholds_count
+
+        )
+        fixed_settings_set_2 = (
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
+            self.images_or_objects,
+            self.objects_list,
+            self.do_all,
+            self.do_corr_and_slope,
+            self.do_manders,
+            self.do_rwc,
+            self.do_overlap,
+            self.do_costes,
+            self.fast_costes,
+            self.wants_masks_saved,
+        )
+        save_image_settings_count_idx = len(fixed_settings_set_1) + (threshold_count * THRESHOLD_SETTING_COUNT) + len(fixed_settings_set_2)
+
+
         save_image_count = int(setting_values[save_image_settings_count_idx])
         assert (
             (value_count - FIXED_SETTING_COUNT)  

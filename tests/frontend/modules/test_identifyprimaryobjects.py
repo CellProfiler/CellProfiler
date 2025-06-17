@@ -82,7 +82,7 @@ def test_test_zero_objects():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -133,7 +133,7 @@ def test_test_zero_objects_wa_in_lo_in():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -164,7 +164,7 @@ def test_test_zero_objects_wa_di_lo_in():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -195,7 +195,7 @@ def test_test_zero_objects_wa_in_lo_sh():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -226,7 +226,7 @@ def test_test_zero_objects_wa_di_lo_sh():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -258,7 +258,7 @@ def test_test_one_object():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -325,7 +325,7 @@ def test_test_two_objects():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -389,7 +389,7 @@ def test_test_threshold_range():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -453,7 +453,7 @@ def test_fill_holes():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -489,7 +489,7 @@ def test_dont_fill_holes():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -526,7 +526,7 @@ def test_01_fill_holes_within_holes():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -591,7 +591,7 @@ def test_test_watershed_shape_shape():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -654,7 +654,7 @@ def test_test_watershed_shape_intensity():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -721,7 +721,7 @@ def test_test_watershed_intensity_distance_single():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -786,7 +786,7 @@ def test_test_watershed_intensity_distance_triple():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -851,7 +851,7 @@ def test_test_watershed_intensity_distance_filter():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -919,7 +919,7 @@ def test_test_watershed_intensity_distance_double():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -985,7 +985,7 @@ def test_propagate():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -1365,7 +1365,7 @@ def test_discard_large():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -1416,7 +1416,7 @@ def test_keep_large():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -1461,7 +1461,7 @@ def test_discard_small():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -1514,7 +1514,7 @@ def test_regression_diagonal():
     image = cellprofiler_core.image.Image(img)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()
@@ -1549,7 +1549,7 @@ def test_regression_adaptive_mask():
     image = cellprofiler_core.image.Image(img, mask)
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image_set.providers.append(
+    image_set.add_provider(
         VanillaImage("my_image", image)
     )
     object_set = cellprofiler_core.object.ObjectSet()

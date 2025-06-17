@@ -2,7 +2,7 @@
 GaussianFilter
 ==============
 
-**GuassianFilter** will blur an image and remove noise. Filtering an
+**GaussianFilter** will blur an image and remove noise. Filtering an
 image with a Gaussian filter can be helpful if the foreground signal is
 noisy or near the noise floor.
 
@@ -20,7 +20,7 @@ import skimage.filters
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
-
+from cellprofiler_library.modules import gaussianfilter
 
 class GaussianFilter(ImageProcessing):
     category = "Advanced"
@@ -51,9 +51,9 @@ class GaussianFilter(ImageProcessing):
 
         x_data = x.pixel_data
 
-        sigma = numpy.divide(self.sigma.value, x.spacing)
+        sigma = numpy.divide(self.sigma.value, x.spacing) #library function
 
-        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
+        y_data = gaussianfilter(x_data, sigma=sigma)
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 

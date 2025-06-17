@@ -154,6 +154,15 @@ class Objects:
         return convert_sparse_to_ijv(sparse, validate=False)
 
     ijv = property(get_ijv, set_ijv)
+    
+    def get_dense(self):
+        dense, _ = self.__segmented.get_dense()
+        return dense
+    
+    def set_dense(self, dense):
+        self.__segmented = Segmentation(dense=dense)
+
+    dense = property(get_dense, set_dense)
 
     def get_labels(self):
         """Get a set of labels matrices consisting of non-overlapping labels

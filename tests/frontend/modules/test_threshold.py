@@ -15,7 +15,6 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
 from cellprofiler_core.constants.module._identify import TS_GLOBAL
@@ -23,8 +22,6 @@ import cellprofiler_library.modules
 import cellprofiler_library.functions
 
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

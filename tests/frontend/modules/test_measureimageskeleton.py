@@ -87,7 +87,7 @@ def test_get_measurement_columns(module, pipeline):
 def test_get_measurements_image_skeleton(module, pipeline):
     module.skeleton_name.value = "example"
 
-    expected_measurements = ["Skeleton_Branches_example", "Skeleton_Endpoints_example"]
+    expected_measurements = ["Branches", "Endpoints"]
 
     measurements = module.get_measurements(
         pipeline, "Image", "Skeleton"
@@ -127,7 +127,7 @@ def test_get_measurement_images(module, pipeline):
         pipeline,
         "Image",
         "Skeleton",
-        "Skeleton_Branches_example",
+        "Branches",
     )
 
     assert images == expected_images

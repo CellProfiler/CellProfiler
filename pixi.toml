@@ -1,0 +1,70 @@
+[project]
+name = "CellProfiler"
+description = """
+CellProfiler is a free open-source software designed \
+to enable biologists without training in computer vision \
+or programming to quantitatively measure phenotypes from \
+thousands of images automatically."""
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+cp = { cmd = ["python", "-m", "cellprofiler"] }
+
+[target.osx.tasks]
+# run using python.app (i.e. pythonw)
+cp = { cmd = ["pythonw", "-m", "cellprofiler", "-L", "10"] }
+cpd = { cmd = ["pythonw", "-Wd", "-m", "cellprofiler", "-L", "10"] }
+
+[target.osx.activation]
+# needed until https://github.com/prefix-dev/pixi/issues/1573 is resolved
+# python.app has a post-link script that coppies the contents of the pythonapp directory to a new python.app directory
+# that is not being run, hence the need for this hack
+scripts = ["scripts/link-pythonapp.sh"]
+
+[feature.mysql.activation]
+# https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
+env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/dev/lib", PKG_CONFIG_PATH = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/pkgconfig" }
+
+[feature.mysql.target.linux-64.activation]
+env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib" }
+
+[feature.java.activation]
+env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
+
+[dependencies]
+python = "3.9.*"
+h5py = "<3.11"
+
+[target.osx.dependencies]
+"python.app" = ">=1.4,<2"
+
+# enable this to avoid building wxPython wheel on Linux
+# disable to build wheel from scratch
+# url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/
+[target.linux-64.pypi-dependencies]
+wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
+
+[target.osx-arm64.pypi-dependencies]
+wxpython = "==4.2.1"
+
+[feature.mysql.dependencies]
+pkg-config = "<1.0.0"
+mysql = "=8.0"
+
+[feature.java.dependencies]
+openjdk = "11.*"
+maven = ">=3.9.9,<4"
+
+[feature.mod.pypi-dependencies]
+cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
+cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
+cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
+
+[feature.profile.pypi-dependencies]
+py-spy = "*"
+memray = "*"
+
+[environments]
+dev = ["mod", "java", "mysql"]
+profile = ["mod", "java", "mysql", "profile"]

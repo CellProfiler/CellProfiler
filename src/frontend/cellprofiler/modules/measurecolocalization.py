@@ -89,14 +89,28 @@ from cellprofiler_core.setting.subscriber import (
     LabelListSubscriber,
     ImageListSubscriber,
 )
+from cellprofiler_core.setting import SettingsGroup, HiddenCount
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.image import Image
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
+
+# The number of settings per threshold
+THRESHOLD_SETTING_COUNT = 2
+
+# The number of settings per save mask
+SAVE_MASK_SETTING_COUNT = 3
+
+# The number of settings other than the threshold or save image mask settings 
+FIXED_SETTING_COUNT = 17
 
 M_FAST = "Fast"
 M_FASTER = "Faster"
@@ -126,11 +140,10 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 """Feature name format for the Costes Coefficient measurement"""
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
-
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -149,6 +162,8 @@ class MeasureColocalization(Module):
 
 Select the objects to be measured.""",
         )
+
+        self.thresholds_list = []
 
         self.thr = Float(
             "Set threshold as percentage of maximum intensity for the images",
@@ -184,6 +199,36 @@ All methods measure correlation on a pixel by pixel basis.
         )
 
         self.spacer = Divider(line=True)
+        self.spacer_2 = Divider(line=True)
+        self.thresholds_count = HiddenCount(self.thresholds_list, "Threshold count")
+        self.wants_channel_thresholds = Binary(
+            "Enable image specific thresholds?",
+            False,
+            doc="""\
+Select *{YES}* to specify a unique threshold for selected images. Default value set above will be used for all selected images without a custom threshold.
+        """.format(
+                **{"YES": "Yes"}
+            ),
+            callback=self.__auto_add_threshold_input_box,
+        )
+        self.wants_threshold_visualization = Binary(
+            "Enable threshold visualization?",
+            False,
+            doc="""
+Select *{YES}* to choose images to visualize the thresholding output. This outputs the image mask that is generated after thresholding.
+        """.format(
+                **{"YES": "Yes"}
+            )
+        )
+        self.threshold_visualization_list = ImageListSubscriber(
+            "Select images to visualize thresholds",
+            [],
+            doc="""
+Select images to visualize the thresholding output.
+        """.format(
+                **{"YES": "Yes"}
+            ),
+        )
 
         self.do_all = Binary(
             "Run all metrics?",
@@ -268,12 +313,127 @@ Alternatively, you may want to disable these specific measurements entirely
 (available when "*Run All Metrics?*" is set to "*No*").
 """
         )
+        self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
+        self.save_mask_list = []
+        self.save_image_mask_count = HiddenCount(self.save_mask_list, "Save mask count")
+        self.wants_masks_saved = Binary(
+            "Save thresholded mask?",
+            False,
+            doc="""Select *{YES}* to save the masks obtained after performing the thresholding operation.
+            """.format(**{'YES': "Yes"}),
+            callback=self.__auto_add_save_mask_input_box,
+        )
+        self.add_save_mask_button = DoSomething("", "Add another save mask", self.add_save_mask)
+
+    def __auto_add_threshold_input_box(self, _):
+        if not self.wants_channel_thresholds.value:
+            if self.thresholds_count.value == 0:
+                self.add_threshold()
+
+    def __auto_add_save_mask_input_box(self, _):
+        if not self.wants_masks_saved.value:
+            if self.save_image_mask_count.value == 0:
+                self.add_save_mask()
+        
+    def add_threshold(self, removable=True):
+        group = SettingsGroup()
+        group.removable = removable
+        
+        group.append(
+            "image_name",
+            ImageSubscriber(
+                "Select the image",
+                "None",
+                doc="""\
+Select the image that you want to use for this operation.""",
+            ),
+        )
+        group.append(
+            "threshold_for_channel",
+            Float(
+                "Set threshold as percentage of maximum intensity of selected image",
+                15.0,
+                minval=0.0,
+                maxval=99.0,
+                doc="""\
+Select the threshold as a percentage of the maximum intensity of the above image [0-99].
+You can set a different threshold for each image selected in the module.
+""",
+            ),
+        )
+
+        if removable:
+            group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
+        group.append("divider", Divider())
+        self.thresholds_list.append(group)
+
+    def add_save_mask(self, removable=True):
+        """Add a new group for each image to save the mask for"""
+        group = SettingsGroup()
+        group.removable = removable
+        """Save the thresholded mask to the image set"""
+        
+        # The name of the image from the image set
+        group.append(
+            "image_name",
+            ImageSubscriber(
+                "Which image mask would you like to save",
+                doc="""Select the image mask that you would like to save. The default thresholding value will be used unless an image specific threshold is specified. The mask will be saved as a new image in the image set.""",
+            )
+        )
+
+        # ask if the user wants to perform thresholding over the entire image or a specific object
+        group.append(
+            "save_mask_wants_objects",
+            Binary(
+                "Use object for thresholding?",
+                False,
+                doc="""\
+    Select *{YES}* to use obejcts when performing the thresholding operation.
+            """.format(
+                    **{"YES": "Yes"}
+                ),
+                callback=self.__auto_add_threshold_input_box,
+            )
+        )
+
+        # The name of the object that the user would like to use for thresholding (this is visible only if save_mask_wants_objects is selected)
+        group.append(
+            "choose_object",
+            LabelSubscriber(
+                "Select an Object for threhsolding",
+                "Select an Object",
+                doc="""Select the name of the object that you would like to use to generate the mask. Custom threshold is applied if previously specified; default value will be used otherwise"""
+            )
+        )
+        
+        # This is the name that will be given to the new image (mask) that is created by thresholding
+        group.append(
+            "save_image_name",
+            ImageName(
+            "Name the output image",
+            "ColocalizationMask",
+            doc="""Enter the name you want to call the image mask produced by this module. """,
+            )
+        )
+
+        if removable:
+            group.append("remover", RemoveSettingButton("", "Remove this image", self.save_mask_list, group))
+        group.append("divider", Divider())
+        self.save_mask_list.append(group)
 
     def settings(self):
         """Return the settings to be saved in the pipeline"""
         result = [
             self.images_list,
-            self.thr,
+            self.thr
+            ]
+        result += [self.wants_channel_thresholds, self.thresholds_count]
+        for threshold in self.thresholds_list:
+            result += [threshold.image_name, threshold.threshold_for_channel]
+        result += [
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
             self.images_or_objects,
             self.objects_list,
             self.do_all,
@@ -283,7 +443,17 @@ Alternatively, you may want to disable these specific measurements entirely
             self.do_overlap,
             self.do_costes,
             self.fast_costes,
+            self.wants_masks_saved,
+            self.save_image_mask_count,
         ]
+        for save_mask in self.save_mask_list:
+            # image_name is the name of the image in the image set
+            # save_image_name is the name that the user would like to give to the output mask
+            result += [save_mask.image_name, save_mask.save_mask_wants_objects] 
+            if save_mask.save_mask_wants_objects.value:
+                result += [save_mask.choose_object] 
+            result += [save_mask.save_image_name]
+
         return result
 
     def visible_settings(self):
@@ -291,8 +461,18 @@ Alternatively, you may want to disable these specific measurements entirely
             self.images_list,
             self.spacer,
             self.thr,
-            self.images_or_objects,
+            self.wants_channel_thresholds,
         ]
+        if self.wants_channel_thresholds.value:
+            for threshold in self.thresholds_list:
+                result += [threshold.image_name, threshold.threshold_for_channel]
+                if threshold.removable:
+                    result += [threshold.remover, Divider(line=False)]
+            result += [self.add_threshold_button, self.spacer_2]
+        result += [self.wants_threshold_visualization]
+        if self.wants_threshold_visualization.value == True:
+            result += [self.threshold_visualization_list]
+        result += [self.images_or_objects,]
         if self.wants_objects():
             result += [self.objects_list]
         result += [self.do_all]
@@ -306,6 +486,18 @@ Alternatively, you may want to disable these specific measurements entirely
             ]
         if self.do_all or self.do_costes:
             result += [self.fast_costes]
+        result += [Divider(line=True)]
+        result += [ self.wants_masks_saved ]
+        if self.wants_masks_saved.value:
+            for save_mask in self.save_mask_list:
+                result += [save_mask.image_name, save_mask.save_mask_wants_objects]
+                if save_mask.save_mask_wants_objects.value:
+                    # Object selector is shown only if the radio button save_mask_wants_objects is selected
+                    result += [save_mask.choose_object]
+                result += [save_mask.save_image_name]
+                if save_mask.removable:
+                    result += [save_mask.remover, Divider(line=False)]
+            result += [self.add_save_mask_button]
         return result
 
     def help_settings(self):
@@ -313,12 +505,61 @@ Alternatively, you may want to disable these specific measurements entirely
         help_settings = [
             self.images_or_objects,
             self.thr,
+            self.wants_channel_thresholds,
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
+
             self.images_list,
             self.objects_list,
             self.do_all,
             self.fast_costes,
+            self.wants_masks_saved
         ]
         return help_settings
+    
+    def prepare_settings(self, setting_values):
+        value_count = len(setting_values)
+        threshold_count = int(setting_values[3])
+
+        # compute the index at which the save image settings count is stored 
+        # 4 fixed settings + <n settings for threshold> + 12 fixed settings
+        fixed_settings_set_1 = (
+            self.images_list,
+            self.thr,
+            self.wants_channel_thresholds,
+            self.thresholds_count
+
+        )
+        fixed_settings_set_2 = (
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
+            self.images_or_objects,
+            self.objects_list,
+            self.do_all,
+            self.do_corr_and_slope,
+            self.do_manders,
+            self.do_rwc,
+            self.do_overlap,
+            self.do_costes,
+            self.fast_costes,
+            self.wants_masks_saved,
+        )
+        save_image_settings_count_idx = len(fixed_settings_set_1) + (threshold_count * THRESHOLD_SETTING_COUNT) + len(fixed_settings_set_2)
+
+
+        save_image_count = int(setting_values[save_image_settings_count_idx])
+        assert (
+            (value_count - FIXED_SETTING_COUNT)  
+            - (THRESHOLD_SETTING_COUNT * threshold_count) 
+            - (SAVE_MASK_SETTING_COUNT * save_image_count) 
+            == 0
+            )
+        del self.thresholds_list[threshold_count:]
+        while len(self.thresholds_list) < threshold_count:
+            self.add_threshold(removable=True)
+        del self.save_mask_list[save_image_count:]
+        while len(self.save_mask_list) < save_image_count:
+            self.add_save_mask(removable=True)
 
     def get_image_pairs(self):
         """Yield all permutations of pairs of images to correlate
@@ -339,14 +580,28 @@ Alternatively, you may want to disable these specific measurements entirely
     def wants_objects(self):
         """True if the user wants to measure per-object correlations"""
         return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
+    
+    def verify_image_dims(self, workspace, image_name1, image_name2):
+        """Verify that the images have the same dimensions and return the dimensions"""
+        image1_dims = workspace.image_set.get_image(image_name1).dimensions
+        image2_dims = workspace.image_set.get_image(image_name2).dimensions
+        if image1_dims != image2_dims:
+            raise ValidationError(
+                f"Image dimensions do not match for {image_name1}({image1_dims}) and {image_name2}({image2_dims}). ",
+                self.images_list
+            )
+        return image1_dims
 
     def run(self, workspace):
         """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
+        image_dims = None
         if len(self.images_list.value) < 2:
             raise ValueError("At least 2 images must be selected for analysis.")
         for first_image_name, second_image_name in self.get_image_pairs():
+            image_dims = self.verify_image_dims(workspace, first_image_name, second_image_name)
+
             if self.wants_images():
                 statistics += self.run_image_pair_images(
                     workspace, first_image_name, second_image_name
@@ -356,20 +611,170 @@ Alternatively, you may want to disable these specific measurements entirely
                     statistics += self.run_image_pair_objects(
                         workspace, first_image_name, second_image_name, object_name
                     )
+
+        if self.wants_masks_saved.value:
+            self.save_requested_masks(workspace)
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
+            workspace.display_data.dimensions = image_dims
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
-        if self.wants_objects():
-            helptext = "default"
+        num_image_rows = 1 # for the original images
+        num_image_cols = 2 # for the results table + padding before the results table to prevent overlap
+        # For each image, create a new column and for each object, create a new row of subplot
+        if self.wants_threshold_visualization.value and self.threshold_visualization_list.value:
+            num_image_cols += len(self.threshold_visualization_list.value)
+            if self.wants_objects():
+                num_image_rows += len(self.objects_list.value)
+            if self.wants_images():
+                num_image_rows += 1
+            figure.set_subplots((num_image_cols, num_image_rows))
+            # set subplot dimensions to enable 3d visualization
+            figure.set_subplots(
+                dimensions=workspace.display_data.dimensions,
+                subplots=(num_image_cols, num_image_rows)
+            )
+            self.show_threshold_visualization(figure, workspace)
         else:
-            helptext = None
-        figure.set_subplots((1, 1))
+            num_image_cols -= 1
+            figure.set_subplots((1, 1))
+            
         figure.subplot_table(
-            0, 0, statistics, workspace.display_data.col_labels, title=helptext
+            num_image_cols-1, 0, statistics, workspace.display_data.col_labels, title='', n_cols=1, n_rows=num_image_rows
         )
+
+    def show_threshold_visualization(self, figure, workspace):
+        """
+        Visualize the thresholded images.
+        Assumptions:
+        - Image mask is used to determine the pixels to be thresholded
+        - Mask generated after thresholding is visualized
+        - When object correlation is selected, all objects selected are visualized
+        - All images are shown on the same subplot
+        """
+        if not self.wants_threshold_visualization.value:
+            return
+        for idx, image_name in enumerate(self.threshold_visualization_list.value):
+            plotting_row = 0
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            # Plot original
+            figure.subplot_imshow_grayscale(
+                idx,
+                plotting_row,
+                image.pixel_data,
+                title = image_name + " (Original)",
+                sharexy=figure.subplot(0, 0)
+            )
+            plotting_row += 1
+
+            # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
+            image_pixel_data = image.pixel_data
+            image_mask = image.mask
+            image_mask = image_mask & (~numpy.isnan(image_pixel_data))
+            threshold_value = self.get_image_threshold_value(image_name)
+            if self.wants_images():
+                
+                thr_i_out = self.get_thresholded_mask(workspace, image_name, t_val=threshold_value)
+                figure.subplot_imshow_grayscale(
+                    idx,
+                    plotting_row, 
+                    thr_i_out,
+                    title = image_name + f" (Threshold = {threshold_value})",
+                    sharexy=figure.subplot(0, 0)
+                    )
+                
+                plotting_row += 1
+            if self.wants_objects():
+                for object_name in self.objects_list.value:
+                    threshold_mask_image = self.get_thresholded_mask(workspace, image_name, object_name=object_name, t_val=threshold_value)
+                    figure.subplot_imshow_grayscale(
+                        idx,
+                        plotting_row,
+                        threshold_mask_image,
+                        title=image_name  + f" ({object_name}), (Threshold: {threshold_value})",
+                        sharexy=figure.subplot(0, 0)
+                    )
+                    plotting_row += 1
+
+    def get_thresholded_mask(self, workspace, image_name, object_name=None, t_val=None):
+        """
+        Get the numpy array of the mask of the thresholded image
+
+        :param image: The image object
+        :type image: cellprofiler_core.image.Image
+        :param objects: The objects object, Performs thresholding on the entire image if None
+        :type objects: cellprofiler_core.object.Objects
+        :param t_val: The threshold value to use for thresholding. If not None, the default / user specified value will be overridden
+        :type t_val: float
+        :return: The numpy array of the mask of the thresholded image
+        """
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+        if t_val is None:
+            t_val = self.get_image_threshold_value(image_name)
+        # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
+        image_pixel_data = image.pixel_data
+        image_mask = image.mask
+        image_mask = image_mask & (~numpy.isnan(image_pixel_data))
+        output_image_arr = numpy.zeros_like(image_pixel_data)
+        if object_name is None:
+            # perform on the entire image
+            if numpy.any(image_mask):
+                    thr_i = t_val * numpy.max(image_pixel_data) / 100
+                    output_image_arr = image_pixel_data > thr_i
+        else:
+            # perform on the object
+            objects = workspace.object_set.get_objects(object_name)
+            labels = objects.segmented
+            try:
+                image_pixels = objects.crop_image_similarly(image.pixel_data)
+                image_mask = objects.crop_image_similarly(image.mask)
+            except ValueError:
+                image_pixels, m1 = size_similarly(labels, image.pixel_data)
+                image_mask, m1 = size_similarly(labels, image.mask)
+                image_mask[~m1] = False
+
+            mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
+            labels = labels[mask]
+            
+            if numpy.any(mask):
+                image_pixels = image_pixels[mask]
+            n_objects = objects.count
+
+            if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
+                lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
+                # Threshold as percentage of maximum intensity of objects in each channel
+                scaled_image = (t_val / 100) * fix(
+                    scipy.ndimage.maximum(image_pixels, labels, lrange)
+                )
+
+                # convert 1d array into 2d image using mask as index
+                output_image_arr = numpy.zeros_like(mask)
+                output_image_arr[mask] = (image_pixels >= scaled_image[labels - 1])
+        return output_image_arr
+
+    def save_requested_masks(self, workspace):
+        # Iterate over the list of save masks
+        for save_mask in self.save_mask_list:
+            image_name = save_mask.image_name.value
+            object_name = save_mask.choose_object.value if save_mask.save_mask_wants_objects.value else None
+            save_image_name = save_mask.save_image_name.value
+            original_image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            
+            # Call the relevant funcitons to get the thresholded masks
+            output_image = Image(self.get_thresholded_mask(workspace, image_name, object_name), parent_image=original_image)
+
+            # Save the mask to the image set
+            workspace.image_set.add(save_image_name, output_image)
+            
+
+    def get_image_threshold_value(self, image_name):
+        if self.wants_channel_thresholds.value:
+            for threshold in self.thresholds_list:
+                if threshold.image_name == image_name:
+                    return threshold.threshold_for_channel.value
+        return self.thr.value
 
     def run_image_pair_images(self, workspace, first_image_name, second_image_name):
         """Calculate the correlation between the pixels of two images"""
@@ -432,10 +837,13 @@ Alternatively, you may want to disable these specific measurements entirely
                 ]
 
             if any((self.do_manders, self.do_rwc, self.do_overlap)):
+                # Get channel-specific thresholds from thresholds array
                 # Threshold as percentage of maximum intensity in each channel
-                thr_fi = self.thr.value * numpy.max(fi) / 100
-                thr_si = self.thr.value * numpy.max(si) / 100
-                combined_thresh = (fi > thr_fi) & (si > thr_si)
+                thr_fi = self.get_image_threshold_value(first_image_name) * numpy.max(fi) / 100
+                thr_si = self.get_image_threshold_value(second_image_name) * numpy.max(si) / 100
+                thr_fi_out = fi > thr_fi
+                thr_si_out = si > thr_si
+                combined_thresh = (thr_fi_out) & (thr_si_out)
                 fi_thresh = fi[combined_thresh]
                 si_thresh = si[combined_thresh]
                 tot_fi_thr = fi[(fi > thr_fi)].sum()
@@ -769,11 +1177,14 @@ Alternatively, you may want to disable these specific measurements entirely
                 ]
 
             if any((self.do_manders, self.do_rwc, self.do_overlap)):
+                # Get channel-specific thresholds from thresholds array
+                im1_threshold = self.get_image_threshold_value(first_image_name)
+                im2_threshold = self.get_image_threshold_value(second_image_name)
                 # Threshold as percentage of maximum intensity of objects in each channel
-                tff = (self.thr.value / 100) * fix(
+                tff = (im1_threshold / 100) * fix(
                     scipy.ndimage.maximum(first_pixels, labels, lrange)
                 )
-                tss = (self.thr.value / 100) * fix(
+                tss = (im2_threshold / 100) * fix(
                     scipy.ndimage.maximum(second_pixels, labels, lrange)
                 )
 
@@ -1569,6 +1980,11 @@ Alternatively, you may want to disable these specific measurements entirely
         if self.wants_objects():
             if len(self.objects_list.value) == 0:
                 raise ValidationError("No object sets selected", self.objects_list)
+            
+        # Raise validation error if threshold is set twice
+        thresholds_list_image_names = [i.image_name.value for i in self.thresholds_list]
+        if len(thresholds_list_image_names) != len(set(thresholds_list_image_names)):
+            raise ValidationError("Thresholds are set for the same image more than once", thresholds_list_image_names)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""
@@ -1608,11 +2024,30 @@ Alternatively, you may want to disable these specific measurements entirely
             # Add costes mode switch
             setting_values += [M_FASTER]
             variable_revision_number = 5
+
+        if variable_revision_number == 5:
+            # Settings values returned by upgrade_settings() should match the setting values in settings()
+            # Version upgrade from 4 --> 5 does not apply this rule so it is fixed here:
+            
+            # To determine if the upgrade is needed, check the total number of settings
+            if len(setting_values) == 5:
+                # Assumption: `run_all` is set to "Yes" by default
+                setting_values = setting_values[:-1] + ['Yes']*6 + setting_values[-1:]
+
+            if len(setting_values) != 11:
+                raise Warning(f"The Measure Colocalization module contains an invalid number of settings. Please check the module configuration and save a new pipeline. ")
+            
+            """
+            add 'No' for custom thresholds and '0' for custom threshold counts
+            """
+            setting_values = setting_values[:2] + ['No', '0', 'No', ''] + setting_values[2:] + ['No', '0']
+            
+            variable_revision_number = 6
+
         return setting_values, variable_revision_number
 
     def volumetric(self):
         return True
-
 
 def get_scale(scale_1, scale_2):
     if scale_1 is not None and scale_2 is not None:

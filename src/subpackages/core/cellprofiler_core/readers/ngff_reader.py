@@ -80,28 +80,26 @@ class NGFFReader(Reader):
         NGFFReader.ZARR_READER_CACHE.clear()
 
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=None,
              t=None,
-             rescale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
              ):
         """Read a single plane from the image file.
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
         """
         LOGGER.debug(f"Reading {c=}, {z=}, {t=}, {series=}, {index=}, {xywh=}")
@@ -145,41 +143,28 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
         elif len(image.shape) > 3:
             image = numpy.moveaxis(image, 0, -1)
-        scale = numpy.iinfo(image.dtype).max
-        if rescale:
-            image = image.astype(float) / scale
-        if wants_max_intensity:
-            if image.dtype in [numpy.int8, numpy.uint8]:
-                scale = 255
-            elif image.dtype in [numpy.int16, numpy.uint16]:
-                scale = 65535
-            elif image.dtype == numpy.int32:
-                scale = 2 ** 32 - 1
-            elif image.dtype == numpy.uint32:
-                scale = 2 ** 32
-            else:
-                scale = 1
+
+        if wants_metadata_rescale:
+            scale = self.get_max_sample_value(reader)
             return image, scale
         return image
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         return self.read(
+            wants_metadata_rescale=wants_metadata_rescale,
             series=series,
             c=c,
             z=None,
             t=t,
-            rescale=rescale,
             xywh=xywh,
-            wants_max_intensity=wants_max_intensity,
             channel_names=channel_names
         )
 
@@ -260,6 +245,37 @@ class NGFFReader(Reader):
         return meta_dict
 
     @staticmethod
+    def get_max_sample_value(zarr_obj):
+        xml_path = (zarr_obj.store.path + '/OME/METADATA.ome.xml')
+        if not os.path.exists(xml_path):
+            return None
+
+        root = etree.parse(xml_path)
+
+        namespaces = {
+            "ome": "http://www.openmicroscopy.org/Schemas/OME/2016-06"
+        }
+
+        # Find the MaxSampleValue field
+        # only present in transitional bioformats2raw.layout
+        # https://ngff.openmicroscopy.org/0.5/index.html#bf2raw
+        max_sample_value = root.xpath(
+            "//ome:XMLAnnotation[ome:Value/ome:OriginalMetadata/ome:Key='MaxSampleValue']"
+            "/ome:Value/ome:OriginalMetadata/ome:Value",
+            namespaces=namespaces
+        )
+
+        # Retrieve the text content of MaxSampleValue, if found
+        if max_sample_value:
+            try:
+                max_sample_value = int(max_sample_value[0].text)
+            except:
+                max_sample_value = None
+            return max_sample_value
+        else:
+            return None
+
+    @staticmethod
     def iterate_groups(zarr_obj):
         if 'plate' in zarr_obj.attrs and 'wells' in zarr_obj.attrs['plate']:
             # This is an HCS zarr with plate metadata. Use that to find the series.
@@ -272,7 +288,7 @@ class NGFFReader(Reader):
                            f"r{row_names[attribs['row_index']]['name']}"
                            f"c{column_names[attribs['column_index']]['name']}"
                            f"f{field_idx}"]
-        elif 'OME' in zarr_obj:
+        elif 'XXXOME' in zarr_obj:
             # This is a zarr with OME metadata stored as a group. Grab a series list from this.
             ome_group = zarr_obj['OME']
             if 'series' in ome_group.attrs:

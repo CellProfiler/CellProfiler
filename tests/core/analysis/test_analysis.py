@@ -3,7 +3,6 @@
 
 import logging
 import queue
-import pytest
 import inspect
 import numpy
 import os
@@ -13,8 +12,8 @@ import traceback
 import unittest
 import uuid
 import zmq
-import six.moves
-import six.moves.queue
+import queue
+from io import StringIO
 from importlib.util import find_spec
 
 import cellprofiler_core.constants.measurement
@@ -53,8 +52,8 @@ class TestAnalysis(unittest.TestCase):
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
-            self.queue = six.moves.queue.Queue()
-            self.response_queue = six.moves.queue.Queue()
+            self.request_queue = queue.Queue()
+            self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = None
@@ -68,20 +67,36 @@ class TestAnalysis(unittest.TestCase):
             self.start()
             self.start_signal.acquire()
 
+            logging.root.setLevel(10)
+            if len(logging.root.handlers) == 0:
+                stream_handler = logging.StreamHandler()
+                # fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s: %(message)s")
+                # stream_handler.setFormatter(fmt)
+                logging.root.addHandler(stream_handler)
+
         def __enter__(self):
             return self
 
         def __exit__(self, type, value, traceback):
+            LOGGER.debug("FakeWorker::__exit__ - Stopping the worker")
             self.stop()
-            for socket in self.sockets:
+            LOGGER.debug("FakeWorker::__exit__ - Closing sockets (notify, work, recv_notify, and keepalive)")
+            for i, socket in enumerate(self.sockets):
                 if socket is not None:
+                    LOGGER.debug(f"  FakeWorker::__exit__ - Closing socket {i}")
                     socket.close(linger=0)
-            self.zmq_context.destroy(linger=0)
+                else:
+                    LOGGER.debug(f"  FakeWorker::__exit__ - sockets {i} is None")
+            self.zmq_context.setsockopt(zmq.LINGER, 0)
+            LOGGER.debug("FakeWorker::__exit__ - Destroying zmq context")
+            self.zmq_context.destroy()
 
+            LOGGER.debug("FakeWorker::__exit__ - waiting on join")
             self.join()
+            LOGGER.debug("FakeWorker::__exit__ - did join")
 
         def run(self):
-            LOGGER.info("Client thread starting")
+            LOGGER.info("FakeWorker::run - starting")
             try:
                 self.work_socket = self.zmq_context.socket(zmq.REQ)
                 self.recv_notify_socket = self.zmq_context.socket(zmq.SUB)
@@ -93,18 +108,23 @@ class TestAnalysis(unittest.TestCase):
                 self.start_signal.release()
 
                 while self.keep_going:
+                    LOGGER.debug("FakeWorker::run - keep going, poll for a second")
                     socks = dict(self.poller.poll(1000))
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
                         # Discard whatever comes down the notify socket.
                         # It's only used to wake us up.
+                        LOGGER.debug("FakeWorker::run - Blocking on recv_notify_socket")
                         msg = self.recv_notify_socket.recv()
+                        LOGGER.debug("FakeWorker::run - Received message on recv_notify_socket")
                     while True:
                         try:
                             if not self.keep_going:
+                                LOGGER.debug("FakeWorker::run - keep going is false, breaking")
                                 break
-                            fn_and_args = self.queue.get_nowait()
+                            fn_and_args = self.request_queue.get_nowait()
 
-                        except six.moves.queue.Empty:
+                        except queue.Empty:
+                            LOGGER.debug("FakeWorker::run - queue empty, breaking")
                             break
                         try:
                             response = fn_and_args[0](*fn_and_args[1:])
@@ -113,18 +133,18 @@ class TestAnalysis(unittest.TestCase):
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:
-                LOGGER.warning("Client thread caught exception", exc_info=True)
+                LOGGER.warning("FakeWorker::run - thread caught exception", exc_info=True)
                 self.start_signal.release()
             finally:
-                LOGGER.debug("Client thread exiting")
+                LOGGER.debug("FakeWorker::run - thread exiting")
 
         def stop(self):
             self.keep_going = False
             self.notify_socket.send(b"Stop")
 
         def send(self, req):
-            LOGGER.debug("    Enqueueing send of %s" % str(type(req)))
-            self.queue.put((self.do_send, req))
+            LOGGER.debug("    FakeWorker::send - Enqueueing send of %s" % str(type(req)))
+            self.request_queue.put((self.do_send, req))
             self.notify_socket.send(b"Send")
             return self.recv
 
@@ -140,7 +160,7 @@ class TestAnalysis(unittest.TestCase):
                     )
 
         def do_send(self, req):
-            LOGGER.info("    Sending %s" % str(type(req)))
+            LOGGER.info("    FakeWorker::do_send - Sending %s" % str(type(req)))
             cellprofiler_core.utilities.zmq.communicable.Communicable.send(
                 req, self.work_socket
             )
@@ -161,17 +181,17 @@ class TestAnalysis(unittest.TestCase):
                 self.poller.unregister(self.work_socket)
 
         def recv(self):
-            LOGGER.debug("     Waiting for client thread")
+            LOGGER.debug("     FakeWorker::recv - Waiting for client thread")
             exception, result = self.response_queue.get()
             if exception is not None:
-                LOGGER.debug("    Client thread communicated exception")
+                LOGGER.debug("    FakeWorker::recv - Client thread communicated exception")
                 raise exception
             else:
-                LOGGER.debug("    Client thread communicated result")
+                LOGGER.debug("    FakeWorker::recv - Client thread communicated result")
                 return result
 
         def listen_for_heartbeat(self, address):
-            self.queue.put((self.do_listen_for_heartbeat, address))
+            self.request_queue.put((self.do_listen_for_heartbeat, address))
             self.notify_socket.send(b"Listen for announcements")
             return self.recv
 
@@ -199,7 +219,7 @@ class TestAnalysis(unittest.TestCase):
 
         def connect(self, request_address, analysis_id):
             self.analysis_id = analysis_id
-            self.queue.put((self.do_connect, request_address))
+            self.request_queue.put((self.do_connect, request_address))
             self.notify_socket.send(b"Do connect")
             return self.recv()
 
@@ -223,13 +243,16 @@ class TestAnalysis(unittest.TestCase):
         self.cpinstalled = find_spec("cellprofiler") != None
 
     def tearDown(self):
+        LOGGER.debug("Tearing down")
         self.cancel_analysis()
         if self.measurements_to_close is not None:
             self.measurements_to_close.close()
         if os.path.exists(self.filename):
             os.unlink(self.filename)
+        LOGGER.debug("Tear down complete")
 
     def cancel_analysis(self):
+        LOGGER.debug("Canceling analysis")
         if self.analysis is not None:
             self.analysis.cancel()
             self.analysis = None
@@ -276,12 +299,13 @@ class TestAnalysis(unittest.TestCase):
             ] = group_index
         pipeline = cellprofiler_core.pipeline.Pipeline()
         if self.cpinstalled:
-            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
+            pipeline.loadtxt(StringIO(SBS_PIPELINE), raise_on_error=True)
         else:
-            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE_CORE_ONLY), raise_on_error=True)
+            pipeline.loadtxt(StringIO(SBS_PIPELINE_CORE_ONLY), raise_on_error=True)
         return pipeline, m
 
     def make_pipeline_and_measurements_and_start(self, **kwargs):
+        LOGGER.debug("Making pipeline and measurements, and starting analysis")
         pipeline, m = self.make_pipeline_and_measurements(**kwargs)
         if "status" in kwargs:
             overwrite = False
@@ -296,6 +320,7 @@ class TestAnalysis(unittest.TestCase):
             overwrite = True
         self.analysis = Analysis(pipeline, m)
 
+        LOGGER.debug("Starting Analysis")
         self.analysis.start(
             self.analysis_event_handler, num_workers=0, overwrite=overwrite
         )
@@ -308,6 +333,7 @@ class TestAnalysis(unittest.TestCase):
     def check_display_post_run_requests(self, pipeline):
         """Read the request.DisplayPostRun messages during the post_run phase"""
 
+        LOGGER.debug("check_display_post_run_requests: for all pipeline modules, get from event queue and assert DisplayPostRun request")
         for module in pipeline.modules():
             if (
                 module.show_window
@@ -317,6 +343,7 @@ class TestAnalysis(unittest.TestCase):
                 result = self.event_queue.get()
                 self.assertIsInstance(result, anarequest.DisplayPostRun)
                 self.assertEqual(result.module_num, module.module_num)
+        LOGGER.debug("check_display_post_run_requests: all passed")
 
     def test_01_01_start_and_stop(self):
         LOGGER.debug(
@@ -350,11 +377,14 @@ class TestAnalysis(unittest.TestCase):
 
         with self.FakeWorker() as worker:
             heartbeat_address = self.analysis.runner.boundary.keepalive_address
+            LOGGER.debug("test_02_01: listening for heartbeat")
             response = worker.listen_for_heartbeat(heartbeat_address)()
             from cellprofiler_core.constants.worker import NOTIFY_RUN, NOTIFY_STOP
             assert response == NOTIFY_RUN
 
             def collect_messages(container):
+                LOGGER.debug("test_02_01: spy thred - subscribing to heartbeat")
+                print("test_02_01: spy thread - container contents: ", container)
                 sock = worker.zmq_context.socket(zmq.SUB)
                 sock.setsockopt(zmq.SUBSCRIBE, b"")
                 sock.connect(heartbeat_address)
@@ -362,6 +392,8 @@ class TestAnalysis(unittest.TestCase):
                 poller.register(sock, zmq.POLLIN)
                 while len(container) < 10:
                     msg = poller.poll(2000)
+                    LOGGER.debug("test_02_01: spy thread - polled 2s and got message, adding to")
+                    print("test_02_01 - spy thread - messages is", msg)
                     if msg:
                         container.append(sock.recv())
                     else:
@@ -369,26 +401,43 @@ class TestAnalysis(unittest.TestCase):
 
             messages = []
 
-            spy_thread = threading.Thread(target=collect_messages, args=(messages, ))
+            spy_thread = threading.Thread(target=collect_messages, name="test heartbeat thread", args=(messages, ))
+            LOGGER.debug("test_02_01: starting spy thread, collecting messages")
             spy_thread.start()
+            LOGGER.debug("test_02_01: canceling analysis")
             self.cancel_analysis()
+            LOGGER.debug("test_02_01: joingin on spy thread 2s")
             spy_thread.join(2000)
             assert not spy_thread.is_alive()
+            LOGGER.debug("test_02_01: spy thread is now dead (joined)")
             assert len(messages)
+            LOGGER.debug("test_02_01: messages has length")
             assert messages[-1] == NOTIFY_STOP
+            LOGGER.debug("test_02_01: the last message has NOTIFY_STOP")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_03_01_get_work(self):
+        LOGGER.debug(
+            "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_03_01: connecting worker to boundary request addr, with analysis_id")
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            print("test_03_01 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
+            LOGGER.debug("test_03_01: sending work to worker")
             response = worker.send(anarequest.Work(worker.analysis_id))()
+            LOGGER.debug("test_03_01: got work response from worker")
             self.assertIsInstance(response, anareply.Work)
+            LOGGER.debug("test_03_01: wwork response valid")
             self.assertSequenceEqual(response.image_set_numbers, (1,))
+            LOGGER.debug("test_03_01: image set nuber valid")
             self.assertFalse(response.worker_runs_post_group)
+            LOGGER.debug("test_03_01: worker does not run post group")
             self.assertTrue(response.wants_dictionary)
+            LOGGER.debug("test_03_01: worker wants dictionary")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -400,11 +449,18 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_03_02: connecting worker to boundary request addr with analysis id")
+            print("test_03_02 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_03_02: sending work request to worker")
             response = worker.send(anarequest.Work(worker.analysis_id))()
+            LOGGER.debug("test_03_02: got repsonse from worker")
             self.assertIsInstance(response, anareply.Work)
+            LOGGER.debug("test_03_02: repsonse is Work repsonse, sending another work request")
             response = worker.send(anarequest.Work(worker.analysis_id))()
+            LOGGER.debug("test_03_02: got response second time")
             self.assertIsInstance(response, anareply.NoWork)
+            LOGGER.debug("test_03_02: second response is NoWork")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -416,9 +472,14 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_03_03: connecting worker to boundary request addr with analysis id")
+            print("test_03_03 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_03_03: canceling analysis before work")
             self.cancel_analysis()
+            LOGGER.debug("test_03_03: finished canceling analysis")
             assert self.analysis is None
+            LOGGER.debug("test_03_03: analysis is none")
             # The boundary thread used to spin eternally and reply with
             # BoundaryExited if analysis was cancelled. From CP5 it'll shut
             # down with the workers and so any open sockets will be closed.
@@ -450,7 +511,7 @@ class TestAnalysis(unittest.TestCase):
     #         #
     #         client_pipeline = cellprofiler_core.pipeline.Pipeline()
     #         pipeline_txt = response.pipeline_blob.tostring()
-    #         client_pipeline.loadtxt(six.moves.StringIO(pipeline_txt),
+    #         client_pipeline.loadtxt(StringIO(pipeline_txt),
     #                                 raise_on_error=True)
     #         self.assertEqual(len(pipeline.modules()),
     #                          len(client_pipeline.modules()))
@@ -482,8 +543,12 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_04_02: connecting worker to boundary request addr with analysis id")
+            print("test_04_02 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_04_02: connected, sending worker InitialMeasurments request")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_04_02: got response, loading the measurments form buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -491,14 +556,18 @@ class TestAnalysis(unittest.TestCase):
                 assert isinstance(
                     client_measurements, cellprofiler_core.measurement.Measurements
                 )
+                LOGGER.debug("test_04_02: measurements received are indeed measurements")
                 assert isinstance(m, cellprofiler_core.measurement.Measurements)
+                LOGGER.debug("test_04_02: the measurments we sent were measurements too")
                 self.assertSequenceEqual(
                     m.get_image_numbers(), client_measurements.get_image_numbers()
                 )
+                LOGGER.debug("test_04_02: image set numbers are correct")
                 image_numbers = m.get_image_numbers()
                 self.assertCountEqual(
                     m.get_object_names(), client_measurements.get_object_names()
                 )
+                LOGGER.debug("test_04_02: image numbers are correct")
                 for object_name in m.get_object_names():
                     self.assertCountEqual(
                         m.get_feature_names(object_name),
@@ -517,11 +586,16 @@ class TestAnalysis(unittest.TestCase):
                                 self.assertEqual(sv, cv)
                             else:
                                 numpy.testing.assert_almost_equal(sv, cv)
+                LOGGER.debug("test_04_02: for all objets, and all features per object, and all image numbers per object, they are correct")
             finally:
                 client_measurements.close()
+                LOGGER.debug("test_04_02: closed measurements")
                 LOGGER.debug(
                     "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
                 )
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_04_03_interaction(self):
         LOGGER.debug(
@@ -529,17 +603,27 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_04_03: connecting worker to boundary request addr with analysis id")
+            print("test_04_03 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_04_03: sending worker Interaction request with foo=bar, expecting fn reply back")
             fn_interaction_reply = worker.send(
                 anarequest.Interaction(worker.analysis_id, foo="bar")
             )
+            LOGGER.debug("test_04_03: received a fn reply, getting from event queue")
             request = self.event_queue.get()
+            LOGGER.debug("test_04_03: got request from event queue")
             self.assertIsInstance(request, anarequest.Interaction)
+            LOGGER.debug("test_04_03: event queue request is an Interaction request")
             self.assertEqual(request.foo, "bar")
+            LOGGER.debug("test_04_03: requst's foo is bar, replying with hello=world Interaction reply")
             request.reply(anareply.Interaction(hello="world"))
+            LOGGER.debug("test_04_03: invoking the fn reply from before and getting a reply")
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Interaction)
+            LOGGER.debug("test_04_03: the reply from fn is Interaction")
             self.assertEqual(reply.hello, "world")
+            LOGGER.debug("test_04_03: reply's hello is world")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -550,20 +634,29 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_04_04_01: connecting worker to boundary request addr with analysis id")
+            print("test_04_04_01 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_04_04_01: sending worker Display request, with foo=bar, expecting a fn reply back")
             fn_interaction_reply = worker.send(
                 anarequest.Display(worker.analysis_id, foo="bar")
             )
             #
             # The event queue should be hooked up to the interaction callback
             #
+            LOGGER.debug("test_04_04_01: getting request from event queue")
             request = self.event_queue.get()
             self.assertIsInstance(request, anarequest.Display)
+            LOGGER.debug("test_04_04_01: event queue request is Display request")
             self.assertEqual(request.foo, "bar")
+            LOGGER.debug("test_04_04_01: event queue Display request's foo is bar, replying with Ack, with message as Gimme Pony")
             request.reply(anareply.Ack(message="Gimme Pony"))
+            LOGGER.debug("test_04_04_01: invoking fn reply from before")
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Ack)
+            LOGGER.debug("test_04_04_01: fn reply is indeed Ack")
             self.assertEqual(reply.message, "Gimme Pony")
+            LOGGER.debug("test_04_04_01: fn reply message is indeed Gimme Pony")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -574,21 +667,31 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_04_04_02: connecting worker to boundary request addr with analysis id")
+            print("test_04_04_02 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_04_04_02: sending worker DisplayPostGroup request, with 1 dict(foo=bar) and 3, expecting fn reply back")
             fn_interaction_reply = worker.send(
                 anarequest.DisplayPostGroup(worker.analysis_id, 1, dict(foo="bar"), 3)
             )
+            LOGGER.debug("test_04_04_02: got fn reply back, getting request from event queue")
             #
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
+            LOGGER.debug("test_04_04_02: got event queue request")
             self.assertIsInstance(request, anarequest.DisplayPostGroup)
+            LOGGER.debug("test_04_04_02: event queue request is indeed DisplayPostGroup")
             display_data = request.display_data
             self.assertEqual(display_data["foo"], "bar")
+            LOGGER.debug("test_04_04_02: DisplayPostGroup's display data's foo is indeed bar, replying with Ack, with message of Gimme Pony")
             request.reply(anareply.Ack(message="Gimme Pony"))
+            LOGGER.debug("test_04_04_02: invoking fn from before")
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Ack)
+            LOGGER.debug("test_04_04_02: reply fn is indeed Ack")
             self.assertEqual(reply.message, "Gimme Pony")
+            LOGGER.debug("test_04_04_02: reply fn message is indeed Gimmme Pony")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -599,8 +702,12 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_04_5: connecting worker to boundary request addr with analysis id")
+            print("test_04_5 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_04_05: constructing fake traceback")
             fake_traceback = ''.join(traceback.format_list(traceback.extract_stack()))
+            LOGGER.debug("test_04_05: sending ExceptionReport request with fake traceback, receiving fn reply")
             fn_interaction_reply = worker.send(
                 anarequest.ExceptionReport(
                     worker.analysis_id,
@@ -616,34 +723,48 @@ class TestAnalysis(unittest.TestCase):
             #
             # The event queue should be hooked up to the interaction callback
             #
+            LOGGER.debug("test_04_05: getting request from event queue")
             request = self.event_queue.get()
             self.assertIsInstance(request, anarequest.ExceptionReport)
+            LOGGER.debug("test_04_05: event queue request is indeed ExceptionReport")
             self.assertEqual(
                 fake_traceback, request.exc_traceback
             )
+            LOGGER.debug("test_04_05: event queue ExceptionReport is as expected")
             self.assertEqual(request.filename, "test_analysis.py")
+            LOGGER.debug("test_04_05: event queue ExceptionReport filename is test_analysis.py; replying with ExceptionPleaseDebug with verification hash corned beef and dispostion 1")
             request.reply(
                 anareply.ExceptionPleaseDebug(
                     disposition=1, verification_hash="corned beef"
                 )
             )
+            LOGGER.debug("test_04_05: invoking reply fn from before")
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.ExceptionPleaseDebug)
+            LOGGER.debug("test_04_05: fn reply is indeed ExceptionPleaseDebug")
             self.assertEqual(reply.verification_hash, "corned beef")
+            LOGGER.debug("test_04_05: fn reply's verification hash is indeed corned beef")
             self.assertEqual(reply.disposition, 1)
+            LOGGER.debug("test_04_05: fn reply's dispostion is indeed 1")
             #
             # Try DebugWaiting and DebugComplete as well
             #
+            LOGGER.debug("test_04_05: for DebugWaiting on 8080 and DebugComplete:")
             for req in (
                 anarequest.DebugWaiting(worker.analysis_id, 8080),
                 anarequest.DebugComplete(worker.analysis_id),
             ):
+                LOGGER.debug("  test_04_05: sending the req, expecting fn reply")
                 fn_interaction_reply = worker.send(req)
+                LOGGER.debug("  test_04_05: getting event queue request")
                 request = self.event_queue.get()
                 self.assertEqual(type(request), type(req))
+                LOGGER.debug("  test_04_05: request is DebugWaiting or DebugComplete, sending ACK")
                 request.reply(anareply.Ack())
+                LOGGER.debug("test_04_05: invoking fn, getting reply")
                 reply = fn_interaction_reply()
                 self.assertIsInstance(reply, anareply.Ack)
+                LOGGER.debug("test_04_05: reply is indeed Ack")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -665,28 +786,36 @@ class TestAnalysis(unittest.TestCase):
         r = numpy.random.RandomState()
         r.seed(51)
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_05_01: connecting worker to boundary request addr with analysis id")
+            print("test_05_01 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_05_01: requesting work from worker, getting response")
             response = worker.request_work()
             dictionaries = [
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
                 for module in pipeline.modules()
             ]
+            LOGGER.debug("test_05_01: sending worker ImageSetSuccessWithDictionary, from constructed dictionary, IIF reply fn")
             response = worker.send(
                 anareply.ImageSetSuccessWithDictionary(
                     worker.analysis_id, response.image_set_numbers[0], dictionaries
                 )
             )()
             self.assertIsInstance(response, anareply.Ack)
+            LOGGER.debug("test_05_01: reply is indeed Ack, requesting additional work")
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [2])
+            LOGGER.debug("test_05_01: reply image set numbers is [2]; sending SharedDictionary, IIF reply fn")
             response = worker.send(anarequest.SharedDictionary(worker.analysis_id))()
             self.assertIsInstance(response, anareply.SharedDictionary)
+            LOGGER.debug("test_05_01: response is indeed SharedDictionary")
             result = response.dictionaries
             self.assertEqual(len(dictionaries), len(result))
             for ed, d in zip(dictionaries, result):
                 self.assertCountEqual(list(ed.keys()), list(d.keys()))
                 for k in list(ed.keys()):
                     numpy.testing.assert_almost_equal(ed[k], d[k])
+            LOGGER.debug("test_05_01: dictionary is correctly constructed")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -701,18 +830,28 @@ class TestAnalysis(unittest.TestCase):
         r = numpy.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
+            LOGGER.debug("test_05_02: connecting worker to boundary request addr with analysis id")
+            print("test_05_02 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_05_02: requesting work from worker")
             response = worker.request_work()
             self.assertTrue(response.worker_runs_post_group)
+            LOGGER.debug("test_05_02: worker does runs post group")
             self.assertFalse(response.wants_dictionary)
+            LOGGER.debug("test_05_02: worker does want dictionary")
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
+            LOGGER.debug("test_05_02: worker image set numbers as expected, [1,2]; sending ImageSetSuccess, IIF response fn")
             response = worker.send(
                 ImageSetSuccess(worker.analysis_id, response.image_set_numbers[0])
             )()
+            LOGGER.debug("test_05_02: not testing previous response; requesting additional work")
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
+            LOGGER.debug("test_05_02: response image set numbers indeed [3,4]")
             self.assertTrue(response.worker_runs_post_group)
+            LOGGER.debug("test_05_02: response indeed runs post group")
             self.assertFalse(response.wants_dictionary)
+            LOGGER.debug("test_05_02: response indeed wants dictionary")
         LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -736,9 +875,14 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_01: connecting worker to boundary request addr with analysis id")
+            print("test_06_01 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_01: requesting work from worker")
             response = worker.request_work()
+            LOGGER.debug("test_06_01: sending worker InitialMeasurements; IIF response fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_01: loading response buf")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -752,6 +896,7 @@ class TestAnalysis(unittest.TestCase):
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
                 for module in pipeline.modules()
             ]
+            LOGGER.debug("test_06_01: sending ImageSetSuccessWithDictionary with constructed dictionary; IIF response fn")
             response = worker.send(
                 anareply.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries
@@ -767,7 +912,9 @@ class TestAnalysis(unittest.TestCase):
                 client_measurements.file_contents(),
                 image_set_numbers=[1],
             )
+            LOGGER.debug("test_06_01: closing ClientMeasurements")
             client_measurements.close()
+            LOGGER.debug("test_06_01: sending MeasurementsReport")
             response_fn = worker.send(req)
 
             self.check_display_post_run_requests(pipeline)
@@ -779,11 +926,15 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_01: getting from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_01: result is indeed event Finished")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_01: result is not cancelled")
             measurements = result.measurements
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
+            LOGGER.debug("test_06_01: result measurments image numbers as expected")
             self.assertEqual(
                 measurements[
                     cellprofiler_core.constants.measurement.IMAGE, IMAGE_FEATURE, 1
@@ -793,8 +944,11 @@ class TestAnalysis(unittest.TestCase):
             numpy.testing.assert_almost_equal(
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
             )
+            LOGGER.debug("test_06_01: result mesurements internals matches expectation")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
-    @pytest.mark.timeout(20)
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #
@@ -812,9 +966,14 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_02: connecting worker to boundary request addr with analysis id")
+            print("test_06_02 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_02: requesting work from worker")
             response = worker.request_work()
+            LOGGER.debug("test_06_02: got response, not doing anything with it, sending worker InitialMeasurements, IIF fn reply")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_02: loading measurements from reply buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -824,10 +983,12 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
+            LOGGER.debug("test_06_02: constructing dictionary")
             dictionaries = [
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
                 for module in pipeline.modules()
             ]
+            LOGGER.debug("test_06_02: sending ImageSetSuccessWithDictionary, with constructed dictionary; IIF fn response")
             response = worker.send(
                 anareply.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries
@@ -839,12 +1000,16 @@ class TestAnalysis(unittest.TestCase):
             # more jobs to do.
             #
             #####################################################
+            LOGGER.debug("test_06_02: for expected jobs 2 and 3:")
             expected_jobs = [2, 3]
             for _ in range(2):
+                LOGGER.debug("  test_06_02: requesting work from worker")
                 response = worker.request_work()
                 image_numbers = response.image_set_numbers
                 self.assertEqual(len(image_numbers), 1)
+                LOGGER.debug("  test_06_02: image set numbers are expected length")
                 self.assertIn(image_numbers[0], expected_jobs)
+                LOGGER.debug("  test_06_02: image set num 0 in expected jobs 2 and 3")
                 expected_jobs.remove(image_numbers[0])
             #####################################################
             #
@@ -852,14 +1017,17 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             objects_measurements = [r.uniform(size=10) for _ in range(3)]
+            LOGGER.debug("test_06_02: for three random object measurements")
             for i, om in enumerate(objects_measurements):
                 image_number = i + 1
                 if image_number > 0:
+                    LOGGER.debug("  test_06_02: first image number - send ImageSetSuccess")
                     worker.send(
                         ImageSetSuccess(
                             worker.analysis_id, image_set_number=image_number
                         )
                     )
+                LOGGER.debug("  test_06_02: construct new Measurements from one returned before")
                 m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
                 m[
                     cellprofiler_core.constants.measurement.IMAGE,
@@ -867,13 +1035,17 @@ class TestAnalysis(unittest.TestCase):
                     image_number,
                 ] = ("Hello %d" % image_number)
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
+                LOGGER.debug("  test_06_02: construct MeasurementsReport request")
                 req = anarequest.MeasurementsReport(
                     worker.analysis_id,
                     m.file_contents(),
                     image_set_numbers=[image_number],
                 )
+                LOGGER.debug("  test_06_02: close measurements")
                 m.close()
+                LOGGER.debug("  test_06_02: send the MeasurementsReport request; IIF reply fn")
                 response = worker.send(req)()
+            LOGGER.debug("test_06_02: close client measurements returned previously")
             client_measurements.close()
             #####################################################
             #
@@ -883,10 +1055,14 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_02: check_display_post_run_requests")
             self.check_display_post_run_requests(pipeline)
+            LOGGER.debug("test_06_02: get from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_02: event queue result is Finished event")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_02: result is not cancelled")
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()), [1, 2, 3])
             for i in range(1, 4):
@@ -900,6 +1076,10 @@ class TestAnalysis(unittest.TestCase):
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                     objects_measurements[i - 1],
                 )
+            LOGGER.debug("test_06_02: result measurements are internally as expected")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_06_03_test_grouped_imagesets(self):
         # Test an analysis of four imagesets in two groups
@@ -920,27 +1100,36 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_03: connecting worker to boundary request addr with analysis id")
+            print("test_06_03 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_03: requesting work from worker")
             response = worker.request_work()
+            LOGGER.debug("test_06_03: ignroing response and sending InitialMeasurements; IIF reply fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_03: loading measurements from response buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
+            LOGGER.debug("test_06_03: sending ImageSetSuccess; IIF reply fn")
             response = worker.send(ImageSetSuccess(worker.analysis_id, 1))()
             #####################################################
             #
             # Get the second group.
             #
             #####################################################
+            LOGGER.debug("test_06_03: requesting second work group")
             response = worker.request_work()
             image_numbers = response.image_set_numbers
             self.assertSequenceEqual(list(image_numbers), [3, 4])
+            LOGGER.debug("test_06_03: got back expected images et numbers [3,4]")
             #####################################################
             #
             # Send the measurement groups
             #
             #####################################################
             objects_measurements = [r.uniform(size=10) for _ in range(4)]
+            LOGGER.debug("test_06_03: sending ImageSetSuccess with image set number 2, 3, and 4")
             for image_number in range(2, 5):
                 worker.send(
                     ImageSetSuccess(worker.analysis_id, image_set_number=image_number)
@@ -963,6 +1152,8 @@ class TestAnalysis(unittest.TestCase):
                 )
                 m.close()
                 response = worker.send(req)()
+            LOGGER.debug("test_06_03: for image numbers in ((1,2),(3,4)): did copy Measurements from client measurements, request MeasurementsReport, close constructed measurements, and sent the MeasurementsReport; IIF reply fn")
+            LOGGER.debug("test_06_03: close client measurements")
             client_measurements.close()
             #####################################################
             #
@@ -972,10 +1163,14 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_03: check_display_post_run_requests")
             self.check_display_post_run_requests(pipeline)
+            LOGGER.debug("test_06_03: get from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_03: event queue result is Finished event")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_03: not cancelled")
             measurements = result.measurements
             self.assertSequenceEqual(
                 list(measurements.get_image_numbers()), [1, 2, 3, 4]
@@ -991,6 +1186,10 @@ class TestAnalysis(unittest.TestCase):
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                     objects_measurements[i - 1],
                 )
+            LOGGER.debug("test_06_03: result measurements internally as expected")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_06_04_test_restart(self):
         # Test a restart of an analysis
@@ -1016,9 +1215,13 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_04: connecting worker to boundary request addr with analysis id")
+            print("test_06_04 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
+            LOGGER.debug("test_06_04: sinding InitialMeasurements to worker; IIF reply fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_04: contructing client measurements from response buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -1028,10 +1231,12 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
+            LOGGER.debug("test_06_04: constructing dictionaries")
             dictionaries = [
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
                 for module in pipeline.modules()
             ]
+            LOGGER.debug("test_06_04: sending ImageSetSuccessWithDictionary with constructed dictionary; IIF reply fn")
             response = worker.send(
                 anareply.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries
@@ -1043,10 +1248,12 @@ class TestAnalysis(unittest.TestCase):
             # the third job.
             #
             #####################################################
+            LOGGER.debug("test_06_04: ignoring previous response; requesting work")
             response = worker.request_work()
             image_numbers = response.image_set_numbers
             self.assertEqual(len(image_numbers), 1)
             self.assertEqual(image_numbers[0], 3)
+            LOGGER.debug("test_06_04: response image set numbers properly structured")
             #####################################################
             #
             # Send the measurement groups
@@ -1074,6 +1281,8 @@ class TestAnalysis(unittest.TestCase):
                 )
                 m.close()
                 response = worker.send(req)()
+            LOGGER.debug("test_06_04: for each image number, object mesurement pair, send ImageSetSuccess, copy client measurements, construct MeasurementsReport, close copied measurements, send MesurementsReport; IIF rply fn")
+            LOGGER.debug("test_06_04: close client mesurements")
             client_measurements.close()
             #####################################################
             #
@@ -1083,10 +1292,14 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_04: check_dipslay_post_run_requests")
             self.check_display_post_run_requests(pipeline)
+            LOGGER.debug("test_06_04: get form event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_04: event queue event is Finished event")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_04: event queue event is not cancelled")
             measurements = result.measurements
             assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             self.assertSequenceEqual(list(measurements.get_image_numbers()), [1, 2, 3])
@@ -1113,6 +1326,10 @@ class TestAnalysis(unittest.TestCase):
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1],
                     )
+            LOGGER.debug("test_06_04: event queue result measurements is as expected")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_06_05_test_grouped_restart(self):
         # Test an analysis of four imagesets in two groups with all but one
@@ -1142,10 +1359,15 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_05: connecting worker to boundary request addr with analysis id")
+            print("test_06_05 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_05: requesting work from worker")
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
+            LOGGER.debug("test_06_05: response image set numbers as expected, sending InitialMeasurements; IIF reply fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_05: loading client measurements from response buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -1153,6 +1375,8 @@ class TestAnalysis(unittest.TestCase):
                 response = worker.send(
                     ImageSetSuccess(worker.analysis_id, image_number)
                 )()
+            LOGGER.debug("test_06_05: for each image number, send ImageSetSuccess; IFF reply fn")
+            LOGGER.debug("test_06_05: construct Measurements from client measurements")
             m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]
             for image_number in (1, 2):
@@ -1164,11 +1388,15 @@ class TestAnalysis(unittest.TestCase):
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = objects_measurements[
                     image_number - 1
                 ]
+            LOGGER.debug("test_06_05: construct MeasurementsReport")
             req = anarequest.MeasurementsReport(
                 worker.analysis_id, m.file_contents(), image_set_numbers=(1, 2)
             )
+            LOGGER.debug("test_06_05: close client measurements")
             m.close()
+            LOGGER.debug("test_06_05: send MeasurementsReport; IFF rply fn")
             response = worker.send(req)()
+            LOGGER.debug("test_06_05: close client measurements")
             client_measurements.close()
             #####################################################
             #
@@ -1178,10 +1406,14 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_05: check_display_post_run_requessts")
             self.check_display_post_run_requests(pipeline)
+            LOGGER.debug("test_06_05: get from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_05: event queue event is Finished")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_05: event queue event is not cancelled")
             measurements = result.measurements
             for i in range(1, 3):
                 self.assertEqual(
@@ -1194,6 +1426,10 @@ class TestAnalysis(unittest.TestCase):
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                     objects_measurements[i - 1],
                 )
+            LOGGER.debug("test_06_05: event queue result measurements is structured as expected")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_06_06_relationships(self):
         #
@@ -1213,10 +1449,15 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_06: connecting worker to boundary request addr with analysis id")
+            print("test_06_06 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address,
                            self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_06: requesting work")
             response = worker.request_work()
+            LOGGER.debug("test_06_06: ignore response, sending InitialMeasuremnts; IFF reply fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
+            LOGGER.debug("test_06_06: load client measurements from response buffer")
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
@@ -1226,15 +1467,18 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
+            LOGGER.debug("test_06_06: create dictionaries")
             dictionaries = [
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
                 for module in pipeline.modules()
             ]
+            LOGGER.debug("test_06_06: send ImageSetSuccessWithDictionary; IFF reply fn")
             response = worker.send(
                 anareply.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries
                 )
             )()
+            LOGGER.debug("test_06_06: mutate client measurements")
             n_objects = 10
             objects_measurements = r.uniform(size=n_objects)
             objects_relationship = r.permutation(n_objects) + 1
@@ -1252,14 +1496,18 @@ class TestAnalysis(unittest.TestCase):
                 numpy.ones(n_objects, int),
                 objects_relationship,
             )
+            LOGGER.debug("test_06_06: create MeasurementsReport from client measurements file contents")
             req = anarequest.MeasurementsReport(
                 worker.analysis_id,
                 client_measurements.file_contents(),
                 image_set_numbers=[1],
             )
+            LOGGER.debug("test_06_06: close client measurements")
             client_measurements.close()
+            LOGGER.debug("test_06_06: send MeasurementsReport")
             response_fn = worker.send(req)
 
+            LOGGER.debug("test_06_06: check_display_post_run")
             self.check_display_post_run_requests(pipeline)
             #####################################################
             #
@@ -1269,9 +1517,12 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_06: get from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_06: event queue event is Finished")
             self.assertFalse(result.cancelled)
+            LOGGER.debug("test_06_06: event queue event is not cancelled")
             measurements = result.measurements
             assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
@@ -1284,6 +1535,7 @@ class TestAnalysis(unittest.TestCase):
             numpy.testing.assert_almost_equal(
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
             )
+            LOGGER.debug("test_06_06: event queue events result measurements are structured as expected, checking relationship groups")
             rg = measurements.get_relationship_groups()
             self.assertEqual(len(rg), 1)
             rk = rg[0]
@@ -1308,6 +1560,10 @@ class TestAnalysis(unittest.TestCase):
                 r[cellprofiler_core.constants.measurement.R_SECOND_OBJECT_NUMBER],
                 objects_relationship,
             )
+            LOGGER.debug("test_06_06: all relationship groups as expected")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
     def test_06_07_worker_cancel(self):
         #
@@ -1327,8 +1583,12 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
+            LOGGER.debug("test_06_07: connecting worker to boundary request addr with analysis id")
+            print("test_06_07 - boundary request addr", self.analysis.runner.boundary.request_address, ", analysis_id", self.analysis.runner.analysis_id)
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
+            LOGGER.debug("test_06_07: requesting work from worker")
             response = worker.request_work()
+            LOGGER.debug("test_06_07: sending InitialMeasurements; IFF reply fn")
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             #####################################################
             #
@@ -1337,10 +1597,17 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
+            LOGGER.debug("test_06_07: sending AnalysisCancel; IFF reply fn")
             response = worker.send(anarequest.AnalysisCancel(worker.analysis_id))()
+            LOGGER.debug("test_06_07: getting from event queue")
             result = self.event_queue.get()
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
+            LOGGER.debug("test_06_07: event queue event is Finished")
             self.assertTrue(result.cancelled)
+            LOGGER.debug("test_06_07: event queue event is cancelled")
+        LOGGER.debug(
+            "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
+        )
 
 # Sample pipeline - should only be used if cellprofiler is installed
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org

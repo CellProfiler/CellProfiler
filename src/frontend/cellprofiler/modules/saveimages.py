@@ -787,7 +787,7 @@ to unexpected behavior like saving in the original input file directory. For saf
                 save_kwargs.update({'imagej':True})
 
             if (image.volumetric or self.tiff_compress.value) and self.file_format.value == FF_TIFF:
-                save_kwargs.update({"compress": 6})
+                save_kwargs.update({"compression": (8, 6)})
 
             if self.file_format.value == FF_H5:
                 save_h5(filename, pixels, volumetric=image.volumetric)

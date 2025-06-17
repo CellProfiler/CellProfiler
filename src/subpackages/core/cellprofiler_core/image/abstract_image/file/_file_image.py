@@ -8,6 +8,8 @@ import urllib.request
 import weakref
 
 import numpy
+from skimage.exposure import rescale_intensity
+from skimage.util import img_as_float32
 
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
@@ -18,7 +20,7 @@ from ....utilities.image import is_matlab_file
 from ....utilities.image import loadmat
 from ....utilities.image import load_data_file
 from ....utilities.image import generate_presigned_url
-from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
+from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES, NO_RESCALE
 from ....utilities.pathname import pathname2url, url2pathname
 
 LOGGER = logging.getLogger(__name__)
@@ -35,7 +37,8 @@ class FileImage(AbstractImage):
         name,
         pathname,
         filename,
-        rescale=True,
+        rescale_range=None, # autoscale by default
+        metadata_rescale=False,
         series=None,
         index=None,
         channel=None,
@@ -51,8 +54,15 @@ class FileImage(AbstractImage):
         :type pathname:
         :param filename: Filename of file or last chunk of URL
         :type filename:
-        :param rescale:
-        :type rescale:
+        :param rescale_range: a 2-tuple of min/max float values dictating the values to manually rescale the image from
+                              if `None`, autorescaling will occur by dtype (if `metadata_rescale` is `False`)
+                              or by values dictated in the image fle header's metadata (if `metadata_rescale` is `True`)
+                              if (None, None) is given, no rescaling will occur (see NO_RESCALE constant), regardless of
+                              image values
+        :type rescale_range: (float, float)
+        :param metadata_rescale: If `True`, rescale the image by the bitdepth values located in image file header's metadata
+                                 (useful for e.g. 12-bit images stored in float16 dtype)
+        :type metadata_rescale: bool
         :param series:
         :type series:
         :param index:
@@ -88,7 +98,12 @@ class FileImage(AbstractImage):
             self.__url = pathname2url(pathname)
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
-        self.rescale = rescale
+        self.__scale = None
+        if rescale_range != None and metadata_rescale != False:
+            LOGGER.error("Cannot specify both rescale_range and metadata_rescale, prioritizing rescale_range")
+            metadata_rescale = False
+        self.__rescale_range = rescale_range
+        self.__metadata_rescale = metadata_rescale
         self.__series = series
         self.__channel = channel
         self.__index = index
@@ -104,7 +119,134 @@ class FileImage(AbstractImage):
         else:
             self.__z = z if z is not None else 0
             self.__t = t if t is not None else 0
-        self.scale = None
+
+    @staticmethod
+    def __validate_rescale_range(rescale_range):
+        if not isinstance(rescale_range, tuple):
+            raise ValueError(f"rescale_range must be a tuple, got {type(rescale_range)}")
+        if len(rescale_range) != 2:
+            raise ValueError("rescale_range must be a tuple of length 2")
+        if rescale_range == NO_RESCALE:
+            return
+        if not isinstance(rescale_range[0], (float, int)):
+            raise ValueError("rescale_range must be a tuple of floats")
+        if not isinstance(rescale_range[1], (float, int)):
+            raise ValueError("rescale_range must be a tuple of floats")
+        if rescale_range[0] > rescale_range[1]:
+            raise ValueError("rescale_range must be min-max")
+
+    @staticmethod
+    def __uint_to_float32(data, wants_inscale=False):
+        scale = float(2**(8*data.dtype.itemsize) - 1)
+        # out_range set to float64 seems wasteful for small types like
+        # [u]int[8,16] (and it is), but it gets us a bit of extra precision
+        # before a final cast to float32, and the internals of
+        # rescale_intensity do it *anyway* (it does np.clip, w/ min/max values
+        # set to float64, causing the img to become float64) so we don't
+        # incur *extra* inefficiencies on top of what skimage is already doing
+        data = rescale_intensity(data, in_range="dtype", out_range="float64").astype("float32")
+        if wants_inscale:
+            return data, scale
+        return data
+
+    @staticmethod
+    def __int_to_float32(data, wants_inscale=False):
+        scale = float(2**(8*data.dtype.itemsize) - 1)
+        data = rescale_intensity(data, in_range="dtype", out_range=(0., 1.)).astype("float32")
+        if wants_inscale:
+            return data, scale
+        return data
+
+    @staticmethod
+    def __float_to_float32(data, wants_inscale=False):
+        # data is normalized float, just cast to 32 bit
+        if data.min() >= 0 and data.max() <= 1:
+            scale = 1.0
+            data = img_as_float32(data)
+        # data is normalized float, but not in [0, 1]
+        # adjust and cast to 32 bit
+        elif data.min() >= -1 and data.max() <= 1:
+            scale = 2.0
+            # a bit nasty to cast to 64,
+            # but it buys us some extra precision until final cast to 32
+            data = (data.astype("float64") + 1) / 2.
+            data = img_as_float32(data)
+        # data is unnormalized, with non-negative values
+        # treat as uint of the same bitdepth and normalize
+        elif data.min() >= 0:
+            scale = float(2**(8*data.dtype.itemsize)-1)
+            data = FileImage.__uint_to_float32(data.astype(f"u{data.dtype.itemsize}"))
+        # data is unnormalized, with negative values
+        # treat as int of the same bitdepth and normalize
+        else:
+            data, scale = FileImage.__int_to_float32(
+                data.astype(f"i{data.dtype.itemsize}"),
+                wants_inscale=True
+            )
+
+        if wants_inscale:
+            return data, scale
+        return data
+
+    @staticmethod
+    def normalize_to_float32(data, in_range=None, wants_inscale=False):
+        '''
+        Convert an array of given data of some type to float32,
+        normalizing it to the range 0-1.
+
+        The scaling IS NOT done such that the data's minimal pixel value
+        is forced to 0. and the maximal pixel value is forced to 1.
+        (i.e. stretching/shrinking the data).
+        Instead, scaling IS done such that relative ranges are preserved
+        (i.e. range of the data wrt range of the data type is kept).
+
+        For example, for unsigned type, the scaling *will not* be
+        data / (max_val - min_val)
+        but rather
+        data / (2^bit_depth - 1)
+
+        The conversion also handles signed types by shifting the data first.
+
+        Finally the conversion handles three conditions present in floating
+        point images:
+        1. Floating point images which already have values inside the range 0-1.
+           In this case, it is simply cast to float32.
+        2. Floating point images which have values normalized inside the range -1-1.
+           In this case, the data is renormalized to the range 0-1, and then cast to float32.
+        3. Floating point values which *represent* signed/unsigned integers but stored as float
+           e.g. ..., -65535.0, -255.0, -1.0, 0.0, 1.0, 65535.0, ...
+           i.e. data that really should be an signed/unsigned integer type, but for whatever
+           reason, are stored as float type.
+           In this case, it is converted to the appropriate integer type first,
+           and then normalized and cast to float32 in the range 0-1.
+
+        param: data - the numpy data to be converted to rescaled and cast as float32
+        param: in_range - `None` for automatic range detection, or a tuple of (min, max)
+                          dictating the range of values in the input data
+                          if equal to (None, None) no rescaling or type converstion will be performed
+        param: wants_inscale - if True, return the rescaled data, and scale factor used to rescale it
+        '''
+
+        if in_range is not None:
+            if in_range == NO_RESCALE:
+                scale = 1.0
+                # do not scale or typecast data
+            if in_range != NO_RESCALE:
+                scale = float(in_range[1] - in_range[0])
+                # see notes above about casting to float64
+                data = rescale_intensity(data.astype("float64"), in_range=in_range, out_range=(0., 1.)).astype("float32")
+        elif numpy.issubdtype(data.dtype, numpy.floating):
+            data, scale = FileImage.__float_to_float32(data, wants_inscale=True)
+        elif numpy.issubdtype(data.dtype, numpy.signedinteger):
+            data, scale = FileImage.__int_to_float32(data, wants_inscale=True)
+        elif numpy.issubdtype(data.dtype, numpy.unsignedinteger):
+            data, scale = FileImage.__uint_to_float32(data, wants_inscale=True)
+        else:
+            raise ValueError(f"Unsupported data type: {data.dtype}")
+
+        if wants_inscale:
+            return data, scale
+        return data
 
     @property
     def series(self):
@@ -143,6 +285,48 @@ class FileImage(AbstractImage):
     @property
     def t(self):
         return self.__t
+
+    @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, scale):
+        if self.__scale is not None:
+            LOGGER.warning(f"Setting scale to {scale} but scale was {self.__scale}")
+        if scale is None:
+            LOGGER.warning(f"Setting scale to None, but scale was {self.__scale}")
+            self.__scale = scale
+        elif isinstance(scale, int):
+            self.__scale = float(scale)
+        elif isinstance(scale, float):
+            self.__scale = scale
+        else:
+            raise ValueError("scale must be a float or int")
+
+    @property
+    def rescale_range(self):
+        return self.__rescale_range
+
+    @rescale_range.setter
+    def rescale_range(self, rescale_range):
+        if rescale_range != None:
+            FileImage.__validate_rescale_range(rescale_range)
+
+        if (self.__rescale_range != None):
+            LOGGER.warning(f"Rescale range was {str(self.__rescale_range)}, now {str(rescale_range)}")
+        self.__rescale_range = rescale_range
+
+
+    @property
+    def metadata_rescale(self):
+        return self.__metadata_rescale
+
+    @metadata_rescale.setter
+    def metadata_rescale(self, metadata_rescale):
+        if not isinstance(metadata_rescale, bool):
+            raise ValueError("metadata_rescale must be a boolean")
+        self.__metadata_rescale = metadata_rescale
 
     def get_reader(self, create=True, volume=False):
         if self.__reader is None and create:
@@ -266,6 +450,7 @@ class FileImage(AbstractImage):
                         hasher.update(buf)
             if rdr is None:
                 return hasher.hexdigest()
+            # TODO - LIS: rdr.md5_hash is unused
             rdr.md5_hash = hasher.hexdigest()
         return rdr.md5_hash
 
@@ -312,23 +497,28 @@ class FileImage(AbstractImage):
 
         self.cache_file()
         channel_names = []
+
+        # .mat and .npy are special cases, intended for flatfield illumination correction images
+        # we do not want to rescale them
         if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
-            self.scale = 1.0
+            self.rescale_range = NO_RESCALE
+            self.__scale = 1.0
         elif is_numpy_file(self.__filename):
             img = load_data_file(self.get_full_name(), numpy.load)
-            self.scale = 1.0
+            self.rescale_range = NO_RESCALE
+            self.__scale = 1.0
         else:
             rdr = self.get_reader()
+            _rescale_range = None
             if numpy.isscalar(self.index) or self.index is None:
-                img, self.scale = rdr.read(
+                img, _rescale_range = rdr.read(
+                    wants_metadata_rescale=True,
                     c=self.channel,
                     z=self.z,
                     t=self.t,
                     series=self.series,
                     index=self.index,
-                    rescale=self.rescale if isinstance(self.rescale, bool) else False,
-                    wants_max_intensity=True,
                     channel_names=channel_names,
                 )
             else:
@@ -345,28 +535,35 @@ class FileImage(AbstractImage):
                 for series, index, channel in zip(
                     series_list, self.index, channel_list
                 ):
-                    img, self.scale = rdr.read(
+                    img, _rescale_range = rdr.read(
+                        wants_metadata_rescale=True,
                         c=channel,
                         z=self.z,
                         t=self.t,
                         series=series,
                         index=index,
-                        rescale=self.rescale if isinstance(self.rescale, bool) else False,
-                        wants_max_intensity=True,
                         channel_names=channel_names,
                     )
                     stack.append(img)
                 img = numpy.dstack(stack)
-        if isinstance(self.rescale, float):
-            # Apply a manual rescale
-            img = img.astype(numpy.float32) / self.rescale
+
+            # if rescale_range is not manually set in __init__
+            # then set it from the metadata, if requested
+            if self.rescale_range is None and self.metadata_rescale:
+                # _rescale_range might stil be None (reader didn't find anything)
+                # but that's okay
+                self.rescale_range = _rescale_range
+
+            img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
+
         self.__image = Image(
             img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
-            scale=self.scale,
+            scale=self.__scale,
             channelstack=img.ndim == 3 and img.shape[-1]>3
         )
+
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             self.__image.channel_names = list(channel_names)
 
@@ -382,34 +579,28 @@ class FileImage(AbstractImage):
 
         # Volume loading is currently limited to tiffs/numpy files only
         if is_numpy_file(self.__filename):
-            data = numpy.load(pathname)
+            img = numpy.load(pathname)
         else:
             reader = self.get_reader(volume=True)
-            data = reader.read_volume(c=self.channel,
-                                      z=self.z,
-                                      t=self.t,
-                                      series=self.series,
-                                      rescale=self.rescale,
-                                      wants_max_intensity=False)
+            img, self.rescale_range = reader.read_volume(
+                wants_metadata_rescale=True,
+                c=self.channel,
+                z=self.z,
+                t=self.t,
+                series=self.series
+            )
 
-        # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
-        if data.dtype in [numpy.int8, numpy.uint8]:
-            self.scale = 255
-        elif data.dtype in [numpy.int16, numpy.uint16]:
-            self.scale = 65535
-        elif data.dtype == numpy.int32:
-            self.scale = 2 ** 32 - 1
-        elif data.dtype == numpy.uint32:
-            self.scale = 2 ** 32
+        if self.metadata_rescale:
+            img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
         else:
-            self.scale = 1
+            img, self.__scale = FileImage.normalize_to_float32(img, wants_inscale=True)
 
         self.__image = Image(
-            image=data,
+            image=img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
             dimensions=3,
-            scale=self.scale,
+            scale=self.__scale,
             spacing=self.__spacing,
         )
 

@@ -675,5 +675,5 @@ def measure_object_size_shape(
         }
         if calculate_advanced:
             features_to_record[ObjectSizeShapeFeatures.F_SOLIDITY.value] = props["solidity"]
-    return features_to_record
+    return features_to_record, props["label"], nobjects
 

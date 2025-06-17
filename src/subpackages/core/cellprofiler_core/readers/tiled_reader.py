@@ -382,7 +382,7 @@ class TiledImageReader(LargeImageReader):
 
         tile = self.__data[level][row_slice, col_slice, channel]
 
-        assert 0 not in tile.shape, f"invalid shape {tile.shape}, from idxs {idxs}"
+        assert 0 not in tile.shape, f"invalid shape {tile.shape}"
 
         return tile
 

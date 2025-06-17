@@ -16,6 +16,7 @@ YES          YES          NO
 """
 
 import numpy
+from cellprofiler_core.constants.measurement import C_SERIES, C_C, C_Z, C_T
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
@@ -50,9 +51,29 @@ class GaussianFilter(ImageProcessing):
 
         x_data = x.pixel_data
 
-        sigma = numpy.divide(self.sigma.value, x.spacing) #library function
+        sigma = numpy.divide(self.sigma.value, x.spacing)
 
-        y_data = gaussianfilter(x_data, sigma=sigma)
+        if workspace.pipeline.tiled():
+            from dask.array import map_blocks
+
+            writer = workspace.get_large_image_writer(x_name)
+            plane_info = images.get_image_plane_info(x_name)
+
+            def tile_run(x_data_tile):
+                return gaussianfilter(x_data_tile, sigma=sigma)
+
+            y_data = map_blocks(tile_run, x_data, chunks=x_data.chunks)
+
+            writer.write_tiled(
+                y_data,
+                series=plane_info[C_SERIES],
+                c=plane_info[C_C],
+                z=plane_info[C_Z],
+                t=plane_info[C_T],
+                xywh=None,
+                channel_names=None)
+        else:
+            y_data = gaussianfilter(x_data, sigma=sigma)
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 

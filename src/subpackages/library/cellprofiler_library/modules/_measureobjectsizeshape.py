@@ -13,6 +13,22 @@ from cellprofiler_library.functions.segmentation import (
     convert_dense_to_label_set,
 )
 
+DEFAULT_INVALID_VALUE_DTYPE = {
+    numpy.float64: numpy.nan,
+    numpy.float32: numpy.nan,
+    numpy.float16: numpy.nan,
+    numpy.uint8: 0,
+    numpy.uint16: 0,
+    numpy.uint32: 0,
+    numpy.uint64: 0,
+    numpy.int8: 0,
+    numpy.int16: 0,
+    numpy.int32: 0,
+    numpy.int64: 0,
+    numpy.bool_: False,
+    numpy.object_: None,
+    numpy.str_: "",
+}
 
 def measureobjectsizeshape(
     objects,
@@ -105,7 +121,7 @@ def measureobjectsizeshape(
         # Overlapping labels
         features_to_record = {}
         for labelmap in labels:
-            buffer = measure_object_size_shape(
+            buffer, measured_labels, nobjects = measure_object_size_shape(
                 labels=labelmap,
                 desired_properties=desired_properties,
                 calculate_zernikes=calculate_zernikes,
@@ -120,11 +136,25 @@ def measureobjectsizeshape(
                 else:
                     features_to_record[f] = m
     else:
-        features_to_record = measure_object_size_shape(
+        features_to_record, measured_labels, nobjects = measure_object_size_shape(
             labels=labels[0],
             desired_properties=desired_properties,
             calculate_zernikes=calculate_zernikes,
             calculate_advanced=calculate_advanced,
             spacing=spacing,
         )
+
+    # ensure that all objects (objects.indices) are represented in the
+    # output, even if they are not present in the label matrix. Fill with nan if missing
+    if len(measured_labels) < nobjects:
+        for i in objects.indices:
+            if i not in measured_labels:
+                for f in features_to_record:
+                    features_to_record[f] = numpy.insert(
+                        features_to_record[f], i-1, DEFAULT_INVALID_VALUE_DTYPE.get(
+                            features_to_record[f].dtype.type, numpy.nan
+                        )
+                    )
+
+
     return features_to_record

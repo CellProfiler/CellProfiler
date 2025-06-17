@@ -1,9 +1,5 @@
-import tifffile
-import zarr
-import numpy
 import dask.array
 from dask.array.core import Array as daskArray
-import xmltodict
 
 from math import ceil
 from typing import TypedDict, Literal, Optional
@@ -20,7 +16,7 @@ from ..constants.image import (
     MD_TILE_SIZE_X,
     MD_TILE_SIZE_Y,
 )
-from ..reader import LargeImageReader
+from ..writer import LargeImageWriter
 
 class Resolution(TypedDict):
     shape: tuple[int, ...]
@@ -60,15 +56,15 @@ class StandardMetadata(TypedDict):
     tile_width: int
     resolutions: dict[int, Resolution]
 
-SUPPORTED_EXTENSIONS = {'.ome.tif', '.ome.tiff'}
+SUPPORTED_EXTENSIONS = {'.ome.zarr'}
 SUPPORTED_SCHEMES = {'file'}
 
-class TiledImageReader(LargeImageReader):
+class TiledImageWriter(LargeImageWriter):
     """
-    Reads tiled/pyramidal ome-tiff images
+    Writes tiled/pyramidal ome-zarr images
     """
 
-    reader_name = "TiledImage"
+    writer_name = "TiledImage"
     variable_revision_number = 1
     supported_filetypes = SUPPORTED_EXTENSIONS
     supported_schemes = SUPPORTED_SCHEMES
@@ -76,10 +72,7 @@ class TiledImageReader(LargeImageReader):
     def __init__(self, image_file):
         self.variable_revision_number = 1
         self.__data = None
-        self.__zarr_data = None
-        self.__store = None
-        self.__lru_cache = None
-        self.__reader = None
+        self.__writer = None
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
@@ -93,8 +86,8 @@ class TiledImageReader(LargeImageReader):
     def __del__(self):
         self.close()
 
-    def __get_reader(self):
-        if self.__reader is None:
+    def __get_writer(self):
+        if self.__writer is None:
             del self.level
             del self.nth
             del self.channel
@@ -108,106 +101,29 @@ class TiledImageReader(LargeImageReader):
                 "col_idx": 2,
             }
 
-            self.__store = tifffile.imread(self.__path, aszarr=True)
-            self.__lru_cache = zarr.LRUStoreCache(self.__store, max_size=2**29)
-            self.__reader = zarr.open(self.__lru_cache, mode='r')
-        return self.__reader
+            self.__writer = None # TODO: not none
+        return self.__writer
 
-    def read_tiled(self,
-                   wants_metadata_rescale=False,
-                   # TODO: LIS - support series,c,z,t,xywh
-                   series=None,
-                   c=None,
-                   z=None,
-                   t=None,
-                   xywh=None,
-                   channel_names=None,
-                   ):
-        """Read from a tiled, pyramdial image file.
-        :param wants_metadata_rescale: if `True`, return a tuple of image and a
-               tuple of (min, max) for range values of image dtype gathered from
-               file metadata; if `False`, returns only the image
+    def write_tiled(self,
+                    data: daskArray,
+                    series=None,
+                    c=None,
+                    z=None,
+                    t=None,
+                    xywh=None,
+                    channel_names=None,
+                    ):
+        """Write a series of planes from the image file. Mimics the Bioformats API
         :param series: series (pyramid level)
-        :param c: read from this channel. `None` = read color image if multichannel
+        :param c: write from this channel. `None` = write color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
-        n.b. either z or t should be "None" to specify which channel to read across.
+        n.b. either z or t should be "None" to specify which channel to write across.
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
-
-        Should return a data array with channel order [Z, ]Y, X[, C]
         """
-        def order_dims(dask_array: dask.array.Array, level: int):
-            dims = self._res[level]["dims"]
-            row_idx = dims.index("height")
-            col_idx = dims.index("width")
-            if "channel" in dims:
-                channel_idx = dims.index("channel")
-            elif "sequence" in dims:
-                channel_idx = dims.index("sequence")
-            else:
-                channel_idx = set(0,1,2).difference((row_idx, col_idx)).pop()
-
-            standard_idxs = (0, 1, 2)
-            assert row_idx != col_idx
-            assert row_idx != channel_idx
-            assert col_idx != channel_idx
-            assert row_idx in standard_idxs
-            assert col_idx in standard_idxs
-            assert channel_idx in standard_idxs
-
-            self.__dim_idxs["row_idx"] = row_idx
-            self.__dim_idxs["col_idx"] = col_idx
-            self.__dim_idxs["channel_idx"] = channel_idx
-
-            if dask_array.ndim == 3:
-                return dask_array.transpose([row_idx, col_idx, channel_idx])
-            if dask_array.ndim == 4:
-                # TODO: LIS - implement volumetric
-                raise NotImplementedError("Not yet implemented")
-            return dask_array
-
-        path = self.file.path
-        if not self.__data or path is None or path != self.__path:
-            reader = self.__get_reader()
-            self.__zarr_data: list[zarr.Array] = [
-                reader[int(dataset["path"])]
-                for dataset in reader.attrs["multiscales"][0]["datasets"]
-            ]
-            self.__data: list[daskArray] = [
-                order_dims(
-                    dask.array.from_zarr(z),
-                    len(self.__zarr_data)-1
-                ) for z in self.__zarr_data
-            ]
-
-        if channel_names is not None:
-            channel_names.extend(self._meta["channel_names"])
-
-        self.level = len(self.__data) - 1 if series is None else series
-        self.channel = self._set_channel(start=0, stop=3, lvl=self.level)
-        self.nth = 0
-
-        level_data = self.__data[self.level]
-        if c is not None and level_data.ndim == 3:
-            level_data = level_data[:,:,c]
-        if c is not None and level_data.ndim == 4:
-            # TODO: LIS - implement volumetric
-            raise NotImplementedError("Not yet implemented")
-
-        if wants_metadata_rescale:
-            dtype = self._meta["dtype"]
-            if numpy.issubdtype(dtype, numpy.integer):
-                info = numpy.iinfo(dtype)
-            elif numpy.issubdtype(dtype, numpy.floating):
-                info = numpy.finfo(dtype)
-            else:
-                raise TypeError(f"Unsupported data type: {dtype}")
-
-            return level_data, (float(info.min), float(info.max))
-
-        return level_data
+        writer = self.__get_writer()
 
     def current_tile(self, all_channels=False):
         nth = self.nth
@@ -290,20 +206,20 @@ class TiledImageReader(LargeImageReader):
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
-        can be read by this reader class.
+        can be read by this writer class.
 
         Return value should be an integer representing suitability:
         -1 - 'I can't read this at all'
-        1 - 'I am the one true reader for this format, don't even bother checking any others'
+        1 - 'I am the one true writer for this format, don't even bother checking any others'
         2 - 'I am well-suited to this format'
         3 - 'I can read this format, but I might not be the best',
         4 - 'I can give it a go, if you must'
 
-        The allow_open parameter dictates whether the reader is permitted to read the file when
+        The allow_open parameter dictates whether the writer is permitted to read the file when
         making this decision. If False the decision should be made using file extension only.
         Any opened files should be closed before returning.
 
-        The volume parameter specifies whether the reader will need to return a 3D array.
+        The volume parameter specifies whether the writer will need to return a 3D array.
         ."""
         if not tiled:
             return -1
@@ -314,17 +230,8 @@ class TiledImageReader(LargeImageReader):
         return -1
 
     def close(self):
-        if self.__lru_cache:
-            self.__lru_cache.invalidate()
-            self.__lru_cache.close()
-        if self.__store:
-            self.__store.close()
-
         self.__data = None
-        self.__zarr_data = None
-        self.__store = None
-        self.__lru_cache = None
-        self.__reader = None
+        self.__writer = None
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
@@ -338,39 +245,20 @@ class TiledImageReader(LargeImageReader):
         del self.channel
         del self.plane
 
-    def get_series_metadata(self):
-        """Should return a dictionary with the following keys:
+
+    def set_series_metadata(self):
+        """Takes a dictionary with the following keys:
         Key names are in cellprofiler_core.constants.image
         MD_SIZE_S - int reflecting the number of series
-        MD_SIZE_Y - list of Y dimension sizes, one element per series.
         MD_SIZE_X - list of X dimension sizes, one element per series.
+        MD_SIZE_Y - list of Y dimension sizes, one element per series.
         MD_SIZE_Z - list of Z dimension sizes, one element per series.
         MD_SIZE_C - list of C dimension sizes, one element per series.
         MD_SIZE_T - list of T dimension sizes, one element per series.
-        MD_SERIES_NAME - list of series names, one element per series.
+        MD_SERIES_NAME - [Optional] list of human-writeable series names, one string per series.
+                                    Must not contain '|' as this is used as a separator for storage.
         """
-        standard_meta = self._meta
-        meta_dict = defaultdict(list)
-
-        series_count = len(standard_meta["resolutions"])
-        meta_dict[MD_SIZE_S] = series_count
-        for i in range(series_count):
-            meta_series = standard_meta["resolutions"][i]
-            meta_series_shape = meta_series["shape"]
-            meta_series_dims = meta_series["dims"]
-
-            meta_dict[MD_SIZE_Z].append(standard_meta["z_size"])
-            meta_dict[MD_SIZE_T].append(standard_meta["t_size"])
-            series_c_idx = meta_series_dims.index("channel")
-            series_y_idx = meta_series_dims.index("height")
-            series_x_idx = meta_series_dims.index("width")
-            meta_dict[MD_SIZE_C].append(meta_series_shape[series_c_idx])
-            meta_dict[MD_SIZE_Y].append(meta_series_shape[series_y_idx])
-            meta_dict[MD_SIZE_X].append(meta_series_shape[series_x_idx])
-            #meta_dict[MD_SERIES_NAME].append(meta_series["name"] or "<no_name>")
-            meta_dict[MD_TILE_SIZE_Y].append(standard_meta["tile_height"])
-            meta_dict[MD_TILE_SIZE_X].append(standard_meta["tile_width"])
-        return meta_dict
+        pass
 
     def _tile_n(self, nth: int, channel: slice = slice(0,1,1), level: int = 0) -> daskArray:
         assert self.__data, "No data read yet (read_tile failed or was never called)"

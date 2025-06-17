@@ -329,7 +329,7 @@ def img_details(request, tmp_path):
 
     yield img_data, path, dtype, divisor, shift, start, stop
 
-    # nothing to cleanup - pytest only keeps last 3 tmpt_pth directories
+    # nothing to cleanup - pytest only keeps last 3 tmp_pth directories
 
 def create_image(reader, path, metadata_rescale=False, rescale_range=None):
     provider = MonochromeImage(

@@ -21,6 +21,8 @@ from packaging.version import Version
 
 import numpy
 
+from cellprofiler_core.utilities.pathname import pathname2url
+
 from . import ImageFile
 from .io import dump as dumpit
 from ..constants.reader import ALL_READERS
@@ -166,6 +168,8 @@ class Pipeline:
         self.__undo_stack = []
         self.__volumetric = False
         self.__tiled = False
+        # file_path_src -> TiledImageWriter
+        self.__tiled_writers = dict()
 
         #
         # Dictionary mapping module objects to a list of image names
@@ -186,6 +190,18 @@ class Pipeline:
 
     def tiled(self):
         return self.__tiled
+
+    def get_tiled_writer(self, file_path):
+        if file_path in self.__tiled_writers:
+            return self.__tiled_writers[file_path]
+        return None
+
+    def set_tiled_writer(self, file_path, writer):
+        if file_path not in self.__tiled_writers:
+            # TODO: LIS - ensure file_path has scheme, path, filename
+            self.__tiled_writers[file_path] =  writer
+        else:
+            raise ValueError(f"{file_path} writer already exists")
 
     def set_needs_headless_extraction(self, value):
         self.__needs_headless_extraction = value
@@ -2465,6 +2481,25 @@ class Pipeline:
     @property
     def file_list(self):
         return self.__file_list
+
+    def get_image_file(self, path_name):
+        """Get ImageFile from file_list by a path name (without protocol/scheme)"""
+        if self.__file_list is None:
+            return None
+        url = pathname2url(path_name)
+        matched_img_files = list(filter(lambda img_file: img_file.url == url, self.__file_list))
+        if len(matched_img_files) == 0:
+            LOGGER.warning(
+                f"No image files matching given path name: \"{path_name}\"",
+                exc_info=True,
+            )
+            return None
+        if len(matched_img_files) > 1:
+            LOGGER.debug(
+                f"Multiple image files matching given path name: \"{path_name}\"",
+                exc_info=True,
+            )
+        return matched_img_files[0]
 
     @property
     def image_plane_details(self):

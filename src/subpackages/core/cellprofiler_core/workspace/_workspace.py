@@ -9,6 +9,8 @@ import h5py
 
 import cellprofiler_core.utilities.measurement
 from ._disposition_changed_event import DispositionChangedEvent
+from ..writers.tiled_writer import TiledImageWriter
+from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from ..constants.measurement import EXPERIMENT
 from ..constants.workspace import DISPOSITION_CONTINUE
 from ..utilities.hdf5_dict import HDF5FileList
@@ -101,6 +103,34 @@ class Workspace:
         """The image set is the set of images currently being processed
         """
         return self.__image_set
+
+    def get_large_image_writer(self, image_name):
+        """Retrieve the writer for temporary large image data"""
+        # Image
+        image = self.image_set.get_image(image_name)
+        # TiledImageWriter or None
+        writer = self.pipeline.get_tiled_writer(image.file_path)
+        if writer is None:
+            # ImageFile
+            image_file = self.pipeline.get_image_file(image.file_path)
+
+            shapes = list(zip(
+                image_file.metadata[MD_SIZE_T],
+                image_file.metadata[MD_SIZE_C],
+                image_file.metadata[MD_SIZE_Z],
+                image_file.metadata[MD_SIZE_Y],
+                image_file.metadata[MD_SIZE_X]
+            ))
+
+            LOGGER.debug(
+                f"Adding tiled image writer for {image.file_path} \
+                - num series: {image_file.metadata[MD_SIZE_S]}"
+            )
+
+            writer = TiledImageWriter(None, shapes)
+
+            self.pipeline.set_tiled_writer(image.file_path, writer)
+        return writer
 
     def set_image_set_for_testing_only(self, image_set_number):
         self.__image_set = self.image_set_list.get_image_set(image_set_number)

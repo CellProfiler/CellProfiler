@@ -15,7 +15,7 @@ def get_length_from_varchar(x):
     return int(m.groups()[0])
 
 
-def make_temporary_file():
+def make_temporary_file(prefix="Cpmeasurements", suffix=".hdf5"):
     """Make a temporary file to use for backing measurements data
 
     returns a file descriptor (that should be closed when done) and a
@@ -29,7 +29,7 @@ def make_temporary_file():
     ):
         temporary_directory = None
     return tempfile.mkstemp(
-        prefix="Cpmeasurements", suffix=".hdf5", dir=temporary_directory
+        prefix=prefix, suffix=suffix, dir=temporary_directory
     )
 
 

@@ -1515,6 +1515,57 @@ class Measurements:
         """
         return {GROUP_NUMBER: self.get_current_image_measurement(GROUP_NUMBER)}
 
+    def __get_image_providers(self, name):
+        from cellprofiler_core.image.abstract_image.file.url._url_image import URLImage
+
+        matching_providers = [
+            p for p in self.__image_providers if p.get_name() == name
+        ]
+        if len(matching_providers) == 0:
+            #
+            # Try looking up the URL in measurements
+            #
+            url_feature_name = "_".join((C_URL, name))
+            series_feature_name = "_".join((C_SERIES, name))
+            index_feature_name = "_".join((C_FRAME, name))
+            if not self.has_feature(IMAGE, url_feature_name):
+                raise ValueError(
+                    "The %s image is missing from the pipeline." % name
+                )
+            # URL should be ASCII only
+            url = str(self.get_current_image_measurement(url_feature_name))
+            if self.has_feature(IMAGE, series_feature_name):
+                series = self.get_current_image_measurement(series_feature_name)
+            else:
+                series = None
+            if self.has_feature(IMAGE, index_feature_name):
+                index = self.get_current_image_measurement(index_feature_name)
+            else:
+                index = None
+            #
+            # XXX (leek): Rescale needs to be bubbled up into
+            #             NamesAndTypes and needs to be harvested
+            #             from LoadImages etc.
+            #             and stored in the measurements.
+            #
+            metadata_rescale = True
+            provider = URLImage(name, url, series, index, metadata_rescale=metadata_rescale)
+            self.__image_providers.append(provider)
+            matching_providers.append(provider)
+
+        return matching_providers
+
+    def get_image_plane_info(self, name):
+        matching_providers = self.__get_image_providers(name)
+        provider = matching_providers[0]
+
+        return {
+            C_SERIES: provider.series,
+            C_C: provider.channel,
+            C_Z: provider.z,
+            C_T: provider.t,
+        }
+
     def get_image(
         self,
         name,
@@ -1532,47 +1583,13 @@ class Measurements:
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from cellprofiler_core.image.abstract_image.file.url._url_image import URLImage
         from cellprofiler_core.image import GrayscaleImage, RGBImage
 
         name = str(name)
         if name in self.__images:
             image = self.__images[name]
         else:
-            matching_providers = [
-                p for p in self.__image_providers if p.get_name() == name
-            ]
-            if len(matching_providers) == 0:
-                #
-                # Try looking up the URL in measurements
-                #
-                url_feature_name = "_".join((C_URL, name))
-                series_feature_name = "_".join((C_SERIES, name))
-                index_feature_name = "_".join((C_FRAME, name))
-                if not self.has_feature(IMAGE, url_feature_name):
-                    raise ValueError(
-                        "The %s image is missing from the pipeline." % name
-                    )
-                # URL should be ASCII only
-                url = str(self.get_current_image_measurement(url_feature_name))
-                if self.has_feature(IMAGE, series_feature_name):
-                    series = self.get_current_image_measurement(series_feature_name)
-                else:
-                    series = None
-                if self.has_feature(IMAGE, index_feature_name):
-                    index = self.get_current_image_measurement(index_feature_name)
-                else:
-                    index = None
-                #
-                # XXX (leek): Rescale needs to be bubbled up into
-                #             NamesAndTypes and needs to be harvested
-                #             from LoadImages etc.
-                #             and stored in the measurements.
-                #
-                metadata_rescale = True
-                provider = URLImage(name, url, series, index, metadata_rescale=metadata_rescale)
-                self.__image_providers.append(provider)
-                matching_providers.append(provider)
+            matching_providers = self.__get_image_providers(name)
             image = matching_providers[0].provide_image(self)
             if cache:
                 self.__images[name] = image

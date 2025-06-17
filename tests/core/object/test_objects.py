@@ -5,17 +5,13 @@ import io
 import centrosome.outline
 import numpy
 import numpy.testing
-import numpy.testing
 import pytest
 import skimage.measure
 
 import cellprofiler_library.functions.segmentation
 import cellprofiler_core.image
-import cellprofiler_core.image
-import cellprofiler_core.object
 import cellprofiler_core.object
 import cellprofiler_core.utilities.core.object
-import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler_core.utilities.hdf5_dict
 
 

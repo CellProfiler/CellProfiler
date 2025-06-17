@@ -3110,7 +3110,7 @@ packages:
   timestamp: 1718985592664
 - pypi: ./src/frontend
   name: cellprofiler
-  version: 5.0.0.dev235
+  version: 5.0.0.dev308
   sha256: 933f0e0ee304bc0e7f7dae4e03872db62ca786478979d90407261060d816145f
   requires_dist:
   - cellprofiler-library>=5.dev0
@@ -3151,7 +3151,7 @@ packages:
   editable: true
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
-  version: 5.0.0.dev241
+  version: 5.0.0.dev314
   sha256: e0497d5a26c74d601d34ad2d38f1b58204cc85de2463e6b40c826f602ba0248f
   requires_dist:
   - cellprofiler-library>=5.dev0

@@ -368,12 +368,25 @@ class Image:
         ancestor that has a path name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
         """
-        if not self.__path_name is None:
+        if self.__path_name is not None:
             return self.__path_name
         elif self.has_parent_image:
             return self.parent_image.path_name
         else:
             return None
+
+    @property
+    def file_path(self):
+        """Path and filename holding this image
+
+        If the image is derived, then return the path name of the first
+        ancestor that has a path name. Return None if the image does not have
+        an ancestor or if no ancestor has a file name.
+        """
+        if self.path_name is None or self.file_name is None:
+            return None
+        # TODO: LIS - os.join
+        return f"{self.path_name}/{self.file_name}"
 
     @property
     def has_channel_names(self):

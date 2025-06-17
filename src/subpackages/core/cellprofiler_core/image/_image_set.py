@@ -5,6 +5,7 @@ import numpy
 from ._grayscale_image import GrayscaleImage
 from ._rgb_image import RGBImage
 from .abstract_image import VanillaImage
+from ..constants.measurement import C_SERIES, C_C, C_Z, C_T
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +30,16 @@ class ImageSet:
         self.number = number
         self.legacy_fields = legacy_fields
         self.image_number = number + 1
+
+    def get_image_plane_info(self, name):
+        provider = self.get_image_provider(name)
+
+        return {
+            C_SERIES: provider.series,
+            C_C: provider.channel,
+            C_Z: provider.z,
+            C_T: provider.t,
+        }
 
     def get_image(
         self,

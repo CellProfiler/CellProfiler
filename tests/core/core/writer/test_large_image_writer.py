@@ -1,14 +1,13 @@
 import os
 import io
 import tests.core
-import cellprofiler_core.pipeline
-import cellprofiler_core.modules.namesandtypes
-import cellprofiler_core.utilities.pathname
-import cellprofiler_core.utilities.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.workspace
-import cellprofiler_core.object
-import cellprofiler_core.writers.tiled_writer
+from cellprofiler_core.utilities.measurement import make_temporary_file
+from cellprofiler_core.utilities.pathname import pathname2url
+from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.pipeline.event import LoadException
+from cellprofiler_core.pipeline import ImageFile, ImagePlane
+from cellprofiler_core.writers.tiled_writer import TiledImageWriter
+from cellprofiler_core.modules.namesandtypes import NamesAndTypes, LOAD_AS_GRAYSCALE_IMAGE, INTENSITY_RESCALING_BY_DATATYPE, ASSIGN_ALL
 import dask.array
 
 
@@ -23,10 +22,10 @@ def get_pipeline():
     with open(pipeline_file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -41,7 +40,7 @@ def make_ipd(url, metadata, series=0, index=0, channel=None):
 
 def run_pipeline():
     pipeline = get_pipeline()
-    url = cellprofiler_core.utilities.pathname.pathname2url(os.path.join(get_data_directory(), "tiled/largeimg.ome.tiff"))
+    url = pathname2url(os.path.join(get_data_directory(), "tiled/largeimg.ome.tiff"))
     pipeline.add_urls([url])
     for module in pipeline.modules():
         module.show_window = False
@@ -53,35 +52,28 @@ def test_01_load_pipeline():
 
     assert len(pipeline.modules()) == 4
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert isinstance(module, NamesAndTypes)
 
-    assert (
-        module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
-    )
-    assert (
-        module.single_load_as_choice
-            == cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
-    )
+    assert (module.assignment_method == ASSIGN_ALL)
+    assert (module.single_load_as_choice == LOAD_AS_GRAYSCALE_IMAGE)
     assert module.single_image_provider.value == "DNA"
 
     assert module.assignments_count.value == 1
-    assert (
-        module.single_rescale_method.value
-            == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
-    )
+    assert (module.single_rescale_method.value == INTENSITY_RESCALING_BY_DATATYPE)
 
     assert module.process_as_tiled.value # "Yes"
     assert not module.process_as_3d.value # "No"
 
 def test_02_ome_tiff_read():
     data = dask.array.random.random((500, 1000), chunks=(500, 500))
-    fd, filepath = cellprofiler_core.utilities.measurement.make_temporary_file(prefix="largeimg", suffix=".ome.zarr")
+    fd, filepath = make_temporary_file(prefix="largeimg", suffix=".ome.zarr")
     os.close(fd)
 
     pipeline, _ = run_pipeline()
+    image_plane_list: list[ImagePlane] = pipeline.image_plane_list
 
-    for plane in pipeline.image_plane_list:
-        file = cellprofiler_core.pipeline.ImageFile(filepath)
-        writer = cellprofiler_core.writers.tiled_writer.TiledImageWriter(file)
+    for plane in image_plane_list:
+        file = ImageFile(filepath)
+        writer = TiledImageWriter(file)
         # provider -> get data
         writer.write_tiled()

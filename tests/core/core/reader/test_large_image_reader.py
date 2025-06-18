@@ -1,13 +1,11 @@
 import os
 import io
 import tests.core
-import cellprofiler_core.pipeline
-import cellprofiler_core.modules.namesandtypes
-import cellprofiler_core.utilities.pathname
-import cellprofiler_core.measurement
-import cellprofiler_core.workspace
-import cellprofiler_core.object
-import dask.array
+from cellprofiler_core.utilities.pathname import pathname2url
+from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.pipeline.event import LoadException
+from cellprofiler_core.pipeline import ImageFile, ImagePlane
+from cellprofiler_core.modules.namesandtypes import NamesAndTypes, LOAD_AS_GRAYSCALE_IMAGE, INTENSITY_RESCALING_BY_DATATYPE, ASSIGN_ALL
 
 
 def get_data_directory():
@@ -21,10 +19,10 @@ def get_pipeline():
     with open(pipeline_file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -42,29 +40,21 @@ def test_01_load_pipeline():
 
     assert len(pipeline.modules()) == 4
     module = pipeline.modules()[2]
-    assert isinstance(module, cellprofiler_core.modules.namesandtypes.NamesAndTypes)
+    assert isinstance(module, NamesAndTypes)
 
-    assert (
-        module.assignment_method == cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
-    )
-    assert (
-        module.single_load_as_choice
-            == cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
-    )
+    assert (module.assignment_method == ASSIGN_ALL)
+    assert (module.single_load_as_choice == LOAD_AS_GRAYSCALE_IMAGE)
     assert module.single_image_provider.value == "DNA"
 
     assert module.assignments_count.value == 1
-    assert (
-        module.single_rescale_method.value
-            == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
-    )
+    assert (module.single_rescale_method.value == INTENSITY_RESCALING_BY_DATATYPE)
 
     assert module.process_as_tiled.value # "Yes"
     assert not module.process_as_3d.value # "No"
 
 def test_02_ome_tiff_read():
     pipeline = get_pipeline()
-    url = cellprofiler_core.utilities.pathname.pathname2url(os.path.join(get_data_directory(), "tiled/largeimg.ome.tiff"))
+    url = pathname2url(os.path.join(get_data_directory(), "tiled/largeimg.ome.tiff"))
     pipeline.add_urls([url])
     for module in pipeline.modules():
         module.show_window = False

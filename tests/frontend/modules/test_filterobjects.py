@@ -29,10 +29,19 @@ TEST_FTR = "my_measurement"
 MISSPELLED_FTR = "m_measurement"
 
 
-def make_workspace(object_dict={}, image_dict={}):
+def make_workspace(object_dict={}, image_dict={}, custom_pipeline=None):
     """Make a workspace for testing FilterByObjectMeasurement"""
     module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    if custom_pipeline:
+        pipeline = custom_pipeline 
+        module.set_module_num(2)
+    else:
+        pipeline = cellprofiler_core.pipeline.Pipeline()
+        module.set_module_num(1)
+    pipeline.add_module(module)
+    # get number of modules in pipeline and set the next module number
+    module_num = len(pipeline.modules())
+    module.set_module_num(module_num + 1)
     object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -339,7 +348,7 @@ def test_filter():
     assert numpy.all(labels.segmented == expected)
 
 
-def test_filter():
+def test_filter_min():
     """Filter objects by min limits"""
     n = 40
     labels = numpy.zeros((10, n * 10), int)
@@ -369,7 +378,7 @@ def test_filter():
     assert numpy.all(labels.segmented == expected)
 
 
-def test_filter():
+def test_filter_max():
     """Filter objects by maximum limits"""
     n = 40
     labels = numpy.zeros((10, n * 10), int)
@@ -513,6 +522,178 @@ def test_renumber_other_object_numbers_reversed_does_not_relate():
     alternates = workspace.object_set.get_objects("my_additional_result")
     assert numpy.all(labels.segmented == expected)
     assert numpy.any(alternates.segmented != expected_alternates)
+
+@pytest.fixture(scope="function")
+def get_images_for_issue_4509():
+    parent_str = """
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00000000333000000000
+        00444440333000000000
+        00444440333000000000
+        00444440333000000000
+        00444440000000000000
+        00000000000000000000
+    """
+
+    child_str = """
+        00000000000000000000
+        01111100002222033330
+        01111100002222033330
+        01111100002222033330
+        01111100002222033330
+        01111100000000000000
+        00000000444440000000
+        05555500444440000000
+        05555500444440000000
+        05555500444440000000
+        05555500444440066660
+        05555500444440066660
+        00000000000000066660
+        00000000000000000000
+    """
+
+    expected_str = """
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00111110000022222000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+    """
+
+    expected_alternates_str = """
+        00000000000000000000
+        01111100002222033330
+        01111100002222033330
+        01111100002222033330
+        01111100002222033330
+        01111100000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+        00000000000000000000
+    """
+
+    def str_to_image(inp_str):
+        inp_str = inp_str.replace(" ", "")
+        inp_str_rows = inp_str.split("\n")
+        inp_str_rows = [i for i in inp_str_rows if i] # remove empty lines
+        return numpy.array([list(i) for i in inp_str_rows], int)
+    parent = str_to_image(parent_str)
+    child = str_to_image(child_str)
+    expected = str_to_image(expected_str)
+    expected_alternates = str_to_image(expected_alternates_str)
+    return parent, child, expected, expected_alternates
+
+
+def test_additional_objects_filter_correctly(get_images_for_issue_4509):
+    # ref: issues/4509
+    parent, child, expected, expected_alternates = get_images_for_issue_4509
+    parent = parent.copy() # needed to avoid mutating the fixture
+    child = child.copy()
+    expected = expected.copy()
+    expected_alternates = expected_alternates.copy()
+
+    custom_pipeline = cellprofiler_core.pipeline.Pipeline()
+    relate_objects_module = cellprofiler.modules.relateobjects.Relate()
+    relate_objects_module.x_name.value = INPUT_OBJECTS
+    relate_objects_module.y_name.value = "my_alternates"
+    relate_objects_module.find_parent_child_distances.value = (
+        cellprofiler.modules.relateobjects.D_NONE
+    )
+    relate_objects_module.wants_per_parent_means.value = False
+    relate_objects_module.set_module_num(1)
+    custom_pipeline.add_module(relate_objects_module)
+    workspace, module = make_workspace(
+        {INPUT_OBJECTS: parent, "my_alternates": child},
+        custom_pipeline=custom_pipeline
+    )
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
+    module.measurements[0].measurement.value = "Number_Object_Number"
+    module.measurements[0].min_limit.value = 0.5
+    module.measurements[0].max_limit.value = 2.5
+    module.add_additional_object()
+    module.additional_objects[0].object_name.value = "my_alternates"
+    module.additional_objects[0].target_name.value = "my_additional_result"
+    module.additional_objects[0].keep_unassociated_objects.value = False
+    m = workspace.measurements
+    m.add_measurement(INPUT_OBJECTS, "Number_Object_Number", [1, 2, 3, 4, 5])
+    relate_objects_module.run(workspace)
+    module.run(workspace)
+    labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+    alternates = workspace.object_set.get_objects("my_additional_result")
+    assert numpy.all(labels.segmented == expected)
+    assert numpy.all(alternates.segmented == expected_alternates)
+
+
+
+def test_additional_objects_filter_correctly_2(get_images_for_issue_4509):
+    # ref: issues/4509
+    _parent, _child, _expected, _expected_alternates = get_images_for_issue_4509
+    parent = _parent.copy() # needed to avoid mutating the fixture
+    child = _child.copy()
+    expected = _expected.copy()
+    expected_alternates = _expected_alternates.copy()
+    expected -= 1
+    expected[expected < 0] = 0
+    expected_alternates -= 1
+    expected_alternates[expected_alternates < 0] = 0
+
+    custom_pipeline = cellprofiler_core.pipeline.Pipeline()
+    relate_objects_module = cellprofiler.modules.relateobjects.Relate()
+    relate_objects_module.x_name.value = INPUT_OBJECTS
+    relate_objects_module.y_name.value = "my_alternates"
+    relate_objects_module.find_parent_child_distances.value = (
+        cellprofiler.modules.relateobjects.D_NONE
+    )
+    relate_objects_module.wants_per_parent_means.value = False
+    relate_objects_module.set_module_num(1)
+    custom_pipeline.add_module(relate_objects_module)
+    workspace, module = make_workspace(
+        {INPUT_OBJECTS: parent, "my_alternates": child},
+        custom_pipeline=custom_pipeline
+    )
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
+    module.measurements[0].measurement.value = "Number_Object_Number"
+    module.measurements[0].min_limit.value = 1.5
+    module.measurements[0].max_limit.value = 2.5
+    module.add_additional_object()
+    module.additional_objects[0].object_name.value = "my_alternates"
+    module.additional_objects[0].target_name.value = "my_additional_result"
+    module.additional_objects[0].keep_unassociated_objects.value = False
+    m = workspace.measurements
+    m.add_measurement(INPUT_OBJECTS, "Number_Object_Number", [1, 2, 3, 4, 5])
+    relate_objects_module.run(workspace)
+    module.run(workspace)
+    labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+    alternates = workspace.object_set.get_objects("my_additional_result")
+    assert numpy.all(labels.segmented == expected)
+    assert numpy.all(alternates.segmented == expected_alternates)
+
+
 
 
 def test_load_v3():

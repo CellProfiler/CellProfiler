@@ -70,6 +70,35 @@ def test_02_ome_tiff_read():
     ...
 
 def test_03_ome_zarr_write():
+    """
+    This tests the ability of a simple pipeline to run in large image mode,
+    and write out a temporary file (.ome.zarr) for subsequent usage.
+
+    The simple pipeline contains the 4 standard modules, and GaussianFilter.
+    The GaussianFilter module should run against the input Dask array,
+    wrap it in a compute graph of performing the gaussian filtering,
+    and write out the results, on disk, to a temporary .ome.zarr file.
+
+    The input image is an .ome.tiff.
+
+    The gaussian filter operation should run one tile at a time
+    (i.e. only a single chunk of the input image is ever in memory).
+
+    The temporary .ome.zarr file should contain the results of having
+    performed gaussian filter on all chunks and pyramid levels.
+
+    The input image has 2 channels, and 2 pyramid levels (series).
+    The z and t dimensions are always size 1.
+    The low resolution level has height and width of 256x256, which
+    is the same as the chunk size, and therefore each of the 2 channels is a single chunk.
+    The high resolution level has height and width of 512x512, which is twice
+    the chunk size in each dimension, and therefore each of the 2 channels has four chunks.
+
+    In total there are 10 chunks.
+
+    The output .ome.zarr should also have 2 series (pyramid levels), 2 channels.
+    The first level should be 256x256, the other should be 512x512.
+    """
     # run the pipeline with the 4 standard modules + GaussianFilter
     # GaussianFilter writes a temp file
     # results of this are what's under test

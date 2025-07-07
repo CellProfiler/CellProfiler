@@ -210,6 +210,60 @@ def test_03_ome_zarr_write_module():
     That should be identical in dimensionality and chunksize to the input image.
     """
     # run the pipeline with the 4 standard modules + GaussianFilter
-    # GaussianFilter writes a temp file
-    # results of this are what's under test
-    ref_pipeline, ref_measurements = run_pipeline("tiled_gaussian")
+    # GaussianFilter writes a temp .ome.zarr file
+    pipeline, measurements = run_pipeline("tiled_gaussian")
+
+    image_plane_list: list[ImagePlane] = pipeline.image_plane_list
+    assert len(image_plane_list) > 0
+
+    source_file_path = image_plane_list[0].path
+
+    # get the TiledImageWriter objects that were instantiated during run
+    writers: dict[str, TiledImageWriter] = pipeline._Pipeline__tiled_writers
+
+    # only one source file was used
+    assert len(writers) == 1
+
+    # TODO: LIS - this is a temp measure for paths starting with ///Users/...
+    if source_file_path not in writers:
+        source_file_path = f"//{source_file_path}"
+
+    assert source_file_path in writers
+
+    # get the associated writer for the source file
+    writer = writers[source_file_path]
+
+    # get the path to the temporary file that was output
+    tmp_file_file_path = writer.file_path
+
+    # ensure the temp file is an .ome.zarr
+    assert tmp_file_file_path.endswith('.ome.zarr')
+
+    # setup a zarr reader for the temp file
+    tmp_file_location = parse_url(tmp_file_file_path, mode="r")
+    tmp_file_reader = Reader(tmp_file_location)
+
+    # nodes generally may include images, labels, etc
+    # we just have pixel data
+    tmp_file_nodes = list(tmp_file_reader())
+    assert len(tmp_file_nodes) >= 1
+
+    # first node should be image pixel data
+    tmp_file_img_node = tmp_file_nodes[0]
+    tmp_file_dask_data = tmp_file_img_node.data
+
+    # ensure there are 2 resolution levels
+    assert len(tmp_file_dask_data) == 2
+
+    # higher resolution
+    assert tmp_file_dask_data[0].shape == (1, 2, 1, 512, 512)
+    assert tmp_file_dask_data[0].dtype == np.float32
+    assert tmp_file_dask_data[0].chunksize == (1, 1, 1, 256, 256)
+    # lower resolution
+    assert tmp_file_dask_data[1].shape == (1, 2, 1, 256, 256)
+    assert tmp_file_dask_data[1].dtype == np.float32
+    assert tmp_file_dask_data[1].chunksize == (1, 1, 1, 256, 256)
+
+    # cleanup
+    for w in writers.values():
+        w.delete()

@@ -13,6 +13,7 @@ import timeit
 import urllib.parse
 import urllib.request
 import requests
+from typing import Union
 
 import uuid
 import weakref
@@ -21,16 +22,8 @@ from packaging.version import Version
 
 import numpy
 
-from cellprofiler_core.utilities.pathname import pathname2url
-
 from . import ImageFile
 from .io import dump as dumpit
-from ..constants.reader import ALL_READERS
-from ..setting.multichoice import ImageNameSubscriberMultiChoice
-from ..setting.subscriber import ImageSubscriber
-from ..setting.subscriber import ImageListSubscriber
-from ..utilities.core.modules import instantiate_module, reload_modules
-from ..utilities.core.pipeline import read_file_list
 from ._listener import Listener
 from .dependency import ImageDependency
 from .dependency import MeasurementDependency
@@ -56,6 +49,7 @@ from .event import RunException
 from .event import URLsAdded
 from .event import URLsCleared
 from .event import URLsRemoved
+from ..constants.reader import ALL_READERS
 from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_LONGBLOB
@@ -91,12 +85,19 @@ from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
 from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
+from ..utilities.core.modules import instantiate_module, reload_modules
+from ..utilities.core.pipeline import read_file_list
+from ..utilities.pathname import pathname2url
+from ..writers.tiled_writer import TiledImageWriter
 from ..image import ImageSetList
 from ..measurement import Measurements
 from ..object import ObjectSet
 from ..preferences import get_always_continue, get_headless
 from ..preferences import get_conserve_memory
 from ..preferences import report_progress
+from ..setting.multichoice import ImageNameSubscriberMultiChoice
+from ..setting.subscriber import ImageSubscriber
+from ..setting.subscriber import ImageListSubscriber
 from ..setting import Measurement
 from ..setting.text import Name
 from ..utilities.measurement import load_measurements
@@ -191,7 +192,7 @@ class Pipeline:
     def tiled(self):
         return self.__tiled
 
-    def get_tiled_writer(self, file_path):
+    def get_tiled_writer(self, file_path: str) -> Union[TiledImageWriter, None]:
         if file_path in self.__tiled_writers:
             return self.__tiled_writers[file_path]
         return None

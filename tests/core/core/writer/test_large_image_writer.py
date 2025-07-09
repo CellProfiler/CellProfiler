@@ -79,6 +79,8 @@ def test_02_ome_zarr_write_manual():
 
     The input image has 2 channels, and 2 pyramid levels (series).
     The z and t dimensions are always size 1.
+    In total there are 4 image sets created.
+
     The low resolution level has height and width of 256x256, which
     is the same as the chunk size, and therefore each of the 2 channels is a single chunk.
     The high resolution level has height and width of 512x512, which is twice
@@ -267,3 +269,25 @@ def test_03_ome_zarr_write_module():
     # cleanup
     for w in writers.values():
         w.delete()
+
+def test_04_ome_zarr_module_to_module():
+    """
+    This tests the ability of a simple pipeline to run in large image mode,
+    write out a temporary file (.ome.zarr) for subsequent usage,
+    read in the contents of htat temporary file in a subsequent module
+    and have it wirte/overrwrite a temporary file of its own.
+
+    The simple pipeline contains the 4 standard modules, and 2 GaussianFilter
+    modules in a row.
+    The first GaussianFilter module should run against the input Dask array,
+    wrap it in a compute graph of performing the gaussian filtering,
+    and write out the results, on disk, to a temporary .ome.zarr file.
+    The second GaussianFilter module should read in the contents of that
+    temporary file, again as a dask graph, do a second pass of gaussian blurring,
+    and overwrite the temporary file with the results.
+
+    The input image is described above in test_02.
+    The output .ome.zarr is the same as described above in test_03,
+    but with the contents being a doubling of the GaussianFilter.
+    """
+    ...

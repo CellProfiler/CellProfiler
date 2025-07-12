@@ -192,6 +192,10 @@ class TiledImageWriter(LargeImageWriter):
             dtype=data.dtype
         )
 
+        # TODO: LIS - I want to be uisng map_blocks -> arr.store
+        # but write would need the x,y chunk index
+        # or better yet to_zarr with regions, but that doesn't work
+        # quite right for an unknown (to me) reason
         for (iy, ix), chunk in numpy.ndenumerate(data.to_delayed()):
             arr = dask.compute(chunk)[0]
             y0 = iy * data.chunks[0][0]

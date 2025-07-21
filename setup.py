@@ -112,7 +112,7 @@ setuptools.setup(
         "deprecation",
         "numpy>=1.18.2",
         "pillow>=7.1.0,<12",
-        "scikit-image>=0.17.2",
+        "scikit-image>=0.17.2,<1",
         "scipy>=1.4.1,!=1.11.0,<2",
     ],
     tests_require=[

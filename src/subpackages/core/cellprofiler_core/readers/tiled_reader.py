@@ -361,7 +361,10 @@ class TiledImageReader(LargeImageReader):
 
             meta_dict[MD_SIZE_Z].append(standard_meta["z_size"])
             meta_dict[MD_SIZE_T].append(standard_meta["t_size"])
-            series_c_idx = meta_series_dims.index("channel")
+            if "channel" in meta_series_dims:
+                series_c_idx = meta_series_dims.index("channel")
+            elif "sequence" in meta_series_dims:
+                series_c_idx = meta_series_dims.index("sequence")
             series_y_idx = meta_series_dims.index("height")
             series_x_idx = meta_series_dims.index("width")
             meta_dict[MD_SIZE_C].append(meta_series_shape[series_c_idx])

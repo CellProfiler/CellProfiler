@@ -1,18 +1,14 @@
 import os
-from pathlib import Path
 import io
-import tempfile
 import tests.core
 from cellprofiler_core.utilities.pathname import pathname2url
 from cellprofiler_core.pipeline import Pipeline
 from cellprofiler_core.pipeline.event import LoadException
-from cellprofiler_core.pipeline import ImageFile, ImagePlane
-from cellprofiler_core.preferences import get_temporary_directory
+from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.image import Image
 from cellprofiler_core.writers.tiled_writer import TiledImageWriter
 from cellprofiler_core.modules.namesandtypes import NamesAndTypes, LOAD_AS_GRAYSCALE_IMAGE, INTENSITY_RESCALING_BY_DATATYPE, ASSIGN_ALL
-from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
-import dask.array
+from cellprofiler_core.constants.image import MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
 import numpy as np
@@ -274,8 +270,8 @@ def test_04_ome_zarr_module_to_module():
     """
     This tests the ability of a simple pipeline to run in large image mode,
     write out a temporary file (.ome.zarr) for subsequent usage,
-    read in the contents of htat temporary file in a subsequent module
-    and have it wirte/overrwrite a temporary file of its own.
+    read in the contents of that temporary file in a subsequent module
+    and have it write/overrwrite a temporary file of its own.
 
     The simple pipeline contains the 4 standard modules, and 2 GaussianFilter
     modules in a row.

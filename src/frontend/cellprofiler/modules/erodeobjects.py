@@ -24,15 +24,13 @@ YES          YES          NO
 """
 
 import numpy
-import scipy.ndimage
-import skimage.measure
-import skimage.morphology
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import StructuringElement, Binary
 
-import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
+from cellprofiler_library.modules._erodeobjects import erode_objects
+from cellprofiler_library.opts.erodeobjects import PreserveMidpoints, RelabelObjects
 
 
 class ErodeObjects(ObjectProcessing):
@@ -94,24 +92,14 @@ label numbers.""",
         y_name = self.y_name.value
         objects = workspace.object_set
         x = objects.get_objects(x_name)
-        dimensions = x.dimensions
         x_data = x.segmented
 
-        contours = cellprofiler.utilities.morphology.morphological_gradient(x_data, self.structuring_element.value)
-        y_data = x_data * (contours == 0)
-
-        if self.preserve_midpoints.value:
-            missing_labels = numpy.setxor1d(x_data, y_data)
-            if self.structuring_element.value_text == "Disk,1":
-                y_data += x_data * numpy.isin(x_data, missing_labels)
-            else:
-                for label in missing_labels:
-                    binary = x_data == label
-                    midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
-                    y_data[midpoint == numpy.max(midpoint)] = label
-
-        if self.relabel_objects.value:
-            y_data = skimage.morphology.label(y_data)
+        y_data = erode_objects(
+            labels=x_data,
+            structuring_element=self.structuring_element.value,
+            preserve_midpoints=PreserveMidpoints.PREVENT_REMOVAL if self.preserve_midpoints.value else PreserveMidpoints.ALLOW_REMOVAL,
+            relabel_objects=RelabelObjects.RELABEL if self.relabel_objects.value else RelabelObjects.KEEP_ORIGINAL
+        )
 
         y = Objects()
         y.segmented = y_data
@@ -122,4 +110,4 @@ label numbers.""",
         if self.show_window:
             workspace.display_data.x_data = x_data
             workspace.display_data.y_data = y_data
-            workspace.display_data.dimensions = dimensions
+            workspace.display_data.dimensions = x.dimensions

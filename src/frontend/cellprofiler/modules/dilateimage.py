@@ -17,7 +17,6 @@ YES          YES          NO
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
 
-import cellprofiler.utilities.morphology
 from ._help import HELP_FOR_STREL
 
 
@@ -46,6 +45,28 @@ class DilateImage(ImageProcessing):
         return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.morphology.dilation
-
-        super(DilateImage, self).run(workspace)
+        from cellprofiler_library.modules._dilateimage import dilate_image
+        
+        x_name = self.x_name.value
+        y_name = self.y_name.value
+        images = workspace.image_set
+        x = images.get_image(x_name)
+        dimensions = x.dimensions
+        x_data = x.pixel_data
+        
+        # Call library function for dilation
+        y_data = dilate_image(
+            image=x_data,
+            structuring_element=self.structuring_element.value
+        )
+        
+        # Create output image and add to workspace
+        from cellprofiler_core.image import Image
+        y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
+        images.add(y_name, y)
+        
+        # Handle display data
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+            workspace.display_data.y_data = y_data
+            workspace.display_data.dimensions = dimensions

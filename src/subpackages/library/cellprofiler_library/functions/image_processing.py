@@ -161,6 +161,40 @@ def morphology_erosion(image: ImageAny, structuring_element: StructuringElement)
     return y_data
 
 
+################################################################################
+# DilateImage
+################################################################################
+
+def morphology_dilation(image, structuring_element):
+    """Apply morphological dilation to an image.
+    
+    Args:
+        image: Input image (2D or 3D)
+        structuring_element: Structuring element for dilation
+        
+    Returns:
+        Dilated image with same dimensions as input
+    """
+    is_strel_2d = structuring_element.ndim == 2
+    is_img_2d = image.ndim == 2
+    
+    if is_strel_2d and not is_img_2d:
+        # Apply 2D structuring element to 3D image planewise
+        y_data = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
+        return y_data
+    
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+    
+    # Apply dilation directly for matching dimensions
+    y_data = skimage.morphology.dilation(image, structuring_element)
+    return y_data
+
+
 def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
 

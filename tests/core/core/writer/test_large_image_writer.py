@@ -9,6 +9,7 @@ from cellprofiler_core.image import Image
 from cellprofiler_core.writers.tiled_writer import TiledImageWriter
 from cellprofiler_core.modules.namesandtypes import NamesAndTypes, LOAD_AS_GRAYSCALE_IMAGE, INTENSITY_RESCALING_BY_DATATYPE, ASSIGN_ALL
 from cellprofiler_core.constants.image import MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
+from cellprofiler_library.modules._gaussianfilter import gaussianfilter
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
 import numpy as np
@@ -35,14 +36,30 @@ def get_pipeline(name):
 
     return pipeline
 
-def run_pipeline(name):
+def setup_pipeline(name):
     pipeline = get_pipeline(name)
     url = pathname2url(os.path.join(get_data_directory(), "tiled/largeimg.ome.tiff"))
     pipeline.add_urls([url])
     for module in pipeline.modules():
         module.show_window = False
+    return pipeline
+
+def run_pipeline(name):
+    pipeline = setup_pipeline(name)
     measurements = pipeline.run()
     return pipeline, measurements
+
+def get_img_set(img_set_num=1):
+    """
+    setup pipeline with just 4 standard modules,
+    run on just provide image set number
+    to read and extract image set data
+    """
+    pipeline = setup_pipeline("tiled")
+    measurements = pipeline.run(image_set_start=img_set_num, image_set_end=img_set_num)
+    img_name: list[str] = measurements.get_names()[0]
+    img: Image = measurements.get_image(img_name)
+    return img.computed_data
 
 def test_01_load_pipeline():
     pipeline = get_pipeline("tiled")
@@ -103,87 +120,90 @@ def test_02_ome_zarr_write_manual():
     # source filepath -> TiledImageWriter instance
     writers: dict[str, TiledImageWriter] = {}
 
-    # for each image plane (single series, single channel)
-    # write out that plane's tiles
-    for i, plane in enumerate(image_plane_list):
-        # should only trigger on the first plane
-        # one writer for all planes from same source file
-        if plane.path not in writers:
-            shapes = list(zip(
-                plane.file.metadata[MD_SIZE_T],
-                plane.file.metadata[MD_SIZE_C],
-                plane.file.metadata[MD_SIZE_Z],
-                plane.file.metadata[MD_SIZE_Y],
-                plane.file.metadata[MD_SIZE_X]
-            ))
-            writers[plane.path] = TiledImageWriter(None, img_shapes=shapes)
+    try:
 
-        # get the writer associated with the source image the plane comes from
-        writer = writers[plane.path]
+        # for each image plane (single series, single channel)
+        # write out that plane's tiles
+        for i, plane in enumerate(image_plane_list):
+            # should only trigger on the first plane
+            # one writer for all planes from same source file
+            if plane.path not in writers:
+                shapes = list(zip(
+                    plane.file.metadata[MD_SIZE_T],
+                    plane.file.metadata[MD_SIZE_C],
+                    plane.file.metadata[MD_SIZE_Z],
+                    plane.file.metadata[MD_SIZE_Y],
+                    plane.file.metadata[MD_SIZE_X]
+                ))
+                writers[plane.path] = TiledImageWriter(None, img_shapes=shapes)
 
-        # setup measurement state to be on current plane
-        image_set_num = i+1
-        measurements = pipeline.run(image_set_start=image_set_num, image_set_end=image_set_num)
+            # get the writer associated with the source image the plane comes from
+            writer = writers[plane.path]
 
-        # the test pipeline should only have a single image name, 'DNA'
-        img_name: list[str] = measurements.get_names()[0]
-        img: Image = measurements.get_image(img_name)
+            # setup measurement state to be on current plane
+            image_set_num = i+1
+            measurements = pipeline.run(image_set_start=image_set_num, image_set_end=image_set_num)
 
-        # directly write out the pixel data of the image plane to the .ome.zarr
-        # the writer should handle the job of reading one chunk into memory,
-        # then writing it out to the .ome.zarr, one at a time
-        writer.write_tiled(
-            img.pixel_data,
-            series=plane.series,
-            c=plane.channel,
-            z=plane.z,
-            t=plane.t,
-            xywh=None,
-            channel_names=None)
+            # the test pipeline should only have a single image name, 'DNA'
+            img_name: list[str] = measurements.get_names()[0]
+            img: Image = measurements.get_image(img_name)
 
-    # only one source file was used
-    assert len(writers) == 1
+            # directly write out the pixel data of the image plane to the .ome.zarr
+            # the writer should handle the job of reading one chunk into memory,
+            # then writing it out to the .ome.zarr, one at a time
+            writer.write_tiled(
+                img.pixel_data,
+                series=plane.series,
+                c=plane.channel,
+                z=plane.z,
+                t=plane.t,
+                xywh=None,
+                channel_names=None)
 
-    # get the source file path
-    source_file_path = list(writers.keys())[0]
+        # only one source file was used
+        assert len(writers) == 1
 
-    # get the associated writer for the source file
-    writer = writers[source_file_path]
+        # get the source file path
+        source_file_path = list(writers.keys())[0]
 
-    # get the path to the temporary file that was output
-    tmp_file_file_path = writer.file_path
+        # get the associated writer for the source file
+        writer = writers[source_file_path]
 
-    # ensure the temp file is an .ome.zarr
-    assert tmp_file_file_path.endswith('.ome.zarr')
+        # get the path to the temporary file that was output
+        tmp_file_path = writer.file_path
 
-    # setup a zarr reader for the temp file
-    tmp_file_location = parse_url(tmp_file_file_path, mode="r")
-    tmp_file_reader = Reader(tmp_file_location)
+        # ensure the temp file is an .ome.zarr
+        assert tmp_file_path.endswith('.ome.zarr')
 
-    # nodes generally may include images, labels, etc
-    # we just have pixel data
-    tmp_file_nodes = list(tmp_file_reader())
-    assert len(tmp_file_nodes) >= 1
+        # setup a zarr reader for the temp file
+        tmp_file_location = parse_url(tmp_file_path, mode="r")
+        tmp_file_reader = Reader(tmp_file_location)
 
-    # first node should be image pixel data
-    tmp_file_img_node = tmp_file_nodes[0]
-    tmp_file_dask_data = tmp_file_img_node.data
+        # nodes generally may include images, labels, etc
+        # we just have pixel data
+        tmp_file_nodes = list(tmp_file_reader())
+        assert len(tmp_file_nodes) >= 1
 
-    # ensure there are 2 resolution levels
-    assert len(tmp_file_dask_data) == 2
+        # first node should be image pixel data
+        tmp_file_img_node = tmp_file_nodes[0]
+        tmp_file_dask_data = tmp_file_img_node.data
 
-    # higher resolution
-    assert tmp_file_dask_data[0].shape == (1, 2, 1, 512, 512)
-    assert tmp_file_dask_data[0].dtype == np.float32
-    assert tmp_file_dask_data[0].chunksize == (1, 1, 1, 256, 256)
-    # lower resolution
-    assert tmp_file_dask_data[1].shape == (1, 2, 1, 256, 256)
-    assert tmp_file_dask_data[1].dtype == np.float32
-    assert tmp_file_dask_data[1].chunksize == (1, 1, 1, 256, 256)
+        # ensure there are 2 resolution levels
+        assert len(tmp_file_dask_data) == 2
 
-    # cleanup
-    for w in writers.values():
-        w.delete()
+        # higher resolution
+        assert tmp_file_dask_data[0].shape == (1, 2, 1, 512, 512)
+        assert tmp_file_dask_data[0].dtype == np.float32
+        assert tmp_file_dask_data[0].chunksize == (1, 1, 1, 256, 256)
+        # lower resolution
+        assert tmp_file_dask_data[1].shape == (1, 2, 1, 256, 256)
+        assert tmp_file_dask_data[1].dtype == np.float32
+        assert tmp_file_dask_data[1].chunksize == (1, 1, 1, 256, 256)
+
+    finally:
+        # cleanup
+        for w in writers.values():
+            w.delete()
 
 def test_03_ome_zarr_write_module():
     """
@@ -207,9 +227,13 @@ def test_03_ome_zarr_write_module():
     The first level should be 256x256, the other should be 512x512.
     That should be identical in dimensionality and chunksize to the input image.
     """
+    # image set 3 is the single-tiled lower resolution, channel 0
+    # used for setting up expectations
+    src_img_data = get_img_set(3)
+
     # run the pipeline with the 4 standard modules + GaussianFilter
     # GaussianFilter writes a temp .ome.zarr file
-    pipeline, measurements = run_pipeline("tiled_gaussian")
+    pipeline, _ = run_pipeline("tiled_gaussian")
 
     image_plane_list: list[ImagePlane] = pipeline.image_plane_list
     assert len(image_plane_list) > 0
@@ -219,59 +243,71 @@ def test_03_ome_zarr_write_module():
     # get the TiledImageWriter objects that were instantiated during run
     writers: dict[str, TiledImageWriter] = pipeline._Pipeline__tiled_writers
 
-    # only one source file was used
-    assert len(writers) == 1
+    try:
+        # only one source file was used
+        assert len(writers) == 1
 
-    # TODO: LIS - this is a temp measure for paths starting with ///Users/...
-    if source_file_path not in writers:
-        source_file_path = f"//{source_file_path}"
+        # TODO: LIS - this is a temp measure for paths starting with ///Users/...
+        if source_file_path not in writers:
+            source_file_path = f"//{source_file_path}"
 
-    assert source_file_path in writers
+        assert source_file_path in writers
 
-    # get the associated writer for the source file
-    writer = writers[source_file_path]
+        # get the associated writer for the source file
+        writer = writers[source_file_path]
 
-    # get the path to the temporary file that was output
-    tmp_file_file_path = writer.file_path
+        # get the path to the temporary file that was output
+        tmp_file_path = writer.file_path
 
-    # ensure the temp file is an .ome.zarr
-    assert tmp_file_file_path.endswith('.ome.zarr')
+        # ensure the temp file is an .ome.zarr
+        assert tmp_file_path.endswith('.ome.zarr')
 
-    # setup a zarr reader for the temp file
-    tmp_file_location = parse_url(tmp_file_file_path, mode="r")
-    tmp_file_reader = Reader(tmp_file_location)
+        # setup a zarr reader for the temp file
+        tmp_file_location = parse_url(tmp_file_path, mode="r")
+        tmp_file_reader = Reader(tmp_file_location)
 
-    # nodes generally may include images, labels, etc
-    # we just have pixel data
-    tmp_file_nodes = list(tmp_file_reader())
-    assert len(tmp_file_nodes) >= 1
+        # nodes generally may include images, labels, etc
+        # we just have pixel data
+        tmp_file_nodes = list(tmp_file_reader())
+        assert len(tmp_file_nodes) >= 1
 
-    # first node should be image pixel data
-    tmp_file_img_node = tmp_file_nodes[0]
-    tmp_file_dask_data = tmp_file_img_node.data
+        # first node should be image pixel data
+        tmp_file_img_node = tmp_file_nodes[0]
+        tmp_file_dask_data = tmp_file_img_node.data
 
-    # ensure there are 2 resolution levels
-    assert len(tmp_file_dask_data) == 2
+        # ensure there are 2 resolution levels
+        assert len(tmp_file_dask_data) == 2
 
-    # higher resolution
-    assert tmp_file_dask_data[0].shape == (1, 2, 1, 512, 512)
-    assert tmp_file_dask_data[0].dtype == np.float32
-    assert tmp_file_dask_data[0].chunksize == (1, 1, 1, 256, 256)
-    # lower resolution
-    assert tmp_file_dask_data[1].shape == (1, 2, 1, 256, 256)
-    assert tmp_file_dask_data[1].dtype == np.float32
-    assert tmp_file_dask_data[1].chunksize == (1, 1, 1, 256, 256)
+        # higher resolution
+        assert tmp_file_dask_data[0].shape == (1, 2, 1, 512, 512)
+        assert tmp_file_dask_data[0].dtype == np.float32
+        assert tmp_file_dask_data[0].chunksize == (1, 1, 1, 256, 256)
+        # lower resolution
+        assert tmp_file_dask_data[1].shape == (1, 2, 1, 256, 256)
+        assert tmp_file_dask_data[1].dtype == np.float32
+        assert tmp_file_dask_data[1].chunksize == (1, 1, 1, 256, 256)
 
-    # cleanup
-    for w in writers.values():
-        w.delete()
+        # ensure that, at the lowest resolution, the gaussian filtering is as expected
+        expected_res = gaussianfilter(src_img_data, sigma=pipeline.modules()[4].sigma.value)
+        actual_res = tmp_file_dask_data[1][0,0,0,:,:].compute()
+        assert np.array_equal(expected_res, actual_res)
+
+        # NOTE: testing the higher resolution is more subtle because
+        # it's tiled, and therefore if using a truly large image it is larger than memory
+        # and even a not-actually-large large image like in this test will have edge effects
+        # unless that is accounted for in the run function, which it is not at time of writing
+
+    finally:
+        # cleanup
+        for w in writers.values():
+            w.delete()
 
 def test_04_ome_zarr_module_to_module():
     """
     This tests the ability of a simple pipeline to run in large image mode,
     write out a temporary file (.ome.zarr) for subsequent usage,
     read in the contents of that temporary file in a subsequent module
-    and have it write/overrwrite a temporary file of its own.
+    and have it write/overwrite a temporary file of its own.
 
     The simple pipeline contains the 4 standard modules, and 2 GaussianFilter
     modules in a row.

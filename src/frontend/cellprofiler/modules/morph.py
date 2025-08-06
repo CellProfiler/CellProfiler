@@ -269,26 +269,30 @@ from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer
 
+from cellprofiler_library.modules._morph import apply_morphological_operations
+from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod
+
 LOGGER = logging.getLogger(__name__)
 
-F_BRANCHPOINTS = "branchpoints"
-F_BRIDGE = "bridge"
-F_CLEAN = "clean"
-F_CONVEX_HULL = "convex hull"
-F_DIAG = "diag"
-F_DISTANCE = "distance"
-F_ENDPOINTS = "endpoints"
-F_FILL = "fill"
-F_HBREAK = "hbreak"
-F_MAJORITY = "majority"
-F_OPENLINES = "openlines"
-F_REMOVE = "remove"
-F_SHRINK = "shrink"
-F_SKELPE = "skelpe"
-F_SPUR = "spur"
-F_THICKEN = "thicken"
-F_THIN = "thin"
-F_VBREAK = "vbreak"
+# Use enum values for backward compatibility
+F_BRANCHPOINTS = MorphFunction.BRANCHPOINTS
+F_BRIDGE = MorphFunction.BRIDGE
+F_CLEAN = MorphFunction.CLEAN
+F_CONVEX_HULL = MorphFunction.CONVEX_HULL
+F_DIAG = MorphFunction.DIAG
+F_DISTANCE = MorphFunction.DISTANCE
+F_ENDPOINTS = MorphFunction.ENDPOINTS
+F_FILL = MorphFunction.FILL
+F_HBREAK = MorphFunction.HBREAK
+F_MAJORITY = MorphFunction.MAJORITY
+F_OPENLINES = MorphFunction.OPENLINES
+F_REMOVE = MorphFunction.REMOVE
+F_SHRINK = MorphFunction.SHRINK
+F_SKELPE = MorphFunction.SKELPE
+F_SPUR = MorphFunction.SPUR
+F_THICKEN = MorphFunction.THICKEN
+F_THIN = MorphFunction.THIN
+F_VBREAK = MorphFunction.VBREAK
 F_ALL = [
     F_BRANCHPOINTS,
     F_BRIDGE,
@@ -310,9 +314,9 @@ F_ALL = [
     F_VBREAK,
 ]
 
-R_ONCE = "Once"
-R_FOREVER = "Forever"
-R_CUSTOM = "Custom"
+R_ONCE = RepeatMethod.ONCE
+R_FOREVER = RepeatMethod.FOREVER
+R_CUSTOM = RepeatMethod.CUSTOM
 R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
 FUNCTION_SETTING_COUNT_V1 = 3
@@ -474,12 +478,15 @@ input for a measurement module."""
         return result
 
     def run(self, workspace):
+        # Parameter extraction
         image = workspace.image_set.get_image(self.image_name.value)
         if image.has_mask:
             mask = image.mask
         else:
             mask = None
         pixel_data = image.pixel_data
+        
+        # Handle color images
         if pixel_data.ndim == 3:
             if any(
                 [
@@ -489,8 +496,21 @@ input for a measurement module."""
             ):
                 LOGGER.warning("Image is color, converting to grayscale")
             pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
+        
+        # Prepare operations list for dispatcher
+        operations_list = []
         for function in self.functions:
-            pixel_data = self.run_function(function, pixel_data, mask)
+            operations_list.append({
+                "function_name": function.function.value,
+                "repeat_count": function.repeat_count,
+                "custom_repeats": function.custom_repeats.value,
+                "rescale_values": function.rescale_values.value
+            })
+        
+        # Single dispatcher call
+        pixel_data = apply_morphological_operations(pixel_data, mask, operations_list)
+        
+        # Handle result
         new_image = Image(pixel_data, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
@@ -524,119 +544,7 @@ input for a measurement module."""
                 sharexy=figure.subplot(0, 0),
             )
 
-    def run_function(self, function, pixel_data, mask):
-        """Apply the function once to the image, returning the result"""
-        count = function.repeat_count
-        function_name = function.function.value
-        custom_repeats = function.custom_repeats.value
 
-        is_binary = pixel_data.dtype.kind == "b"
-
-        if (
-            function_name
-            in (
-                F_BRANCHPOINTS,
-                F_BRIDGE,
-                F_CLEAN,
-                F_DIAG,
-                F_CONVEX_HULL,
-                F_DISTANCE,
-                F_ENDPOINTS,
-                F_FILL,
-                F_HBREAK,
-                F_MAJORITY,
-                F_REMOVE,
-                F_SHRINK,
-                F_SKELPE,
-                F_SPUR,
-                F_THICKEN,
-                F_THIN,
-                F_VBREAK,
-            )
-            and not is_binary
-        ):
-            # Apply a very crude threshold to the image for binary algorithms
-            LOGGER.warning(
-                "Warning: converting image to binary for %s\n" % function_name
-            )
-            pixel_data = pixel_data != 0
-
-        if function_name in (
-            F_BRANCHPOINTS,
-            F_BRIDGE,
-            F_CLEAN,
-            F_DIAG,
-            F_CONVEX_HULL,
-            F_DISTANCE,
-            F_ENDPOINTS,
-            F_FILL,
-            F_HBREAK,
-            F_MAJORITY,
-            F_REMOVE,
-            F_SHRINK,
-            F_SKELPE,
-            F_SPUR,
-            F_THICKEN,
-            F_THIN,
-            F_VBREAK,
-            F_OPENLINES,
-        ):
-            # All of these have an iterations argument or it makes no
-            # sense to iterate
-            if function_name == F_BRANCHPOINTS:
-                return centrosome.cpmorphology.branchpoints(pixel_data, mask)
-            elif function_name == F_BRIDGE:
-                return centrosome.cpmorphology.bridge(pixel_data, mask, count)
-            elif function_name == F_CLEAN:
-                return centrosome.cpmorphology.clean(pixel_data, mask, count)
-            elif function_name == F_CONVEX_HULL:
-                if mask is None:
-                    return centrosome.cpmorphology.convex_hull_image(pixel_data)
-                else:
-                    return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
-            elif function_name == F_DIAG:
-                return centrosome.cpmorphology.diag(pixel_data, mask, count)
-            elif function_name == F_DISTANCE:
-                image = scipy.ndimage.distance_transform_edt(pixel_data)
-                if function.rescale_values.value:
-                    image = image / numpy.max(image)
-                return image
-            elif function_name == F_ENDPOINTS:
-                return centrosome.cpmorphology.endpoints(pixel_data, mask)
-            elif function_name == F_FILL:
-                return centrosome.cpmorphology.fill(pixel_data, mask, count)
-            elif function_name == F_HBREAK:
-                return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
-            elif function_name == F_MAJORITY:
-                return centrosome.cpmorphology.majority(pixel_data, mask, count)
-            elif function_name == F_OPENLINES:
-                return centrosome.cpmorphology.openlines(
-                    pixel_data, linelength=custom_repeats, mask=mask
-                )
-            elif function_name == F_REMOVE:
-                return centrosome.cpmorphology.remove(pixel_data, mask, count)
-            elif function_name == F_SHRINK:
-                return centrosome.cpmorphology.binary_shrink(pixel_data, count)
-            elif function_name == F_SKELPE:
-                return centrosome.cpmorphology.skeletonize(
-                    pixel_data,
-                    mask,
-                    scipy.ndimage.distance_transform_edt(pixel_data)
-                    * centrosome.filter.poisson_equation(pixel_data),
-                )
-            elif function_name == F_SPUR:
-                return centrosome.cpmorphology.spur(pixel_data, mask, count)
-            elif function_name == F_THICKEN:
-                return centrosome.cpmorphology.thicken(pixel_data, mask, count)
-            elif function_name == F_THIN:
-                return centrosome.cpmorphology.thin(pixel_data, mask, count)
-            elif function_name == F_VBREAK:
-                return centrosome.cpmorphology.vbreak(pixel_data, mask)
-            else:
-                raise NotImplementedError(
-                    "Unimplemented morphological function: %s" % function_name
-                )
-            return pixel_data
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting_values of previous revisions to match this one"""
@@ -697,11 +605,11 @@ class MorphSettingsGroup(SettingsGroup):
     @property
     def repeat_count(self):
         """"""  # of times to repeat'''
-        if self.repeats_choice == R_ONCE:
+        if self.repeats_choice.value == R_ONCE:
             return 1
-        elif self.repeats_choice == R_FOREVER:
+        elif self.repeats_choice.value == R_FOREVER:
             return 10000
-        elif self.repeats_choice == R_CUSTOM:
+        elif self.repeats_choice.value == R_CUSTOM:
             return self.custom_repeats.value
         else:
             raise ValueError(
@@ -710,3 +618,5 @@ class MorphSettingsGroup(SettingsGroup):
 
         """The thresholding algorithm to run"""
         return self.threshold_method.value.split(" ")[0]
+
+

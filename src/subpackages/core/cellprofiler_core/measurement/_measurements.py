@@ -144,10 +144,14 @@ class Measurements:
         self.image_set_start = image_set_start
 
         self.__is_first_image = True
-        self.__initialized_explicitly = False
         self.__relationships = set()
         self.__images = {}
         self.__image_providers = []
+        # NOTE: LIS support - derived images need to know their ultimate source
+        # since the source img provider is not a VanillaImage but something
+        # like a URLIimage which has series, plane, channel info needed for writing
+        # out temporary large images with those same coordinates
+        self.__image_name_dag = {}
         self.__image_number_relationships = {}
         if RELATIONSHIP in self.hdf5_dict.top_group:
             rgroup = self.hdf5_dict.top_group[RELATIONSHIP]
@@ -231,15 +235,8 @@ class Measurements:
 
         for object_name, feature, coltype in measurement_columns:
             coltype = fix_type(coltype)
-            if object_name == EXPERIMENT:
-                dims = 0
-            elif object_name == IMAGE:
-                dims = 1
-            else:
-                dims = 2
             self.hdf5_dict.add_object(object_name)
             self.hdf5_dict.add_feature(object_name, feature)
-        self.__initialized_explicitly = True
 
     def next_image_set(self, explicit_image_set_number=None):
         assert explicit_image_set_number is None or explicit_image_set_number > 0
@@ -250,6 +247,7 @@ class Measurements:
         self.__is_first_image = False
         self.__images = {}
         self.__image_providers = []
+        self.__image_name_dag = {}
 
     @property
     def image_set_count(self):
@@ -1555,7 +1553,17 @@ class Measurements:
 
         return matching_providers
 
-    def get_image_plane_info(self, name):
+    def __root_image_name(self, name, recurse_limit=1000):
+        while name in self.__image_name_dag and self.__image_name_dag[name] is not None:
+            recurse_limit -= 1
+            if recurse_limit <= 0:
+                raise RecursionError("Recursion limit hit trying to find root parent image name")
+            name = self.__image_name_dag[name]
+        return name
+
+    def get_image_plane_info(self, name, from_root=True):
+        if from_root:
+            name = self.__root_image_name(name)
         matching_providers = self.__get_image_providers(name)
         provider = matching_providers[0]
 
@@ -1674,6 +1682,7 @@ class Measurements:
         self.get_image_provider(name).release_memory()
         if name in self.__images:
             del self.__images[name]
+        # TODO: LIS - remove from image_name_dag???
 
     def clear_cache(self):
         """Remove all of the cached images"""
@@ -1686,7 +1695,7 @@ class Measurements:
 
     names = property(get_names)
 
-    def add(self, name, image):
+    def add(self, name, image, parent_image_name=None):
         from cellprofiler_core.image import VanillaImage
 
         old_providers = [
@@ -1699,6 +1708,7 @@ class Measurements:
         provider = VanillaImage(name, image)
         self.add_provider(provider)
         self.__images[name] = image
+        self.__image_name_dag[name] = parent_image_name
 
     def set_channel_descriptors(self, channel_descriptors):
         """Write the names and data types of the channel descriptors

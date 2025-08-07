@@ -77,7 +77,7 @@ class GaussianFilter(ImageProcessing):
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 
-        images.add(y_name, y)
+        images.add(y_name, y, parent_image_name=x_name)
 
         if self.show_window:
             workspace.display_data.x_data = x_data

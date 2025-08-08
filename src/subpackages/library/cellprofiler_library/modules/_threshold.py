@@ -1,3 +1,6 @@
+from pydantic import Field, BeforeValidator, validate_call, ConfigDict
+from typing import Optional, Tuple, Annotated, Any, Union
+
 from ..functions.image_processing import (
     get_adaptive_threshold,
     get_global_threshold,
@@ -10,11 +13,8 @@ from ..opts.threshold import (
     AveragingMethod,
     VarianceMethod,
 )
-
 from ..types import ImageGrayscale, ImageGrayscaleMask
 
-from pydantic import BaseModel, Field, BeforeValidator, validate_call, ConfigDict
-from typing import Optional, Tuple, Annotated, Dict, Any, Union
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def threshold(

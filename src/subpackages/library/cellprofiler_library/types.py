@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Optional, Union, Annotated, get_origin, get_args
+from typing import Any, Iterable, Optional, Union, Annotated, get_origin, get_args, Sequence
 from pydantic import Field, AfterValidator
 import numpy as np
 import numpy.typing as npt
@@ -57,12 +57,12 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
         return input_image
     return validate
 
-def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> np.ndarray:
+def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> NDArray[np.generic]:
     if input_image.ndim != 6:
         raise ValueError(f"Expected an array of shape (n, c, z, t, y, x), got {input_image.shape}")
     return input_image  
 
-def validate_object_label_set(label_set: list) -> list:
+def validate_object_label_set(label_set: Sequence[Sequence[Any]]) -> Sequence[Sequence[Any]]:
     # label set is a list of 2 tuples
     for label in label_set:
         if type(label) != tuple or len(label) != 2:
@@ -80,7 +80,7 @@ Image3DGrayscale = Annotated[NDArray[Union[np.float32, np.float64]], Field(descr
 Image3DGrayscaleMask = Annotated[NDArray[np.bool_], Field(description="3D grayscale mask"), AfterValidator(create_type_validator(True, False, False, np.bool_))]
 
 ObjectLabelsDense = Annotated[NDArray[np.int32], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
-ObjectLabelSet = Annotated[list, Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
+ObjectLabelSet = Annotated[Sequence[ObjectLabelsDense], Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
 
 ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

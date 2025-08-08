@@ -11,8 +11,6 @@ from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGra
 from ..opts import threshold as Threshold
 
 
-
-
 def rgb_to_greyscale(image):
     if image.shape[-1] == 4:
         output = skimage.color.rgba2rgb(image)

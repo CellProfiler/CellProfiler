@@ -5,11 +5,10 @@ import centrosome
 import centrosome.threshold
 import scipy
 import matplotlib
-from ..opts import threshold as Threshold
 from typing import Annotated, Any, Optional, Tuple, Callable, Union
-from pydantic import Field, validate_call, BeforeValidator
+from pydantic import Field, BeforeValidator
 from ..types import ImageGrayscale, ImageGrayscaleMask
-
+from ..opts import threshold as Threshold
 
 
 def rgb_to_greyscale(image):
@@ -183,12 +182,12 @@ def get_threshold_robust_background(
     # Check if the averaging method is valid
     if averaging_method not in averaging_method_map:
         raise ValueError(
-            f"{averaging_method} not in 'Mean', 'Median', 'Mode'. "
+            f"{averaging_method} not in {', '.join([e.value for e in Threshold.AveragingMethod])}. "
         )
     # Check if the variance method is valid
     if variance_method not in variance_method_map:
         raise ValueError(
-            f"{variance_method} not in 'standard_deviation', 'median_absolute_deviation'. "
+            f"{variance_method} not in {', '.join([e.value for e in Threshold.VarianceMethod])}. "
         )
     
     average_fn = averaging_method_map[averaging_method]

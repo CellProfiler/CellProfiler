@@ -20,7 +20,6 @@ from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
 from cellprofiler_core.constants.module._identify import TS_GLOBAL
 import cellprofiler_library.modules
 import cellprofiler_library.functions
-
 import tests.frontend.modules
 
 INPUT_IMAGE_NAME = "inputimage"

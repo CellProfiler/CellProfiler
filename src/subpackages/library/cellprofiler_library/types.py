@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Optional, Union, Annotated, get_origin, get_args, Sequence
+from typing import Any, Iterable, Optional, Union, Annotated, get_origin, get_args, Sequence, Tuple
 from pydantic import Field, AfterValidator
 import numpy as np
 import numpy.typing as npt
@@ -62,11 +62,16 @@ def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> NDArra
         raise ValueError(f"Expected an array of shape (n, c, z, t, y, x), got {input_image.shape}")
     return input_image  
 
-def validate_object_label_set(label_set: Sequence[Sequence[Any]]) -> Sequence[Sequence[Any]]:
+def validate_object_label_set(label_set: Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]) -> Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]:
     # label set is a list of 2 tuples
     for label in label_set:
         if type(label) != tuple or len(label) != 2:
             raise ValueError(f"Expected a list of tuples of length 2, got {label}")
+        if type(label[0]) != np.ndarray or type(label[1]) != np.ndarray:
+            raise ValueError(f"Expected a list of tuples of ndarrays, got {label}") 
+        if len(label[0].shape) > 3:
+            # see cellprofiler_library.functions.segmentation._validate_labels
+            raise ValueError(f"Expected labels of shape (y, x) or (z, y, x), got {label[0].shape}")
     return label_set
 
 Image2DColor = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
@@ -79,8 +84,9 @@ Image3DColorMask = Annotated[NDArray[np.bool_], Field(description="3D image with
 Image3DGrayscale = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Union[np.float32, np.float64]))]
 Image3DGrayscaleMask = Annotated[NDArray[np.bool_], Field(description="3D grayscale mask"), AfterValidator(create_type_validator(True, False, False, np.bool_))]
 
+# see cellprofiler_library.functions.segmentation._validate_<type> for more details 
 ObjectLabelsDense = Annotated[NDArray[np.int32], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
-ObjectLabelSet = Annotated[Sequence[ObjectLabelsDense], Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
+ObjectLabelSet = Annotated[Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]], Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
 
 ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

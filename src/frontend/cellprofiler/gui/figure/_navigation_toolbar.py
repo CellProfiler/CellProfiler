@@ -165,17 +165,18 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
         if "Zoom" in self.wx_ids:
             self.ToggleTool(self.wx_ids['Zoom'], False)
         self.__send_mode_change_event()
-        if self._active == 'MEASURE':
+
+        if hasattr(self, "_active") and self._active == 'MEASURE':
             self._active = None
         else:
             self._active = 'MEASURE'
 
-        if self._idPress is not None:
-            self._idPress = self.canvas.mpl_disconnect(self._idPress)
+        if self._id_press is not None:
+            self._id_press = self.canvas.mpl_disconnect(self._id_press)
             self.mode = ''
 
-        if self._idRelease is not None:
-            self._idRelease = self.canvas.mpl_disconnect(self._idRelease)
+        if self._id_release is not None:
+            self._id_release = self.canvas.mpl_disconnect(self._id_release)
             self.mode = ''
 
         if self._active:

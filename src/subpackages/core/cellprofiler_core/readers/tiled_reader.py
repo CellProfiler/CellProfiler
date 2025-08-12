@@ -89,7 +89,6 @@ class TiledImageReader(LargeImageReader):
             del self.nth
             del self.channel
             del self.plane
-            del self.frame
             self.__path = self.file.path 
             self.__cached_meta = None
             self.__cached_full_meta = None
@@ -188,10 +187,14 @@ class TiledImageReader(LargeImageReader):
         # right now just the lowest resolution in the pyramid
         return self.__data[self.level]
 
-    def _tracked_tile(self):
+    def current_tile(self, all_channels=False):
         nth = self.nth
         level = self.level
-        channel = self.channel
+        if all_channels:
+            num_channels = self._res[level]["channels"]
+            channel = slice(0,num_channels,1)
+        else:
+            channel = self.channel
 
         assert nth >= 0
         assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
@@ -204,7 +207,7 @@ class TiledImageReader(LargeImageReader):
         curr_x = nth % self._nx(level)
         if curr_x > 0:
             self.nth = nth - 1
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_right(self):
         nth = self.nth
@@ -212,7 +215,7 @@ class TiledImageReader(LargeImageReader):
         curr_x = nth % self._nx(level)
         if curr_x < (self._nx(level) - 1):
             self.nth = nth + 1
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_up(self):
         nth = self.nth
@@ -220,7 +223,7 @@ class TiledImageReader(LargeImageReader):
         new_nth = nth - self._nx(level)
         if new_nth >= 0:
             self.nth = new_nth
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_down(self):
         nth = self.nth
@@ -228,7 +231,7 @@ class TiledImageReader(LargeImageReader):
         new_nth = nth + self._nx(level)
         if new_nth < self._nn(level):
             self.nth = new_nth
-        return self._tracked_tile()
+        return self.current_tile()
 
     #  down the inverted pyramid (downscale)
     def go_level_up(self):
@@ -244,7 +247,7 @@ class TiledImageReader(LargeImageReader):
 
             self.level = level
             self.nth = new_iy * new_nx + new_ix
-        return self._tracked_tile()
+        return self.current_tile()
 
     # up the inverted pyramid (upscale)
     def go_level_down(self):
@@ -260,7 +263,7 @@ class TiledImageReader(LargeImageReader):
 
             self.level = level
             self.nth = new_iy * new_nx + new_ix
-        return self._tracked_tile()
+        return self.current_tile()
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
@@ -312,7 +315,6 @@ class TiledImageReader(LargeImageReader):
         del self.nth
         del self.channel
         del self.plane
-        del self.frame
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:

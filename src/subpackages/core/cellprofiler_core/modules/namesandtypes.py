@@ -1174,9 +1174,9 @@ requests an object selection.
         for feature, data_type in required.items():
             values = aggregated[feature]
             if data_type == COLTYPE_INTEGER:
-                values = [int(v) for v in values]
+                values = [int(v) if v is not None else v for v in values]
             elif data_type == COLTYPE_FLOAT:
-                values = [float(v) for v in values]
+                values = [float(v) if v is not None else v for v in values]
             m.add_all_measurements("Image", feature, values)
 
     @staticmethod

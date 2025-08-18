@@ -90,3 +90,8 @@ ObjectLabelSet = Annotated[Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]
 
 ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]
+
+ImageAny = Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale]
+
+Image2D = Union[Image2DColor, Image2DGrayscale]
+Image2DMask = Union[Image2DColorMask, Image2DGrayscaleMask]

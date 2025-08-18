@@ -531,3 +531,70 @@ def image_mode_uint16(
     alpha[mask] = 1
     return pixel_data, alpha
 
+################################################################################
+# ErodeObjects
+################################################################################
+
+def erode_objects_with_structuring_element(
+    labels: npt.NDArray,
+    structuring_element: npt.NDArray,
+    preserve_midpoints: bool = True,
+    relabel_objects: bool = False
+) -> npt.NDArray:
+    """Erode objects based on the structuring element provided.
+    
+    This function is similar to the "Shrink" function of ExpandOrShrinkObjects,
+    with two major distinctions:
+    1. ErodeObjects supports 3D objects
+    2. An object smaller than the structuring element will be removed entirely
+       unless preserve_midpoints is enabled.
+    
+    Args:
+        labels: Input labeled objects array
+        structuring_element: Structuring element for erosion operation
+        preserve_midpoints: If True, preserve central pixels to prevent object removal
+        relabel_objects: If True, assign new label numbers to resulting objects
+        
+    Returns:
+        Eroded objects array with same dimensions as input
+    """
+    import cellprofiler.utilities.morphology
+    
+    # Calculate morphological gradient to identify object boundaries
+    contours = cellprofiler.utilities.morphology.morphological_gradient(
+        labels, structuring_element
+    )
+    
+    # Erode by removing pixels at object boundaries (where contours != 0)
+    y_data = labels * (contours == 0)
+    
+    # Preserve midpoints if requested to prevent object removal
+    if preserve_midpoints:
+        missing_labels = numpy.setxor1d(labels, y_data)
+        
+        # Check if structuring element is disk with size 1 (special case optimization)
+        # Check based on the actual array properties since we're dealing with numpy array
+        is_simple_disk = (
+            structuring_element.ndim == 2 and 
+            structuring_element.shape == (3, 3) and
+            numpy.array_equal(structuring_element, skimage.morphology.disk(1))
+        )
+        
+        if is_simple_disk:
+            # For simple disk,1 case, restore missing pixels directly
+            y_data += labels * numpy.isin(labels, missing_labels)
+        else:
+            # For other structuring elements, find and preserve the most central pixels
+            for label in missing_labels:
+                binary = labels == label
+                # Find pixels furthest from the object's edge using distance transform
+                midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
+                # Preserve pixels at maximum distance (most central)
+                y_data[midpoint == numpy.max(midpoint)] = label
+    
+    # Relabel objects if requested
+    if relabel_objects:
+        y_data = skimage.morphology.label(y_data)
+    
+    return y_data
+

@@ -8,9 +8,11 @@ import matplotlib
 import math
 from pydantic import Field, BeforeValidator
 from typing import Annotated, Any, Optional, Tuple, Callable, Union, Sequence
-from ..types import Image2D, ImageAny, ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, Image2DMask
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from ..types import Image2D, ImageAny, ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, Image2DMask, ObjectLabelsDense
 from ..opts import threshold as Threshold
 from cellprofiler_library.opts.crop import RemovalMethod
+
 
 def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
     pd = imag_pixels
@@ -447,6 +449,7 @@ def get_global_threshold(
     threshold_correction_factor: Annotated[float, Field(description="Threshold correction factor")] = 1,
     assign_middle_to_foreground: Annotated[Threshold.Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Threshold.Assignment.FOREGROUND,
     log_transform:               Annotated[bool, Field(description="Log transform")] = False,
+    max_intensity_percentage:    Annotated[float, Field(description="Value to be used when thresholding as a percentage of the maximum intensity")] = 100,
     **kwargs:                    Annotated[Any, Field(description="Additional keyword arguments")],
 ) -> Annotated[float, Field(description="Threshold")]:
     conversion_dict = None
@@ -476,6 +479,8 @@ def get_global_threshold(
         kwargs["nbins"] = kwargs.get("nbins", 128)
         threshold = skimage.filters.threshold_multiotsu(image, **kwargs)
         threshold = threshold[bin_wanted]
+    elif threshold_method.casefold() == Threshold.Method.MAX_INTENSITY_PERCENTAGE:
+        threshold = max_intensity_percentage * numpy.max(image) / 100
     else:
         raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
 
@@ -877,3 +882,75 @@ def erase_pixels(
     else:
         cropped_pixel_data[~crop] = 0
     return cropped_pixel_data
+
+
+################################################################################
+# MeasureColocalization
+################################################################################
+
+def crop_image_similarly(this_image, other_image, this_crop_mask):
+    """Crop a 2-d or 3-d image (other_image) using this image's crop mask
+    crop mask is the binary image used to crop the parent image to the
+    dimensions of the child (this) image. The crop_mask is the same size as
+    the parent image.
+    image - a np.ndarray to be cropped (of any type)
+    """
+    if other_image.shape[:2] == this_image.shape[:2]:
+        # Same size - no cropping needed
+        return other_image
+    if any(
+        [
+            my_size > other_size
+            for my_size, other_size in zip(this_image.shape, other_image.shape)
+        ]
+    ):
+        raise ValueError(
+            "Image to be cropped is smaller: %s vs %s"
+            % (repr(other_image.shape), repr(this_image.shape))
+        )
+    if not this_crop_mask:
+        raise RuntimeError(
+            "Images are of different size and no crop mask available.\n"
+            "Use the Crop and Align modules to match images of different sizes."
+        )
+    cropped_image = crop_image(other_image, this_crop_mask)
+    if cropped_image.shape[0:2] != this_image.shape[0:2]:
+        raise ValueError(
+            "Cropped image is not the same size as the reference image: %s vs %s"
+            % (repr(cropped_image.shape), repr(this_image.shape))
+        )
+    return cropped_image
+
+def apply_threshold_to_objects(
+        image:              Annotated[ImageGrayscale, Field(description="Image to threshold")],
+        segmented:          Annotated[ObjectLabelsDense, Field(description="Object Labels")],
+        threshold_value:    Annotated[float, Field(description="Threshold value")],
+        mask:               Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
+        ) -> Annotated[ImageGrayscaleMask, Field(description="Binary image")]:
+    output_image_arr = numpy.zeros_like(image)
+    if mask is None:
+        # Create a fake mask if one isn't provided
+        mask = numpy.full(segmented.shape, True)
+    assert (image.shape == segmented.shape)
+    mask = (segmented > 0) & mask & (~numpy.isnan(image))
+    segmented = segmented.copy()
+    segmented = segmented[mask]
+    n_objects = len(numpy.unique(segmented))
+    if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
+        #
+        # First get the maximum intensity of each object and create
+        # a 1d array of floats representing the threshold for each object
+        #
+        lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
+        # Threshold as percentage of maximum intensity of objects in each channel
+        scaled_image = (threshold_value / 100) * fix(
+            scipy.ndimage.maximum(image, segmented, lrange)
+        )
+
+        #
+        # Apply the threshold to the image
+        # Use the mask to apply to specific pixels
+        #
+        output_image_arr[mask] = (image >= scaled_image[segmented - 1])        
+
+    return output_image_arr

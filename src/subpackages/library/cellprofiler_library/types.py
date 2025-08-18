@@ -59,7 +59,7 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
 
 def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> NDArray[np.generic]:
     if input_image.ndim != 6:
-        raise ValueError(f"Expected an array of shape (n, c, z, t, y, x), got {input_image.shape}")
+        raise ValueError(f"Expected ObjectLabelsDense as an array of shape (n, c, z, t, y, x), got {input_image.shape}")
     return input_image  
 
 def validate_object_label_set(label_set: Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]) -> Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]:

@@ -1,0 +1,1 @@
+C_GRANULARITY = "Granularity_%s_%s"

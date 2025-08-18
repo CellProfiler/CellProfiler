@@ -6,9 +6,11 @@ import centrosome.threshold
 import scipy
 import matplotlib
 import math
+import centrosome.filter
 from typing import Any, Optional, Tuple, Callable, Union, List
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
 from cellprofiler_library.opts import threshold as Threshold
+from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
@@ -924,3 +926,202 @@ def erase_pixels(
     else:
         cropped_pixel_data[~crop] = 0
     return cropped_pixel_data
+
+
+###############################################################################
+# EnhanceOrSuppressFeatures
+###############################################################################
+
+def __mask(
+        pixel_data: NDArray[numpy.float32],
+        mask:       NDArray[numpy.bool_],
+        ) -> NDArray[numpy.float32]:
+    data = numpy.zeros_like(pixel_data)
+    data[mask] = pixel_data[mask]
+    return data
+
+def __unmask(
+        data:       NDArray[numpy.float64],
+        pixel_data: ImageGrayscale, 
+        mask:       NDArray[numpy.bool_],
+        ) -> NDArray[numpy.float64]:
+    data[~mask] = pixel_data[~mask]
+    return data
+
+def __structuring_element(
+        radius, 
+        volumetric
+        ):
+    if volumetric:
+        return skimage.morphology.ball(radius)
+
+    return skimage.morphology.disk(radius)
+
+
+def enhance_speckles(
+        im_pixel_data:  ImageGrayscale,
+        im_mask:        ImageGrayscaleMask,
+        im_volumetric:  bool,
+        radius:         float,
+        accuracy:       SpeckleAccuracy,
+        ) -> NDArray[numpy.float64]:
+    data = __mask(im_pixel_data, im_mask)
+    footprint = __structuring_element(radius, im_volumetric)
+
+    if accuracy == SpeckleAccuracy.SLOW or radius <= 3:
+        result = skimage.morphology.white_tophat(data, footprint=footprint)
+    else:
+        #
+        # white_tophat = img - opening
+        #              = img - dilate(erode)
+        #              = img - maximum_filter(minimum_filter)
+        #
+        minimum = scipy.ndimage.filters.minimum_filter(data, footprint=footprint)
+        maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=footprint)
+        result = data - maximum
+        
+    return __unmask(result, im_pixel_data, im_mask)
+
+
+def enhance_neurites(
+        im_pixel_data:      ImageGrayscale,
+        im_mask:            ImageGrayscaleMask,
+        im_volumetric:      bool,
+        im_spacing:         Tuple[float, ...],
+        smoothing_value:    float,
+        radius:             float,
+        method:             NeuriteMethod,
+        neurite_rescale:    bool,
+        ) -> NDArray[numpy.float64]:
+    data = __mask(im_pixel_data, im_mask)
+
+    if method == NeuriteMethod.GRADIENT:
+        # desired effect = img + white_tophat - black_tophat
+        footprint = __structuring_element(radius, im_volumetric)
+        white = skimage.morphology.white_tophat(data, footprint=footprint)
+        black = skimage.morphology.black_tophat(data, footprint=footprint)
+        result = data + white - black
+        result[result > 1] = 1
+        result[result < 0] = 0
+    else:
+        sigma = smoothing_value
+        smoothed = scipy.ndimage.gaussian_filter(data, numpy.divide(sigma, im_spacing))
+
+        if im_volumetric:
+            result = numpy.zeros_like(smoothed)
+            for index, plane in enumerate(smoothed):
+                hessian = centrosome.filter.hessian(plane, return_hessian=False, return_eigenvectors=False)
+                result[index] = (-hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2))
+        else:
+            hessian = centrosome.filter.hessian(smoothed, return_hessian=False, return_eigenvectors=False)
+            #
+            # The positive values are darker pixels with lighter
+            # neighbors. The original ImageJ code scales the result
+            # by sigma squared - I have a feeling this might be
+            # a first-order correction for e**(-2*sigma), possibly
+            # because the hessian is taken from one pixel away
+            # and the gradient is less as sigma gets larger.
+            #
+            result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+            
+    result = __unmask(result, im_pixel_data, im_mask)
+    if neurite_rescale:
+        result = skimage.exposure.rescale_intensity(result)
+    return result
+
+
+def enhance_circles(
+        im_pixel_data:  ImageGrayscale,
+        im_mask:        ImageGrayscaleMask,
+        im_volumetric:  bool,
+        radius:         float,
+        ) -> NDArray[numpy.float64]:
+    data = __mask(im_pixel_data, im_mask)
+    if im_volumetric:
+        result = numpy.zeros_like(data)
+        for index, plane in enumerate(data):
+            result[index] = skimage.transform.hough_circle(plane, radius)[0]
+    else:
+        result = skimage.transform.hough_circle(data, radius)[0]
+    return __unmask(result, im_pixel_data, im_mask)
+
+
+def enhance_texture(
+        im_pixel_data:  ImageGrayscale,
+        im_mask:        ImageGrayscaleMask,
+        sigma:          float,
+        ) -> NDArray[numpy.float64]:
+    mask = im_mask
+    data = __mask(im_pixel_data, mask)
+    gmask = skimage.filters.gaussian(mask.astype(float), sigma, mode="constant")
+    img_mean = (skimage.filters.gaussian(data, sigma, mode="constant") / gmask)
+    img_squared = (skimage.filters.gaussian(data ** 2, sigma, mode="constant")/ gmask)
+    result = img_squared - img_mean ** 2
+    return __unmask(result, im_pixel_data, mask)
+
+
+def enhance_dark_holes(
+        im_pixel_data:          ImageGrayscale,
+        im_mask:                ImageGrayscaleMask,
+        im_volumetric:          bool,
+        dark_hole_radius_min:   int,
+        dark_hole_radius_max:   int,
+        min_radius:             Optional[int] = None,
+        max_radius:             Optional[int] = None,
+        ) -> NDArray[numpy.float64]:
+    if min_radius is None:
+        min_radius = max(1, int(dark_hole_radius_min / 2))
+    if max_radius is None:
+        max_radius = int((dark_hole_radius_max + 1) / 2)
+
+    pixel_data = im_pixel_data
+    mask = im_mask
+    se = __structuring_element(1, im_volumetric)
+    inverted_image = pixel_data.max() - pixel_data
+    previous_reconstructed_image = inverted_image
+    eroded_image = inverted_image
+    smoothed_image = numpy.zeros(pixel_data.shape)
+
+    for i in range(max_radius + 1):
+        eroded_image = skimage.morphology.erosion(eroded_image, se)
+        if mask is not None:
+            eroded_image *= mask
+        reconstructed_image = skimage.morphology.reconstruction(eroded_image, inverted_image, "dilation", se)
+        output_image = previous_reconstructed_image - reconstructed_image
+        if i >= min_radius:
+            smoothed_image = numpy.maximum(smoothed_image, output_image)
+        previous_reconstructed_image = reconstructed_image
+    return smoothed_image
+
+
+def enhance_dic(
+        im_pixel_data:  ImageGrayscale,
+        im_volumetric:  bool,
+        angle:          float,
+        decay:          float,
+        smoothing:      float,
+        ) -> NDArray[numpy.float64]:
+    pixel_data = im_pixel_data
+
+    if im_volumetric:
+        result = numpy.zeros_like(pixel_data).astype(numpy.float64)
+        for index, plane in enumerate(pixel_data):
+            result[index] = centrosome.filter.line_integration(plane, angle, decay, smoothing)
+        return result
+
+    if smoothing == 0:
+        smoothing = float(numpy.finfo(float).eps)
+
+    return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
+
+
+def suppress(
+        im_pixel_data:  ImageGrayscale, 
+        im_mask:        ImageGrayscaleMask,
+        im_volumetric:  bool,
+        radius:         float,
+        ) -> NDArray[numpy.float64]:
+    data = __mask(im_pixel_data, im_mask)
+    footprint = __structuring_element(radius, im_volumetric)
+    result = skimage.morphology.opening(data, footprint)
+    return __unmask(result, im_pixel_data, im_mask)

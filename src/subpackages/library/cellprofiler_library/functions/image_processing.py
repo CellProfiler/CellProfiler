@@ -5,9 +5,11 @@ import centrosome
 import centrosome.threshold
 import scipy
 import matplotlib
+import math
 from typing import Any, Optional, Tuple, Callable, Union, List
-from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D
+from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask
 from ..opts import threshold as Threshold
+from cellprofiler_library.opts.crop import RemovalMethod
 
 def rgb_to_greyscale(image):
     if image.shape[-1] == 4:
@@ -634,3 +636,215 @@ def clip_low(output_pixels: Image2D) -> Image2D:
 
 def clip_high(output_pixels: Image2D) -> Image2D:
     return numpy.where(output_pixels > 1, 1, output_pixels)
+
+################################################################################
+# Crop
+################################################################################
+
+def get_ellipse_cropping(
+        orig_image_pixels:  Image2D, 
+        ellipse_center:     Tuple[float, float] , 
+        ellipse_radius:     Tuple[float, float]
+    ) -> Image2DMask:
+    x_center, y_center = ellipse_center
+    x_radius, y_radius = ellipse_radius
+    x_max = orig_image_pixels.shape[1]
+    y_max = orig_image_pixels.shape[0]
+    if x_radius > y_radius:
+        dist_x = math.sqrt(x_radius ** 2 - y_radius ** 2)
+        dist_y = 0
+        major_radius = x_radius
+    else:
+        dist_x = 0
+        dist_y = math.sqrt(y_radius ** 2 - x_radius ** 2)
+        major_radius = y_radius
+
+    focus_1_x, focus_1_y = (x_center - dist_x, y_center - dist_y)
+    focus_2_x, focus_2_y = (x_center + dist_x, y_center + dist_y)
+    y, x = numpy.mgrid[0:y_max, 0:x_max]
+    d1 = numpy.sqrt((x - focus_1_x) ** 2 + (y - focus_1_y) ** 2)
+    d2 = numpy.sqrt((x - focus_2_x) ** 2 + (y - focus_2_y) ** 2)
+    cropping = d1 + d2 <= major_radius * 2
+    return cropping
+
+
+def get_rectangle_cropping(
+    orig_image_pixels:      Image2D,
+    bounding_box:           Tuple[Union[int, None], Union[int, None], Union[int, None], Union[int, None]],
+    validate_boundaries:    bool = True
+) -> Image2DMask:
+    cropping = numpy.ones(orig_image_pixels.shape[:2], bool)
+    left, right, top, bottom = bounding_box
+    if validate_boundaries:
+        if left and left > 0:
+            cropping[:, :left] = False
+        if right and right < cropping.shape[1]:
+            cropping[:, right:] = False
+        if top and top > 0:
+            cropping[:top, :] = False
+        if bottom and bottom < cropping.shape[0]:
+            cropping[bottom:, :] = False
+    else:
+        cropping[:, :left] = False
+        cropping[:, right:] = False
+        cropping[:top, :] = False
+        cropping[bottom:, :] = False
+    return cropping
+    
+
+def crop_image(
+        image:          Union[Image2D, Image2DMask],
+        crop_mask:      Image2DMask,
+        crop_internal:  Optional[bool]=False
+    ) -> Image2D:
+    """Crop an image to the size of the nonzero portion of a crop mask"""
+    i_histogram = crop_mask.sum(axis=1)
+    i_cumsum = numpy.cumsum(i_histogram != 0)
+    j_histogram = crop_mask.sum(axis=0)
+    j_cumsum = numpy.cumsum(j_histogram != 0)
+    if i_cumsum[-1] == 0:
+        # The whole image is cropped away
+        return numpy.zeros((0, 0), dtype=image.dtype)
+    if crop_internal:
+        #
+        # Make up sequences of rows and columns to keep
+        #
+        i_keep = numpy.argwhere(i_histogram > 0)
+        j_keep = numpy.argwhere(j_histogram > 0)
+        #
+        # Then slice the array by I, then by J to get what's not blank
+        #
+        return image[i_keep.flatten(), :][:, j_keep.flatten()].copy()
+    else:
+        #
+        # The first non-blank row and column are where the cumsum is 1
+        # The last are at the first where the cumsum is it's max (meaning
+        # what came after was all zeros and added nothing)
+        #
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_end = i_last + 1
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_end = j_last + 1
+
+        if image.ndim == 3:
+            return image[i_first[0] : i_end[0], j_first[0] : j_end[0], :].copy()
+
+        return image[i_first[0] : i_end[0], j_first[0] : j_end[0]].copy()
+
+
+def get_cropped_mask(
+        cropping:           Image2DMask,
+        mask:               Optional[Image2DMask],
+        removal_method:     RemovalMethod = RemovalMethod.NO,
+) -> Image2DMask:
+    if removal_method == RemovalMethod.NO:
+        #
+        # Check for previous cropping's mask. If it doesn't exist, set it to the current cropping
+        #
+        if mask is None:
+            mask = cropping
+    elif removal_method in (RemovalMethod.EDGES, RemovalMethod.ALL):
+        crop_internal = removal_method == RemovalMethod.ALL
+        #
+        # Check for previous cropping's mask. If it doesn't exist, set it to the region of interest specified
+        # by the cropping. The final mask output size could be smaller as the crop_image function removes
+        # edges by default.
+        #
+        if mask is None:
+            mask = crop_image(cropping, cropping, crop_internal)
+    else:
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+    
+    return mask
+
+
+def get_cropped_image_mask(
+        cropping:           Image2DMask,
+        mask:               Optional[Image2DMask],
+        orig_image_mask:    Optional[Image2DMask] = None,
+        removal_method:     RemovalMethod = RemovalMethod.NO,
+) -> Image2DMask:
+    if mask is None:
+        mask = get_cropped_mask(cropping, mask, removal_method)
+    if removal_method == RemovalMethod.NO:
+        #
+        # Check if a mask has been set on the original image. If not, set it to the current mask
+        # This is a mask that could have been set by another module and this module "respects masks".
+        #
+        if orig_image_mask is not None:
+            # Image mask is the region of interest indicator for the final image object.
+            image_mask = orig_image_mask & mask
+        else:
+            image_mask = mask
+
+        return image_mask
+    elif removal_method in (RemovalMethod.EDGES, RemovalMethod.ALL):
+        crop_internal = removal_method == RemovalMethod.ALL
+        #
+        # Check if a mask has been set on the original image. If not, set it to the current mask
+        # This is a mask that could have been set by another module and this module "respects masks".
+        # The final mask output size could be smaller as the crop_image function removes edges by default.
+        #
+        if orig_image_mask is not None:
+            # Image mask is the region of interest indicator for the final image object.
+            image_mask = crop_image(orig_image_mask, cropping, crop_internal) & mask
+        else:
+            image_mask = mask
+    else:
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+    
+    return image_mask
+
+
+def get_cropped_image_pixels(
+        orig_image_pixels:  Image2D,
+        cropping:           Image2DMask,
+        mask:               Optional[Image2DMask],
+        removal_method:     RemovalMethod = RemovalMethod.NO,
+) -> Image2D:
+    if removal_method == RemovalMethod.NO:
+        cropped_pixel_data = apply_crop_keep_rows_and_columns(orig_image_pixels, cropping)
+    elif removal_method in (RemovalMethod.EDGES, RemovalMethod.ALL):
+        cropped_pixel_data = apply_crop_remove_rows_and_columns(orig_image_pixels, cropping, mask, removal_method)
+    else:
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+    return cropped_pixel_data
+
+
+def apply_crop_keep_rows_and_columns(
+    orig_image_pixels:  Image2D, 
+    final_cropping:     Image2DMask,
+) -> Image2D:
+    cropped_pixel_data = orig_image_pixels.copy()
+    cropped_pixel_data = erase_pixels(cropped_pixel_data, final_cropping)
+    return cropped_pixel_data
+
+
+def apply_crop_remove_rows_and_columns(
+        orig_image_pixels:  Image2D,
+        final_cropping:     Image2DMask,
+        mask:               Optional[Image2DMask],
+        removal_method: RemovalMethod = RemovalMethod.EDGES,
+) -> Image2D:
+    if mask is None: 
+        mask = get_cropped_mask(final_cropping, mask, removal_method)
+    # Apply first level of cropping to get the region of interest that matches the original image
+    cropped_pixel_data = crop_image(orig_image_pixels, final_cropping, removal_method==RemovalMethod.ALL)
+    cropped_pixel_data = erase_pixels(cropped_pixel_data, mask)
+    return cropped_pixel_data
+
+
+def erase_pixels(
+        cropped_pixel_data: Image2D, 
+        crop:               Image2DMask
+        ) -> Image2D:
+    #
+    # Apply crop to all channels automatically for color images
+    #
+    if cropped_pixel_data.ndim == 3:
+        cropped_pixel_data[~crop, :] = 0
+    else:
+        cropped_pixel_data[~crop] = 0
+    return cropped_pixel_data

@@ -119,6 +119,40 @@ def morphological_skeleton_3d(image):
     return skimage.morphology.skeletonize_3d(image)
 
 
+################################################################################
+# ErodeImage
+################################################################################
+
+def morphology_erosion(image, structuring_element):
+    """Apply morphological erosion to an image.
+    
+    Args:
+        image: Input image (2D or 3D)
+        structuring_element: Structuring element for erosion
+        
+    Returns:
+        Eroded image with same dimensions as input
+    """
+    is_strel_2d = structuring_element.ndim == 2
+    is_img_2d = image.ndim == 2
+    
+    if is_strel_2d and not is_img_2d:
+        # Apply 2D structuring element to 3D image planewise
+        y_data = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            y_data[index] = skimage.morphology.erosion(plane, structuring_element)
+        return y_data
+    
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+    
+    # Apply erosion directly for matching dimensions
+    y_data = skimage.morphology.erosion(image, structuring_element)
+    return y_data
+
+
 def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
 

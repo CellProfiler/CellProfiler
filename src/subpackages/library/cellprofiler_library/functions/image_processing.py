@@ -1,17 +1,21 @@
 import numpy
 import skimage.color
 import skimage.morphology
+import skimage.segmentation
+import skimage.util
 import centrosome
 import centrosome.threshold
+import centrosome.filter
 import scipy
 import matplotlib
 import math
 from numpy.typing import NDArray
 import centrosome.filter
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
+from cellprofiler_library.opts.overlayoutlines import BrightnessMode
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
@@ -1345,3 +1349,181 @@ def apply_vbreak(
     """
     return centrosome.cpmorphology.vbreak(pixel_data, mask)
 
+
+################################################################################
+# OverlayOutlines
+################################################################################
+
+def create_overlay_base_image(
+    obj_shape: Annotated[Optional[Tuple[int, ...]], Field(description="Object dimensions (height, width, [depth]) for creating blank RGB image when no input provided", default=None)],
+    obj_dimensions: Annotated[Optional[int], Field(description="Spatial dimensionality (2 or 3) for objects when creating blank image", default=None)],
+    im_pixel_data: Annotated[Optional[Union[ImageAny, NDArray[numpy.float64]]], Field(description="Input image pixel data to use as base (None creates blank RGB image)", default=None)],
+    im_multichannel: Annotated[bool, Field(description="Whether input image already has multiple color channels", default=False)],
+    im_dimensions: Annotated[Optional[int], Field(description="Spatial dimensionality (2 or 3) of input image", default=None)]
+) -> Tuple[ImageColor, Optional[int]]:
+    """Creates base image for overlay outlines processing.
+    
+    This function creates the foundation image for outline overlay operations.
+    When no input image is provided, it creates a blank RGB image using object
+    dimensions. When an input image is provided, it converts grayscale images
+    to RGB format while preserving existing RGB images.
+    
+    Args:
+        obj_shape: Object spatial dimensions for creating blank RGB image when no input provided
+        obj_dimensions: Number of spatial dimensions (2D or 3D) for objects in blank image mode
+        im_pixel_data: Input image data to use as base (triggers blank image creation if None)
+        im_multichannel: Whether input image already contains multiple color channels
+        im_dimensions: Number of spatial dimensions (2D or 3D) in input image
+    
+    Returns:
+        Tuple of (rgb_pixel_data, dimensions) where rgb_pixel_data is always RGB format
+    """
+    if im_pixel_data is None:
+        return numpy.zeros(obj_shape + (3,)), obj_dimensions
+
+    pixel_data = skimage.img_as_float(im_pixel_data)
+
+    if im_multichannel:
+        return pixel_data, im_dimensions
+
+    return skimage.color.gray2rgb(pixel_data), im_dimensions
+
+
+def overlay_outlines_grayscale(
+    pixel_data: Annotated[Optional[ImageColor], Field(description="RGB base image pixel data to overlay outlines on and convert to grayscale")],
+    brightness_mode: Annotated[BrightnessMode, Field(description="Brightness control mode determining outline intensity (max possible vs max image)")],
+    object_labels_list: Annotated[List[ObjectLabelSet], Field(description="List of object label sets containing segmented regions for outline generation")],
+    line_mode_value: Annotated[str, Field(description="Line drawing mode controlling outline appearance (inner, outer, thick)")],
+    is_volumetric: Annotated[bool, Field(description="Whether objects require 3D volumetric plane-wise processing")]
+) -> ImageGrayscale:
+    """Overlay outlines on RGB image and convert to grayscale with brightness control.
+    
+    Args:
+        pixel_data: RGB base image data to overlay outlines on
+        brightness_mode: Brightness control determining outline intensity calculation
+        object_labels_list: Object label sets containing segmented object data
+        line_mode_value: Line drawing mode string for outline appearance control
+        is_volumetric: Whether objects require 3D plane-wise outline processing
+    
+    Returns:
+        Grayscale image with object outlines overlaid
+    """
+    if brightness_mode == BrightnessMode.MAX_POSSIBLE:
+        color = 1.0
+    else:
+        color = numpy.max(pixel_data)
+
+    for obj_labels in object_labels_list:
+        pixel_data = overlay_outlines_on_image(pixel_data, obj_labels, is_volumetric, color, line_mode_value)
+
+    return skimage.color.rgb2gray(pixel_data)
+
+
+def overlay_outlines_color(
+    pixel_data: Annotated[ImageColor, Field(description="RGB base image to overlay colored outlines on")],
+    object_labels_list: Annotated[List[ObjectLabelSet], Field(description="Object label sets for outline generation")],
+    colors_list: Annotated[List[Tuple[int, int, int]], Field(description="RGB color tuples (0-255) for each object set")],
+    line_mode_value: Annotated[str, Field(description="Line drawing mode (inner, outer, thick)")],
+    is_volumetric: Annotated[bool, Field(description="Whether objects require 3D plane-wise processing")]
+) -> ImageColor:
+    """Overlay colored outlines on RGB image.
+    
+    Args:
+        pixel_data: RGB base image
+        object_labels_list: Object label sets
+        colors_list: RGB colors (0-255) for each object set
+        line_mode_value: Line drawing mode
+        is_volumetric: Whether objects are 3D
+    
+    Returns:
+        RGB image with colored outlines
+    """
+    for obj_labels, color_rgb in zip(object_labels_list, colors_list):
+        color = tuple(c / 255.0 for c in color_rgb)
+        pixel_data = overlay_outlines_on_image(pixel_data, obj_labels, is_volumetric, color, line_mode_value)
+
+    return pixel_data
+
+
+def overlay_outlines_on_image(
+    pixel_data: Annotated[NDArray[numpy.float64], Field(description="Image pixel data to draw outlines on")],
+    obj_labels_list: Annotated[ObjectLabelSet, Field(description="Object label set containing segmented regions")],
+    obj_volumetric: Annotated[bool, Field(description="Whether objects require 3D plane-wise processing")],
+    color: Annotated[Union[float, Tuple[float, float, float]], Field(description="Outline color (grayscale float or RGB tuple 0.0-1.0)")],
+    line_mode_value: Annotated[str, Field(description="Line drawing mode (inner, outer, thick)")],
+) -> ImageColor:
+    """Draw object outlines on image.
+    
+    Args:
+        pixel_data: Image to draw outlines on
+        obj_labels_list: Object label set
+        obj_volumetric: Whether objects are 3D
+        color: Outline color
+        line_mode_value: Line drawing mode
+    
+    Returns:
+        Image with outlines drawn
+    """
+    for labels, _ in obj_labels_list:
+        resized_labels = resize_labels_for_overlay(pixel_data, labels)
+
+        if obj_volumetric:
+            for index, plane in enumerate(resized_labels):
+                pixel_data[index] = skimage.segmentation.mark_boundaries(
+                    pixel_data[index],
+                    plane,
+                    color=color,
+                    mode=line_mode_value.lower(),
+                )
+        else:
+            pixel_data = skimage.segmentation.mark_boundaries(
+                pixel_data,
+                resized_labels,
+                color=color,
+                mode=line_mode_value.lower(),
+            )
+
+    return pixel_data
+
+
+def resize_labels_for_overlay(
+    pixel_data: Annotated[NDArray[numpy.float64], Field(description="Target image with desired output dimensions")],
+    labels: Annotated[NDArray[numpy.int32], Field(description="Object labels to resize for matching dimensions")]
+) -> NDArray[numpy.int32]:
+    """Resize labels to match image dimensions.
+    
+    Args:
+        pixel_data: Target image with desired dimensions
+        labels: Object labels to resize
+    
+    Returns:
+        Resized labels matching image dimensions
+    """
+    initial_shape = labels.shape
+
+    final_shape = pixel_data.shape
+
+    if pixel_data.ndim > labels.ndim:  # multichannel
+        final_shape = final_shape[:-1]
+
+    adjust = numpy.subtract(final_shape, initial_shape)
+
+    cropped = skimage.util.crop(
+        labels,
+        [
+            (0, dim_adjust)
+            for dim_adjust in numpy.abs(
+                numpy.minimum(adjust, numpy.zeros_like(adjust))
+            )
+        ],
+    )
+
+    return numpy.pad(
+        cropped,
+        [
+            (0, dim_adjust)
+            for dim_adjust in numpy.maximum(adjust, numpy.zeros_like(adjust))
+        ],
+        mode="constant",
+        constant_values=0,
+    )

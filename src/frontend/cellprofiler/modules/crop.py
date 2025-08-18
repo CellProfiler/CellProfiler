@@ -38,8 +38,6 @@ help for more information on saving cropping shapes.
 """
 
 import logging
-import math
-
 import centrosome.filter
 import matplotlib.axes
 import matplotlib.cm
@@ -57,39 +55,11 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import CropImageName
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_core.utilities.image import crop_image
-
+from cellprofiler_library.functions.image_processing import get_ellipse_cropping, get_rectangle_cropping
+from cellprofiler_library.modules._crop import crop, get_measurements
+from cellprofiler_library.opts.crop import RemovalMethod, Measurement, Shape, CroppingMethod, CroppingPattern, Limits, Ellipse, Rectangle
 LOGGER = logging.getLogger(__name__)
 
-SH_RECTANGLE = "Rectangle"
-SH_ELLIPSE = "Ellipse"
-SH_IMAGE = "Image"
-SH_OBJECTS = "Objects"
-SH_CROPPING = "Previous cropping"
-CM_COORDINATES = "Coordinates"
-CM_MOUSE = "Mouse"
-IO_INDIVIDUALLY = "Every"
-IO_FIRST = "First"
-RM_NO = "No"
-RM_EDGES = "Edges"
-RM_ALL = "All"
-
-# Doesn't seem to like importing defs from cellprofiler.gui.moduleview so define here
-ABSOLUTE = "Absolute"
-FROM_EDGE = "From edge"
-
-EL_XCENTER = "xcenter"
-EL_YCENTER = "ycenter"
-EL_XRADIUS = "xradius"
-EL_YRADIUS = "yradius"
-
-RE_LEFT = "left"
-RE_TOP = "top"
-RE_RIGHT = "right"
-RE_BOTTOM = "bottom"
-
-FF_AREA_RETAINED = "Crop_AreaRetainedAfterCropping_%s"
-FF_ORIGINAL_AREA = "Crop_OriginalImageArea_%s"
 
 OFF_IMAGE_NAME = 0
 OFF_CROPPED_IMAGE_NAME = 1
@@ -130,8 +100,8 @@ class Crop(Module):
 
         self.shape = Choice(
             text="Select the cropping shape",
-            choices=[SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE, SH_OBJECTS, SH_CROPPING],
-            value=SH_RECTANGLE,
+            choices=[Shape.RECTANGLE.value, Shape.ELLIPSE.value, Shape.IMAGE.value, Shape.OBJECTS.value, Shape.CROPPING.value],
+            value=Shape.RECTANGLE.value,
             doc="""\
 Choose the shape into which you would like to crop:
 
@@ -161,19 +131,19 @@ Choose the shape into which you would like to crop:
    cropping that was used to generate whichever image you choose.
 """.format(
                 **{
-                    "SH_RECTANGLE": SH_RECTANGLE,
-                    "SH_ELLIPSE": SH_ELLIPSE,
-                    "SH_IMAGE": SH_IMAGE,
-                    "SH_OBJECTS": SH_OBJECTS,
-                    "SH_CROPPING": SH_CROPPING,
+                    "SH_RECTANGLE": Shape.RECTANGLE.value,
+                    "SH_ELLIPSE": Shape.ELLIPSE.value,
+                    "SH_IMAGE": Shape.IMAGE.value,
+                    "SH_OBJECTS": Shape.OBJECTS.value,
+                    "SH_CROPPING": Shape.CROPPING.value,
                 }
             ),
         )
 
         self.crop_method = Choice(
             text="Select the cropping method",
-            choices=[CM_COORDINATES, CM_MOUSE],
-            value=CM_COORDINATES,
+            choices=[CroppingMethod.COORDINATES.value, CroppingMethod.MOUSE.value],
+            value=CroppingMethod.COORDINATES.value,
             doc="""\
 Choose whether you would like to crop by typing in pixel coordinates or
 clicking with the mouse.
@@ -190,18 +160,18 @@ clicking with the mouse.
    are in the interior of the region you wish to retain.
 """.format(
                 **{
-                    "CM_COORDINATES": CM_COORDINATES,
-                    "SH_ELLIPSE": SH_ELLIPSE,
-                    "SH_RECTANGLE": SH_RECTANGLE,
-                    "CM_MOUSE": CM_MOUSE,
+                    "CM_COORDINATES": CroppingMethod.COORDINATES.value,
+                    "SH_ELLIPSE": Shape.ELLIPSE.value,
+                    "SH_RECTANGLE": Shape.RECTANGLE.value,
+                    "CM_MOUSE": CroppingMethod.MOUSE.value,
                 }
             ),
         )
 
         self.individual_or_once = Choice(
             text="Apply which cycle's cropping pattern?",
-            choices=[IO_INDIVIDUALLY, IO_FIRST],
-            value=IO_INDIVIDUALLY,
+            choices=[CroppingPattern.INDIVIDUALLY.value, CroppingPattern.FIRST.value],
+            value=CroppingPattern.INDIVIDUALLY.value,
             doc="""\
 Specify how a given cropping pattern should be applied to other image cycles:
 
@@ -210,7 +180,7 @@ Specify how a given cropping pattern should be applied to other image cycles:
    intended to function as a template in some fashion.
 -  *{IO_INDIVIDUALLY}:* Every image cycle is cropped individually.
 """.format(
-                **{"IO_FIRST": IO_FIRST, "IO_INDIVIDUALLY": IO_INDIVIDUALLY}
+                **{"IO_FIRST": CroppingPattern.FIRST.value, "IO_INDIVIDUALLY": CroppingPattern.INDIVIDUALLY.value}
             ),
         )
 
@@ -232,9 +202,9 @@ Specify the left and right positions for the bounding rectangle by selecting one
    of the image’s original size.
 """.format(
                 **{
-                    "SH_RECTANGLE": SH_RECTANGLE,
-                    "ABSOLUTE": ABSOLUTE,
-                    "FROM_EDGE": FROM_EDGE,
+                    "SH_RECTANGLE": Shape.RECTANGLE.value,
+                    "ABSOLUTE": Limits.ABSOLUTE.value,
+                    "FROM_EDGE": Limits.FROM_EDGE.value,
                 }
             ),
         )
@@ -255,9 +225,9 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
    from the edges of your images irrespective of their size.
 """.format(
                 **{
-                    "SH_RECTANGLE": SH_RECTANGLE,
-                    "ABSOLUTE": ABSOLUTE,
-                    "FROM_EDGE": FROM_EDGE,
+                    "SH_RECTANGLE": Shape.RECTANGLE.value,
+                    "ABSOLUTE": Limits.ABSOLUTE.value,
+                    "FROM_EDGE": Limits.FROM_EDGE.value,
                 }
             ),
         )
@@ -270,7 +240,7 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
 
 Specify the center pixel position of the ellipse.
 """.format(
-                **{"SH_ELLIPSE": SH_ELLIPSE}
+                **{"SH_ELLIPSE": Shape.ELLIPSE.value}
             ),
         )
 
@@ -282,7 +252,7 @@ Specify the center pixel position of the ellipse.
 
 Specify the radius of the ellipse in the X direction.
 """.format(
-                **{"SH_ELLIPSE": SH_ELLIPSE}
+                **{"SH_ELLIPSE": Shape.ELLIPSE.value}
             ),
         )
 
@@ -294,7 +264,7 @@ Specify the radius of the ellipse in the X direction.
 
 Specify the radius of the ellipse in the Y direction.
 """.format(
-                **{"SH_ELLIPSE": SH_ELLIPSE}
+                **{"SH_ELLIPSE": Shape.ELLIPSE.value}
             ),
         )
 
@@ -306,7 +276,7 @@ Specify the radius of the ellipse in the Y direction.
 
 Select the image to be use as a cropping mask.
 """.format(
-                **{"SH_IMAGE": SH_IMAGE}
+                **{"SH_IMAGE": Shape.IMAGE.value}
             ),
         )
 
@@ -318,7 +288,7 @@ Select the image to be use as a cropping mask.
 
 Select the image associated with the cropping mask that you want to use.
 """.format(
-                **{"SH_CROPPING": SH_CROPPING}
+                **{"SH_CROPPING": Shape.CROPPING.value}
             ),
         )
 
@@ -330,14 +300,14 @@ Select the image associated with the cropping mask that you want to use.
 
 Select the objects that are to be used as a cropping mask.
 """.format(
-                **{"SH_OBJECTS": SH_OBJECTS}
+                **{"SH_OBJECTS": Shape.OBJECTS.value}
             ),
         )
 
         self.remove_rows_and_columns = Choice(
             text="Remove empty rows and columns?",
-            choices=[RM_NO, RM_EDGES, RM_ALL],
-            value=RM_ALL,
+            choices=[RemovalMethod.NO.value, RemovalMethod.EDGES.value, RemovalMethod.ALL.value],
+            value=RemovalMethod.ALL.value,
             doc="""\
 Use this option to choose whether to remove rows and columns that lack
 objects:
@@ -349,7 +319,7 @@ objects:
 -  *{RM_ALL}:* Remove any row or column of all-blank pixels, even
    from the internal portion of the image.
 """.format(
-                **{"RM_NO": RM_NO, "RM_EDGES": RM_EDGES, "RM_ALL": RM_ALL}
+                **{"RM_NO": RemovalMethod.NO.value, "RM_EDGES": RemovalMethod.EDGES.value, "RM_ALL": RemovalMethod.ALL.value}
             ),
         )
 
@@ -373,22 +343,22 @@ objects:
 
     def visible_settings(self):
         result = [self.image_name, self.cropped_image_name, self.shape]
-        if self.shape.value in (SH_RECTANGLE, SH_ELLIPSE):
+        if self.shape.value in (Shape.RECTANGLE, Shape.ELLIPSE):
             result += [self.crop_method, self.individual_or_once]
-            if self.crop_method == CM_COORDINATES:
-                if self.shape == SH_RECTANGLE:
+            if self.crop_method.value == CroppingMethod.COORDINATES:
+                if self.shape.value == Shape.RECTANGLE:
                     result += [self.horizontal_limits, self.vertical_limits]
-                elif self.shape == SH_ELLIPSE:
+                elif self.shape.value == Shape.ELLIPSE:
                     result += [
                         self.ellipse_center,
                         self.ellipse_x_radius,
                         self.ellipse_y_radius,
                     ]
-        elif self.shape == SH_IMAGE:
+        elif self.shape.value == Shape.IMAGE:
             result += [self.image_mask_source]
-        elif self.shape == SH_CROPPING:
+        elif self.shape.value == Shape.CROPPING:
             result.append(self.cropping_mask_source)
-        elif self.shape == SH_OBJECTS:
+        elif self.shape.value == Shape.OBJECTS:
             result.append(self.objects_source)
         else:
             raise NotImplementedError("Unimplemented shape type: %s" % self.shape.value)
@@ -400,22 +370,22 @@ objects:
             workspace.measurements.get_current_image_measurement("Group_Index") == 1
         )
         image_set_list = workspace.image_set_list
-        d = self.get_dictionary(image_set_list)
+        cache_dict = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)
         recalculate_flag = (
-            self.shape not in (SH_ELLIPSE, SH_RECTANGLE)
-            or self.individual_or_once == IO_INDIVIDUALLY
+            self.shape.value not in (Shape.ELLIPSE, Shape.RECTANGLE)
+            or self.individual_or_once.value == CroppingPattern.INDIVIDUALLY
             or first_image_set
             or workspace.pipeline.test_mode
         )
-        save_flag = self.individual_or_once == IO_FIRST and first_image_set
+        save_flag = self.individual_or_once.value == CroppingPattern.FIRST and first_image_set
         if not recalculate_flag:
-            if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
+            if cache_dict[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
                 LOGGER.warning(
                     """Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
                     self.image_name.value,
-                    str(d[D_FIRST_CROPPING].shape),
+                    str(cache_dict[D_FIRST_CROPPING].shape),
                     str(orig_image.pixel_data.shape[:2]),
                     workspace.image_set.image_number,
                 )
@@ -423,59 +393,56 @@ objects:
         cropping = None
         masking_objects = None
         if not recalculate_flag:
-            cropping = d[D_FIRST_CROPPING]
-            mask = d[D_FIRST_CROPPING_MASK]
-        elif self.shape == SH_CROPPING:
+            cropping = cache_dict[D_FIRST_CROPPING]
+            mask = cache_dict[D_FIRST_CROPPING_MASK]
+        elif self.shape.value == Shape.CROPPING:
             cropping_image = workspace.image_set.get_image(
                 self.cropping_mask_source.value
             )
             cropping = cropping_image.crop_mask
-        elif self.shape == SH_IMAGE:
+        elif self.shape.value == Shape.IMAGE:
             source_image = workspace.image_set.get_image(
                 self.image_mask_source.value
             ).pixel_data
 
             cropping = source_image > 0
-        elif self.shape == SH_OBJECTS:
+        elif self.shape.value == Shape.OBJECTS:
             masking_objects = workspace.get_objects(self.objects_source.value)
             cropping = masking_objects.segmented > 0
-        elif self.crop_method == CM_MOUSE:
+        elif self.crop_method.value == CroppingMethod.MOUSE:
             cropping = self.ui_crop(workspace, orig_image)
-        elif self.shape == SH_ELLIPSE:
-            cropping = self.get_ellipse_cropping(workspace, orig_image)
-        elif self.shape == SH_RECTANGLE:
-            cropping = self.get_rectangle_cropping(workspace, orig_image)
-        if self.remove_rows_and_columns == RM_NO:
-            cropped_pixel_data = orig_image.pixel_data.copy()
-            if cropped_pixel_data.ndim == 3:
-                cropped_pixel_data[~cropping, :] = 0
-            else:
-                cropped_pixel_data[numpy.logical_not(cropping)] = 0
-            if mask is None:
-                mask = cropping
-            if orig_image.has_mask:
-                image_mask = mask & orig_image.mask
-            else:
-                image_mask = mask
-        else:
-            internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = crop_image(
-                orig_image.pixel_data, cropping, internal_cropping
-            )
-            if mask is None:
-                mask = crop_image(cropping, cropping, internal_cropping)
-            if orig_image.has_mask:
-                image_mask = (
-                    crop_image(orig_image.mask, cropping, internal_cropping) & mask
+        elif self.shape.value == Shape.ELLIPSE:
+            cache_dict[Shape.ELLIPSE] = {
+                Ellipse.XCENTER: self.ellipse_center.x,   
+                Ellipse.YCENTER: self.ellipse_center.y,
+                Ellipse.XRADIUS: self.ellipse_x_radius.value,
+                Ellipse.YRADIUS: self.ellipse_y_radius.value,
+            }
+        
+            cropping = get_ellipse_cropping(
+                orig_image.pixel_data, 
+                (self.ellipse_center.x, self.ellipse_center.y), 
+                (self.ellipse_x_radius.value, self.ellipse_y_radius.value)
                 )
-            else:
-                image_mask = mask
 
-            if cropped_pixel_data.ndim == 3:
-                cropped_pixel_data[~mask, :] = 0
-            else:
-                cropped_pixel_data[~mask] = 0
-        if self.shape == SH_OBJECTS:
+
+        elif self.shape.value == Shape.RECTANGLE:
+            h_min = self.horizontal_limits.min if not self.horizontal_limits.unbounded_min else None
+            h_max = self.horizontal_limits.max if not self.horizontal_limits.unbounded_max else None
+            v_min = self.vertical_limits.min if not self.vertical_limits.unbounded_min else None
+            v_max = self.vertical_limits.max if not self.vertical_limits.unbounded_max else None
+
+            cropping = get_rectangle_cropping(orig_image.pixel_data, (h_min, h_max, v_min, v_max), validate_boundaries=True)
+        else:
+            raise NotImplementedError(f"Cropping shape {self.shape.value} or crop method {self.crop_method} not supported.")
+        
+        assert(cropping is not None)
+        assert(cropping.dtype == bool)
+        
+        cropped_pixel_data, mask, image_mask = crop(orig_image.pixel_data, cropping, mask, orig_image.mask, self.remove_rows_and_columns.value)
+            
+
+        if self.shape.value == Shape.OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
             output_image = Image(
@@ -501,8 +468,8 @@ objects:
             )
 
         if save_flag:
-            d[D_FIRST_CROPPING_MASK] = mask
-            d[D_FIRST_CROPPING] = cropping
+            cache_dict[D_FIRST_CROPPING_MASK] = mask
+            cache_dict[D_FIRST_CROPPING] = cropping
         #
         # Save the image / cropping / mask
         #
@@ -510,13 +477,10 @@ objects:
         #
         # Save the old and new image sizes
         #
-        original_image_area = numpy.product(orig_image.pixel_data.shape[:2])
-        area_retained_after_cropping = numpy.sum(cropping)
-        feature = FF_AREA_RETAINED % self.cropped_image_name.value
         m = workspace.measurements
-        m.add_measurement("Image", feature, numpy.array([area_retained_after_cropping]))
-        feature = FF_ORIGINAL_AREA % self.cropped_image_name.value
-        m.add_measurement("Image", feature, numpy.array([original_image_area]))
+        for measurement in get_measurements(cropping, orig_image.pixel_data, self.cropped_image_name.value):
+            m.add_measurement("Image", measurement[1], numpy.array([measurement[2]]))
+
 
     def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
@@ -536,20 +500,28 @@ objects:
         """Return information on the measurements made during cropping"""
         return [
             ("Image", x % self.cropped_image_name.value, "integer",)
-            for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)
+            for x in (Measurement.AREA_RETAINED, Measurement.ORIGINAL_AREA)
         ]
 
     def ui_crop(self, workspace, orig_image):
         """Crop into a rectangle or ellipse, guided by UI"""
-        d = self.get_dictionary(workspace.image_set_list)
-        if (self.shape.value not in d) or self.individual_or_once == IO_INDIVIDUALLY:
-            d[self.shape.value] = workspace.interaction_request(
-                self, d.get(self.shape.value, None), orig_image.pixel_data
+        cache_dict = self.get_dictionary(workspace.image_set_list)
+        if (self.shape.value not in cache_dict) or self.individual_or_once.value == CroppingPattern.INDIVIDUALLY:
+            cache_dict[self.shape.value] = workspace.interaction_request(
+                self, cache_dict.get(self.shape.value, None), orig_image.pixel_data
             )
-        if self.shape == SH_ELLIPSE:
-            return self.apply_ellipse_cropping(workspace, orig_image)
+        if self.shape.value == Shape.ELLIPSE:
+            center = cache_dict[Shape.ELLIPSE][Ellipse.XCENTER], cache_dict[Shape.ELLIPSE][Ellipse.YCENTER]
+            radius = cache_dict[Shape.ELLIPSE][Ellipse.XRADIUS], cache_dict[Shape.ELLIPSE][Ellipse.YRADIUS]   
+            return get_ellipse_cropping(orig_image.pixel_data, center, radius)
         else:
-            return self.apply_rectangle_cropping(workspace, orig_image)
+            bounding_box = (
+                int(numpy.round(cache_dict[Shape.RECTANGLE][Rectangle.LEFT])),
+                int(numpy.round(cache_dict[Shape.RECTANGLE][Rectangle.RIGHT])),
+                int(numpy.round(cache_dict[Shape.RECTANGLE][Rectangle.TOP])),
+                int(numpy.round(cache_dict[Shape.RECTANGLE][Rectangle.BOTTOM])),
+            )
+            return get_rectangle_cropping(orig_image.pixel_data, bounding_box, validate_boundaries=True)
 
     def handle_interaction(self, current_shape, orig_image):
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
@@ -788,31 +760,31 @@ objects:
             def handles(self):
                 return [self.center_handle, self.radius_handle]
 
-        if self.shape == SH_ELLIPSE:
+        if self.shape.value == Shape.ELLIPSE:
             if current_shape is None:
                 current_shape = {
-                    EL_XCENTER: pixel_data.shape[1] / 2,
-                    EL_YCENTER: pixel_data.shape[0] / 2,
-                    EL_XRADIUS: pixel_data.shape[1] / 2,
-                    EL_YRADIUS: pixel_data.shape[0] / 2,
+                    Ellipse.XCENTER: pixel_data.shape[1] / 2,
+                    Ellipse.YCENTER: pixel_data.shape[0] / 2,
+                    Ellipse.XRADIUS: pixel_data.shape[1] / 2,
+                    Ellipse.YRADIUS: pixel_data.shape[0] / 2,
                 }
             ellipse = current_shape
             shape = CropEllipse(
-                (ellipse[EL_XCENTER], ellipse[EL_YCENTER]),
-                (ellipse[EL_XRADIUS], ellipse[EL_YRADIUS]),
+                (ellipse[Ellipse.XCENTER], ellipse[Ellipse.YCENTER]),
+                (ellipse[Ellipse.XRADIUS], ellipse[Ellipse.YRADIUS]),
             )
         else:
             if current_shape is None:
                 current_shape = {
-                    RE_LEFT: pixel_data.shape[1] / 4,
-                    RE_TOP: pixel_data.shape[0] / 4,
-                    RE_RIGHT: pixel_data.shape[1] * 3 / 4,
-                    RE_BOTTOM: pixel_data.shape[0] * 3 / 4,
+                    Rectangle.LEFT: pixel_data.shape[1] / 4,
+                    Rectangle.TOP: pixel_data.shape[0] / 4,
+                    Rectangle.RIGHT: pixel_data.shape[1] * 3 / 4,
+                    Rectangle.BOTTOM: pixel_data.shape[0] * 3 / 4,
                 }
             rectangle = current_shape
             shape = CropRectangle(
-                (rectangle[RE_LEFT], rectangle[RE_TOP]),
-                (rectangle[RE_RIGHT], rectangle[RE_BOTTOM]),
+                (rectangle[Rectangle.LEFT], rectangle[Rectangle.TOP]),
+                (rectangle[Rectangle.RIGHT], rectangle[Rectangle.BOTTOM]),
             )
         for patch in shape.patches:
             axes.add_artist(patch)
@@ -843,91 +815,21 @@ objects:
                 raise ValueError("Cancelled by user")
         finally:
             dialog_box.Destroy()
-        if self.shape == SH_RECTANGLE:
+        if self.shape.value == Shape.RECTANGLE:
             return {
-                RE_LEFT: shape.left,
-                RE_TOP: shape.top,
-                RE_RIGHT: shape.right,
-                RE_BOTTOM: shape.bottom,
+                Rectangle.LEFT: shape.left,
+                Rectangle.TOP: shape.top,
+                Rectangle.RIGHT: shape.right,
+                Rectangle.BOTTOM: shape.bottom,
             }
         else:
             return {
-                EL_XCENTER: shape.center_x,
-                EL_YCENTER: shape.center_y,
-                EL_XRADIUS: shape.width / 2,
-                EL_YRADIUS: shape.height / 2,
+                Ellipse.XCENTER: shape.center_x,
+                Ellipse.YCENTER: shape.center_y,
+                Ellipse.XRADIUS: shape.width / 2,
+                Ellipse.YRADIUS: shape.height / 2,
             }
 
-    def get_ellipse_cropping(self, workspace, orig_image):
-        """Crop into an ellipse using user-specified coordinates"""
-        x_center = self.ellipse_center.x
-        y_center = self.ellipse_center.y
-        x_radius = self.ellipse_x_radius.value
-        y_radius = self.ellipse_y_radius.value
-        d = self.get_dictionary(workspace.image_set_list)
-        d[SH_ELLIPSE] = {
-            EL_XCENTER: x_center,
-            EL_YCENTER: y_center,
-            EL_XRADIUS: x_radius,
-            EL_YRADIUS: y_radius,
-        }
-        return self.apply_ellipse_cropping(workspace, orig_image)
-
-    def apply_ellipse_cropping(self, workspace, orig_image):
-        d = self.get_dictionary(workspace.image_set_list)
-        ellipse = d[SH_ELLIPSE]
-        x_center, y_center, x_radius, y_radius = [
-            ellipse[x] for x in (EL_XCENTER, EL_YCENTER, EL_XRADIUS, EL_YRADIUS)
-        ]
-        pixel_data = orig_image.pixel_data
-        x_max = pixel_data.shape[1]
-        y_max = pixel_data.shape[0]
-        if x_radius > y_radius:
-            dist_x = math.sqrt(x_radius ** 2 - y_radius ** 2)
-            dist_y = 0
-            major_radius = x_radius
-        else:
-            dist_x = 0
-            dist_y = math.sqrt(y_radius ** 2 - x_radius ** 2)
-            major_radius = y_radius
-
-        focus_1_x, focus_1_y = (x_center - dist_x, y_center - dist_y)
-        focus_2_x, focus_2_y = (x_center + dist_x, y_center + dist_y)
-        y, x = numpy.mgrid[0:y_max, 0:x_max]
-        d1 = numpy.sqrt((x - focus_1_x) ** 2 + (y - focus_1_y) ** 2)
-        d2 = numpy.sqrt((x - focus_2_x) ** 2 + (y - focus_2_y) ** 2)
-        cropping = d1 + d2 <= major_radius * 2
-        return cropping
-
-    def get_rectangle_cropping(self, workspace, orig_image):
-        """Crop into a rectangle using user-specified coordinates"""
-        cropping = numpy.ones(orig_image.pixel_data.shape[:2], bool)
-        if not self.horizontal_limits.unbounded_min:
-            cropping[:, : self.horizontal_limits.min] = False
-        if not self.horizontal_limits.unbounded_max:
-            cropping[:, self.horizontal_limits.max :] = False
-        if not self.vertical_limits.unbounded_min:
-            cropping[: self.vertical_limits.min, :] = False
-        if not self.vertical_limits.unbounded_max:
-            cropping[self.vertical_limits.max :, :] = False
-        return cropping
-
-    def apply_rectangle_cropping(self, workspace, orig_image):
-        cropping = numpy.ones(orig_image.pixel_data.shape[:2], bool)
-        d = self.get_dictionary(workspace.image_set_list)
-        r = d[SH_RECTANGLE]
-        left, top, right, bottom = [
-            int(numpy.round(r[x])) for x in (RE_LEFT, RE_TOP, RE_RIGHT, RE_BOTTOM)
-        ]
-        if left > 0:
-            cropping[:, :left] = False
-        if right < cropping.shape[1]:
-            cropping[:, right:] = False
-        if top > 0:
-            cropping[:top, :] = False
-        if bottom < cropping.shape[0]:
-            cropping[bottom:, :] = False
-        return cropping
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
@@ -940,12 +842,12 @@ objects:
             # minor - "Cropping" changed to "Previous cropping"
             setting_values = list(setting_values)
             if setting_values[OFF_SHAPE] == "Cropping":
-                setting_values[OFF_SHAPE] = SH_CROPPING
+                setting_values[OFF_SHAPE] = Shape.CROPPING
             #
             # Individually changed to "every"
             #
             if setting_values[OFF_INDIVIDUAL_OR_ONCE] == "Individually":
-                setting_values[OFF_INDIVIDUAL_OR_ONCE] = IO_INDIVIDUALLY
+                setting_values[OFF_INDIVIDUAL_OR_ONCE] = CroppingPattern.INDIVIDUALLY
 
             setting_values = setting_values[:10] + setting_values[11:]
 

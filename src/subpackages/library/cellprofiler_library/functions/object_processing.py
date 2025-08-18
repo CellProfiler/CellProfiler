@@ -598,3 +598,35 @@ def erode_objects_with_structuring_element(
     
     return y_data
 
+################################################################################
+# DilateObjects
+################################################################################
+
+def dilate_objects_with_structuring_element(
+    labels: npt.NDArray,
+    structuring_element: npt.NDArray
+) -> npt.NDArray:
+    """Dilate objects based on the structuring element provided.
+    
+    This function is similar to the "Expand" function of ExpandOrShrinkObjects,
+    with two major distinctions:
+    1. DilateObjects supports 3D objects, unlike ExpandOrShrinkObjects.
+    2. In ExpandOrShrinkObjects, two objects closer than the expansion distance
+       will expand until they meet and then stop there. In this module, the object with
+       the larger object number (the object that is lower in the image) will be expanded
+       on top of the object with the smaller object number.
+    
+    Args:
+        labels: Input labeled objects array
+        structuring_element: Structuring element for dilation operation
+        
+    Returns:
+        Dilated objects array with same dimensions as input
+    """
+    import cellprofiler.utilities.morphology
+    
+    # Apply dilation using the morphology utility
+    y_data = cellprofiler.utilities.morphology.dilation(labels, structuring_element)
+    
+    return y_data
+

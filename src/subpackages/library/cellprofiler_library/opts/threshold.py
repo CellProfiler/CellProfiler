@@ -10,6 +10,7 @@ class Method(str, Enum):
     ROBUST_BACKGROUND = "robust_background"
     MULTI_OTSU = "multiotsu"
     SAUVOLA = "sauvola"
+    MAX_INTENSITY_PERCENTAGE = "max_intensity_percentage" # For MeasureColocalization
 
 class Assignment(str, Enum):
     # assign_middle_to_foreground

@@ -15,6 +15,7 @@ from cellprofiler_core.setting.text import Float, Integer
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 from cellprofiler.gui.help.content import image_resource
+from cellprofiler_library.modules._measuregranularity import measure_granularity, ObjectRecord
 
 LOGGER = logging.getLogger(__name__)
 
@@ -250,6 +251,9 @@ class MeasureGranularity(Module):
         ]
         statistics = []
         for image_name in self.images_list.value:
+            object_records = [
+        (objects_name, workspace.object_set.get_objects(objects_name).segmented) for objects_name in self.objects_list.value
+    ]
             statistic = self.run_on_image_setting(workspace, image_name)
             statistics.append(statistic)
         if self.show_window:
@@ -268,210 +272,50 @@ class MeasureGranularity(Module):
             title="If individual objects were measured, use an Export module to view their results",
         )
 
+    def add_names_to_measurements(self, measurements_arr, image_measurements_arr, statistics, image_name, granular_spectrum_length):
+        _statistics = [image_name] + statistics
+        _measurements_arr = []
+        _image_measurements_arr = []
+        ng = granular_spectrum_length
+        for i in range(1, ng+1):
+            feature = C_GRANULARITY % (i, image_name)
+            _image_measurements_arr += [(feature, image_measurements_arr[i-1])]
+            if i < len(measurements_arr):
+                if measurements_arr[i]:
+                    _measurements_arr += [(measurements_arr[i-1][0], feature, measurements_arr[i-1][1])]
+        return _measurements_arr, _image_measurements_arr, _statistics
+
     def run_on_image_setting(self, workspace, image_name):
-        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
-        image_set = workspace.image_set
-        measurements = workspace.measurements
-        im = image_set.get_image(image_name, must_be_grayscale=True)
-        #
-        # Downsample the image and mask
-        #
-        new_shape = numpy.array(im.pixel_data.shape)
-        if self.subsample_size.value < 1:
-            new_shape = new_shape * self.subsample_size.value
-            if im.dimensions == 2:
-                i, j = (
-                    numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
-                    / self.subsample_size.value
-                )
-                pixels = scipy.ndimage.map_coordinates(im.pixel_data, (i, j), order=1)
-                mask = (
-                    scipy.ndimage.map_coordinates(im.mask.astype(float), (i, j)) > 0.9
-                )
-            else:
-                k, i, j = (
-                    numpy.mgrid[
-                        0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
-                    ].astype(float)
-                    / self.subsample_size.value
-                )
-                pixels = scipy.ndimage.map_coordinates(
-                    im.pixel_data, (k, i, j), order=1
-                )
-                mask = (
-                    scipy.ndimage.map_coordinates(im.mask.astype(float), (k, i, j))
-                    > 0.9
-                )
-        else:
-            pixels = im.pixel_data.copy()
-            mask = im.mask.copy()
-        #
-        # Remove background pixels using a greyscale tophat filter
-        #
-        if self.image_sample_size.value < 1:
-            back_shape = new_shape * self.image_sample_size.value
-            if im.dimensions == 2:
-                i, j = (
-                    numpy.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
-                    / self.image_sample_size.value
-                )
-                back_pixels = scipy.ndimage.map_coordinates(pixels, (i, j), order=1)
-                back_mask = (
-                    scipy.ndimage.map_coordinates(mask.astype(float), (i, j)) > 0.9
-                )
-            else:
-                k, i, j = (
-                    numpy.mgrid[
-                        0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
-                    ].astype(float)
-                    / self.subsample_size.value
-                )
-                back_pixels = scipy.ndimage.map_coordinates(pixels, (k, i, j), order=1)
-                back_mask = (
-                    scipy.ndimage.map_coordinates(mask.astype(float), (k, i, j)) > 0.9
-                )
-        else:
-            back_pixels = pixels
-            back_mask = mask
-            back_shape = new_shape
-        radius = self.element_size.value
-        if im.dimensions == 2:
-            footprint = skimage.morphology.disk(radius, dtype=bool)
-        else:
-            footprint = skimage.morphology.ball(radius, dtype=bool)
-        back_pixels_mask = numpy.zeros_like(back_pixels)
-        back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
-        back_pixels = skimage.morphology.erosion(back_pixels_mask, footprint=footprint)
-        back_pixels_mask = numpy.zeros_like(back_pixels)
-        back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
-        back_pixels = skimage.morphology.dilation(back_pixels_mask, footprint=footprint)
-        if self.image_sample_size.value < 1:
-            if im.dimensions == 2:
-                i, j = numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
-                #
-                # Make sure the mapping only references the index range of
-                # back_pixels.
-                #
-                i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
-                j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
-                back_pixels = scipy.ndimage.map_coordinates(
-                    back_pixels, (i, j), order=1
-                )
-            else:
-                k, i, j = numpy.mgrid[
-                    0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
-                ].astype(float)
-                k *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
-                i *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
-                j *= float(back_shape[2] - 1) / float(new_shape[2] - 1)
-                back_pixels = scipy.ndimage.map_coordinates(
-                    back_pixels, (k, i, j), order=1
-                )
-        pixels -= back_pixels
-        pixels[pixels < 0] = 0
-
-        #
-        # For each object, build a little record
-        #
-        class ObjectRecord(object):
-            def __init__(self, name):
-                self.name = name
-                self.labels = workspace.object_set.get_objects(name).segmented
-                self.nobjects = numpy.max(self.labels)
-                if self.nobjects != 0:
-                    self.range = numpy.arange(1, numpy.max(self.labels) + 1)
-                    self.labels = self.labels.copy()
-                    self.labels[~im.mask] = 0
-                    self.current_mean = fix(
-                        scipy.ndimage.mean(im.pixel_data, self.labels, self.range)
-                    )
-                    self.start_mean = numpy.maximum(
-                        self.current_mean, numpy.finfo(float).eps
-                    )
-
+        im = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+        im_pixel_data = im.pixel_data
+        im_mask = im.mask
+        subsample_size = self.subsample_size.value
+        image_sample_size = self.image_sample_size.value
+        element_size = self.element_size.value
         object_records = [
-            ObjectRecord(objects_name) for objects_name in self.objects_list.value
+            ObjectRecord(objects_name, workspace.object_set.get_objects(objects_name).segmented, im_mask, im_pixel_data) for objects_name in self.objects_list.value
         ]
-        #
-        # Transcribed from the Matlab module: granspectr function
-        #
-        # CALCULATES GRANULAR SPECTRUM, ALSO KNOWN AS SIZE DISTRIBUTION,
-        # GRANULOMETRY, AND PATTERN SPECTRUM, SEE REF.:
-        # J.Serra, Image Analysis and Mathematical Morphology, Vol. 1. Academic Press, London, 1989
-        # Maragos,P. "Pattern spectrum and multiscale shape representation", IEEE Transactions on Pattern Analysis and Machine Intelligence, 11, N 7, pp. 701-716, 1989
-        # L.Vincent "Granulometries and Opening Trees", Fundamenta Informaticae, 41, No. 1-2, pp. 57-90, IOS Press, 2000.
-        # L.Vincent "Morphological Area Opening and Closing for Grayscale Images", Proc. NATO Shape in Picture Workshop, Driebergen, The Netherlands, pp. 197-208, 1992.
-        # I.Ravkin, V.Temov "Bit representation techniques and image processing", Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow, 1988 (in Russian)
-        # THIS IMPLEMENTATION INSTEAD OF OPENING USES EROSION FOLLOWED BY RECONSTRUCTION
-        #
-        ng = self.granular_spectrum_length.value
-        startmean = numpy.mean(pixels[mask])
-        ero = pixels.copy()
-        # Mask the test image so that masked pixels will have no effect
-        # during reconstruction
-        #
-        ero[~mask] = 0
-        currentmean = startmean
-        startmean = max(startmean, numpy.finfo(float).eps)
+        granular_spectrum_length = self.granular_spectrum_length.value
+        image_name = image_name
+        dimensions = im.dimensions
 
-        if im.dimensions == 2:
-            footprint = skimage.morphology.disk(1, dtype=bool)
-        else:
-            footprint = skimage.morphology.ball(1, dtype=bool)
-        statistics = [image_name]
-        for i in range(1, ng + 1):
-            prevmean = currentmean
-            ero_mask = numpy.zeros_like(ero)
-            ero_mask[mask == True] = ero[mask == True]
-            ero = skimage.morphology.erosion(ero_mask, footprint=footprint)
-            rec = skimage.morphology.reconstruction(ero, pixels, footprint=footprint)
-            currentmean = numpy.mean(rec[mask])
-            gs = (prevmean - currentmean) * 100 / startmean
-            statistics += ["%.2f" % gs]
-            feature = self.granularity_feature(i, image_name)
-            measurements.add_image_measurement(feature, gs)
-            #
-            # Restore the reconstructed image to the shape of the
-            # original image so we can match against object labels
-            #
-            orig_shape = im.pixel_data.shape
-            if im.dimensions == 2:
-                i, j = numpy.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
-                #
-                # Make sure the mapping only references the index range of
-                # back_pixels.
-                #
-                i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
-                j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
-                rec = scipy.ndimage.map_coordinates(rec, (i, j), order=1)
-            else:
-                k, i, j = numpy.mgrid[
-                    0 : orig_shape[0], 0 : orig_shape[1], 0 : orig_shape[2]
-                ].astype(float)
-                k *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
-                i *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
-                j *= float(new_shape[2] - 1) / float(orig_shape[2] - 1)
-                rec = scipy.ndimage.map_coordinates(rec, (k, i, j), order=1)
-            #
-            # Calculate the means for the objects
-            #
-            for object_record in object_records:
-                assert isinstance(object_record, ObjectRecord)
-                if object_record.nobjects > 0:
-                    new_mean = fix(
-                        scipy.ndimage.mean(
-                            rec, object_record.labels, object_record.range
-                        )
-                    )
-                    gss = (
-                        (object_record.current_mean - new_mean)
-                        * 100
-                        / object_record.start_mean
-                    )
-                    object_record.current_mean = new_mean
-                else:
-                    gss = numpy.zeros((0,))
-                measurements.add_measurement(object_record.name, feature, gss)
+        measurements_arr, image_measurements_arr, statistics = measure_granularity(
+            im_pixel_data, 
+            im_mask, 
+            subsample_size, 
+            image_sample_size, 
+            element_size, 
+            object_records, 
+            granular_spectrum_length, 
+            dimensions
+        )
+        measurements_arr, image_measurements_arr, statistics = self.add_names_to_measurements(measurements_arr, image_measurements_arr, statistics, image_name, granular_spectrum_length)
+
+        for packed_measurements in measurements_arr:
+            workspace.measurements.add_measurement(*packed_measurements)
+        for packed_measurements in image_measurements_arr:
+            workspace.measurements.add_image_measurement(*packed_measurements)
+
         return statistics
 
     def get_measurement_columns(self, pipeline, return_sources=False):

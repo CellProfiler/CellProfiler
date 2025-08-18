@@ -36,6 +36,7 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import Integer
 
 from cellprofiler.modules import _help
+from cellprofiler_library.modules._enhanceorsuppressfeatures import enhance_or_suppress_features
 
 ENHANCE = "Enhance"
 SUPPRESS = "Suppress"
@@ -361,43 +362,29 @@ the output easier to display.
         else:
             __settings__ += [self.object_size]
         return __settings__
+    
 
     def run(self, workspace):
         image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
 
         radius = self.object_size.value / 2
+        im_pixel_data = image.pixel_data
+        im_mask = image.mask
+        im_volumetric = image.volumetric
+        im_spacing = image.spacing
+        method = self.method.value
+        enhance_method = self.enhance_method.value
+        speckle_accuracy = self.speckle_accuracy.value
+        neurite_choice = self.neurite_choice.value
+        neurite_rescale = self.wants_rescale.value
+        dark_hole_radius_min = self.hole_size.min   
+        dark_hole_radius_max = self.hole_size.max
+        smoothing_value = self.smoothing.value
+        dic_angle = self.angle.value
+        dic_decay = self.decay.value
 
-        if self.method == ENHANCE:
-            if self.enhance_method == E_SPECKLES:
-                result = self.enhance_speckles(
-                    image, radius, self.speckle_accuracy.value
-                )
-            elif self.enhance_method == E_NEURITES:
-                result = self.enhance_neurites(image, radius, self.neurite_choice.value)
-                if self.wants_rescale.value:
-                    result = skimage.exposure.rescale_intensity(result)
-            elif self.enhance_method == E_DARK_HOLES:
-                min_radius = max(1, int(self.hole_size.min / 2))
-
-                max_radius = int((self.hole_size.max + 1) / 2)
-
-                result = self.enhance_dark_holes(image, min_radius, max_radius)
-            elif self.enhance_method == E_CIRCLES:
-                result = self.enhance_circles(image, radius)
-            elif self.enhance_method == E_TEXTURE:
-                result = self.enhance_texture(image, self.smoothing.value)
-            elif self.enhance_method == E_DIC:
-                result = self.enhance_dic(
-                    image, self.angle.value, self.decay.value, self.smoothing.value
-                )
-            else:
-                raise NotImplementedError(
-                    "Unimplemented enhance method: %s" % self.enhance_method.value
-                )
-        elif self.method == SUPPRESS:
-            result = self.suppress(image, radius)
-        else:
-            raise ValueError("Unknown filtering method: %s" % self.method)
+        result = enhance_or_suppress_features(im_pixel_data, im_mask, im_volumetric, im_spacing, radius, method, enhance_method, speckle_accuracy, neurite_choice, neurite_rescale, dark_hole_radius_min, dark_hole_radius_max, smoothing_value, dic_angle, dic_decay)
+        
 
         result_image = Image(result, parent_image=image, dimensions=image.dimensions)
 
@@ -410,192 +397,6 @@ the output easier to display.
 
             workspace.display_data.dimensions = image.dimensions
 
-    def __mask(self, pixel_data, mask):
-        data = numpy.zeros_like(pixel_data)
-
-        data[mask] = pixel_data[mask]
-
-        return data
-
-    def __unmask(self, data, pixel_data, mask):
-        data[~mask] = pixel_data[~mask]
-
-        return data
-
-    def __structuring_element(self, radius, volumetric):
-        if volumetric:
-            return skimage.morphology.ball(radius)
-
-        return skimage.morphology.disk(radius)
-
-    def enhance_speckles(self, image, radius, accuracy):
-        data = self.__mask(image.pixel_data, image.mask)
-
-        footprint = self.__structuring_element(radius, image.volumetric)
-
-        if accuracy == "Slow" or radius <= 3:
-            result = skimage.morphology.white_tophat(data, footprint=footprint)
-        else:
-            #
-            # white_tophat = img - opening
-            #              = img - dilate(erode)
-            #              = img - maximum_filter(minimum_filter)
-            minimum = scipy.ndimage.filters.minimum_filter(data, footprint=footprint)
-
-            maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=footprint)
-
-            result = data - maximum
-
-        return self.__unmask(result, image.pixel_data, image.mask)
-
-    def enhance_neurites(self, image, radius, method):
-        data = self.__mask(image.pixel_data, image.mask)
-
-        if method == N_GRADIENT:
-            # desired effect = img + white_tophat - black_tophat
-            footprint = self.__structuring_element(radius, image.volumetric)
-
-            white = skimage.morphology.white_tophat(data, footprint=footprint)
-
-            black = skimage.morphology.black_tophat(data, footprint=footprint)
-
-            result = data + white - black
-
-            result[result > 1] = 1
-
-            result[result < 0] = 0
-        else:
-            sigma = self.smoothing.value
-
-            smoothed = scipy.ndimage.gaussian_filter(
-                data, numpy.divide(sigma, image.spacing)
-            )
-
-            if image.volumetric:
-                result = numpy.zeros_like(smoothed)
-
-                for index, plane in enumerate(smoothed):
-                    hessian = centrosome.filter.hessian(
-                        plane, return_hessian=False, return_eigenvectors=False
-                    )
-
-                    result[index] = (
-                        -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
-                    )
-            else:
-                hessian = centrosome.filter.hessian(
-                    smoothed, return_hessian=False, return_eigenvectors=False
-                )
-
-                #
-                # The positive values are darker pixels with lighter
-                # neighbors. The original ImageJ code scales the result
-                # by sigma squared - I have a feeling this might be
-                # a first-order correction for e**(-2*sigma), possibly
-                # because the hessian is taken from one pixel away
-                # and the gradient is less as sigma gets larger.
-                result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
-
-        return self.__unmask(result, image.pixel_data, image.mask)
-
-    def enhance_circles(self, image, radius):
-        data = self.__mask(image.pixel_data, image.mask)
-
-        if image.volumetric:
-            result = numpy.zeros_like(data)
-
-            for index, plane in enumerate(data):
-                result[index] = skimage.transform.hough_circle(plane, radius)[0]
-        else:
-            result = skimage.transform.hough_circle(data, radius)[0]
-
-        return self.__unmask(result, image.pixel_data, image.mask)
-
-    def enhance_texture(self, image, sigma):
-        mask = image.mask
-
-        data = self.__mask(image.pixel_data, mask)
-
-        gmask = skimage.filters.gaussian(
-            mask.astype(float), sigma, mode="constant"
-        )
-
-        img_mean = (
-            skimage.filters.gaussian(data, sigma, mode="constant")
-            / gmask
-        )
-
-        img_squared = (
-            skimage.filters.gaussian(
-                data ** 2, sigma, mode="constant"
-            )
-            / gmask
-        )
-
-        result = img_squared - img_mean ** 2
-
-        return self.__unmask(result, image.pixel_data, mask)
-
-    def enhance_dark_holes(self, image, min_radius, max_radius):
-        pixel_data = image.pixel_data
-
-        mask = image.mask if image.has_mask else None
-
-        se = self.__structuring_element(1, image.volumetric)
-
-        inverted_image = pixel_data.max() - pixel_data
-
-        previous_reconstructed_image = inverted_image
-
-        eroded_image = inverted_image
-
-        smoothed_image = numpy.zeros(pixel_data.shape)
-
-        for i in range(max_radius + 1):
-            eroded_image = skimage.morphology.erosion(eroded_image, se)
-
-            if mask is not None:
-                eroded_image *= mask
-
-            reconstructed_image = skimage.morphology.reconstruction(
-                eroded_image, inverted_image, "dilation", se
-            )
-
-            output_image = previous_reconstructed_image - reconstructed_image
-
-            if i >= min_radius:
-                smoothed_image = numpy.maximum(smoothed_image, output_image)
-
-            previous_reconstructed_image = reconstructed_image
-
-        return smoothed_image
-
-    def enhance_dic(self, image, angle, decay, smoothing):
-        pixel_data = image.pixel_data
-
-        if image.volumetric:
-            result = numpy.zeros_like(pixel_data)
-
-            for index, plane in enumerate(pixel_data):
-                result[index] = centrosome.filter.line_integration(
-                    plane, angle, decay, smoothing
-                )
-
-            return result
-
-        if smoothing == 0:
-            smoothing = numpy.finfo(float).eps
-
-        return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
-
-    def suppress(self, image, radius):
-        data = self.__mask(image.pixel_data, image.mask)
-
-        footprint = self.__structuring_element(radius, image.volumetric)
-
-        result = skimage.morphology.opening(data, footprint)
-
-        return self.__unmask(result, image.pixel_data, image.mask)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision

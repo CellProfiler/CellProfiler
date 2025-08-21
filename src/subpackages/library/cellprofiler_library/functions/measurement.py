@@ -1484,4 +1484,38 @@ def get_granularity_measurements(
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr
 
-            
+
+################################################################################
+# MeasureImageAreaOccupied
+################################################################################
+
+def measure_surface_area(
+        label_image: ObjectLabelsDense, 
+        spacing:Optional[Tuple[float, ...]]=None, 
+        index:Optional[NDArray[np.int32]]=None,
+        )->NDArray[np.float64]:
+    if spacing is None:
+        spacing = (1.0,) * label_image.ndim
+
+    if index is None:
+        verts, faces, _, _ = skimage.measure.marching_cubes(
+            label_image, spacing=spacing, level=0, method="lorensen"
+        )
+
+        return skimage.measure.mesh_surface_area(verts, faces)
+
+    return np.sum(
+        [
+            np.round(measure_label_surface_area(label_image, label, spacing))
+            for label in index
+        ]
+    )
+
+
+def measure_label_surface_area(label_image: ObjectLabelsDense, label:int, spacing: Tuple[float, ...]) -> float:
+    verts, faces, _, _ = skimage.measure.marching_cubes(
+        label_image == label, spacing=spacing, level=0, method="lorensen"
+    )
+
+    return skimage.measure.mesh_surface_area(verts, faces)
+

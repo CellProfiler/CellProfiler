@@ -1703,22 +1703,39 @@ def get_granularity_measurements(
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr, statistics
 
-#
-# For each object, build a little record
-#
-class ObjectRecord(object):
-    def __init__(self, name, segmented, im_mask, im_pixel_data):
-        self.name = name
-        self.labels = segmented
-        self.nobjects = np.max(self.labels)
-        if self.nobjects != 0:
-            self.range = np.arange(1, np.max(self.labels) + 1)
-            self.labels = self.labels.copy()
-            self.labels[~im_mask] = 0
-            self.current_mean = fix(
-                scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
-            )
-            self.start_mean = np.maximum(
-                self.current_mean, np.finfo(float).eps
-            )
-            
+
+
+################################################################################
+# MeasureImageAreaOccupied
+################################################################################
+
+def measure_surface_area(
+        label_image: ObjectLabelsDense, 
+        spacing:Optional[Tuple[float, ...]]=None, 
+        index:Optional[NDArray[np.int32]]=None,
+        )->NDArray[np.float64]:
+    if spacing is None:
+        spacing = (1.0,) * label_image.ndim
+
+    if index is None:
+        verts, faces, _, _ = skimage.measure.marching_cubes(
+            label_image, spacing=spacing, level=0, method="lorensen"
+        )
+
+        return skimage.measure.mesh_surface_area(verts, faces)
+
+    return np.sum(
+        [
+            np.round(measure_label_surface_area(label_image, label, spacing))
+            for label in index
+        ]
+    )
+
+
+def measure_label_surface_area(label_image: ObjectLabelsDense, label:int, spacing: Tuple[float, ...]) -> float:
+    verts, faces, _, _ = skimage.measure.marching_cubes(
+        label_image == label, spacing=spacing, level=0, method="lorensen"
+    )
+
+    return skimage.measure.mesh_surface_area(verts, faces)
+

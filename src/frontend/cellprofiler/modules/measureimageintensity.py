@@ -1,7 +1,7 @@
 import logging
 
 import numpy
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, COLTYPE_INTEGER
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary, ValidationError, Divider
 from cellprofiler_core.setting.text import Text
@@ -11,7 +11,8 @@ from cellprofiler_core.setting.subscriber import (
 )
 
 from cellprofiler.modules import _help
-
+from cellprofiler_library.opts.measureimageintensity import IntensityMeasurementFormat, ALL_MEASUREMENTS
+from cellprofiler_library.modules._measureimageintensity import measure_image_intensity
 LOGGER = logging.getLogger(__name__)
 
 __doc__ = """
@@ -71,52 +72,6 @@ Measurements made by this module
 """.format(
     **{"HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES}
 )
-
-"""Measurement feature name format for the TotalIntensity measurement"""
-F_TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
-
-"""Measurement feature name format for the MeanIntensity measurement"""
-F_MEAN_INTENSITY = "Intensity_MeanIntensity_%s"
-
-"""Measurement feature name format for the MeanIntensity measurement"""
-F_MEDIAN_INTENSITY = "Intensity_MedianIntensity_%s"
-
-"""Measurement feature name format for the StdIntensity measurement"""
-F_STD_INTENSITY = "Intensity_StdIntensity_%s"
-
-"""Measurement feature name format for the MedAbsDevIntensity measurement"""
-F_MAD_INTENSITY = "Intensity_MADIntensity_%s"
-
-"""Measurement feature name format for the MaxIntensity measurement"""
-F_MAX_INTENSITY = "Intensity_MaxIntensity_%s"
-
-"""Measurement feature name format for the MinIntensity measurement"""
-F_MIN_INTENSITY = "Intensity_MinIntensity_%s"
-
-"""Measurement feature name format for the TotalArea measurement"""
-F_TOTAL_AREA = "Intensity_TotalArea_%s"
-
-"""Measurement feature name format for the PercentMaximal measurement"""
-F_PERCENT_MAXIMAL = "Intensity_PercentMaximal_%s"
-
-"""Measurement feature name format for the Quartile measurements"""
-F_UPPER_QUARTILE = "Intensity_UpperQuartileIntensity_%s"
-F_LOWER_QUARTILE = "Intensity_LowerQuartileIntensity_%s"
-
-ALL_MEASUREMENTS = [
-    "TotalIntensity",
-    "MeanIntensity",
-    "StdIntensity",
-    "MADIntensity",
-    "MedianIntensity",
-    "MinIntensity",
-    "MaxIntensity",
-    "TotalArea",
-    "PercentMaximal",
-    "LowerQuartileIntensity",
-    "UpperQuartileIntensity",
-]
-
 
 class MeasureImageIntensity(Module):
     module_name = "MeasureImageIntensity"
@@ -224,10 +179,13 @@ class MeasureImageIntensity(Module):
 
     def run(self, workspace):
         """Perform the measurements on the image sets"""
-        col_labels = ["Image", "Masking object", "Feature", "Value"]
+        percentiles_to_measure = self.percentiles.value
+        wants_object = self.wants_objects.value
+        objects_list = self.objects_list.value
+            
         statistics = []
         if self.wants_percentiles:
-            percentiles = self.get_percentiles(self.percentiles.value, stop=True)
+            percentiles = get_percentiles(percentiles_to_measure, stop=True)
         else:
             percentiles = None
         for im in self.images_list.value:
@@ -235,8 +193,8 @@ class MeasureImageIntensity(Module):
             input_pixels = image.pixel_data
 
             measurement_name = im
-            if self.wants_objects.value:
-                for object_set in self.objects_list.value:
+            if wants_object:
+                for object_set in objects_list:
                     measurement_name += "_" + object_set
                     objects = workspace.get_objects(object_set)
                     if objects.shape != input_pixels.shape:
@@ -264,6 +222,7 @@ class MeasureImageIntensity(Module):
                 statistics += self.measure(
                     pixels, im, None, measurement_name, workspace, percentiles=percentiles
                 )
+        col_labels = ["Image", "Masking object", "Feature", "Value"]
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels
 
@@ -284,59 +243,32 @@ class MeasureImageIntensity(Module):
         measurement_name - group title to be used in data tables
         workspace - has all the details for current image set
         """
-        pixel_count = numpy.product(pixels.shape)
-        percentile_measures = {}
-        if pixel_count == 0:
-            pixel_sum = 0
-            pixel_mean = 0
-            pixel_std = 0
-            pixel_mad = 0
-            pixel_median = 0
-            pixel_min = 0
-            pixel_max = 0
-            pixel_pct_max = 0
-            pixel_lower_qrt = 0
-            pixel_upper_qrt = 0
-            if percentiles:
-                for percentile in percentiles:
-                    percentile_measures[percentile] = 0
-        else:
-            pixels = pixels.flatten()
-            pixels = pixels[
-                numpy.nonzero(numpy.isfinite(pixels))[0]
-            ]  # Ignore NaNs, Infs
-            pixel_count = numpy.product(pixels.shape)
 
-            pixel_sum = numpy.sum(pixels)
-            pixel_mean = pixel_sum / float(pixel_count)
-            pixel_std = numpy.std(pixels)
-            pixel_median = numpy.median(pixels)
-            pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
-            pixel_min = numpy.min(pixels)
-            pixel_max = numpy.max(pixels)
-            pixel_pct_max = (
-                100.0 * float(numpy.sum(pixels == pixel_max)) / float(pixel_count)
-            )
-            pixel_lower_qrt, pixel_upper_qrt = numpy.percentile(pixels, [25, 75])
-
-            if percentiles:
-                percentile_results = numpy.percentile(pixels, percentiles)
-                for percentile, res in zip(percentiles, percentile_results):
-                    percentile_measures[percentile] = res
-
-
+        (
+            pixel_sum,
+            pixel_mean,
+            pixel_median,
+            pixel_std,
+            pixel_mad,
+            pixel_max,
+            pixel_min,
+            pixel_count,
+            pixel_pct_max,
+            pixel_lower_qrt,
+            pixel_upper_qrt,
+        ), percentile_measures = measure_image_intensity(pixels, percentiles)
         m = workspace.measurements
-        m.add_image_measurement(F_TOTAL_INTENSITY % measurement_name, pixel_sum)
-        m.add_image_measurement(F_MEAN_INTENSITY % measurement_name, pixel_mean)
-        m.add_image_measurement(F_MEDIAN_INTENSITY % measurement_name, pixel_median)
-        m.add_image_measurement(F_STD_INTENSITY % measurement_name, pixel_std)
-        m.add_image_measurement(F_MAD_INTENSITY % measurement_name, pixel_mad)
-        m.add_image_measurement(F_MAX_INTENSITY % measurement_name, pixel_max)
-        m.add_image_measurement(F_MIN_INTENSITY % measurement_name, pixel_min)
-        m.add_image_measurement(F_TOTAL_AREA % measurement_name, pixel_count)
-        m.add_image_measurement(F_PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
-        m.add_image_measurement(F_LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
-        m.add_image_measurement(F_UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
+        m.add_image_measurement(IntensityMeasurementFormat.TOTAL_INTENSITY % measurement_name, pixel_sum)
+        m.add_image_measurement(IntensityMeasurementFormat.MEAN_INTENSITY % measurement_name, pixel_mean)
+        m.add_image_measurement(IntensityMeasurementFormat.MEDIAN_INTENSITY % measurement_name, pixel_median)
+        m.add_image_measurement(IntensityMeasurementFormat.STD_INTENSITY % measurement_name, pixel_std)
+        m.add_image_measurement(IntensityMeasurementFormat.MAD_INTENSITY % measurement_name, pixel_mad)
+        m.add_image_measurement(IntensityMeasurementFormat.MAX_INTENSITY % measurement_name, pixel_max)
+        m.add_image_measurement(IntensityMeasurementFormat.MIN_INTENSITY % measurement_name, pixel_min)
+        m.add_image_measurement(IntensityMeasurementFormat.TOTAL_AREA % measurement_name, pixel_count)
+        m.add_image_measurement(IntensityMeasurementFormat.PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
+        m.add_image_measurement(IntensityMeasurementFormat.LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
+        m.add_image_measurement(IntensityMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
 
         all_features = [
                 ("Total intensity", pixel_sum),
@@ -369,20 +301,20 @@ class MeasureImageIntensity(Module):
         """Return column definitions for measurements made by this module"""
         columns = []
         col_defs = [
-            (F_TOTAL_INTENSITY, COLTYPE_FLOAT),
-            (F_MEAN_INTENSITY, COLTYPE_FLOAT),
-            (F_MEDIAN_INTENSITY, COLTYPE_FLOAT),
-            (F_STD_INTENSITY, COLTYPE_FLOAT),
-            (F_MAD_INTENSITY, COLTYPE_FLOAT),
-            (F_MIN_INTENSITY, COLTYPE_FLOAT),
-            (F_MAX_INTENSITY, COLTYPE_FLOAT),
-            (F_TOTAL_AREA, "integer"),
-            (F_PERCENT_MAXIMAL, COLTYPE_FLOAT),
-            (F_LOWER_QUARTILE, COLTYPE_FLOAT),
-            (F_UPPER_QUARTILE, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.TOTAL_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.MEAN_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.MEDIAN_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.STD_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.MAD_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.MIN_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.MAX_INTENSITY, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.TOTAL_AREA, COLTYPE_INTEGER),
+            (IntensityMeasurementFormat.PERCENT_MAXIMAL, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.LOWER_QUARTILE, COLTYPE_FLOAT),
+            (IntensityMeasurementFormat.UPPER_QUARTILE, COLTYPE_FLOAT),
         ]
         if self.wants_percentiles:
-            percentiles = self.get_percentiles(self.percentiles.value, stop=False)
+            percentiles = get_percentiles(self.percentiles.value, stop=False)
             for percentile in percentiles:
                 col_defs.append((f"Intensity_Percentile_{percentile}_%s", COLTYPE_FLOAT))
 
@@ -407,7 +339,7 @@ class MeasureImageIntensity(Module):
         if object_name == "Image" and category == "Intensity":
             measures = ALL_MEASUREMENTS
             if self.wants_percentiles:
-                percentiles = self.get_percentiles(self.percentiles.value, stop=False)
+                percentiles = get_percentiles(self.percentiles.value, stop=False)
                 for i in percentiles:
                     measures.append(f"Percentile_{i}")
             return measures
@@ -416,7 +348,7 @@ class MeasureImageIntensity(Module):
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         measures = ALL_MEASUREMENTS
         if self.wants_percentiles:
-            percentiles = self.get_percentiles(self.percentiles.value, stop=False)
+            percentiles = get_percentiles(self.percentiles.value, stop=False)
             for i in percentiles:
                 measures.append(f"Percentile_{i}")
         if (
@@ -470,16 +402,16 @@ class MeasureImageIntensity(Module):
     def volumetric(self):
         return True
 
-    @staticmethod
-    def get_percentiles(percentiles_list, stop=False):
-        # Converts a comma-seperated string of percentiles into a sorted, deduplicated list.
-        # "stop" parameter determines whether to raise an error or ignore invalid values.
-        percentiles = []
-        for percentile in percentiles_list.replace(" ", "").split(","):
-            if percentile == "":
-                continue
-            elif percentile.isdigit() and 0 <= int(percentile) <= 100:
-                percentiles.append(int(percentile))
-            elif stop:
-                raise ValueError(f"Percentile '{percentile}' is not a valid integer between 0 and 100")
-        return sorted(set(percentiles))
+def get_percentiles(percentiles_list, stop=False):
+    # Converts a comma-seperated string of percentiles into a sorted, deduplicated list.
+    # "stop" parameter determines whether to raise an error or ignore invalid values.
+    percentiles = []
+    for percentile in percentiles_list.replace(" ", "").split(","):
+        if percentile == "":
+            continue
+        elif percentile.isdigit() and 0 <= int(percentile) <= 100:
+            percentiles.append(int(percentile))
+        elif stop:
+            raise ValueError(f"Percentile '{percentile}' is not a valid integer between 0 and 100")
+    return sorted(set(percentiles))
+

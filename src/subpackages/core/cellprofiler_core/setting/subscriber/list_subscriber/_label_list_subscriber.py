@@ -1,4 +1,5 @@
 from ._list_subscriber import ListSubscriber
+from ....constants.pipeline import OBJECT_GROUP
 
 
 class LabelListSubscriber(ListSubscriber):
@@ -16,5 +17,5 @@ class LabelListSubscriber(ListSubscriber):
         **kwargs,
     ):
         super(LabelListSubscriber, self).__init__(
-            text, "objectgroup", value, can_be_blank, blank_text, *args, **kwargs
+            text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )

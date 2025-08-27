@@ -80,6 +80,9 @@ from ..constants.pipeline import M_USER_PIPELINE
 from ..constants.pipeline import M_VERSION
 from ..constants.pipeline import NATIVE_VERSION
 from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
+from ..constants.pipeline import IMAGE_GROUP
+from ..constants.pipeline import OBJECT_GROUP
+from ..constants.pipeline import MEASUREMENTS_GROUP
 from ..constants.workspace import DISPOSITION_CANCEL
 from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
@@ -2679,7 +2682,7 @@ class Pipeline:
                 if (name not in result) or target_module is not None:
                     result[name] = []
                 result[name].append((module, None))
-            if groupname == "measurementsgroup":
+            if groupname == MEASUREMENTS_GROUP:
                 for c in module.get_measurement_columns(self):
                     object_name, feature_name = c[:2]
                     k = (object_name, feature_name)
@@ -2712,7 +2715,7 @@ class Pipeline:
         #   where the first element of the tuple is the module and the
         #   second is either None or the setting.
         #
-        all_groups = ("objectgroup", "imagegroup", "measurementsgroup")
+        all_groups = (OBJECT_GROUP, IMAGE_GROUP, MEASUREMENTS_GROUP)
         providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
         #
         # Now match subscribers against providers.
@@ -2726,12 +2729,12 @@ class Pipeline:
                     if group in providers and name in providers[group]:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
-                                if group == "objectgroup":
+                                if group == OBJECT_GROUP:
                                     dependency = ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
-                                elif group == "imagegroup":
+                                elif group == IMAGE_GROUP:
                                     dependency = ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
@@ -2741,8 +2744,8 @@ class Pipeline:
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
-                    if key in providers["measurementsgroup"]:
-                        for pmodule, psetting in providers["measurementsgroup"][key]:
+                    if key in providers[MEASUREMENTS_GROUP]:
+                        for pmodule, psetting in providers[MEASUREMENTS_GROUP][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = MeasurementDependency(
                                     pmodule,

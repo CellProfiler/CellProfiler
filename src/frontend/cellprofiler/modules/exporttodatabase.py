@@ -117,6 +117,7 @@ from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler_core.constants.measurement import NEIGHBORS
 from cellprofiler_core.constants.measurement import OBJECT
 from cellprofiler_core.constants.pipeline import M_MODIFICATION_TIMESTAMP
+from cellprofiler_core.constants.pipeline import OBJECT_GROUP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
@@ -2230,7 +2231,7 @@ available:
                 selected_objs = self.objects_list.value.rsplit(",")
             elif self.objects_choice == O_ALL:
                 selected_objs = list(
-                    pipeline.get_provider_dictionary("objectgroup").keys()
+                    pipeline.get_provider_dictionary(OBJECT_GROUP).keys()
                 )
 
             if len(selected_objs) > 1:

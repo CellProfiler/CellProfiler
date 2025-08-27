@@ -112,6 +112,7 @@ from cellprofiler_core.constants.module import (
     USING_METADATA_TAGS_REF,
 )
 from cellprofiler_core.constants.pipeline import EXIT_STATUS
+from cellprofiler_core.constants.pipeline import OBJECT_GROUP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
@@ -1019,7 +1020,7 @@ desired.
         if self.wants_everything:
             object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
-                "objectgroup", self
+                OBJECT_GROUP, self
             )
             object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)

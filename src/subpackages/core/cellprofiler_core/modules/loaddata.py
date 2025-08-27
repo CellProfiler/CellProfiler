@@ -5,6 +5,8 @@ import urllib.request
 
 import numpy
 
+from ..constants.pipeline import IMAGE_GROUP
+from ..constants.pipeline import OBJECT_GROUP
 from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
@@ -697,13 +699,13 @@ safe to press it.""",
 
     def other_providers(self, group):
         """Get name providers from the CSV header"""
-        if group == "imagegroup" and self.wants_images.value:
+        if group == IMAGE_GROUP and self.wants_images.value:
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
             except Exception as e:
                 return []
-        elif group == "objectgroup" and self.wants_images:
+        elif group == OBJECT_GROUP and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
@@ -714,7 +716,7 @@ safe to press it.""",
 
     def is_image_from_file(self, image_name):
         """Return True if LoadData provides the given image name"""
-        providers = self.other_providers("imagegroup")
+        providers = self.other_providers(IMAGE_GROUP)
         return image_name in providers
 
     def is_load_module(self):
@@ -1102,7 +1104,7 @@ safe to press it.""",
             # Load the image. Calculate the MD5 hash of every image
             #
             image_size = None
-            for image_name in self.other_providers("imagegroup"):
+            for image_name in self.other_providers(IMAGE_GROUP):
                 provider = self.fetch_provider(image_name, m)
                 image_set.add_provider(provider)
                 image = image_set.get_image(image_name)
@@ -1272,7 +1274,7 @@ safe to press it.""",
             if coltypes[index] == COLTYPE_VARCHAR:
                 coltypes[index] = COLTYPE_VARCHAR_FORMAT % collen[index]
 
-        image_names = self.other_providers("imagegroup")
+        image_names = self.other_providers(IMAGE_GROUP)
         result = [
             ("Image", colname, coltype)
             for colname, coltype in zip(header, coltypes)

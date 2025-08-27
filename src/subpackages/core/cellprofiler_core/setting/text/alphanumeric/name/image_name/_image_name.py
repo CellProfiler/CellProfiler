@@ -1,4 +1,5 @@
 from .._name import Name
+from ......constants.pipeline import IMAGE_GROUP
 
 
 class ImageName(Name):
@@ -7,4 +8,4 @@ class ImageName(Name):
     """
 
     def __init__(self, text, value="Do not use", *args, **kwargs):
-        super(ImageName, self).__init__(text, "imagegroup", value, *args, **kwargs)
+        super(ImageName, self).__init__(text, IMAGE_GROUP, value, *args, **kwargs)

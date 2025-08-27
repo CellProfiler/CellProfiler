@@ -1,5 +1,6 @@
 from ._name import Name
 from ...._validation_error import ValidationError
+from .....constants.pipeline import OBJECT_GROUP
 
 
 class LabelName(Name):
@@ -8,7 +9,7 @@ class LabelName(Name):
     """
 
     def __init__(self, text, value="Do not use", *args, **kwargs):
-        super(LabelName, self).__init__(text, "objectgroup", value, *args, **kwargs)
+        super(LabelName, self).__init__(text, OBJECT_GROUP, value, *args, **kwargs)
 
     def test_valid(self, pipeline):
         if self.value_text in ["Experiment", "Image", "Relationship"]:

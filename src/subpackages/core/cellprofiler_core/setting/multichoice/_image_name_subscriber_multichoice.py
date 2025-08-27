@@ -1,4 +1,5 @@
 from ._subscriber_multichoice import SubscriberMultiChoice
+from ...constants.pipeline import IMAGE_GROUP
 
 
 class ImageNameSubscriberMultiChoice(SubscriberMultiChoice):
@@ -9,5 +10,5 @@ class ImageNameSubscriberMultiChoice(SubscriberMultiChoice):
 
     def __init__(self, text, value=None, *args, **kwargs):
         super(ImageNameSubscriberMultiChoice, self).__init__(
-            text, "imagegroup", value, *args, **kwargs
+            text, IMAGE_GROUP, value, *args, **kwargs
         )

@@ -19,7 +19,7 @@ class Name(Alphanumeric):
         """
         This setting provides a name to this group
 
-        Returns a group name, e.g., imagegroup or objectgroup
+        Returns a group name, e.g., "imagegroup" or "objectgroup"
         """
         return self.__provided_attributes["group"]
 

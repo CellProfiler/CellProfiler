@@ -5,6 +5,7 @@ import numpy
 from ..image import Image
 from ..module import Module
 from ..setting.text import Name
+from ..constants.pipeline import IMAGE_GROUP
 
 
 class InjectImage(Module):
@@ -32,7 +33,7 @@ class InjectImage(Module):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = Name("Hardwired image name", "imagegroup", image_name)
+        self.image_name = Name("Hardwired image name", IMAGE_GROUP, image_name)
         self.__release_image = release_image
 
     def settings(self):

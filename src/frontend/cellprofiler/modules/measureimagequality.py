@@ -10,6 +10,7 @@ import centrosome.threshold
 import numpy
 import scipy.linalg.basic
 import scipy.ndimage
+from cellprofiler_core.constants.pipeline import IMAGE_GROUP
 from cellprofiler_core.constants.image import C_SCALING
 from cellprofiler_core.constants.measurement import (
     COLTYPE_FLOAT,
@@ -1614,7 +1615,7 @@ to the foreground pixels or the background pixels.
             #
             # Get a dictionary of image name to (module, setting)
             #
-            image_providers = pipeline.get_provider_dictionary("imagegroup", self)
+            image_providers = pipeline.get_provider_dictionary(IMAGE_GROUP, self)
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
                     if module.is_load_module() and (

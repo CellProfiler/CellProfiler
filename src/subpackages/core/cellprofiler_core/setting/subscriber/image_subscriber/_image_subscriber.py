@@ -1,4 +1,5 @@
 from .._subscriber import Subscriber
+from ....constants.pipeline import IMAGE_GROUP
 
 
 class ImageSubscriber(Subscriber):
@@ -15,5 +16,5 @@ class ImageSubscriber(Subscriber):
         **kwargs,
     ):
         super(ImageSubscriber, self).__init__(
-            text, "imagegroup", value, can_be_blank, blank_text, *args, **kwargs
+            text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs
         )

@@ -1,4 +1,5 @@
 from ._subscriber_multichoice import SubscriberMultiChoice
+from ...constants.pipeline import OBJECT_GROUP
 
 
 class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
@@ -9,5 +10,5 @@ class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
 
     def __init__(self, text, value=None, *args, **kwargs):
         super(ObjectSubscriberMultiChoice, self).__init__(
-            text, "objectgroup", value, *args, **kwargs
+            text, OBJECT_GROUP, value, *args, **kwargs
         )

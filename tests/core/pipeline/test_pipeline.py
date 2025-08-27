@@ -31,6 +31,9 @@ from cellprofiler_core.constants.pipeline import (
     M_VERSION,
     M_TIMESTAMP,
     M_MODIFICATION_TIMESTAMP,
+    IMAGE_GROUP,
+    OBJECT_GROUP,
+    MEASUREMENTS_GROUP,
 )
 from cellprofiler_core.image import Image, ImageSetList
 from cellprofiler_core.measurement import Measurements
@@ -894,9 +897,9 @@ HasImagePlaneDetails:False"""
             module.set_module_num(1)
             pipeline.add_module(module)
             for groupname in (
-                    "imagegroup",
-                    "objectgroup",
-                    "measurementsgroup",
+                    IMAGE_GROUP,
+                    OBJECT_GROUP,
+                    MEASUREMENTS_GROUP,
             ):
                 d = pipeline.get_provider_dictionary(groupname)
                 assert len(d) == 0
@@ -907,7 +910,7 @@ HasImagePlaneDetails:False"""
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("imagegroup")
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP)
         assert len(d) == 1
         assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
@@ -915,7 +918,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         assert provider[0] == module
         assert provider[1] == my_setting
-        for group in ("objectgroup", "measurementsgroup"):
+        for group in (OBJECT_GROUP, MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_object(self):
@@ -924,7 +927,7 @@ HasImagePlaneDetails:False"""
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("objectgroup")
+        d = pipeline.get_provider_dictionary(OBJECT_GROUP)
         assert len(d) == 1
         assert list(d.keys())[0] == OBJECT_NAME
         providers = d[OBJECT_NAME]
@@ -932,7 +935,7 @@ HasImagePlaneDetails:False"""
         provider = providers[0]
         assert provider[0] == module
         assert provider[1] == my_setting
-        for group in ("imagegroup", "measurementsgroup"):
+        for group in (IMAGE_GROUP, MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_measurement(self):
@@ -942,7 +945,7 @@ HasImagePlaneDetails:False"""
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("measurementsgroup")
+        d = pipeline.get_provider_dictionary(MEASUREMENTS_GROUP)
         assert len(d) == 1
         key = list(d.keys())[0]
         assert len(key) == 2
@@ -952,22 +955,22 @@ HasImagePlaneDetails:False"""
         assert len(providers) == 1
         provider = providers[0]
         assert provider[0] == module
-        for group in ("objectgroup", "imagegroup"):
+        for group in (OBJECT_GROUP, IMAGE_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_other(self):
         pipeline = get_empty_pipeline()
-        module = ATestModule(other_providers={"imagegroup": [IMAGE_NAME]})
+        module = ATestModule(other_providers={IMAGE_GROUP: [IMAGE_NAME]})
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("imagegroup")
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP)
         assert len(d) == 1
         assert list(d.keys())[0] == IMAGE_NAME
         providers = d[IMAGE_NAME]
         assert len(providers) == 1
         provider = providers[0]
         assert provider[0] == module
-        for group in ("objectgroup", "measurementsgroup"):
+        for group in (OBJECT_GROUP, MEASUREMENTS_GROUP):
             assert len(pipeline.get_provider_dictionary(group)) == 0
 
     def test_get_provider_dictionary_combo(self):
@@ -975,7 +978,7 @@ HasImagePlaneDetails:False"""
         image_setting = ImageName("foo", IMAGE_NAME)
         object_setting = LabelName("foo", OBJECT_NAME)
         measurement_columns = [(OBJECT_NAME, FEATURE_NAME, COLTYPE_FLOAT,)]
-        other_providers = {"imagegroup": [ALT_IMAGE_NAME]}
+        other_providers = {IMAGE_GROUP: [ALT_IMAGE_NAME]}
         module = ATestModule(
             settings=[image_setting, object_setting],
             measurement_columns=measurement_columns,
@@ -983,7 +986,7 @@ HasImagePlaneDetails:False"""
         )
         module.set_module_num(1)
         pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("imagegroup")
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP)
         assert len(d) == 2
         assert IMAGE_NAME in d
         providers = d[IMAGE_NAME]
@@ -998,7 +1001,7 @@ HasImagePlaneDetails:False"""
         assert len(provider) == 2
         assert provider[0] == module
 
-        d = pipeline.get_provider_dictionary("objectgroup")
+        d = pipeline.get_provider_dictionary(OBJECT_GROUP)
         assert len(d) == 1
         assert OBJECT_NAME in d
         providers = d[OBJECT_NAME]
@@ -1008,7 +1011,7 @@ HasImagePlaneDetails:False"""
         assert provider[0] == module
         assert provider[1] == object_setting
 
-        d = pipeline.get_provider_dictionary("measurementsgroup")
+        d = pipeline.get_provider_dictionary(MEASUREMENTS_GROUP)
         assert len(d) == 1
         key = list(d.keys())[0]
         assert len(key) == 2
@@ -1039,22 +1042,22 @@ HasImagePlaneDetails:False"""
         for i, module in enumerate((module1, module2, module3, module4)):
             module.module_num = i + 1
             pipeline.add_module(module)
-        d = pipeline.get_provider_dictionary("imagegroup")
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP)
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert len(d[IMAGE_NAME]) == 2
         for module in (module1, module3):
             assert any([x[0] == module for x in d[IMAGE_NAME]])
 
-        d = pipeline.get_provider_dictionary("imagegroup", module1)
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP, module1)
         assert len(d) == 0
 
-        d = pipeline.get_provider_dictionary("imagegroup", module2)
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP, module2)
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert d[IMAGE_NAME][0][0] == module1
 
-        d = pipeline.get_provider_dictionary("imagegroup", module4)
+        d = pipeline.get_provider_dictionary(IMAGE_GROUP, module4)
         assert len(d) == 1
         assert IMAGE_NAME in d
         assert len(d[IMAGE_NAME]) == 1

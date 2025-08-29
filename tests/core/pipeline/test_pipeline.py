@@ -1073,7 +1073,7 @@ HasImagePlaneDetails:False"""
             pipeline = Pipeline()
             module.set_module_num(1)
             pipeline.add_module(module)
-            result = pipeline.get_dependency_graph()
+            result = pipeline.get_name_dependency_graph()
             assert len(result) == 0
 
     def test_get_dependency_graph_image(self):
@@ -1087,7 +1087,7 @@ HasImagePlaneDetails:False"""
         ):
             module.module_num = i + 1
             pipeline.add_module(module)
-        g = pipeline.get_dependency_graph()
+        g = pipeline.get_name_dependency_graph()
         assert len(g) == 1
         edge = g[0]
         assert isinstance(edge, ImageDependency)
@@ -1108,7 +1108,7 @@ HasImagePlaneDetails:False"""
         ):
             module.module_num = i + 1
             pipeline.add_module(module)
-        g = pipeline.get_dependency_graph()
+        g = pipeline.get_name_dependency_graph()
         assert len(g) == 1
         edge = g[0]
         assert isinstance(edge, ObjectDependency)
@@ -1131,7 +1131,7 @@ HasImagePlaneDetails:False"""
         ):
             module.module_num = i + 1
             pipeline.add_module(module)
-        g = pipeline.get_dependency_graph()
+        g = pipeline.get_name_dependency_graph()
         assert len(g) == 1
         edge = g[0]
         assert isinstance(edge, MeasurementDependency)

@@ -100,7 +100,12 @@ from ..preferences import get_conserve_memory
 from ..preferences import report_progress
 from ..setting.multichoice import ImageNameSubscriberMultiChoice
 from ..setting.subscriber import ImageSubscriber
+from ..setting.subscriber import CropImageSubscriber
+from ..setting.subscriber import FileImageSubscriber
+from ..setting.subscriber import OutlineImageSubscriber
+from ..setting.subscriber import LabelSubscriber
 from ..setting.subscriber import ImageListSubscriber
+from ..setting.subscriber import LabelListSubscriber
 from ..setting import Measurement
 from ..setting.text import Name
 from ..utilities.measurement import load_measurements
@@ -2701,6 +2706,147 @@ class Pipeline:
 
     def get_dependency_graph(self):
         """Create a graph that describes the producers and consumers of objects
+
+        returns a list of Dependency objects. These can be used to create a
+        directed graph that describes object and image dependencies.
+        """
+        """
+            INPUT_IMAGE_TYPES = (
+                "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                "cellprofiler_core.setting.subscriber.image_subscriber._crop_image_subscriber.CropImageSubscriber",
+                "cellprofiler_core.setting.subscriber.image_subscriber._file_image_subscriber.FileImageSubscriber",
+                "cellprofiler_core.setting.subscriber.image_subscriber._outline_image_subscriber.OutlineImageSubscriber",
+            )
+            INPUT_LABEL_TYPES = (
+                "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+            )
+            INPUT_IMAGE_LIST_TYPES = (
+                "cellprofiler_core.setting.subscriber.list_subscriber._image_list_subscriber.ImageListSubscriber",
+            )
+            INPUT_LABEL_LIST_TYPES = (
+                "cellprofiler_core.setting.subscriber.list_subscriber._label_list_subscriber.LabelListSubscriber",
+            )
+
+            # TODO: Support input grid?
+            # "cellprofiler_core.setting.subscriber._grid_subscriber.GridSubscriber",
+
+            # NOTE: The following additional input types exist but are not currently captured:
+            # - cellprofiler.modules.measureobjectintensitydistribution.MORDObjectNameSubscriber
+            # - cellprofiler.modules.measureobjectintensitydistribution.MORDImageNameSubscriber
+            # - cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber
+            # See:
+            # https://github.com/CellProfiler/CellProfiler/blob/3186518c42fbb58f762e5b92c495fa38e4aeb42d/src/frontend/cellprofiler/modules/measureobjectintensitydistribution.py#L1495-L1521
+            # https://github.com/CellProfiler/CellProfiler/blob/3186518c42fbb58f762e5b92c495fa38e4aeb42d/src/frontend/cellprofiler/modules/exporttospreadsheet.py#L1670-L1681
+
+            # Output types
+            OUTPUT_IMAGE_TYPES = (
+                "cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name.ImageName",
+                "cellprofiler_core.setting.text.alphanumeric.name.image_name._crop_image_name.CropImageName",
+                "cellprofiler_core.setting.text.alphanumeric.name.image_name._external_image_name.ExternalImageName",
+                "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                "cellprofiler_core.setting.text.alphanumeric.name.image_name._outline_image_name.OutlineImageName",
+            )
+            OUTPUT_LABEL_TYPES = (
+                "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+            )
+        """
+        def add_dependency(group, name, providers, module, setting, result, object_name=None, feature_name=None):
+            # covers the case of EEObjectNameSubscriber in ExportToSpreadsheet
+            if isinstance(setting, LabelSubscriber) and (name == IMAGE or name == EXPERIMENT):
+                return
+
+            if group not in providers or name not in providers[group]:
+                LOGGER.debug(f"Couldn't find subscriber {name} in providers of group {group} (module {module.module_name}-{module.module_num})")
+                return
+
+            if len(providers[group][name]) == 0:
+                LOGGER.debug(f"Couldn't find any providers for {name} in group {group} (module {module.module_name}-{module.module_num})")
+                return
+
+            if len(providers[group][name]) > 1:
+                LOGGER.debug(f"Found multiple providers for {name} in group {group} (module {module.module_name}-{module.module_num})")
+
+            pmodule, psetting = providers[group][name][0]
+
+            if group == IMAGE_GROUP:
+                dependency = ImageDependency(
+                    pmodule, module, name, psetting, setting
+                )
+            elif group == OBJECT_GROUP:
+                dependency = ObjectDependency(
+                    pmodule, module, name, psetting, setting
+                )
+            elif group == MEASUREMENTS_GROUP:
+                dependency = MeasurementDependency(
+                    pmodule, module, object_name, feature_name, psetting, setting
+                )
+
+            result.append(dependency)
+        #
+        # These dictionaries have the following structure:
+        # * top level dictionary key indicates whether it is an object, image
+        #   or measurement dependency
+        # * second level dictionary key is the name of the object or image or
+        #   a tuple of (object_name, feature) for a measurement.
+        # * the value of the second-level dictionary is a list of tuples
+        #   where the first element of the tuple is the module and the
+        #   second is either None or the setting.
+        #
+        all_groups = (OBJECT_GROUP, IMAGE_GROUP, MEASUREMENTS_GROUP)
+        providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
+        #
+        # Now match subscribers against providers.
+        #
+        result = []
+        for module in self.modules():
+            for setting in module.visible_settings():
+                if any(map(lambda sub_type: isinstance(setting, sub_type), (ImageSubscriber, CropImageSubscriber, FileImageSubscriber, OutlineImageSubscriber, ))):
+                    add_dependency(IMAGE_GROUP, setting.value, providers, module, setting, result)
+                elif isinstance(setting, LabelSubscriber):
+                    add_dependency(OBJECT_GROUP, setting.value, providers, module, setting, result)
+                elif isinstance(setting, ImageListSubscriber):
+                    for img_name in setting.value:
+                        add_dependency(IMAGE_GROUP, img_name, providers, module, setting, result)
+                elif isinstance(setting, LabelListSubscriber):
+                    for obj_name in setting.value:
+                        add_dependency(OBJECT_GROUP, obj_name, providers, module, setting, result)
+                elif isinstance(setting, Measurement):
+                    object_name = setting.get_measurement_object()
+                    feature_name = setting.value
+                    name = (object_name, feature_name)
+                    add_dependency(MEASUREMENTS_GROUP, name, providers, module, setting, result, object_name, feature_name)
+                else:
+                    continue
+
+        return result
+
+    def describe_dependency_graph(self, edges=None):
+        if not edges:
+            edges = self.get_dependency_graph()
+        for module in self.modules():
+            inputs = [e for e in edges if e.destination == module]
+            outputs = [e for e in edges if e.source == module]
+            print(f"Module {module.module_name}-{module.module_num}")
+            for edge in inputs:
+                if isinstance(edge, ImageDependency):
+                    print(f"\t-> input img: '{edge.image_name}' (from {edge.source.module_name}-{edge.source.module_num})")
+                elif isinstance(edge, ObjectDependency):
+                    print(f"\t-> input obj: '{edge.object_name}' (from {edge.source.module_name}-{edge.source.module_num})")
+                elif isinstance(edge, MeasurementDependency):
+                    print(f"\t-> input mes: '{edge.object_name}.{edge.feature}' (from {edge.source.module_name}-{edge.source.module_num})")
+            for edge in outputs:
+                if isinstance(edge, ImageDependency):
+                    print(f"\t<- output img: '{edge.image_name}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+                elif isinstance(edge, ObjectDependency):
+                    print(f"\t<- output obj: '{edge.object_name}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+                elif isinstance(edge, MeasurementDependency):
+                    print(f"\t<- output mes: '{edge.object_name}.{edge.feature}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+        print("DONE")
+
+    # TODO: LIS - pretty sure below does nothing useful, and above works the way it's supposed to
+    # re-review and fix tests that rely on this one to rely on above one instead
+    def get_name_dependency_graph(self):
+        """Create a graph that describes the producers and consumers of objects referenced by name
 
         returns a list of Dependency objects. These can be used to create a
         directed graph that describes object and image dependencies.

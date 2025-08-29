@@ -2695,6 +2695,14 @@ class Pipeline:
                         result[k] = []
                     result[k].append((module, None))
             for setting in module.visible_settings():
+                # NOTE: Name subtypes include:
+                #  ImageName,
+                #  CropImageName,
+                #  ExternalImageName,
+                #  FileImageName,
+                #  OutlineImageName,
+                #  LabelName,
+                #  GridName
                 if isinstance(setting, Name,) and setting.get_group() == groupname:
                     name = setting.value
                     if name == "Do not use":
@@ -2705,53 +2713,15 @@ class Pipeline:
         return result
 
     def get_dependency_graph(self):
-        """Create a graph that describes the producers and consumers of objects
+        """Create a graph that describes the producers and consumers of images, objects, and measurements
 
         returns a list of Dependency objects. These can be used to create a
         directed graph that describes object and image dependencies.
         """
-        """
-            INPUT_IMAGE_TYPES = (
-                "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
-                "cellprofiler_core.setting.subscriber.image_subscriber._crop_image_subscriber.CropImageSubscriber",
-                "cellprofiler_core.setting.subscriber.image_subscriber._file_image_subscriber.FileImageSubscriber",
-                "cellprofiler_core.setting.subscriber.image_subscriber._outline_image_subscriber.OutlineImageSubscriber",
-            )
-            INPUT_LABEL_TYPES = (
-                "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
-            )
-            INPUT_IMAGE_LIST_TYPES = (
-                "cellprofiler_core.setting.subscriber.list_subscriber._image_list_subscriber.ImageListSubscriber",
-            )
-            INPUT_LABEL_LIST_TYPES = (
-                "cellprofiler_core.setting.subscriber.list_subscriber._label_list_subscriber.LabelListSubscriber",
-            )
-
-            # TODO: Support input grid?
-            # "cellprofiler_core.setting.subscriber._grid_subscriber.GridSubscriber",
-
-            # NOTE: The following additional input types exist but are not currently captured:
-            # - cellprofiler.modules.measureobjectintensitydistribution.MORDObjectNameSubscriber
-            # - cellprofiler.modules.measureobjectintensitydistribution.MORDImageNameSubscriber
-            # - cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber
-            # See:
-            # https://github.com/CellProfiler/CellProfiler/blob/3186518c42fbb58f762e5b92c495fa38e4aeb42d/src/frontend/cellprofiler/modules/measureobjectintensitydistribution.py#L1495-L1521
-            # https://github.com/CellProfiler/CellProfiler/blob/3186518c42fbb58f762e5b92c495fa38e4aeb42d/src/frontend/cellprofiler/modules/exporttospreadsheet.py#L1670-L1681
-
-            # Output types
-            OUTPUT_IMAGE_TYPES = (
-                "cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name.ImageName",
-                "cellprofiler_core.setting.text.alphanumeric.name.image_name._crop_image_name.CropImageName",
-                "cellprofiler_core.setting.text.alphanumeric.name.image_name._external_image_name.ExternalImageName",
-                "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
-                "cellprofiler_core.setting.text.alphanumeric.name.image_name._outline_image_name.OutlineImageName",
-            )
-            OUTPUT_LABEL_TYPES = (
-                "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
-            )
-        """
         def add_dependency(group, name, providers, module, setting, result, object_name=None, feature_name=None):
-            # covers the case of EEObjectNameSubscriber in ExportToSpreadsheet
+            # NOTE: LabelSubscriber includes EEObjectNameSubscriber from ExportToSpreadsheet
+            #
+            # we want to filter out 'Image' and 'Experiment' from those, only letting object names through
             if isinstance(setting, LabelSubscriber) and (name == IMAGE or name == EXPERIMENT):
                 return
 
@@ -2800,8 +2770,10 @@ class Pipeline:
         result = []
         for module in self.modules():
             for setting in module.visible_settings():
+                # NOTE: ImageSubscriber includes MORDImageNameSubscriber from MeasureObjectIntensityDistribution
                 if any(map(lambda sub_type: isinstance(setting, sub_type), (ImageSubscriber, CropImageSubscriber, FileImageSubscriber, OutlineImageSubscriber, ))):
                     add_dependency(IMAGE_GROUP, setting.value, providers, module, setting, result)
+                # NOTE: LabelSubscriber includes MORDObjectNameSubscriber from MeasureObjectIntensityDistribution
                 elif isinstance(setting, LabelSubscriber):
                     add_dependency(OBJECT_GROUP, setting.value, providers, module, setting, result)
                 elif isinstance(setting, ImageListSubscriber):
@@ -2815,6 +2787,7 @@ class Pipeline:
                     feature_name = setting.value
                     name = (object_name, feature_name)
                     add_dependency(MEASUREMENTS_GROUP, name, providers, module, setting, result, object_name, feature_name)
+                # NOTE: GridSubscriber not handled
                 else:
                     continue
 

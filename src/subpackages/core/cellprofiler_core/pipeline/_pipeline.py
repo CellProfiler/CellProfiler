@@ -2712,13 +2712,15 @@ class Pipeline:
                     result[name].append((module, setting))
         return result
 
-    def get_dependency_graph(self):
+    def get_dependency_graph(self, include_unused=True):
         """Create a graph that describes the producers and consumers of images, objects, and measurements
+
+        include_unused: returns images and objects with no destination modules (output only)
 
         returns a list of Dependency objects. These can be used to create a
         directed graph that describes object and image dependencies.
         """
-        def add_dependency(group, name, providers, module, setting, result, object_name=None, feature_name=None):
+        def add_dependency(group, name, providers, module, setting, result, used_providers, object_name=None, feature_name=None):
             # NOTE: LabelSubscriber includes EEObjectNameSubscriber from ExportToSpreadsheet
             #
             # we want to filter out 'Image' and 'Experiment' from those, only letting object names through
@@ -2736,6 +2738,9 @@ class Pipeline:
             if len(providers[group][name]) > 1:
                 LOGGER.debug(f"Found multiple providers for {name} in group {group} (module {module.module_name}-{module.module_num})")
 
+            # mark this provider as used
+            used_providers[group].add(name)
+
             pmodule, psetting = providers[group][name][0]
 
             if group == IMAGE_GROUP:
@@ -2752,6 +2757,32 @@ class Pipeline:
                 )
 
             result.append(dependency)
+
+        def add_output(group, name, providers, result):
+            if group not in providers or name not in providers[group]:
+                LOGGER.debug(f"Couldn't find subscriber {name} in providers of group {group}")
+                return
+
+            if len(providers[group][name]) == 0:
+                LOGGER.debug(f"Couldn't find any providers for {name} in group {group}")
+                return
+
+            for pmodule, psetting in providers[group][name]:
+                if group == IMAGE_GROUP:
+                    dependency = ImageDependency(
+                        pmodule, None, name, psetting, None
+                    )
+                elif group == OBJECT_GROUP:
+                    dependency = ObjectDependency(
+                        pmodule, None, name, psetting, None
+                    )
+                elif group == MEASUREMENTS_GROUP:
+                    dependency = MeasurementDependency(
+                        pmodule, None, name[0], name[1], psetting, None
+                    )
+
+                result.append(dependency)
+
         #
         # These dictionaries have the following structure:
         # * top level dictionary key indicates whether it is an object, image
@@ -2765,6 +2796,11 @@ class Pipeline:
         all_groups = (OBJECT_GROUP, IMAGE_GROUP, MEASUREMENTS_GROUP)
         providers = dict([(g, self.get_provider_dictionary(g)) for g in all_groups])
         #
+        # This dictionary tracks providers that are used, i.e. have a dependency relationship
+        # between modules. Used to find which providers are left unused in the end.
+        #
+        used_providers = {group: set() for group in all_groups}
+        #
         # Now match subscribers against providers.
         #
         result = []
@@ -2772,24 +2808,33 @@ class Pipeline:
             for setting in module.visible_settings():
                 # NOTE: ImageSubscriber includes MORDImageNameSubscriber from MeasureObjectIntensityDistribution
                 if any(map(lambda sub_type: isinstance(setting, sub_type), (ImageSubscriber, CropImageSubscriber, FileImageSubscriber, OutlineImageSubscriber, ))):
-                    add_dependency(IMAGE_GROUP, setting.value, providers, module, setting, result)
+                    add_dependency(IMAGE_GROUP, setting.value, providers, module, setting, result, used_providers)
                 # NOTE: LabelSubscriber includes MORDObjectNameSubscriber from MeasureObjectIntensityDistribution
                 elif isinstance(setting, LabelSubscriber):
-                    add_dependency(OBJECT_GROUP, setting.value, providers, module, setting, result)
+                    add_dependency(OBJECT_GROUP, setting.value, providers, module, setting, result, used_providers)
                 elif isinstance(setting, ImageListSubscriber):
                     for img_name in setting.value:
-                        add_dependency(IMAGE_GROUP, img_name, providers, module, setting, result)
+                        add_dependency(IMAGE_GROUP, img_name, providers, module, setting, result, used_providers)
                 elif isinstance(setting, LabelListSubscriber):
                     for obj_name in setting.value:
-                        add_dependency(OBJECT_GROUP, obj_name, providers, module, setting, result)
+                        add_dependency(OBJECT_GROUP, obj_name, providers, module, setting, result, used_providers)
                 elif isinstance(setting, Measurement):
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     name = (object_name, feature_name)
-                    add_dependency(MEASUREMENTS_GROUP, name, providers, module, setting, result, object_name, feature_name)
+                    add_dependency(MEASUREMENTS_GROUP, name, providers, module, setting, result, used_providers, object_name, feature_name)
                 # NOTE: GridSubscriber not handled
                 else:
                     continue
+
+        #
+        # Now find remaining, unused providers, where dependency relationships don't exist
+        #
+        if include_unused:
+            for group in all_groups:
+                for provider_name in providers[group].keys():
+                    if provider_name not in used_providers[group]:
+                        add_output(group, provider_name, providers, result)
 
         return result
 
@@ -2808,12 +2853,13 @@ class Pipeline:
                 elif isinstance(edge, MeasurementDependency):
                     print(f"\t-> input mes: '{edge.object_name}.{edge.feature}' (from {edge.source.module_name}-{edge.source.module_num})")
             for edge in outputs:
+                destination = f"{edge.destination.module_name}-{edge.destination.module_num}" if edge.destination is not None else "NIL"
                 if isinstance(edge, ImageDependency):
-                    print(f"\t<- output img: '{edge.image_name}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+                    print(f"\t<- output img: '{edge.image_name}' (to {destination})")
                 elif isinstance(edge, ObjectDependency):
-                    print(f"\t<- output obj: '{edge.object_name}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+                    print(f"\t<- output obj: '{edge.object_name}' (to {destination})")
                 elif isinstance(edge, MeasurementDependency):
-                    print(f"\t<- output mes: '{edge.object_name}.{edge.feature}' (to {edge.destination.module_name}-{edge.destination.module_num})")
+                    print(f"\t<- output mes: '{edge.object_name}.{edge.feature}' (to {destination})")
         print("DONE")
 
     # TODO: LIS - pretty sure below does nothing useful, and above works the way it's supposed to

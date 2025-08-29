@@ -3486,6 +3486,8 @@ class PipelineController(object):
         finally:
             workspace_model.set_file_list(None)
         self.__debug_outlines = {}
+        # TODO: LIS - remove this, and put it whereever it actually belongs
+        self.__pipeline.describe_dependency_graph()
         if not self.debug_init_imageset():
             self.stop_debugging()
             return False

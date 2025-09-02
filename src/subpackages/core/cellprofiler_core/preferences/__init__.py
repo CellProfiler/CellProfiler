@@ -448,6 +448,9 @@ EXT_PROJECT = "cpproj"
 """Possible CellProfiler project extensions"""
 EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi"]
 
+"""Dependency tree extension"""
+EXT_DEP_TREE = "json"
+
 """Preference key for the JVM heap size in megabytes"""
 JVM_HEAP_MB = "JVMHeapMB"
 

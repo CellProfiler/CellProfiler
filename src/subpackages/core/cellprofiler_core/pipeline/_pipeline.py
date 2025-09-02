@@ -13,6 +13,7 @@ import timeit
 import urllib.parse
 import urllib.request
 import requests
+import json
 from typing import Union
 
 import uuid
@@ -759,6 +760,10 @@ class Pipeline:
                 
                 lines.append("")
         fd.write("\n".join(lines))
+
+    def save_dependency_graph(self, fd):
+        dep_graph_json = self.dependency_graph_json()
+        fd.write(dep_graph_json)
 
     def write_pipeline_measurement(self, m, user_pipeline=False):
         """Write the pipeline experiment measurement to the measurements
@@ -2861,6 +2866,99 @@ class Pipeline:
                 elif isinstance(edge, MeasurementDependency):
                     print(f"\t<- output mes: '{edge.object_name}.{edge.feature}' (to {destination})")
         print("DONE")
+
+    def dependency_graph_json(self, edges=None):
+        """Generate a JSON representation of the dependency graph
+
+        Returns a JSON string containing the dependency graph structure
+        with modules and their input/output dependencies.
+        """
+        if not edges:
+            edges = self.get_dependency_graph()
+
+        modules_data = []
+
+        for module in self.modules():
+            inputs = [e for e in edges if e.destination == module]
+            outputs = [e for e in edges if e.source == module]
+
+            # Build inputs list
+            inputs_list = []
+            for edge in inputs:
+                if isinstance(edge, ImageDependency):
+                    inputs_list.append({
+                        "type": "image",
+                        "name": edge.image_name,
+                        "source_module": edge.source.module_name,
+                        "source_module_num": edge.source.module_num
+                    })
+                elif isinstance(edge, ObjectDependency):
+                    inputs_list.append({
+                        "type": "object", 
+                        "name": edge.object_name,
+                        "source_module": edge.source.module_name,
+                        "source_module_num": edge.source.module_num
+                    })
+                elif isinstance(edge, MeasurementDependency):
+                    inputs_list.append({
+                        "type": "measurement",
+                        "object_name": edge.object_name,
+                        "feature": edge.feature,
+                        "name": f"{edge.object_name}.{edge.feature}",
+                        "source_module": edge.source.module_name,
+                        "source_module_num": edge.source.module_num
+                    })
+
+            # Build outputs list
+            outputs_list = []
+            for edge in outputs:
+                destination_module = edge.destination.module_name if edge.destination is not None else None
+                destination_module_num = edge.destination.module_num if edge.destination is not None else None
+
+                if isinstance(edge, ImageDependency):
+                    outputs_list.append({
+                        "type": "image",
+                        "name": edge.image_name,
+                        "destination_module": destination_module,
+                        "destination_module_num": destination_module_num
+                    })
+                elif isinstance(edge, ObjectDependency):
+                    outputs_list.append({
+                        "type": "object",
+                        "name": edge.object_name,
+                        "destination_module": destination_module,
+                        "destination_module_num": destination_module_num
+                    })
+                elif isinstance(edge, MeasurementDependency):
+                    outputs_list.append({
+                        "type": "measurement",
+                        "object_name": edge.object_name,
+                        "feature": edge.feature,
+                        "name": f"{edge.object_name}.{edge.feature}",
+                        "destination_module": destination_module,
+                        "destination_module_num": destination_module_num
+                    })
+
+            # Add module data
+            module_data = {
+                "module_name": module.module_name,
+                "module_num": module.module_num,
+                "inputs": inputs_list,
+                "outputs": outputs_list
+            }
+
+            modules_data.append(module_data)
+
+        # Create the complete dependency graph structure
+        dependency_graph = {
+            "modules": modules_data,
+            "metadata": {
+                "total_modules": len(modules_data),
+                "total_edges": len(edges)
+            }
+        }
+
+        return json.dumps(dependency_graph, indent=2)
 
     # TODO: LIS - pretty sure below does nothing useful, and above works the way it's supposed to
     # re-review and fix tests that rely on this one to rely on above one instead

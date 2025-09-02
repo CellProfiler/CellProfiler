@@ -114,6 +114,7 @@ from cellprofiler_core.preferences import (
     SPP_PIPELINE_ONLY,
     SPP_PIPELINE_AND_FILE_LIST,
     EXT_PIPELINE,
+    EXT_DEP_TREE,
     EXT_PIPELINE_CHOICES,
     cancel_progress,
     add_output_directory_listener,
@@ -265,6 +266,11 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.__on_export_image_sets,
             id=cellprofiler.gui.cpframe.ID_FILE_EXPORT_IMAGE_SETS,
+        )
+        frame.Bind(
+            wx.EVT_MENU,
+            self.__on_export_dependency_graph,
+            id=cellprofiler.gui.cpframe.ID_FILE_EXPORT_DEPENDENCY_GRAPH,
         )
         frame.Bind(
             wx.EVT_MENU,
@@ -1431,6 +1437,39 @@ class PipelineController(object):
                 error = cellprofiler.gui.dialog.Error("Error", str(e))
                 if error.status is wx.ID_CANCEL:
                     cancel_progress()
+
+    def __on_export_dependency_graph(self, event):
+        default_filename = get_current_workspace_path()
+        if default_filename is None:
+            default_filename = f"pipeline.{EXT_DEP_TREE}"
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = (
+                os.path.splitext(default_filename)[0] + "." + EXT_DEP_TREE
+            )
+        with wx.FileDialog(
+            self.__frame,
+            "Export dependency graph",
+            wildcard="JSON object (*.json)|*.json",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            defaultFile=default_filename,
+        ) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
+            if default_path is not None:
+                dlg.SetPath(os.path.join(default_path, default_filename))
+
+            dialog_response = dlg.ShowModal()
+            if dialog_response == wx.ID_OK:
+                try:
+                    pathname = dlg.GetPath()
+
+                    with open(pathname, "w") as fd:
+                        self.__pipeline.save_dependency_graph(fd)
+                except Exception as e:
+                    error = cellprofiler.gui.dialog.Error("Error", str(e))
+                    if error.status is wx.ID_CANCEL:
+                        cancel_progress()
 
     def __on_export_pipeline_notes(self, event):
         default_filename = get_current_workspace_path()

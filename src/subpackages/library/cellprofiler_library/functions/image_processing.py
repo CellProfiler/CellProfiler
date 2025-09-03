@@ -3,21 +3,26 @@ import skimage.color
 import skimage.morphology
 import skimage.segmentation
 import skimage.util
+import skimage.transform
+import skimage
+import skimage.restoration
 import centrosome
 import centrosome.threshold
 import centrosome.filter
 import scipy
+import scipy.interpolate
 import matplotlib
 import math
 from numpy.typing import NDArray
 import centrosome.filter
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.overlayoutlines import BrightnessMode
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
+from ..opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
 
 T = TypeVar("T", bound=ImageAny)
 MorphImageT = TypeVar("Union[ImageGrayscale, ImageGrayscaleMask]", bound=Union[ImageGrayscale, ImageGrayscaleMask])
@@ -219,6 +224,153 @@ def reduce_noise(image, patch_size, patch_distance, cutoff_distance, channel_axi
         fast_mode=True,
     )
     return denoised
+
+
+################################################################################
+# Resize Functions
+################################################################################
+
+def resized_shape(
+    im_pixel_data: ImageAny,
+    im_dimensions: int,
+    size_method: str,
+    resizing_factor_x: float,
+    resizing_factor_y: float,
+    resizing_factor_z: Optional[float],
+    use_manual_or_image: DimensionMethod,
+    specific_width: Optional[int],
+    specific_height: Optional[int],
+    specific_planes: Optional[int],
+    reference_image_shape: Optional[Tuple[int, ...]] = None,
+) -> NDArray[numpy.int_]:
+    """Calculate target dimensions based on resize method."""
+    im_volumetric = True if im_dimensions == 3 else False
+    im_multichannel = True if im_pixel_data.ndim > im_dimensions else False
+    
+    
+    shape = numpy.array(im_pixel_data.shape).astype(float)
+
+    if size_method == ResizingMethod.BY_FACTOR:
+        factor_x = resizing_factor_x
+        factor_y = resizing_factor_y
+
+        if im_volumetric:
+            factor_z = resizing_factor_z
+            height, width = shape[1:3]
+            planes = shape[0]
+            planes = numpy.round(planes * factor_z)
+        else:
+            height, width = shape[:2]
+
+        height = numpy.round(height * factor_y)
+        width = numpy.round(width * factor_x)
+
+    else:
+        if use_manual_or_image == DimensionMethod.MANUAL:
+            height = specific_height
+            width = specific_width
+            if im_volumetric:
+                planes = specific_planes
+        else:
+            if reference_image_shape is None:
+                raise ValueError("Reference image shape must be provided when using image-based dimensions")
+
+            if im_volumetric:
+                planes, height, width = reference_image_shape[:3]
+            else:
+                height, width = reference_image_shape[:2]
+
+    new_shape = []
+
+    if im_volumetric:
+        new_shape += [planes]
+
+    new_shape += [height, width]
+
+    if im_multichannel:
+        new_shape += [shape[-1]]
+
+    return numpy.asarray(new_shape)
+
+
+def spline_order(interpolation_method: str) -> int:
+    """Determine interpolation order from method."""
+    
+    if interpolation_method == InterpolationMethod.NEAREST_NEIGHBOR:
+        return 0
+
+    if interpolation_method == InterpolationMethod.BILINEAR:
+        return 1
+
+    return 3
+
+
+def apply_resize(
+        im_pixel_data: ImageAny,
+        im_mask: ImageGrayscaleMask,
+        im_dimensions: int,
+        im_crop_mask: Optional[ImageGrayscaleMask],
+        size_method: str,
+        resizing_factor_x: float,
+        resizing_factor_y: float,
+        resizing_factor_z: Optional[float],
+        use_manual_or_image: DimensionMethod,
+        specific_width: Optional[int],
+        specific_height: Optional[int],
+        specific_planes: Optional[int],
+        reference_image_shape: Optional[Tuple[int, ...]] = None,
+        interpolation_method: str = "bilinear",
+    ) -> Tuple[ImageAny, ImageGrayscaleMask, Optional[ImageBinaryMask]]:
+    
+    new_shape = resized_shape(
+        im_pixel_data,
+        im_dimensions,
+        size_method,
+        resizing_factor_x,
+        resizing_factor_y,
+        resizing_factor_z,
+        use_manual_or_image,
+        specific_width,
+        specific_height,
+        specific_planes,
+        reference_image_shape,
+    )
+
+    order = spline_order(interpolation_method)
+    im_volumetric = True if im_dimensions == 3 else False
+    im_multichannel = True if im_pixel_data.ndim > im_dimensions else False
+    if im_volumetric and im_multichannel:
+        output_pixels = numpy.zeros(new_shape.astype(int), dtype=im_pixel_data.dtype)
+
+        for idx in range(int(new_shape[-1])):
+            output_pixels[:, :, :, idx] = skimage.transform.resize(
+                im_pixel_data[:, :, :, idx],
+                new_shape[:-1],
+                order=order,
+                mode="symmetric",
+            )
+    else:
+        output_pixels = skimage.transform.resize(
+            im_pixel_data, new_shape, order=order, mode="symmetric"
+        )
+
+    if im_multichannel and len(new_shape) > im_dimensions:
+        new_shape = new_shape[:-1]
+
+    mask = skimage.transform.resize(im_mask, new_shape, order=0, mode="constant")
+
+    mask = skimage.img_as_bool(mask)
+
+    if im_crop_mask is not None:
+        cropping = skimage.transform.resize(
+            im_crop_mask, new_shape, order=0, mode="constant"
+        )
+
+        cropping = skimage.img_as_bool(cropping)
+    else:
+        cropping = None
+
+    return output_pixels, mask, cropping
 
 
 def get_threshold_robust_background(

@@ -26,37 +26,23 @@ See also **Crop**.
 """
 
 import logging
-
-import numpy
-import skimage.transform
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup, Binary
+from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, Integer, ImageName
 
+from cellprofiler_library.modules._resize import resize_image
+from cellprofiler_library.opts.resize import DimensionMethod, InterpolationMethod, ResizingMethod
+
 LOGGER = logging.getLogger(__name__)
-
-R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
-R_TO_SIZE = "Resize by specifying desired final dimensions"
-R_ALL = [R_BY_FACTOR, R_TO_SIZE]
-
-C_IMAGE = "Image"
-C_MANUAL = "Manual"
-C_ALL = [C_MANUAL, C_IMAGE]
-
-I_NEAREST_NEIGHBOR = "Nearest Neighbor"
-I_BILINEAR = "Bilinear"
-I_BICUBIC = "Bicubic"
-
-I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 
 S_ADDITIONAL_IMAGE_COUNT = 12
 
 
-class Resize (ImageProcessing):
+class Resize(ImageProcessing):
     variable_revision_number = 5
 
     module_name = "Resize"
@@ -66,7 +52,7 @@ class Resize (ImageProcessing):
 
         self.size_method = Choice(
             "Resizing method",
-            R_ALL,
+            [rm.value for rm in ResizingMethod],
             doc="""\
 The following options are available:
 
@@ -109,7 +95,7 @@ numbers greater than one (that is, multiples) will enlarge the image.""",
 
         self.use_manual_or_image = Choice(
             "Method to specify the dimensions",
-            C_ALL,
+            [dm.value for dm in DimensionMethod],
             doc="""\
 *(Used only if resizing by specifying the dimensions)*
 
@@ -118,7 +104,7 @@ You have two options on how to resize your image:
 -  *{C_MANUAL}:* Specify the height and width of the output image.
 -  *{C_IMAGE}:* Specify an image and the input image will be resized to the same dimensions.
             """.format(
-                **{"C_IMAGE": C_IMAGE, "C_MANUAL": C_MANUAL}
+                **{"C_IMAGE": DimensionMethod.IMAGE.value, "C_MANUAL": DimensionMethod.MANUAL.value}
             ),
         )
 
@@ -163,7 +149,7 @@ The input image will be resized to the dimensions of the specified image.""",
 
         self.interpolation = Choice(
             "Interpolation method",
-            I_ALL,
+            [it.value for it in InterpolationMethod],
             doc="""\
 -  *Nearest Neighbor:* Each output pixel is given the intensity of the
    nearest corresponding pixel in the input image.
@@ -262,14 +248,14 @@ resized with the same settings as the first image.""",
 
         visible_settings += [self.size_method]
 
-        if self.size_method == R_BY_FACTOR:
+        if self.size_method.value == ResizingMethod.BY_FACTOR:
             visible_settings += [self.resizing_factor_x, self.resizing_factor_y, self.resizing_factor_z,]
-        elif self.size_method == R_TO_SIZE:
+        elif self.size_method.value == ResizingMethod.TO_SIZE:
             visible_settings += [self.use_manual_or_image]
 
-            if self.use_manual_or_image == C_IMAGE:
+            if self.use_manual_or_image.value == DimensionMethod.IMAGE:
                 visible_settings += [self.specific_image]
-            elif self.use_manual_or_image == C_MANUAL:
+            elif self.use_manual_or_image.value == DimensionMethod.MANUAL:
                 visible_settings += [self.specific_width, self.specific_height, self.specific_planes]
         else:
             raise ValueError(
@@ -308,137 +294,100 @@ resized with the same settings as the first image.""",
             pass
 
     def run(self, workspace):
-        self.apply_resize(workspace, self.x_name.value, self.y_name.value)
-
-        for additional in self.additional_images:
-            self.apply_resize(
-                workspace,
-                additional.input_image_name.value,
-                additional.output_image_name.value,
-            )
-
-    def resized_shape(self, image, workspace):
-        image_pixels = image.pixel_data
-
-        shape = numpy.array(image_pixels.shape).astype(float)
-
-
-        if self.size_method.value == R_BY_FACTOR:
-            factor_x = self.resizing_factor_x.value
-
-            factor_y = self.resizing_factor_y.value
-
-            if image.volumetric:
-                factor_z = self.resizing_factor_z.value
-                height, width = shape[1:3]
-                planes = shape [0]
-                planes = numpy.round(planes * factor_z)
-            else:
-                height, width = shape[:2]
-
-            height = numpy.round(height * factor_y)
-
-            width = numpy.round(width * factor_x)
-
-        else:
-            if self.use_manual_or_image.value == C_MANUAL:
-                height = self.specific_height.value
-                width = self.specific_width.value
-                if image.volumetric:
-                    planes = self.specific_planes.value
-            else:
-                other_image = workspace.image_set.get_image(self.specific_image.value)
-
-                if image.volumetric:
-                    planes, height, width = other_image.pixel_data.shape[:3]
-                else:
-                    height, width = other_image.pixel_data.shape[:2]
-
-        new_shape = []
-
-        if image.volumetric:
-            new_shape += [planes]
-
-        new_shape += [height, width]
-
-        if image.multichannel:
-            new_shape += [shape[-1]]
-
-        return numpy.asarray(new_shape)
-
-    def spline_order(self):
-        if self.interpolation.value == I_NEAREST_NEIGHBOR:
-            return 0
-
-        if self.interpolation.value == I_BILINEAR:
-            return 1
-
-        return 3
-
-    def apply_resize(self, workspace, input_image_name, output_image_name):
-        image = workspace.image_set.get_image(input_image_name)
-
-        image_pixels = image.pixel_data
-
-        new_shape = self.resized_shape(image, workspace)
-
-        order = self.spline_order()
-
-        if image.volumetric and image.multichannel:
-            output_pixels = numpy.zeros(new_shape.astype(int), dtype=image_pixels.dtype)
-
-            for idx in range(int(new_shape[-1])):
-                output_pixels[:, :, :, idx] = skimage.transform.resize(
-                    image_pixels[:, :, :, idx],
-                    new_shape[:-1],
-                    order=order,
-                    mode="symmetric",
-                )
-        else:
-            output_pixels = skimage.transform.resize(
-                image_pixels, new_shape, order=order, mode="symmetric"
-            )
-
-        if image.multichannel and len(new_shape) > image.dimensions:
-            new_shape = new_shape[:-1]
-
-        mask = skimage.transform.resize(image.mask, new_shape, order=0, mode="constant")
-
-        mask = skimage.img_as_bool(mask)
-
-        if image.has_crop_mask:
-            cropping = skimage.transform.resize(
-                image.crop_mask, new_shape, order=0, mode="constant"
-            )
-
-            cropping = skimage.img_as_bool(cropping)
-        else:
-            cropping = None
-
+        # Extract reference image shape if needed
+        reference_image_shape = None
+        if self.size_method.value == ResizingMethod.TO_SIZE and self.use_manual_or_image.value == DimensionMethod.IMAGE:
+            reference_image = workspace.image_set.get_image(self.specific_image.value)
+            reference_image_shape = reference_image.pixel_data.shape
+        
+        # Process main image
+        image = workspace.image_set.get_image(self.x_name.value)
+        
+        # Extract raw data from Image object
+        pixel_data = image.pixel_data
+        mask = image.mask
+        volumetric = image.volumetric
+        multichannel = image.multichannel
+        dimensions = image.dimensions
+        has_crop_mask = image.has_crop_mask
+        crop_mask = image.crop_mask
+        
+        # Call library dispatcher with raw data
+        output_pixels, output_mask, output_crop_mask = resize_image(
+            pixel_data, mask,
+            dimensions, crop_mask,
+            self.size_method.value, self.resizing_factor_x.value, self.resizing_factor_y.value,
+            self.resizing_factor_z.value, self.use_manual_or_image.value,
+            self.specific_width.value, self.specific_height.value, self.specific_planes.value,
+            reference_image_shape, self.interpolation.value
+        )
+        
+        # Reconstruct Image object from raw data
         output_image = Image(
             output_pixels,
             parent_image=image,
-            mask=mask,
-            crop_mask=cropping,
-            dimensions=image.dimensions,
+            mask=output_mask,
+            crop_mask=output_crop_mask,
+            dimensions=dimensions,
         )
-
-        workspace.image_set.add(output_image_name, output_image)
-
+        
+        # Add output image to workspace
+        workspace.image_set.add(self.y_name.value, output_image)
+        
+        # Update display data if needed
         if self.show_window:
             if hasattr(workspace.display_data, "input_images"):
-                workspace.display_data.multichannel += [image.multichannel]
-                workspace.display_data.input_images += [image.pixel_data]
-                workspace.display_data.output_images += [output_image.pixel_data]
-                workspace.display_data.input_image_names += [input_image_name]
-                workspace.display_data.output_image_names += [output_image_name]
+                workspace.display_data.multichannel += [multichannel]
+                workspace.display_data.input_images += [pixel_data]
+                workspace.display_data.output_images += [output_pixels]
+                workspace.display_data.input_image_names += [self.x_name.value]
+                workspace.display_data.output_image_names += [self.y_name.value]
             else:
-                workspace.display_data.dimensions = image.dimensions
-                workspace.display_data.multichannel = [image.multichannel]
-                workspace.display_data.input_images = [image.pixel_data]
-                workspace.display_data.output_images = [output_image.pixel_data]
-                workspace.display_data.input_image_names = [input_image_name]
-                workspace.display_data.output_image_names = [output_image_name]
+                workspace.display_data.dimensions = dimensions
+                workspace.display_data.multichannel = [multichannel]
+                workspace.display_data.input_images = [pixel_data]
+                workspace.display_data.output_images = [output_pixels]
+                workspace.display_data.input_image_names = [self.x_name.value]
+                workspace.display_data.output_image_names = [self.y_name.value]
+
+        # Process additional images
+        for additional in self.additional_images:
+            # Extract raw data from Image object
+            image = workspace.image_set.get_image(additional.input_image_name.value)
+            pixel_data = image.pixel_data
+            mask = image.mask
+            dimensions = image.dimensions
+            crop_mask = image.crop_mask
+            
+            # Call library dispatcher with raw data
+            output_pixels, output_mask, output_crop_mask = resize_image(
+                pixel_data, mask,
+                dimensions, crop_mask,
+                self.size_method.value, self.resizing_factor_x.value, self.resizing_factor_y.value,
+                self.resizing_factor_z.value, self.use_manual_or_image.value,
+                self.specific_width.value, self.specific_height.value, self.specific_planes.value,
+                reference_image_shape, self.interpolation.value
+            )
+            
+            # Reconstruct Image object from raw data
+            output_image = Image(
+                output_pixels,
+                parent_image=image,
+                mask=output_mask,
+                crop_mask=output_crop_mask,
+                dimensions=dimensions,
+            )
+            
+            # Add output image to workspace
+            workspace.image_set.add(additional.output_image_name.value, output_image)
+            
+            # Update display data if needed
+            if self.show_window:
+                workspace.display_data.multichannel += [multichannel]
+                workspace.display_data.input_images += [pixel_data]
+                workspace.display_data.output_images += [output_pixels]
+                workspace.display_data.input_image_names += [additional.input_image_name.value]
+                workspace.display_data.output_image_names += [additional.output_image_name.value]
 
     def display(self, workspace, figure):
         """Display the resized images
@@ -496,9 +445,9 @@ resized with the same settings as the first image.""",
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             if setting_values[2] == "Resize by a factor of the original size":
-                setting_values[2] = R_BY_FACTOR
+                setting_values[2] = ResizingMethod.BY_FACTOR
             if setting_values[2] == "Resize to a size in pixels":
-                setting_values[2] = R_TO_SIZE
+                setting_values[2] = ResizingMethod.TO_SIZE
             variable_revision_number = 2
 
         if variable_revision_number == 2:
@@ -510,7 +459,7 @@ resized with the same settings as the first image.""",
         if variable_revision_number == 3:
             # Add resizing to another image size
             setting_values = (
-                setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
+                setting_values[:7] + [DimensionMethod.MANUAL, "None"] + setting_values[7:]
             )
             variable_revision_number = 4
         

@@ -19,5 +19,5 @@ def test_input_type_invalid_throws_error():
     try:
         sum_up_im(numpy.ones((10, 10)).astype(numpy.float32))
         assert False
-    except ValidationError:
-        assert True
+    except ValidationError as e:
+        assert e.errors()[0]['ctx']['error'].message == 'CellProfiler Input Validation Error: Expected a 3D array (cyx),got 2D', 'Error message is not as expected'

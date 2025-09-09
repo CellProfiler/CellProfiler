@@ -701,6 +701,7 @@ class Pipeline:
                 "Module %s did not have a variable revision # attribute" % module_name
             )
         module.set_settings_from_values(settings, variable_revision_number, module_name)
+        # TODO: LIS - replace string with const
         if module_name == "NamesAndTypes":
             self.__volumetric = module.process_as_3d.value
             self.__tiled = module.process_as_tiled.value
@@ -3002,6 +3003,7 @@ class Pipeline:
                 from_idx = edge.source.module_num - 1
                 # input images live to the end of the pipeline (never disposed)
                 # regardless of their final destination
+                # TODO: LIS - replace string with consts
                 if edge.source.module_name == "NamesAndTypes" or edge.source.module_name == "LoadData":
                     to_idx = len(modules_data)
                 # images/objects with no destination are disposed immedietly

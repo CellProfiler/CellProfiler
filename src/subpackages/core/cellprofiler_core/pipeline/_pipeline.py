@@ -2717,7 +2717,7 @@ class Pipeline:
                     result[name].append((module, setting))
         return result
 
-    def get_dependency_graph(self, include_unused=True):
+    def get_dependency_graph_edges(self, include_unused=True):
         """Create a graph that describes the producers and consumers of images, objects, and measurements
 
         include_unused: returns images and objects with no destination modules (output only)
@@ -2843,9 +2843,10 @@ class Pipeline:
 
         return result
 
-    def describe_dependency_graph(self, edges=None):
+    def describe_dependency_graph(self, edges=None, exclude_mes_leafs=False):
         if not edges:
-            edges = self.get_dependency_graph()
+            edges = self.get_dependency_graph_edges()
+
         for module in self.modules():
             inputs = [e for e in edges if e.destination == module]
             outputs = [e for e in edges if e.source == module]
@@ -2863,18 +2864,61 @@ class Pipeline:
                     print(f"\t<- output img: '{edge.image_name}' (to {destination})")
                 elif isinstance(edge, ObjectDependency):
                     print(f"\t<- output obj: '{edge.object_name}' (to {destination})")
-                elif isinstance(edge, MeasurementDependency):
+                elif isinstance(edge, MeasurementDependency) and (not exclude_mes_leafs or destination != "NIL"):
                     print(f"\t<- output mes: '{edge.object_name}.{edge.feature}' (to {destination})")
         print("DONE")
 
-    def dependency_graph_json(self, edges=None):
-        """Generate a JSON representation of the dependency graph
+    def get_dependency_graph(self, edges=None, liveness=False):
+        """
+        Generate a object representation of the dependency graph
 
-        Returns a JSON string containing the dependency graph structure
-        with modules and their input/output dependencies.
+        If liveness is True, include image and object lifetime information by
+        embedding, on a per-module basis, whether they are "live" (needed in downstream modules)
+        or "disposed" (no longer needed after module completes)
+
+        The schema is:
+
+        {
+            modules: [
+            {
+                module_name: str,
+                module_num: int,
+                inputs: [
+                {
+                    type: "image" | "object" | "measurement"
+                    name: str,
+                    source_module: str,
+                    source_module_num: int, # gte 1
+                    object_name: str, # if type == "measurement
+                    feature: str, # if type == "measurement
+                },
+                ...
+                ],
+                outputs: [
+                {
+                    type: "image" | "object" | "measurement"
+                    name: str,
+                    destination_module: str,
+                    destination_module_num: int, # gte 1
+                    object_name: str, # if type == "measurement
+                    feature: str, # if type == "measurement
+                },
+                ...
+                ],
+                live: [ str, ... ], # if liveness == True
+                disposed: [ str, ... ], # if liveness == False
+            },
+            ...
+            ],
+            metadata: 
+            {
+                total_modules: int,
+                total_edges: int,
+            }
+        }
         """
         if not edges:
-            edges = self.get_dependency_graph()
+            edges = self.get_dependency_graph_edges()
 
         modules_data = []
 
@@ -2882,7 +2926,6 @@ class Pipeline:
             inputs = [e for e in edges if e.destination == module]
             outputs = [e for e in edges if e.source == module]
 
-            # Build inputs list
             inputs_list = []
             for edge in inputs:
                 if isinstance(edge, ImageDependency):
@@ -2909,7 +2952,6 @@ class Pipeline:
                         "source_module_num": edge.source.module_num
                     })
 
-            # Build outputs list
             outputs_list = []
             for edge in outputs:
                 destination_module = edge.destination.module_name if edge.destination is not None else None
@@ -2939,18 +2981,51 @@ class Pipeline:
                         "destination_module_num": destination_module_num
                     })
 
-            # Add module data
             module_data = {
                 "module_name": module.module_name,
                 "module_num": module.module_num,
                 "inputs": inputs_list,
-                "outputs": outputs_list
+                "outputs": outputs_list,
             }
+
+            if liveness:
+                module_data["live"] = set()
+                module_data["disposed"] = set()
 
             modules_data.append(module_data)
 
-        # Create the complete dependency graph structure
-        dependency_graph = {
+        if liveness:
+            for edge in edges:
+                if isinstance(edge, MeasurementDependency):
+                    continue
+
+                from_idx = edge.source.module_num - 1
+                # input images live to the end of the pipeline (never disposed)
+                # regardless of their final destination
+                if edge.source.module_name == "NamesAndTypes" or edge.source.module_name == "LoadData":
+                    to_idx = len(modules_data)
+                # images/objects with no destination are disposed immedietly
+                elif not edge.destination:
+                    to_idx = from_idx
+                else:
+                    to_idx = edge.destination.module_num - 1
+
+                # a edge has image_name xor object_name so this resolves to one xor the other
+                edge_name = getattr(edge, "image_name", "") + getattr(edge, "object_name", "")
+
+                # this edge is live until destination
+                # overruling prior edge information if present
+                for i in range(from_idx, to_idx):
+                    if edge_name in modules_data[i]["disposed"]:
+                        modules_data[i]["disposed"].remove(edge_name)
+                    modules_data[i]["live"].add(edge_name)
+
+                # unless another edge has marked a later destination
+                # the edge is disposed at destination
+                if (to_idx < len(modules_data) and edge_name not in modules_data[to_idx]["live"]):
+                    modules_data[to_idx]["disposed"].add(edge_name)
+
+        return {
             "modules": modules_data,
             "metadata": {
                 "total_modules": len(modules_data),
@@ -2958,6 +3033,16 @@ class Pipeline:
             }
         }
 
+    def dependency_graph_json(self, edges=None):
+        """Generate a JSON representation of the dependency graph
+
+        Returns a JSON string containing the dependency graph structure
+        with modules and their input/output dependencies.
+        """
+        if not edges:
+            edges = self.get_dependency_graph_edges()
+
+        dependency_graph = self.get_dependency_graph(edges)
         return json.dumps(dependency_graph, indent=2)
 
     # TODO: LIS - pretty sure below does nothing useful, and above works the way it's supposed to

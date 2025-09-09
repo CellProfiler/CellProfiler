@@ -1063,7 +1063,7 @@ HasImagePlaneDetails:False"""
         assert len(d[IMAGE_NAME]) == 1
         assert d[IMAGE_NAME][0][0] == module3
 
-    def test_get_dependency_graph_empty(self):
+    def test_get_name_dependency_graph_empty(self):
         for module in (
                 ATestModule(),
                 ATestModule([Choice("foo", ["Hello", "World"])]),
@@ -1076,7 +1076,7 @@ HasImagePlaneDetails:False"""
             result = pipeline.get_name_dependency_graph()
             assert len(result) == 0
 
-    def test_get_dependency_graph_image(self):
+    def test_get_name_dependency_graph_image(self):
         pipeline = Pipeline()
         for i, module in enumerate(
                 (
@@ -1097,7 +1097,7 @@ HasImagePlaneDetails:False"""
         assert edge.destination == pipeline.modules()[2]
         assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
-    def test_get_dependency_graph_object(self):
+    def test_get_name_dependency_graph_object(self):
         pipeline = Pipeline()
         for i, module in enumerate(
                 (
@@ -1118,7 +1118,7 @@ HasImagePlaneDetails:False"""
         assert edge.destination == pipeline.modules()[2]
         assert edge.destination_setting == pipeline.modules()[2].settings()[0]
 
-    def test_get_dependency_graph_measurement(self):
+    def test_get_name_dependency_graph_measurement(self):
         pipeline = Pipeline()
         measurement_columns = [(OBJECT_NAME, FEATURE_NAME, COLTYPE_FLOAT,)]
         measurement_setting = Measurement("text", lambda: OBJECT_NAME, FEATURE_NAME)

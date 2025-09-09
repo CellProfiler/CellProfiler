@@ -103,6 +103,7 @@ def check_structure(dep_graph):
 
 def test_dependency_graph_structure():
     pipeline = setup_pipeline("ExampleFlyMeas")
+    # not needed for test, but nice debug info
     pipeline.describe_dependency_graph(edges=None, exclude_mes_leafs=True)
     dep_graph = pipeline.get_dependency_graph()
 
@@ -113,96 +114,7 @@ def test_dependency_graph_structure():
     assert dep_graph["metadata"]["total_edges"] == 445
 
 def test_dependency_graph_liveness():
-    """
-    5 Crop - read `IM_orig_b` from disk, and write `IM_crop_b`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (unfinished), `IM_crop_r` (unfinished), `OB_nuclei` (unfinished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-    6 Crop - read `IM_orig_g` and `IM_crop_b` from disk, and write `IM_crop_g`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (unfinished), `OB_nuclei` (unfinished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (unfinished), `IM_rgb` (unfinished)
-    7 Crop - read `IM_orig_r`, and `IM_crop_b` from disk, and write `IM_crop_r`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (unfinished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (unfinished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-    8 IdentifyPrimary - read `IM_crop_b` from disk, and write `OB_nuclei`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (unfinished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (unfinished), `OB_cyto` (unfinished), `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-    9 IdentifySecondary - read `IM_crop_g`, `OB_nuclei` from disk, write `OB_cells`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (finished), `OB_cyto` (unfinished), `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `OB_cells` needed for `OB_cyto` (unfinished), `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-    10 IdentifyTertiary - read `OB_cells`, `OB_nuclei` from disk, write `OB_cyto`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), and `IM_rgb` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (finished), `OB_cyto` (finished), `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `OB_cells` needed for `OB_cyto` (finished), `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `OB_cyto` needed for `MES_size_shape` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-    11 MeasureObjectSizeAndShape - read `OB_cyto`, `OB_cells`, `OB_nuclei` from disk, store `MES_size_shape` measurement
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (unfinished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (finished), `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `OB_cells` needed for `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `OB_cyto` needed for `MES_size_shape` (finished), `MES_intens` (unfinished), `MES_tex` (unfinished)
-        `MES_size_shape` is stored and SAVED
-    12 MeasureObjectIntensity - read `IM_crop_b`, `OB_cyto`, `OB_cells`, `OB_nuclei` from disk, store `MES_intens` measurement
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (unfinished), `MES_intens` (finished), `MES_tex` (unfinished)
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (finished), `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (unfinished)
-        `OB_cells` needed for `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (unfinished)
-        `OB_cyto` needed for `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (unfinished)
-        `MES_size_shape` is stored and SAVED
-        `MES_intens` is stored and SAVED
-    13 MeasureTexture - read `IM_crop_b`, `OB_cyto`, `OB_cells`, `OB_nuclei` from disk, store `MES_tex` measurement
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (unfinished), `MES_intens` (finished), `MES_tex` (finished)
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (unfinished)
-        `IM_crop_r` is needed for `IM_rgb` (unfinished)
-        `OB_nuclei` is needed for `OB_cells` (finished), `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (finished)
-            delete `OB_nuclei`
-        `OB_cells` needed for `OB_cyto` (finished), `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (finished)
-            delete `OB_cells`
-        `OB_cyto` needed for `MES_size_shape` (finished), `MES_intens` (finished), `MES_tex` (finished)
-            delete `OB_cyto`
-        `MES_size_shape` is stored and SAVED
-        `MES_intens` is stored and SAVED
-        `MES_tex` is stored and SAVED
-    14 GrayToColor - read `IM_crop_b`, `IM_crop_g`, `IM_crop_r` from disk, write `IM_rgb`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `IM_crop_b` is needed for `IM_crop_g` (finished), `IM_crop_r` (finished), `OB_nuclei` (finished), `IM_rgb` (finished), `MES_intens` (finished), `MES_tex` (finished)
-            delete `IM_crop_b`
-        `IM_crop_g` is needed for `OB_cells` (finished), `IM_rgb` (finished)
-            delete `IM_crop_g`
-        `IM_crop_r` is needed for `IM_rgb` (finished)
-            delete `IM_crop_r`
-        `MES_size_shape` is stored and SAVED
-        `MES_intens` is stored and SAVED
-        `MES_tex` is stored and SAVED
-        `IM_rgb` is needed for `IM_fly` (unfinished)
-    15 SaveImages - read `IM_rgb` from disk, write `IM_fly`
-        `IM_orig_r`, `IM_orig_g`, `IM_orig_b` are input images
-        `MES_size_shape` is stored and SAVED
-        `MES_intens` is stored and SAVED
-        `MES_tex` is stored and SAVED
-        `IM_rgb` is needed for `IM_fly` (finished)
-            delete `IM_rgb`
-        `IM_fly` is on disk and SAVED
-    """
     pipeline = setup_pipeline("ExampleFlyMeas")
-    pipeline.describe_dependency_graph(edges=None, exclude_mes_leafs=True)
     dep_graph = pipeline.get_dependency_graph(liveness=True)
     modules = dep_graph["modules"]
 
@@ -314,5 +226,3 @@ def test_dependency_graph_liveness():
         ["OrigRed", "OrigGreen", "OrigRed"],
         ["Nuclei", "Cells", "Cytoplasm"]
     )
-
-    print('DONE')

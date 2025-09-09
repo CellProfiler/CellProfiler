@@ -762,7 +762,7 @@ class Pipeline:
         fd.write("\n".join(lines))
 
     def save_dependency_graph(self, fd):
-        dep_graph_json = self.dependency_graph_json()
+        dep_graph_json = self.dependency_graph_json(liveness=True)
         fd.write(dep_graph_json)
 
     def write_pipeline_measurement(self, m, user_pipeline=False):
@@ -2905,8 +2905,8 @@ class Pipeline:
                 },
                 ...
                 ],
-                live: [ str, ... ], # if liveness == True
-                disposed: [ str, ... ], # if liveness == False
+                live: { str, ... }, # if liveness == True
+                disposed: { str, ... }, # if liveness == False
             },
             ...
             ],
@@ -3033,7 +3033,7 @@ class Pipeline:
             }
         }
 
-    def dependency_graph_json(self, edges=None):
+    def dependency_graph_json(self, edges=None, liveness=False):
         """Generate a JSON representation of the dependency graph
 
         Returns a JSON string containing the dependency graph structure
@@ -3042,7 +3042,12 @@ class Pipeline:
         if not edges:
             edges = self.get_dependency_graph_edges()
 
-        dependency_graph = self.get_dependency_graph(edges)
+        dependency_graph = self.get_dependency_graph(edges, liveness=liveness)
+        if liveness:
+            # sets are not json serializable, make them lists
+            for module in dependency_graph["modules"]:
+                module["live"] = list(module["live"])
+                module["disposed"] = list(module["disposed"])
         return json.dumps(dependency_graph, indent=2)
 
     # TODO: LIS - pretty sure below does nothing useful, and above works the way it's supposed to

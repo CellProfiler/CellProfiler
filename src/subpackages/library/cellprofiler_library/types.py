@@ -89,8 +89,10 @@ Image3DBinary = Annotated[NDArray[np.bool_], Field(description="3D binary image"
 Image3DBinaryMask = Annotated[NDArray[np.bool_], Field(description="3D binary mask"), AfterValidator(create_type_validator(True, False, False, np.bool_))]
 
 # see cellprofiler_library.functions.segmentation._validate_<type> for more details 
-ObjectLabelsDense = Annotated[NDArray[np.int32], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
-ObjectLabelSet = Annotated[Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]], Field(description="List of object labels"), AfterValidator(validate_object_label_set)]
+ObjectLabel = Annotated[Union[np.int8, np.int16,np.int32], Field(description="Object label")]
+ObjectLabelsDense = Annotated[NDArray[ObjectLabel], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
+ObjectLabelSet = Annotated[Sequence[Tuple[NDArray[ObjectLabel], NDArray[np.int32]]], Field(description="List of Tuples of object labels and object numbers in each label matrix"), AfterValidator(validate_object_label_set)]
+ObjectSegmentation = Annotated[NDArray[ObjectLabel], Field(description="Object segmentation")]
 
 ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

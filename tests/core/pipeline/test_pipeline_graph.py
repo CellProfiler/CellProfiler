@@ -60,6 +60,8 @@ def check_structure(dep_graph):
             },
             ...
             ],
+            live: { str, ... }, # if liveness == True
+            disposed: { str, ... }, # if liveness == False
         },
         ...
         ],

@@ -2922,8 +2922,13 @@ class Pipeline:
             edges = self.get_dependency_graph_edges()
 
         modules_data = []
+        # a map of module number to index in modules_data
+        # this is necessary because disabled modules are not included
+        # but do play a role in module number
+        # so index won't just be module number - 1
+        modules_num_map = {}
 
-        for module in self.modules():
+        for module_idx, module in enumerate(self.modules()):
             inputs = [e for e in edges if e.destination == module]
             outputs = [e for e in edges if e.source == module]
 
@@ -2994,13 +2999,14 @@ class Pipeline:
                 module_data["disposed"] = set()
 
             modules_data.append(module_data)
+            modules_num_map[module.module_num] = module_idx
 
         if liveness:
             for edge in edges:
                 if isinstance(edge, MeasurementDependency):
                     continue
 
-                from_idx = edge.source.module_num - 1
+                from_idx = modules_num_map[edge.source.module_num]
                 # input images live to the end of the pipeline (never disposed)
                 # regardless of their final destination
                 # TODO: LIS - replace string with consts
@@ -3010,7 +3016,7 @@ class Pipeline:
                 elif not edge.destination:
                     to_idx = from_idx
                 else:
-                    to_idx = edge.destination.module_num - 1
+                    to_idx = modules_num_map[edge.destination.module_num]
 
                 # a edge has image_name xor object_name so this resolves to one xor the other
                 edge_name = getattr(edge, "image_name", "") + getattr(edge, "object_name", "")

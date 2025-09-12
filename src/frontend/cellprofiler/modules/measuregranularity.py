@@ -281,8 +281,10 @@ class MeasureGranularity(Module):
             feature = C_GRANULARITY % (i, image_name)
             _image_measurements_arr += [(feature, image_measurements_arr[i-1])]
             if i < len(measurements_arr):
-                if measurements_arr[i]:
-                    _measurements_arr += [(measurements_arr[i-1][0], feature, measurements_arr[i-1][1])]
+                if measurements_arr[i-1]:
+                    for (obj_name, obj_gss) in measurements_arr[i-1]:
+                        _measurements_arr += [(obj_name, feature, obj_gss)]
+                        # _measurements_arr += [(measurements_arr[i-1][j][0], feature, measurements_arr[i-1][j][1])]
         return _measurements_arr, _image_measurements_arr, _statistics
 
     def run_on_image_setting(self, workspace, image_name):

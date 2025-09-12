@@ -1456,9 +1456,7 @@ def get_granularity_measurements(
                 object_record.current_mean = new_mean
             else:
                 gss = np.zeros((0,))
-            # measurements.add_measurement(object_record.name, feature, gss)
-            # measurements_arr += [(object_record.name, gss)]
-            obj_measurements += [object_record.name, gss]
+            obj_measurements += [[object_record.name, gss]]
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr, statistics
 

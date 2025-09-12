@@ -302,6 +302,38 @@ def test_no_objects():
         assert len(values) == 0
 
 
+def test_multiple_objects():
+    module, workspace = make_pipeline(
+        numpy.zeros((40, 40)), None, 0.25, 0.25, 10, 16, numpy.ones((40, 40), int)
+    )
+    assert isinstance(
+        module, cellprofiler.modules.measuregranularity.MeasureGranularity
+    )
+    # create 2 objects "Cells" and "Nuclei" with 2 objects each
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = numpy.zeros((40, 40), int)
+    objects.segmented[10:15, 10:15] = 1
+    objects.segmented[10:15, 20:25] = 2
+    
+    objects2 = cellprofiler_core.object.Objects()
+    objects2.segmented = numpy.zeros((40, 40), int)
+    objects2.segmented[20:25, 10:15] = 1
+    objects2.segmented[20:25, 20:25] = 2
+    
+    workspace.object_set.add_objects(objects, "Cells")
+    workspace.object_set.add_objects(objects2, "Nuclei")
+
+    # add objects to module params
+    module.wants_objects.value = True
+    module.objects_list.value = "Cells, Nuclei"
+    module.run(workspace)
+    m = workspace.measurements
+    measurement_columns_names = set([i[0] for i in m.get_measurement_columns()])
+    # check if measurements for both objects are present
+    assert "Cells" in measurement_columns_names
+    assert "Nuclei" in measurement_columns_names
+    
+
 def test_zeros_alt():
     """Run on an image of all zeros"""
     labels = numpy.ones((40, 40), int)

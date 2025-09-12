@@ -147,7 +147,7 @@ class TiledImageReader(LargeImageReader):
             elif "sequence" in dims:
                 channel_idx = dims.index("sequence")
             else:
-                channel_idx = set(0,1,2).difference((row_idx, col_idx)).pop()
+                channel_idx = {0,1,2}.difference((row_idx, col_idx)).pop()
 
             standard_idxs = (0, 1, 2)
             assert row_idx != col_idx
@@ -390,10 +390,10 @@ class TiledImageReader(LargeImageReader):
         return tile
 
     def _decrement_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
-        return self._set_channel(start = curr_channel.start - 1, stop = curr_channel.stop - 1, step = curr_channel.step, level = level)
+        return self._set_channel(start = curr_channel.start - 1, stop = curr_channel.stop - 1, step = curr_channel.step, lvl = level)
 
     def _increment_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
-        return self._set_channel(start = curr_channel.start + 1, stop = curr_channel.stop + 1, step = curr_channel.step, level = level)
+        return self._set_channel(start = curr_channel.start + 1, stop = curr_channel.stop + 1, step = curr_channel.step, lvl = level)
 
     def _set_channel(self, start: int, stop: Optional[int] = None, step: Optional[int] = None, lvl: Optional[int] = None) -> slice:
         if lvl:
@@ -544,7 +544,7 @@ class TiledImageReader(LargeImageReader):
         elif "sequence" in levels_dim_order:
             levels_ch_idx = levels_dim_order.index("sequence")
         else:
-            levels_ch_idx = set(0,1,2).difference((levels_height_idx, levels_width_idx)).pop()
+            levels_ch_idx = {0,1,2}.difference((levels_height_idx, levels_width_idx)).pop()
 
         levels = full_meta["series"][0]["pyramid"]["levels"]
         for i, level in enumerate(levels):

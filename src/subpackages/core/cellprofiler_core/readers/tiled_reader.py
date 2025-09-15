@@ -177,9 +177,9 @@ class TiledImageReader(LargeImageReader):
             ]
             self.__data: list[daskArray] = [
                 order_dims(
-                    dask.array.from_zarr(z),
+                    dask.array.from_zarr(zd),
                     len(self.__zarr_data)-1
-                ) for z in self.__zarr_data
+                ) for zd in self.__zarr_data
             ]
 
         if channel_names is not None:

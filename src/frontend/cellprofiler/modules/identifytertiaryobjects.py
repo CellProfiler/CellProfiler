@@ -263,8 +263,8 @@ but the results will be zero or not-a-number (NaN).
                     tertiary_image, _ = size_similarly(secondary_labels, tertiary_image)
 
         tertiary_labels, tertiary_outlines = identifytertiaryobjects(
-            primary_objects=primary_labels,
-            secondary_objects=secondary_labels,
+            primary_labels=primary_labels,
+            secondary_labels=secondary_labels,
             shrink_primary=self.shrink_primary,
             return_cp_output=True
         )

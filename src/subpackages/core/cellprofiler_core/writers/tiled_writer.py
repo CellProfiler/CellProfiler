@@ -4,8 +4,7 @@ from shutil import rmtree
 from typing import TypedDict, Literal, Optional
 
 import zarr
-import numpy
-import dask.array
+from dask.array import to_zarr
 from dask.array.core import Array as daskArray
 from ome_zarr.io import parse_url
 from ome_zarr.writer import write_multiscales_metadata
@@ -192,18 +191,23 @@ class TiledImageWriter(LargeImageWriter):
             dtype=data.dtype
         )
 
-        # TODO: LIS - I want to be uisng map_blocks -> arr.store
-        # but write would need the x,y chunk index
-        # or better yet to_zarr with regions, but that doesn't work
-        # quite right for an unknown (to me) reason
-        for (iy, ix), chunk in numpy.ndenumerate(data.to_delayed()):
-            arr = dask.compute(chunk)[0]
-            y0 = iy * data.chunks[0][0]
-            x0 = ix * data.chunks[1][0]
-            y1 = y0 + arr.shape[0]
-            x1 = x0 + arr.shape[1]
-            zarray[t or 0, c or 0, z or 0, y0:y1, x0:x1] = arr
+        # TODO: LIST - make this more robust, general
+        idx_t = t or 0
+        idx_c = c or 0
+        idx_z = z or 0
+        region = (
+            slice(idx_t, idx_t+1, 1),
+            slice(idx_c, idx_c+1, 1),
+            slice(idx_z, idx_z+1, 1),
+        )
+        size_t = 1
+        size_c = 1
+        size_z = 1
+        size_y = data.shape[0]
+        size_x = data.shape[1]
 
+        writedata = data.reshape(size_t, size_c, size_z, size_y, size_x)
+        to_zarr(writedata, zarray, region=region)
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):

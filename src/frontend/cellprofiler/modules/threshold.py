@@ -42,7 +42,6 @@ from cellprofiler_core.setting.text import Float, Integer
 from cellprofiler.modules import _help
 from cellprofiler_library.modules import threshold
 import cellprofiler_library.opts.threshold as ThresholdOpts
-from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -788,9 +787,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(
@@ -816,6 +815,7 @@ staining.
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
+
 
     def convert_setting(self, gui_setting_str):
         """
@@ -894,37 +894,12 @@ staining.
                     volumetric=input_image.volumetric,  
             )
 
-        self.add_threshold_measurements(
-            self.get_measurement_objects_name(),
-            workspace.measurements,
-            self.final_threshold,
-            self.orig_threshold,
-            self.guide_threshold,
-        )
+        return self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma
 
-        self.add_fg_bg_measurements(
-            self.get_measurement_objects_name(),
-            workspace.measurements,
-            input_image,
-            binary_image,
-        )
 
-        output = Image(binary_image, parent_image=input_image, dimensions=dimensions)
 
-        workspace.image_set.add(self.y_name.value, output)
 
-        if self.show_window:
-            workspace.display_data.input_pixel_data = input_image.pixel_data
-            workspace.display_data.output_pixel_data = output.pixel_data
-            workspace.display_data.dimensions = dimensions
-            statistics = workspace.display_data.statistics = []
-            workspace.display_data.col_labels = ("Feature", "Value")
-            if self.threshold_scope == TS_ADAPTIVE:
-                workspace.display_data.threshold_image = self.final_threshold
 
-            for column in self.get_measurement_columns(workspace.pipeline):
-                value = workspace.measurements.get_current_image_measurement(column[1])
-                statistics += [(column[1].split("_")[1], str(value))]
 
     def convert_setting(self, gui_setting_str):
         """
@@ -935,7 +910,7 @@ staining.
         converted_str = gui_setting_str
         for replacement in rep_list:
             converted_str = converted_str.replace(*replacement)
-        return converted_str
+        return converted_str.lower()
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

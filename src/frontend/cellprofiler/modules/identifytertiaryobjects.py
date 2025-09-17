@@ -265,7 +265,7 @@ but the results will be zero or not-a-number (NaN).
         tertiary_labels, tertiary_outlines = identifytertiaryobjects(
             primary_labels=primary_labels,
             secondary_labels=secondary_labels,
-            shrink_primary=self.shrink_primary,
+            shrink_primary=self.shrink_primary.value,
             return_cp_output=True
         )
 

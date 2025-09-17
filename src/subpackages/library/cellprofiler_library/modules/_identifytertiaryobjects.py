@@ -1,11 +1,15 @@
 import numpy
 from cellprofiler_library.functions.object_processing import outline
+from typing import Annotated, Optional
+from ..types import ObjectSegmentation
+from pydantic import validate_call, ConfigDict, Field
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifytertiaryobjects(
-        primary_labels: numpy.ndarray = None,
-        secondary_labels: numpy.ndarray = None,
-        shrink_primary: bool = True,
-        return_cp_output: bool = False
+        primary_labels:     Annotated[Optional[ObjectSegmentation], Field(description="Primary object segmentations")] = None,
+        secondary_labels:   Annotated[Optional[ObjectSegmentation], Field(description="Secondary object segmentations")] = None,
+        shrink_primary:     Annotated[bool, Field(description="Shrink the primary objects")] = True,
+        return_cp_output:   Annotated[bool, Field(description="Return CellProfiler output")] = False
 ):
     # If size/shape differences were too extreme, raise an error.
     if primary_labels.shape != secondary_labels.shape:

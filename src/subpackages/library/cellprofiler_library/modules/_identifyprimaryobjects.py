@@ -8,45 +8,46 @@ from cellprofiler_library.functions.object_processing import (
 from centrosome import cpmorphology
 import numpy
 import scipy
-from typing import Literal
+from typing import Annotated, Optional, Dict, Any, Union
+from pydantic import validate_call, ConfigDict, AfterValidator, Field
+from numpy.typing import NDArray
+from ..types import Image2DGrayscale, Image2DGrayscaleMask
+import cellprofiler_library.opts.threshold as ThresholdOpts
+from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifyprimaryobjects(
-    image,
-    mask=None,
-    threshold_method: Literal[
-        "minimum_cross_entropy", "otsu", "multiotsu", "robust_background"
-    ] = "minimum_cross_entropy",
-    threshold_scope: Literal["global", "adaptive"] = "global",
-    assign_middle_to_foreground: Literal["foreground", "background"] = "background",
-    log_transform: bool = False,
-    threshold_correction_factor: float = 1.0,
-    threshold_min: float = 0.0,
-    threshold_max: float = 1.0,
-    window_size: int = 50,
-    threshold_smoothing: float = 0.0,
-    lower_outlier_fraction: float = 0.05,
-    upper_outlier_fraction: float = 0.05,
-    averaging_method: Literal["mean", "median", "mode"] = "mean",
-    variance_method: Literal[
-        "standard_deviation", "median_absolute_deviation"
-    ] = "standard_deviation",
-    number_of_deviations: int = 2,
-    automatic: bool = False,
-    exclude_size: bool = True,
-    min_size: int = 10,
-    max_size: int = 40,
-    exclude_border_objects: bool = True,
-    unclump_method: Literal["intensity", "shape", "none"] = "intensity",
-    watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
-    fill_holes_method: Literal["never", "thresholding", "declumping"] = "thresholding",
-    smoothing_filter_size: int = None,
-    automatic_suppression: bool = True,
-    maxima_suppression_size: float = 7,
-    low_res_maxima: bool = True,
-    maximum_object_count: int = None,
-    predefined_threshold: float = None,
-    return_cp_output: bool = False
+    image:                      Annotated[Image2DGrayscale, Field(description="Input image")],
+    mask:                       Annotated[Optional[Image2DGrayscaleMask], Field(description="Input mask")] = None,      
+    threshold_method:           Annotated[str, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY, #TODO: change type to enum from threshold module
+    threshold_scope:            Annotated[str, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL, #TODO: change type to enum from threshold module
+    assign_middle_to_foreground:Annotated[str, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND, #TODO: change type to enum from threshold module
+    log_transform:              Annotated[bool, Field(description="Apply log transform to image before thresholding")] = False,
+    threshold_correction_factor:Annotated[float, Field(description="Multiply threshold by this factor")] = 1.0,
+    threshold_min:              Annotated[float, Field(description="Minimum threshold value")] = 0.0,
+    threshold_max:              Annotated[float, Field(description="Maximum threshold value")] = 1.0,
+    window_size:                Annotated[int, Field(description="Size of window for thresholding")] = 50,
+    threshold_smoothing:        Annotated[float, Field(description="Smoothing factor for thresholding")] = 0.0,
+    lower_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for lower outlier detection")] = 0.05,
+    upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
+    averaging_method:           Annotated[str, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, #TODO: change type to enum from threshold module
+    variance_method:            Annotated[str, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, #TODO: change type to enum from threshold module
+    number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
+    automatic:                  Annotated[bool, Field(description="Automatically determine thresholding parameters")] = False,
+    exclude_size:               Annotated[bool, Field(description="Exclude objects smaller than this size")] = True,
+    min_size:                   Annotated[int, Field(description="Minimum object size")] = 10,
+    max_size:                   Annotated[int, Field(description="Maximum object size")] = 40,
+    exclude_border_objects:     Annotated[bool, Field(description="Exclude objects touching the border")] = True,
+    unclump_method:             Annotated[UnclumpMethod, Field(description="Unclump method for thresholding")] = UnclumpMethod.INTENSITY,
+    watershed_method:           Annotated[WatershedMethod, Field(description="Watershed method for thresholding")] = WatershedMethod.INTENSITY,
+    fill_holes_method:          Annotated[FillHolesMethod, Field(description="Fill holes method for thresholding")] = FillHolesMethod.THRESHOLDING,
+    smoothing_filter_size:      Annotated[Optional[int], Field(description="Smoothing filter size for thresholding")] = None,
+    automatic_suppression:      Annotated[bool, Field(description="Automatically calculate suppression size")] = True,
+    maxima_suppression_size:    Annotated[float, Field(description="Suppression size for thresholding")] = 7.0,
+    low_res_maxima:             Annotated[bool, Field(description="Use low-resolution maxima for thresholding")] = True,
+    maximum_object_count:       Annotated[Optional[int], Field(description="Maximum number of objects to threshold")] = None,
+    predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = None,
+    return_cp_output:           Annotated[bool, Field(description="Return CellProfiler output")] = False
 ):
     
     if automatic:
@@ -57,16 +58,16 @@ def identifyprimaryobjects(
             mask=mask,
             threshold_smoothing=1,
             log_transform=False,
-            threshold_scope="global",
-            threshold_method="minimum_cross_entropy",
+            threshold_scope=ThresholdOpts.Scope.GLOBAL,
+            threshold_method=ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
             automatic=False,  # False, since this recursive call defines what the automatic settings are
             exclude_size=exclude_size,
             min_size=min_size,
             max_size=max_size,
             exclude_border_objects=exclude_border_objects,
-            unclump_method="intensity",
-            watershed_method="intensity",
-            fill_holes_method="thresholding",
+            unclump_method=UnclumpMethod.INTENSITY,
+            watershed_method=WatershedMethod.INTENSITY,
+            fill_holes_method=FillHolesMethod.THRESHOLDING,
             smoothing_filter_size=None,
             low_res_maxima=True if min_size > 10 else False,
             automatic_suppression=True,
@@ -76,9 +77,9 @@ def identifyprimaryobjects(
     final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
         image=image,
         mask=mask,
-        threshold_scope=threshold_scope,
-        threshold_method=threshold_method,
-        assign_middle_to_foreground=assign_middle_to_foreground,
+        threshold_scope=threshold_scope.casefold(),
+        threshold_method=threshold_method.casefold(),
+        assign_middle_to_foreground=assign_middle_to_foreground.casefold(),
         log_transform=log_transform,
         threshold_correction_factor=threshold_correction_factor,
         threshold_min=threshold_min,
@@ -87,8 +88,8 @@ def identifyprimaryobjects(
         smoothing=threshold_smoothing,
         lower_outlier_fraction=lower_outlier_fraction,
         upper_outlier_fraction=upper_outlier_fraction,
-        averaging_method=averaging_method,
-        variance_method=variance_method,
+        averaging_method=averaging_method.casefold(),
+        variance_method=variance_method.casefold(),
         number_of_deviations=number_of_deviations,
         volumetric=False,  # IdentifyPrimaryObjects does not support 3D
         predefined_threshold=predefined_threshold,
@@ -96,7 +97,7 @@ def identifyprimaryobjects(
 
     global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
 
-    if fill_holes_method.casefold() == "thresholding":
+    if fill_holes_method == FillHolesMethod.THRESHOLDING.value:
         binary_image = cpmorphology.fill_labeled_holes(
             binary_image, size_fn=lambda size, is_foreground: size < max_size * max_size
         )
@@ -171,7 +172,7 @@ def identifyprimaryobjects(
     #
     # Fill holes again after watershed
     #
-    if fill_holes_method.casefold() != "never":
+    if fill_holes_method != FillHolesMethod.NEVER:
         labeled_image = cpmorphology.fill_labeled_holes(labeled_image)
 
     # Relabel the image
@@ -204,35 +205,3 @@ def identifyprimaryobjects(
     else:
         return labeled_image
 
-    # return identify_primary_objects(
-    #     image,
-    #     mask=mask,
-    #     threshold_method=threshold_method,
-    #     threshold_scope=threshold_scope,
-    #     assign_middle_to_foreground=assign_middle_to_foreground,
-    #     log_transform=log_transform,
-    #     threshold_correction_factor=threshold_correction_factor,
-    #     threshold_min=threshold_min,
-    #     threshold_max=threshold_max,
-    #     window_size=window_size,
-    #     threshold_smoothing=threshold_smoothing,
-    #     lower_outlier_fraction=lower_outlier_fraction,
-    #     upper_outlier_fraction=upper_outlier_fraction,
-    #     averaging_method=averaging_method,
-    #     variance_method=variance_method,
-    #     number_of_deviations=number_of_deviations,
-    #     exclude_size=exclude_size,
-    #     min_size=min_size,
-    #     max_size=max_size,
-    #     exclude_border_objects=exclude_border_objects,
-    #     unclump_method=unclump_method,
-    #     watershed_method=watershed_method,
-    #     fill_holes_method=fill_holes_method,
-    #     smoothing_filter_size=smoothing_filter_size,
-    #     automatic_suppression=automatic_suppression,
-    #     maxima_suppression_size=maxima_suppression_size,
-    #     low_res_maxima=low_res_maxima,
-    #     maximum_object_count=maximum_object_count,
-    #     predefined_threshold=predefined_threshold,
-    #     return_cp_output=return_cp_output
-    # )

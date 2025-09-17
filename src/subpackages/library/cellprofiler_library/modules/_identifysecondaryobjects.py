@@ -1,50 +1,43 @@
-from typing import Literal
+from typing import Literal, Annotated, Optional
 import numpy
 import skimage
 import scipy
 import centrosome
 import centrosome.propagate
-
+from pydantic import validate_call, ConfigDict, Field
+from ..types import Image2DGrayscale, Image2DGrayscaleMask, ObjectSegmentation
 from cellprofiler_library.modules import threshold
 from cellprofiler_library.functions.object_processing import filter_labels
+from cellprofiler_library.opts.identifysecondaryobjects import SecondaryObjectMethod
+import cellprofiler_library.opts.threshold as ThresholdOpts
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifysecondaryobjects(
-    image: numpy.ndarray,
-    objects: numpy.ndarray,
-    unedited_objects: numpy.ndarray = None,
-    mask: numpy.ndarray = None,
-    secondary_object_method: Literal[
-        "propagation",
-        "watershed_gradient",
-        "watershed_image",
-        "distance_n",
-        "distance_b",
-    ] = "propagation",
-    threshold_method: Literal[
-        "minimum_cross_entropy", "otsu", "multiotsu", "robust_background"
-    ] = "minimum_cross_entropy",
-    threshold_scope: Literal["global", "adaptive"] = "global",
-    assign_middle_to_foreground: Literal["foreground", "background"] = "background",
-    log_transform: bool = False,
-    threshold_correction_factor: float = 1.0,
-    threshold_min: float = 0.0,
-    threshold_max: float = 1.0,
-    window_size: int = 50,
-    threshold_smoothing: float = 0.0,
-    lower_outlier_fraction: float = 0.05,
-    upper_outlier_fraction: float = 0.05,
-    averaging_method: Literal["mean", "median", "mode"] = "mean",
-    variance_method: Literal[
-        "standard_deviation", "median_absolute_deviation"
-    ] = "standard_deviation",
-    number_of_deviations: int = 2,
-    predefined_threshold: float = None,
-    distance_to_dilate: int = 10,
-    fill_holes: bool = True,
-    discard_edge: bool = False,
-    regularization_factor: float = 0.05,
-    return_cp_output: bool = False,
+    image:                      Annotated[Image2DGrayscale, Field(description="Input image")],
+    objects:                    Annotated[ObjectSegmentation, Field(description="Object segmentations")],
+    unedited_objects:           Annotated[Optional[ObjectSegmentation], Field(description="Unedited object segmentations")] = None,
+    mask:                       Annotated[Optional[Image2DGrayscaleMask], Field(description="Input mask")] = None,
+    secondary_object_method:    Annotated[SecondaryObjectMethod , Field(description="Method to determine edges of secondary objects")] = SecondaryObjectMethod.PROPAGATION,
+    threshold_method:           Annotated[str, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY, #TODO: change type to enum from threshold module
+    threshold_scope:            Annotated[str, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL, #TODO: change type to enum from threshold module
+    assign_middle_to_foreground:Annotated[str, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND, #TODO: change type to enum from threshold module
+    log_transform:              Annotated[bool, Field(description="Apply log transform to image before thresholding")] = False,
+    threshold_correction_factor:Annotated[float, Field(description="Multiply threshold by this factor")] = 1.0,
+    threshold_min:              Annotated[float, Field(description="Minimum threshold value")] = 0.0,
+    threshold_max:              Annotated[float, Field(description="Maximum threshold value")] = 1.0,
+    window_size:                Annotated[int, Field(description="Size of window for thresholding")] = 50,
+    threshold_smoothing:        Annotated[float, Field(description="Smoothing factor for thresholding")] = 0.0,
+    lower_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for lower outlier detection")] = 0.05,
+    upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
+    averaging_method:           Annotated[str, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, #TODO: change type to enum from threshold module
+    variance_method:            Annotated[str, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, #TODO: change type to enum from threshold module
+    number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
+    predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = None,
+    distance_to_dilate:         Annotated[int, Field(description="Number of pixels by which to expand the primary objects")] = 10,
+    fill_holes:                 Annotated[bool, Field(description="Fill holes in identified objects?")] = True,
+    discard_edge:               Annotated[bool, Field(description="Discard objects touching the edge of the image")] = False,
+    regularization_factor:      Annotated[float, Field(description="Regularization factor")] = 0.05,
+    return_cp_output:           Annotated[bool, Field(description="Return CellProfiler output")] = False,
 ):
     if image.shape != objects.shape:
         raise ValueError(
@@ -56,7 +49,7 @@ def identifysecondaryobjects(
         """
         )
 
-    if secondary_object_method.casefold() != "distance_n":
+    if secondary_object_method != SecondaryObjectMethod.DISTANCE_N:
         (
             final_threshold,
             orig_threshold,
@@ -122,8 +115,8 @@ def identifysecondaryobjects(
         tmp[:i_max, :j_max] = labels_in[:i_max, :j_max]
         labels_in = tmp
 
-    if secondary_object_method.casefold() in ("distance_b", "distance_n"):
-        if secondary_object_method.casefold() == "distance_n":
+    if secondary_object_method in (SecondaryObjectMethod.DISTANCE_B, SecondaryObjectMethod.DISTANCE_N):
+        if secondary_object_method == SecondaryObjectMethod.DISTANCE_N:
             distances, (i, j) = scipy.ndimage.distance_transform_edt(
                 labels_in == 0, return_indices=True
             )
@@ -151,7 +144,7 @@ def identifysecondaryobjects(
         segmented_out = filter_labels(
             small_removed_segmented_out, objects, mask=mask, discard_edge=discard_edge
         )
-    elif secondary_object_method.casefold() == "propagation":
+    elif secondary_object_method == SecondaryObjectMethod.PROPAGATION:
         labels_out, distance = centrosome.propagate.propagate(
             image, labels_in, binary_image, regularization_factor
         )
@@ -165,7 +158,7 @@ def identifysecondaryobjects(
         segmented_out = filter_labels(
             small_removed_segmented_out, objects, mask=mask, discard_edge=discard_edge
         )
-    elif secondary_object_method.casefold() == "watershed_gradient":
+    elif secondary_object_method == SecondaryObjectMethod.WATERSHED_GRADIENT:
         #
         # First, apply the sobel filter to the image (both horizontal
         # and vertical). The filter measures gradient.
@@ -196,7 +189,7 @@ def identifysecondaryobjects(
         segmented_out = filter_labels(
             small_removed_segmented_out, objects, mask=mask, discard_edge=discard_edge
         )
-    elif secondary_object_method.casefold() == "watershed_image":
+    elif secondary_object_method == SecondaryObjectMethod.WATERSHED_IMAGE:
         #
         # invert the image so that the maxima are filled first
         # and the cells compete over what's close to the threshold

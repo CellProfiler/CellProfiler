@@ -8,6 +8,8 @@ import matplotlib.cm
 from numpy.typing import NDArray
 from typing import Optional, Literal, Tuple
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary, ObjectSegmentation, StructuringElement
+from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
+
 
 def shrink_to_point(labels, fill):
     """
@@ -664,9 +666,9 @@ def separate_neighboring_objects(
     image,
     labeled_image,
     mask=None,
-    unclump_method: Literal["intensity", "shape", "none"] = "intensity",
-    watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
-    fill_holes_method: Literal["never", "thresholding", "declumping"] = "thresholding",
+    unclump_method: UnclumpMethod = UnclumpMethod.INTENSITY,
+    watershed_method: WatershedMethod = WatershedMethod.INTENSITY,
+    fill_holes_method: FillHolesMethod = FillHolesMethod.THRESHOLDING,
     filter_size=None,
     min_size=10,
     max_size=40,
@@ -676,7 +678,7 @@ def separate_neighboring_objects(
     return_cp_output=False,
 ):
 
-    if unclump_method.casefold() == "none" or watershed_method.casefold() == "none":
+    if unclump_method == UnclumpMethod.NONE or watershed_method == WatershedMethod.NONE:
         if return_cp_output:
             return labeled_image, numpy.zeros_like(labeled_image), 7
         else:
@@ -704,13 +706,13 @@ def separate_neighboring_objects(
 
     distance_transformed_image = None
 
-    if unclump_method.casefold() == "intensity":
+    if unclump_method == UnclumpMethod.INTENSITY:
         # Remove dim maxima
         maxima_image = get_maxima(
             blurred_image, labeled_image, maxima_mask, image_resize_factor
         )
-    elif unclump_method.casefold() == "shape":
-        if fill_holes_method.casefold() == "never":
+    elif unclump_method == UnclumpMethod.SHAPE:
+        if fill_holes_method == FillHolesMethod.NEVER:
             # For shape, even if the user doesn't want to fill holes,
             # a point far away from the edge might be near a hole.
             # So we fill just for this part.
@@ -733,17 +735,17 @@ def separate_neighboring_objects(
         raise ValueError(f"Unsupported unclump method: {unclump_method}")
 
     # Create the image for watershed
-    if watershed_method.casefold() == "intensity":
+    if watershed_method == WatershedMethod.INTENSITY:
         # use the reverse of the image to get valleys at peaks
         watershed_image = 1 - image
-    elif watershed_method.casefold() == "shape":
+    elif watershed_method == WatershedMethod.SHAPE:
         if distance_transformed_image is None:
             distance_transformed_image = scipy.ndimage.distance_transform_edt(
                 labeled_image > 0
             )
         watershed_image = -distance_transformed_image
         watershed_image = watershed_image - numpy.min(watershed_image)
-    elif watershed_method.casefold() == "propagate":
+    elif watershed_method == WatershedMethod.PROPAGATE:
         # No image used
         pass
     else:
@@ -759,7 +761,7 @@ def separate_neighboring_objects(
     labeled_maxima, object_count = scipy.ndimage.label(
         maxima_image, numpy.ones((3, 3), bool)
     )
-    if watershed_method.casefold() == "propagate":
+    if watershed_method == WatershedMethod.PROPAGATE:
         watershed_boundaries, distance = centrosome.propagate.propagate(
             numpy.zeros(labeled_maxima.shape),
             labeled_maxima,

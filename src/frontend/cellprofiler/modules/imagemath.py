@@ -46,32 +46,32 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, ImageName
-
-O_ADD = "Add"
-O_SUBTRACT = "Subtract"
-O_DIFFERENCE = "Absolute Difference"
-O_MULTIPLY = "Multiply"
-O_DIVIDE = "Divide"
-O_AVERAGE = "Average"
-O_MINIMUM = "Minimum"
-O_MAXIMUM = "Maximum"
-O_STDEV = "Standard Deviation"
-O_INVERT = "Invert"
-O_COMPLEMENT = "Complement"
-O_LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
-O_LOG_TRANSFORM = "Log transform (base 2)"
-O_NONE = "None"
+from cellprofiler_library.opts.imagemath import Operator, Operand
+# Operator.ADD = "Add"
+# Operator.SUBTRACT = "Subtract"
+# Operator.DIFFERENCE = "Absolute Difference"
+# Operator.MULTIPLY = "Multiply"
+# Operator.DIVIDE = "Divide"
+# Operator.AVERAGE = "Average"
+# Operator.MINIMUM = "Minimum"
+# Operator.MAXIMUM = "Maximum"
+# Operator.STDEV = "Standard Deviation"
+# Operator.INVERT = "Invert"
+# Operator.COMPLEMENT = "Complement"
+# Operator.LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
+# Operator.LOG_TRANSFORM = "Log transform (base 2)"
+# Operator.NONE = "None"
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
-O_OR = "Or"
-O_AND = "And"
-O_NOT = "Not"
-O_EQUALS = "Equals"
+# Operator.OR = "Or"
+# Operator.AND = "And"
+# Operator.NOT = "Not"
+# Operator.EQUALS = "Equals"
 
-BINARY_OUTPUT_OPS = [O_AND, O_OR, O_NOT, O_EQUALS]
+BINARY_OUTPUT_OPS = [Operator.AND, Operator.OR, Operator.NOT, Operator.EQUALS]
 
-IM_IMAGE = "Image"
-IM_MEASUREMENT = "Measurement"
+# Operand.IMAGE = "Image"
+# Operand.MEASUREMENT = "Measurement"
 
 # The number of settings per image
 IMAGE_SETTING_COUNT_1 = 2
@@ -98,23 +98,23 @@ class ImageMath(ImageProcessing):
         self.operation = Choice(
             "Operation",
             [
-                O_ADD,
-                O_SUBTRACT,
-                O_DIFFERENCE,
-                O_MULTIPLY,
-                O_DIVIDE,
-                O_AVERAGE,
-                O_MINIMUM,
-                O_MAXIMUM,
-                O_STDEV,
-                O_INVERT,
-                O_LOG_TRANSFORM,
-                O_LOG_TRANSFORM_LEGACY,
-                O_AND,
-                O_OR,
-                O_NOT,
-                O_EQUALS,
-                O_NONE,
+                Operator.ADD.value,
+                Operator.SUBTRACT.value,
+                Operator.DIFFERENCE.value,
+                Operator.MULTIPLY.value,
+                Operator.DIVIDE.value,
+                Operator.AVERAGE.value,
+                Operator.MINIMUM.value,
+                Operator.MAXIMUM.value,
+                Operator.STDEV.value,
+                Operator.INVERT.value,
+                Operator.LOG_TRANSFORM.value,
+                Operator.LOG_TRANSFORM_LEGACY.value,
+                Operator.AND.value,
+                Operator.OR.value,
+                Operator.NOT.value,
+                Operator.EQUALS.value,
+                Operator.NONE.value,
             ],
             doc="""\
 Select the operation to perform. Note that if more than two images are
@@ -171,8 +171,27 @@ values to background (false) and all other values to foreground (true).
 Note that *%(O_INVERT)s*, *%(O_LOG_TRANSFORM)s*,
 *%(O_LOG_TRANSFORM_LEGACY)s* and *%(O_NONE)s* operate on only a
 single image.
-"""
-            % globals(),
+""".format(
+    **{
+        "O_ADD": Operator.ADD.value,
+        "O_SUBTRACT": Operator.SUBTRACT.value,
+        "O_DIFFERENCE": Operator.DIFFERENCE.value,
+        "O_MULTIPLY": Operator.MULTIPLY.value,
+        "O_DIVIDE": Operator.DIVIDE.value,
+        "O_AVERAGE": Operator.AVERAGE.value,
+        "O_MINIMUM": Operator.MINIMUM.value,
+        "O_MAXIMUM": Operator.MAXIMUM.value,
+        "O_STDEV": Operator.STDEV.value,
+        "O_INVERT": Operator.INVERT.value,
+        "O_LOG_TRANSFORM": Operator.LOG_TRANSFORM.value,
+        "O_LOG_TRANSFORM_LEGACY": Operator.LOG_TRANSFORM_LEGACY.value,
+        "O_AND": Operator.AND.value,
+        "O_OR": Operator.OR.value,
+        "O_NOT": Operator.NOT.value,
+        "O_EQUALS": Operator.EQUALS.value,
+        "O_NONE": Operator.NONE.value,
+    }
+),
         )
         self.divider_top = Divider(line=False)
 
@@ -262,7 +281,7 @@ Enter a name for the resulting image.""",
             "image_or_measurement",
             Choice(
                 "Image or measurement?",
-                [IM_IMAGE, IM_MEASUREMENT],
+                [Operand.IMAGE.value, Operand.MEASUREMENT.value],
                 doc="""\
 You can perform math operations using two images or you can use a
 measurement for one of the operands. For instance, to divide the
@@ -271,8 +290,12 @@ pick the respective images. To divide the intensity of an image by its
 median intensity, use **MeasureImageIntensity** prior to this module to
 calculate the median intensity, then select *%(IM_MEASUREMENT)s* and
 use the median intensity measurement as the denominator.
-"""
-                % globals(),
+""".format(
+    **{
+        "IM_IMAGE": Operand.IMAGE.value,
+        "IM_MEASUREMENT": Operand.MEASUREMENT.value,
+    }
+)
             ),
         )
 
@@ -368,11 +391,11 @@ is applied before other operations.""",
     def operand_count(self):
         """# of operands, taking the operation into consideration"""
         if self.operation.value in (
-            O_INVERT,
-            O_LOG_TRANSFORM,
-            O_LOG_TRANSFORM_LEGACY,
-            O_NONE,
-            O_NOT,
+            Operator.INVERT,
+            Operator.LOG_TRANSFORM,
+            Operator.LOG_TRANSFORM_LEGACY,
+            Operator.NONE,
+            Operator.NOT,
         ):
             return 1
         return len(self.images)
@@ -387,7 +410,7 @@ is applied before other operations.""",
                 result += [image.image_name]
             else:
                 result += [image.image_or_measurement]
-                if image.image_or_measurement == IM_IMAGE:
+                if image.image_or_measurement.value == Operand.IMAGE:
                     result += [image.image_name]
                 else:
                     result += [image.measurement]
@@ -451,17 +474,17 @@ is applied before other operations.""",
         image_names = [
             image.image_name.value
             for image in self.images
-            if image.image_or_measurement == IM_IMAGE
+            if image.image_or_measurement.value == Operand.IMAGE
         ]
         image_factors = [image.factor.value for image in self.images]
-        wants_image = [image.image_or_measurement == IM_IMAGE for image in self.images]
+        wants_image = [image.image_or_measurement.value == Operand.IMAGE for image in self.images]
 
         if self.operation.value in [
-            O_INVERT,
-            O_LOG_TRANSFORM,
-            O_LOG_TRANSFORM_LEGACY,
-            O_NOT,
-            O_NONE,
+            Operator.INVERT,
+            Operator.LOG_TRANSFORM,
+            Operator.LOG_TRANSFORM_LEGACY,
+            Operator.NOT,
+            Operator.NONE,
         ]:
             # these only operate on the first image
             image_names = image_names[:1]
@@ -501,27 +524,27 @@ is applied before other operations.""",
 
         opval = self.operation.value
         if opval in [
-            O_ADD,
-            O_SUBTRACT,
-            O_DIFFERENCE,
-            O_MULTIPLY,
-            O_DIVIDE,
-            O_AVERAGE,
-            O_MAXIMUM,
-            O_MINIMUM,
-            O_AND,
-            O_OR,
-            O_EQUALS,
+            Operator.ADD,
+            Operator.SUBTRACT,
+            Operator.DIFFERENCE,
+            Operator.MULTIPLY,
+            Operator.DIVIDE,
+            Operator.AVERAGE,
+            Operator.MAXIMUM,
+            Operator.MINIMUM,
+            Operator.AND,
+            Operator.OR,
+            Operator.EQUALS,
         ]:
             # Binary operations
-            if opval in (O_ADD, O_AVERAGE):
+            if opval in (Operator.ADD, Operator.AVERAGE):
                 op = numpy.add
-            elif opval == O_SUBTRACT:
+            elif opval == Operator.SUBTRACT:
                 if self.use_logical_operation(pixel_data):
                     output_pixel_data = pixel_data[0].copy()
                 else:
                     op = numpy.subtract
-            elif opval == O_DIFFERENCE:
+            elif opval == Operator.DIFFERENCE:
                 if self.use_logical_operation(pixel_data):
                     op = numpy.logical_xor
                 else:
@@ -529,20 +552,20 @@ is applied before other operations.""",
                     def op(x, y):
                         return numpy.abs(numpy.subtract(x, y))
 
-            elif opval == O_MULTIPLY:
+            elif opval == Operator.MULTIPLY:
                 if self.use_logical_operation(pixel_data):
                     op = numpy.logical_and
                 else:
                     op = numpy.multiply
-            elif opval == O_MINIMUM:
+            elif opval == Operator.MINIMUM:
                 op = numpy.minimum
-            elif opval == O_MAXIMUM:
+            elif opval == Operator.MAXIMUM:
                 op = numpy.maximum
-            elif opval == O_AND:
+            elif opval == Operator.AND:
                 op = numpy.logical_and
-            elif opval == O_OR:
+            elif opval == Operator.OR:
                 op = numpy.logical_or
-            elif opval == O_EQUALS:
+            elif opval == Operator.EQUALS:
                 output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
                 comparitor = pixel_data[0]
             else:
@@ -551,13 +574,13 @@ is applied before other operations.""",
                 if not numpy.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
                     if output_pixel_data.ndim == 2:
                         output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
-                        if opval == O_EQUALS and not numpy.isscalar(comparitor):
+                        if opval == Operator.EQUALS and not numpy.isscalar(comparitor):
                             comparitor = comparitor[:, :, numpy.newaxis]
                     if pd.ndim == 2:
                         pd = pd[:, :, numpy.newaxis]
-                if opval == O_EQUALS:
+                if opval == Operator.EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
-                elif opval == O_SUBTRACT and self.use_logical_operation(pixel_data):
+                elif opval == Operator.SUBTRACT and self.use_logical_operation(pixel_data):
                     output_pixel_data[pd] = False
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
@@ -568,24 +591,24 @@ is applied before other operations.""",
                         output_mask = mask
                     elif mask is not None:
                         output_mask = output_mask & mask
-            if opval == O_AVERAGE:
+            if opval == Operator.AVERAGE:
                 if not self.use_logical_operation(pixel_data):
                     output_pixel_data /= sum(image_factors)
-        elif opval == O_STDEV:
+        elif opval == Operator.STDEV:
             pixel_array = numpy.array(pixel_data)
             output_pixel_data = numpy.std(pixel_array,axis=0)
             if not self.ignore_mask:
                 mask_array = numpy.array(masks)
                 output_mask = mask_array.all(axis=0) 
-        elif opval == O_INVERT:
+        elif opval == Operator.INVERT:
             output_pixel_data = skimage.util.invert(output_pixel_data)
-        elif opval == O_NOT:
+        elif opval == Operator.NOT:
             output_pixel_data = numpy.logical_not(output_pixel_data)
-        elif opval == O_LOG_TRANSFORM:
+        elif opval == Operator.LOG_TRANSFORM:
             output_pixel_data = numpy.log2(output_pixel_data + 1)
-        elif opval == O_LOG_TRANSFORM_LEGACY:
+        elif opval == Operator.LOG_TRANSFORM_LEGACY:
             output_pixel_data = numpy.log2(output_pixel_data)
-        elif opval == O_NONE:
+        elif opval == Operator.NONE:
             output_pixel_data = output_pixel_data.copy()
         else:
             raise NotImplementedError(
@@ -688,7 +711,7 @@ is applied before other operations.""",
         """Guarantee that at least one operand is an image"""
         for i in range(self.operand_count):
             op = self.images[i]
-            if op.image_or_measurement == IM_IMAGE:
+            if op.image_or_measurement.value == Operand.IMAGE:
                 return
         raise ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
@@ -702,7 +725,7 @@ is applied before other operations.""",
                 FIXED_SETTING_COUNT_1, len(setting_values), IMAGE_SETTING_COUNT_1
             ):
                 new_setting_values += [
-                    IM_IMAGE,
+                    Operand.IMAGE,
                     setting_values[i],
                     setting_values[i + 1],
                     "",
@@ -717,8 +740,8 @@ is applied before other operations.""",
             variable_revision_number = 3
         if variable_revision_number == 3:
             # Log transform -> legacy log transform
-            if setting_values[0] == O_LOG_TRANSFORM:
-                setting_values = [O_LOG_TRANSFORM_LEGACY] + setting_values[1:]
+            if setting_values[0] == Operator.LOG_TRANSFORM:
+                setting_values = [Operator.LOG_TRANSFORM_LEGACY] + setting_values[1:]
             variable_revision_number = 4
         if variable_revision_number == 4:
             # Add NaN handling

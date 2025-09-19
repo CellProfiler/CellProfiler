@@ -46,7 +46,8 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, ImageName
-from cellprofiler_library.opts.imagemath import Operator, Operand
+from cellprofiler_library.opts.imagemath import Operator, Operand, BINARY_OUTPUT_OPS
+from cellprofiler_library.modules._imagemath import image_math
 # Operator.ADD = "Add"
 # Operator.SUBTRACT = "Subtract"
 # Operator.DIFFERENCE = "Absolute Difference"
@@ -68,7 +69,7 @@ O_COMBINE = "Combine"
 # Operator.NOT = "Not"
 # Operator.EQUALS = "Equals"
 
-BINARY_OUTPUT_OPS = [Operator.AND, Operator.OR, Operator.NOT, Operator.EQUALS]
+# BINARY_OUTPUT_OPS = [Operator.AND, Operator.OR, Operator.NOT, Operator.EQUALS]
 
 # Operand.IMAGE = "Image"
 # Operand.MEASUREMENT = "Measurement"
@@ -522,124 +523,139 @@ is applied before other operations.""",
         output_pixel_data = pixel_data[0]
         output_mask = masks[0]
 
-        opval = self.operation.value
-        if opval in [
-            Operator.ADD,
-            Operator.SUBTRACT,
-            Operator.DIFFERENCE,
-            Operator.MULTIPLY,
-            Operator.DIVIDE,
-            Operator.AVERAGE,
-            Operator.MAXIMUM,
-            Operator.MINIMUM,
-            Operator.AND,
-            Operator.OR,
-            Operator.EQUALS,
-        ]:
-            # Binary operations
-            if opval in (Operator.ADD, Operator.AVERAGE):
-                op = numpy.add
-            elif opval == Operator.SUBTRACT:
-                if self.use_logical_operation(pixel_data):
-                    output_pixel_data = pixel_data[0].copy()
-                else:
-                    op = numpy.subtract
-            elif opval == Operator.DIFFERENCE:
-                if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_xor
-                else:
+        # opval = self.operation.value
 
-                    def op(x, y):
-                        return numpy.abs(numpy.subtract(x, y))
+        # if opval in [
+        #     Operator.ADD,
+        #     Operator.SUBTRACT,
+        #     Operator.DIFFERENCE,
+        #     Operator.MULTIPLY,
+        #     Operator.DIVIDE,
+        #     Operator.AVERAGE,
+        #     Operator.MAXIMUM,
+        #     Operator.MINIMUM,
+        #     Operator.AND,
+        #     Operator.OR,
+        #     Operator.EQUALS,
+        # ]:
+        #     # Binary operations
+        #     if opval in (Operator.ADD, Operator.AVERAGE):
+        #         op = numpy.add
+        #     elif opval == Operator.SUBTRACT:
+        #         if self.use_logical_operation(pixel_data):
+        #             output_pixel_data = pixel_data[0].copy()
+        #         else:
+        #             op = numpy.subtract
+        #     elif opval == Operator.DIFFERENCE:
+        #         if self.use_logical_operation(pixel_data):
+        #             op = numpy.logical_xor
+        #         else:
 
-            elif opval == Operator.MULTIPLY:
-                if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_and
-                else:
-                    op = numpy.multiply
-            elif opval == Operator.MINIMUM:
-                op = numpy.minimum
-            elif opval == Operator.MAXIMUM:
-                op = numpy.maximum
-            elif opval == Operator.AND:
-                op = numpy.logical_and
-            elif opval == Operator.OR:
-                op = numpy.logical_or
-            elif opval == Operator.EQUALS:
-                output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
-                comparitor = pixel_data[0]
-            else:
-                op = numpy.divide
-            for pd, mask in zip(pixel_data[1:], masks[1:]):
-                if not numpy.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
-                    if output_pixel_data.ndim == 2:
-                        output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
-                        if opval == Operator.EQUALS and not numpy.isscalar(comparitor):
-                            comparitor = comparitor[:, :, numpy.newaxis]
-                    if pd.ndim == 2:
-                        pd = pd[:, :, numpy.newaxis]
-                if opval == Operator.EQUALS:
-                    output_pixel_data = output_pixel_data & (comparitor == pd)
-                elif opval == Operator.SUBTRACT and self.use_logical_operation(pixel_data):
-                    output_pixel_data[pd] = False
-                else:
-                    output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask:
-                    continue
-                else:
-                    if output_mask is None:
-                        output_mask = mask
-                    elif mask is not None:
-                        output_mask = output_mask & mask
-            if opval == Operator.AVERAGE:
-                if not self.use_logical_operation(pixel_data):
-                    output_pixel_data /= sum(image_factors)
-        elif opval == Operator.STDEV:
-            pixel_array = numpy.array(pixel_data)
-            output_pixel_data = numpy.std(pixel_array,axis=0)
-            if not self.ignore_mask:
-                mask_array = numpy.array(masks)
-                output_mask = mask_array.all(axis=0) 
-        elif opval == Operator.INVERT:
-            output_pixel_data = skimage.util.invert(output_pixel_data)
-        elif opval == Operator.NOT:
-            output_pixel_data = numpy.logical_not(output_pixel_data)
-        elif opval == Operator.LOG_TRANSFORM:
-            output_pixel_data = numpy.log2(output_pixel_data + 1)
-        elif opval == Operator.LOG_TRANSFORM_LEGACY:
-            output_pixel_data = numpy.log2(output_pixel_data)
-        elif opval == Operator.NONE:
-            output_pixel_data = output_pixel_data.copy()
-        else:
-            raise NotImplementedError(
-                "The operation %s has not been implemented" % opval
-            )
+        #             def op(x, y):
+        #                 return numpy.abs(numpy.subtract(x, y))
 
-        # Check to see if there was a measurement & image w/o mask. If so
-        # set mask to none
-        if numpy.isscalar(output_mask):
-            output_mask = None
-        if opval not in BINARY_OUTPUT_OPS:
-            #
-            # Post-processing: exponent, multiply, add
-            #
-            if self.exponent.value != 1:
-                output_pixel_data **= self.exponent.value
-            if self.after_factor.value != 1:
-                output_pixel_data *= self.after_factor.value
-            if self.addend.value != 0:
-                output_pixel_data += self.addend.value
+        #     elif opval == Operator.MULTIPLY:
+        #         if self.use_logical_operation(pixel_data):
+        #             op = numpy.logical_and
+        #         else:
+        #             op = numpy.multiply
+        #     elif opval == Operator.MINIMUM:
+        #         op = numpy.minimum
+        #     elif opval == Operator.MAXIMUM:
+        #         op = numpy.maximum
+        #     elif opval == Operator.AND:
+        #         op = numpy.logical_and
+        #     elif opval == Operator.OR:
+        #         op = numpy.logical_or
+        #     elif opval == Operator.EQUALS:
+        #         output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
+        #         comparitor = pixel_data[0]
+        #     else:
+        #         op = numpy.divide
+        #     for pd, mask in zip(pixel_data[1:], masks[1:]):
+        #         if not numpy.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
+        #             if output_pixel_data.ndim == 2:
+        #                 output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
+        #                 if opval == Operator.EQUALS and not numpy.isscalar(comparitor):
+        #                     comparitor = comparitor[:, :, numpy.newaxis]
+        #             if pd.ndim == 2:
+        #                 pd = pd[:, :, numpy.newaxis]
+        #         if opval == Operator.EQUALS:
+        #             output_pixel_data = output_pixel_data & (comparitor == pd)
+        #         elif opval == Operator.SUBTRACT and self.use_logical_operation(pixel_data):
+        #             output_pixel_data[pd] = False
+        #         else:
+        #             output_pixel_data = op(output_pixel_data, pd)
+        #         if self.ignore_mask:
+        #             continue
+        #         else:
+        #             if output_mask is None:
+        #                 output_mask = mask
+        #             elif mask is not None:
+        #                 output_mask = output_mask & mask
+        #     if opval == Operator.AVERAGE:
+        #         if not self.use_logical_operation(pixel_data):
+        #             output_pixel_data /= sum(image_factors)
+        # elif opval == Operator.STDEV:
+        #     pixel_array = numpy.array(pixel_data)
+        #     output_pixel_data = numpy.std(pixel_array,axis=0)
+        #     if not self.ignore_mask:
+        #         mask_array = numpy.array(masks)
+        #         output_mask = mask_array.all(axis=0) 
+        # elif opval == Operator.INVERT:
+        #     output_pixel_data = skimage.util.invert(output_pixel_data)
+        # elif opval == Operator.NOT:
+        #     output_pixel_data = numpy.logical_not(output_pixel_data)
+        # elif opval == Operator.LOG_TRANSFORM:
+        #     output_pixel_data = numpy.log2(output_pixel_data + 1)
+        # elif opval == Operator.LOG_TRANSFORM_LEGACY:
+        #     output_pixel_data = numpy.log2(output_pixel_data)
+        # elif opval == Operator.NONE:
+        #     output_pixel_data = output_pixel_data.copy()
+        # else:
+        #     raise NotImplementedError(
+        #         "The operation %s has not been implemented" % opval
+        #     )
 
-            #
-            # truncate values
-            #
-            if self.truncate_low.value:
-                output_pixel_data[output_pixel_data < 0] = 0
-            if self.truncate_high.value:
-                output_pixel_data[output_pixel_data > 1] = 1
-            if self.replace_nan.value:
-                output_pixel_data[numpy.isnan(output_pixel_data)] = 0
+        # # Check to see if there was a measurement & image w/o mask. If so
+        # # set mask to none
+        # if numpy.isscalar(output_mask):
+        #     output_mask = None
+        # if opval not in BINARY_OUTPUT_OPS:
+        #     #
+        #     # Post-processing: exponent, multiply, add
+        #     #
+        #     if self.exponent.value != 1:
+        #         output_pixel_data **= self.exponent.value
+        #     if self.after_factor.value != 1:
+        #         output_pixel_data *= self.after_factor.value
+        #     if self.addend.value != 0:
+        #         output_pixel_data += self.addend.value
 
+        #     #
+        #     # truncate values
+        #     #
+        #     if self.truncate_low.value:
+        #         output_pixel_data[output_pixel_data < 0] = 0
+        #     if self.truncate_high.value:
+        #         output_pixel_data[output_pixel_data > 1] = 1
+        #     if self.replace_nan.value:
+        #         output_pixel_data[numpy.isnan(output_pixel_data)] = 0
+        output_pixel_data, output_mask = image_math(
+            opval=self.operation.value,
+            pixel_data=pixel_data,
+            masks=masks,
+            output_pixel_data=output_pixel_data,
+            output_mask=output_mask,
+            ignore_mask=self.ignore_mask.value,
+            image_factors=image_factors,
+            exponent=self.exponent.value,
+            after_factor=self.after_factor.value,
+            addend=self.addend.value,
+            truncate_low=self.truncate_low.value,
+            truncate_high=self.truncate_high.value,
+            replace_nan=self.replace_nan.value,
+        )
         #
         # add the output image to the workspace
         #
@@ -653,7 +669,7 @@ is applied before other operations.""",
         if not self.ignore_mask:
             if type(output_mask) == numpy.ndarray:
                 output_pixel_data = output_pixel_data * output_mask
-
+        output_pixel_data, output_mask
         output_image = Image(
             output_pixel_data,
             mask=output_mask,

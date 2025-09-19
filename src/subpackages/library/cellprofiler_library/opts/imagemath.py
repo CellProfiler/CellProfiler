@@ -24,3 +24,7 @@ class Operator(str, Enum):
 class Operand(str, Enum):
     IMAGE = "Image"
     MEASUREMENT = "Measurement"
+
+BINARY_OUTPUT_OPS = [Operator.AND, Operator.OR, Operator.NOT, Operator.EQUALS]
+UNARY_INPUT_OPS = [Operator.STDEV, Operator.INVERT, Operator.NOT, Operator.LOG_TRANSFORM, Operator.LOG_TRANSFORM_LEGACY, Operator.NONE]
+BINARY_INPUT_OPS = [Operator.ADD, Operator.SUBTRACT, Operator.DIFFERENCE, Operator.MULTIPLY, Operator.DIVIDE, Operator.AVERAGE, Operator.MAXIMUM, Operator.MINIMUM, Operator.AND, Operator.OR, Operator.EQUALS]

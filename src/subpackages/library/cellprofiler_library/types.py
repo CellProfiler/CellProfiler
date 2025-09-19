@@ -104,6 +104,7 @@ ImageBinary = Union[Image2DBinary, Image3DBinary]
 ImageBinaryMask = Union[Image2DBinaryMask, Image3DBinaryMask]
 
 ImageAny = Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale, Image2DBinary, Image3DBinary]
+ImageMaskAny = Union[Image2DColorMask, Image3DColorMask, Image2DGrayscaleMask, Image3DGrayscaleMask, Image2DBinaryMask, Image3DBinaryMask]
 
 Image2D = Union[Image2DColor, Image2DGrayscale, Image2DBinary]
 Image2DMask = Union[Image2DColorMask, Image2DGrayscaleMask]

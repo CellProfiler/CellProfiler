@@ -1,8 +1,10 @@
 import numpy
+from numpy import isscalar as _isscalar
 import skimage.color
 import skimage.morphology
 import skimage.segmentation
 import skimage.util
+from skimage.util import invert as _invert
 import skimage.transform
 import skimage
 import skimage.restoration
@@ -14,7 +16,6 @@ import scipy.interpolate
 import matplotlib
 import math
 from numpy.typing import NDArray
-import centrosome.filter
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
 from cellprofiler_library.opts import threshold as Threshold
@@ -22,7 +23,10 @@ from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy,
 from cellprofiler_library.opts.overlayoutlines import BrightnessMode
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
-from ..opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
+from cellprofiler_library.opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
+from cellprofiler_library.opts.imagemath import Operator
+invert = cast(Callable[[ImageAny], ImageAny], _invert)
+isscalar = cast(Callable[[Optional[ImageAny]], bool], _isscalar)
 
 T = TypeVar("T", bound=ImageAny)
 MorphImageT = TypeVar("Union[ImageGrayscale, ImageGrayscaleMask]", bound=Union[ImageGrayscale, ImageGrayscaleMask])
@@ -1699,3 +1703,150 @@ def fill_holes(image: ImageAny, diameter: float) -> ImageAny:
     size = numpy.pi * factor
 
     return skimage.morphology.remove_small_holes(image, size)
+
+################################################################################
+# ImageMath
+################################################################################
+
+def imagemath_apply_on_image(
+        output_pixel_data: ImageAny, 
+        pd: ImageAny, 
+        comparitor: ImageAny, 
+        op: Callable[[ImageAny, ImageAny], ImageAny], 
+        opval: Operator,
+        ) -> ImageAny:
+    assert isinstance(output_pixel_data, numpy.ndarray), "output_pixel_data must be a numpy array" # Pylance needs to understand this is a numpy array
+    if not isscalar(pd) and output_pixel_data.ndim != pd.ndim:
+        if output_pixel_data.ndim == 2:
+            output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
+            if opval == Operator.EQUALS and not isscalar(comparitor):
+                comparitor = comparitor[:, :, numpy.newaxis]
+        if pd.ndim == 2:
+            pd = pd[:, :, numpy.newaxis]
+    if opval == Operator.EQUALS:
+        output_pixel_data = output_pixel_data & (comparitor == pd)
+    else:
+        output_pixel_data = op(output_pixel_data, pd)
+    return output_pixel_data
+
+
+
+def imagemath_apply_binary_operation(
+    opval: Operator, 
+    pixel_data: List[ImageAny], 
+    masks: Optional[List[Optional[ImageAnyMask]]], 
+    output_pixel_data: ImageAny, 
+    output_mask: Optional[ImageAnyMask],
+    image_factors: Optional[List[float]], # TODO: can this be removed?
+    ignore_mask: bool, # TODO: can this be removed?
+    ) -> Tuple[
+        ImageAny, 
+        Optional[ImageAnyMask], 
+    ]:
+    #
+    # Helper function to determine if logical operations should be used
+    #
+    def use_logical_operation(pixel_data: List[ImageAny]) -> bool:
+        return all(
+            [pd.dtype == bool for pd in pixel_data if not isscalar(pd)]
+        )
+    
+    #
+    # Helper function for logical subtraction
+    #
+
+    def logical_subtract(output_pixel_data: ImageAny, pd: ImageAny) -> ImageAny:
+        output_pixel_data[pd] = False
+        return output_pixel_data
+
+    # initialize op to return martix of ones by default
+    comparitor = pixel_data[0] # fix pylance error
+    use_logical = use_logical_operation(pixel_data)
+    op_fn_dispatch: Dict[Operator, Callable[[ImageAny, ImageAny], ImageAny]] = {
+        Operator.ADD: numpy.add,
+        Operator.SUBTRACT: logical_subtract if use_logical else numpy.subtract,
+        Operator.DIFFERENCE: numpy.logical_xor if use_logical else lambda x, y: numpy.abs(numpy.subtract(x, y)),
+        Operator.MULTIPLY: numpy.logical_and if use_logical else numpy.multiply,
+        Operator.MINIMUM: numpy.minimum,
+        Operator.MAXIMUM: numpy.maximum,
+        Operator.AVERAGE: numpy.add,
+        Operator.MAXIMUM: numpy.maximum,
+        Operator.AND: numpy.logical_and,
+        Operator.OR: numpy.logical_or,
+        Operator.EQUALS: numpy.equal,
+        Operator.NONE: lambda x, y: x,
+        Operator.DIVIDE: numpy.divide,
+    }
+    if opval not in op_fn_dispatch:
+        raise NotImplementedError(f"Unimplemented operation: {opval}")
+    #
+    # Binary operations
+    #
+    op = op_fn_dispatch[opval]
+
+    #
+    # Equals and Subtract operations need additional handling
+    #
+    if opval == Operator.EQUALS:
+        output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
+        comparitor = pixel_data[0]
+    elif opval == Operator.SUBTRACT and use_logical:
+        output_pixel_data = pixel_data[0].copy()
+
+    
+    # _masks is a list of Nones if masks is None. Fixes type warnings.
+    if masks is None:
+        masks = [None for _ in pixel_data]
+
+    #
+    # Apply the operation to each image in the list
+    #
+    for pd, mask in zip(pixel_data[1:], masks[1:]):
+        output_pixel_data = imagemath_apply_on_image(output_pixel_data, pd, comparitor, op, opval)
+        if not ignore_mask:
+            if output_mask is None:
+                output_mask = mask
+            elif mask is not None:
+                output_mask = output_mask & mask
+    #
+    # Average operation needs additional handling
+    #
+    if opval == Operator.AVERAGE:
+        if not use_logical:
+            assert image_factors is not None, "image_factors must be provided for average operation"
+            output_pixel_data /= sum(image_factors)
+    return output_pixel_data, output_mask
+
+
+def imagemath_apply_unary_operation(
+    opval: Operator, 
+    pixel_data: List[ImageAny], 
+    masks: Optional[List[Optional[ImageMaskAny]]], 
+    output_pixel_data: ImageAny,
+    output_mask: Optional[ImageMaskAny],
+    ignore_mask: bool,
+    ) -> Tuple[
+        ImageAny, 
+        Optional[ImageMaskAny],
+    ]:
+    if opval == Operator.STDEV:
+        pixel_array = numpy.array(pixel_data)
+        output_pixel_data = numpy.std(pixel_array,axis=0)
+        if not ignore_mask:
+            mask_array = numpy.array(masks)
+            output_mask = mask_array.all(axis=0) 
+    elif opval == Operator.INVERT:
+        output_pixel_data = invert(output_pixel_data)
+    elif opval == Operator.NOT:
+        output_pixel_data = numpy.logical_not(output_pixel_data)
+    elif opval == Operator.LOG_TRANSFORM:
+        output_pixel_data = numpy.log2(output_pixel_data + 1)
+    elif opval == Operator.LOG_TRANSFORM_LEGACY:
+        output_pixel_data = numpy.log2(output_pixel_data)
+    elif opval == Operator.NONE:
+        output_pixel_data = output_pixel_data.copy()
+    else:
+        raise NotImplementedError(
+            "The operation %s has not been implemented" % opval
+        )
+    return output_pixel_data, output_mask

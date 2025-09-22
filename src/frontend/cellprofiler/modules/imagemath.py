@@ -32,7 +32,6 @@ See also **Threshold**, **RescaleIntensity**,
 """
 
 import numpy
-import skimage.util
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import (
@@ -48,31 +47,9 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, ImageName
 from cellprofiler_library.opts.imagemath import Operator, Operand, BINARY_OUTPUT_OPS
 from cellprofiler_library.modules._imagemath import image_math
-# Operator.ADD = "Add"
-# Operator.SUBTRACT = "Subtract"
-# Operator.DIFFERENCE = "Absolute Difference"
-# Operator.MULTIPLY = "Multiply"
-# Operator.DIVIDE = "Divide"
-# Operator.AVERAGE = "Average"
-# Operator.MINIMUM = "Minimum"
-# Operator.MAXIMUM = "Maximum"
-# Operator.STDEV = "Standard Deviation"
-# Operator.INVERT = "Invert"
-# Operator.COMPLEMENT = "Complement"
-# Operator.LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
-# Operator.LOG_TRANSFORM = "Log transform (base 2)"
-# Operator.NONE = "None"
+
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
-# Operator.OR = "Or"
-# Operator.AND = "And"
-# Operator.NOT = "Not"
-# Operator.EQUALS = "Equals"
-
-# BINARY_OUTPUT_OPS = [Operator.AND, Operator.OR, Operator.NOT, Operator.EQUALS]
-
-# Operand.IMAGE = "Image"
-# Operand.MEASUREMENT = "Measurement"
 
 # The number of settings per image
 IMAGE_SETTING_COUNT_1 = 2
@@ -492,18 +469,19 @@ is applied before other operations.""",
             image_factors = image_factors[:1]
 
         images = [workspace.image_set.get_image(x) for x in image_names]
-        pixel_data = [image.pixel_data for image in images]
+        image_operands = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
 
         # Crop all of the images similarly
-        smallest = numpy.argmin([numpy.product(pd.shape) for pd in pixel_data])
+        smallest = numpy.argmin([numpy.product(pd.shape) for pd in image_operands])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
-            pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
+            image_operands[i] = smallest_image.crop_image_similarly(image_operands[i])
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
 
         # weave in the measurements
+        operands = image_operands
         measurements = workspace.measurements
         for i in range(self.operand_count):
             if not wants_image[i]:
@@ -511,20 +489,20 @@ is applied before other operations.""",
                     self.images[i].measurement.value
                 )
                 value = numpy.NaN if value is None else float(value)
-                pixel_data.insert(i, value)
+                operands.insert(i, value)
                 masks.insert(i, True)
-
+                
         # Multiply images by their factors
         for i, image_factor in enumerate(image_factors):
             if image_factor != 1 and self.operation not in BINARY_OUTPUT_OPS:
-                pixel_data[i] = pixel_data[i] * image_factors[i]
+                operands[i] = operands[i] * image_factors[i]
 
-        output_pixel_data = pixel_data[0]
+        output_pixel_data = operands[0]
         output_mask = masks[0]
 
         output_pixel_data, output_mask = image_math(
             opval=self.operation.value,
-            pixel_data=pixel_data,
+            operands=operands,
             masks=masks,
             output_pixel_data=output_pixel_data,
             output_mask=output_mask,

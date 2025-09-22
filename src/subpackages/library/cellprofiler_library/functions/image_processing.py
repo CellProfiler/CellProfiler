@@ -15,6 +15,7 @@ import scipy
 import scipy.interpolate
 import matplotlib
 import math
+from typing import Annotated, Any, Optional, Tuple, Callable, Union, Sequence, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
@@ -1733,8 +1734,8 @@ def imagemath_apply_on_image(
 
 def imagemath_apply_binary_operation(
     opval: Operator, 
-    pixel_data: List[ImageAny], 
-    masks: Optional[List[Optional[ImageAnyMask]]], 
+    operands: List[Union[ImageAny, float]], 
+    masks: Optional[List[Optional[Union[ImageAnyMask, bool]]]], 
     output_pixel_data: ImageAny, 
     output_mask: Optional[ImageAnyMask],
     image_factors: Optional[List[float]], # TODO: can this be removed?
@@ -1759,9 +1760,8 @@ def imagemath_apply_binary_operation(
         output_pixel_data[pd] = False
         return output_pixel_data
 
-    # initialize op to return martix of ones by default
-    comparitor = pixel_data[0] # fix pylance error
-    use_logical = use_logical_operation(pixel_data)
+    comparitor = operands[0] # fix pylance error
+    use_logical = use_logical_operation(operands)
     op_fn_dispatch: Dict[Operator, Callable[[ImageAny, ImageAny], ImageAny]] = {
         Operator.ADD: numpy.add,
         Operator.SUBTRACT: logical_subtract if use_logical else numpy.subtract,
@@ -1788,20 +1788,20 @@ def imagemath_apply_binary_operation(
     # Equals and Subtract operations need additional handling
     #
     if opval == Operator.EQUALS:
-        output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
-        comparitor = pixel_data[0]
+        output_pixel_data = numpy.ones(operands[0].shape, bool)
+        comparitor = operands[0]
     elif opval == Operator.SUBTRACT and use_logical:
-        output_pixel_data = pixel_data[0].copy()
+        output_pixel_data = operands[0].copy()
 
     
     # _masks is a list of Nones if masks is None. Fixes type warnings.
     if masks is None:
-        masks = [None for _ in pixel_data]
+        masks = [None for _ in operands]
 
     #
     # Apply the operation to each image in the list
     #
-    for pd, mask in zip(pixel_data[1:], masks[1:]):
+    for pd, mask in zip(operands[1:], masks[1:]):
         output_pixel_data = imagemath_apply_on_image(output_pixel_data, pd, comparitor, op, opval)
         if not ignore_mask:
             if output_mask is None:
@@ -1820,17 +1820,17 @@ def imagemath_apply_binary_operation(
 
 def imagemath_apply_unary_operation(
     opval: Operator, 
-    pixel_data: List[ImageAny], 
-    masks: Optional[List[Optional[ImageMaskAny]]], 
+    operands: List[Union[ImageAny, float]], 
+    masks: Optional[List[Optional[Union[ImageAnyMask, bool]]]], 
     output_pixel_data: ImageAny,
-    output_mask: Optional[ImageMaskAny],
+    output_mask: Optional[ImageAnyMask],
     ignore_mask: bool,
     ) -> Tuple[
         ImageAny, 
-        Optional[ImageMaskAny],
+        Optional[ImageAnyMask],
     ]:
     if opval == Operator.STDEV:
-        pixel_array = numpy.array(pixel_data)
+        pixel_array = numpy.array(operands)
         output_pixel_data = numpy.std(pixel_array,axis=0)
         if not ignore_mask:
             mask_array = numpy.array(masks)

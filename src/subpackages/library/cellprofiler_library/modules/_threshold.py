@@ -25,8 +25,8 @@ def threshold(
     assign_middle_to_foreground:Annotated[Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Field(default=Assignment.FOREGROUND),
     log_transform:              Annotated[bool, Field(description="Log transform")] = Field(default=False),
     threshold_correction_factor:Annotated[float, Field(description="Threshold correction factor")] = Field(default=1),
-    threshold_min:              Annotated[float, Field(description="Minimum threshold")] = Field(default=0),
-    threshold_max:              Annotated[float, Field(description="Maximum threshold")] = Field(default=1),
+    threshold_min:              Annotated[Optional[float], Field(description="Minimum threshold")] = Field(default=0),
+    threshold_max:              Annotated[Optional[float], Field(description="Maximum threshold")] = Field(default=1),
     window_size:                Annotated[int, Field(description="Window size for adaptive thresholding")] = Field(default=50),
     smoothing:                  Annotated[float, Field(description="Smoothing factor")] = Field(default=0),
     lower_outlier_fraction:     Annotated[float, Field(description="Lower outlier fraction")] = Field(default=0.05),
@@ -34,6 +34,7 @@ def threshold(
     averaging_method:           Annotated[AveragingMethod, Field(description="Averaging method"), BeforeValidator(str.casefold)] = Field(default=AveragingMethod.MEAN),
     variance_method:            Annotated[VarianceMethod, Field(description="Variance method"), BeforeValidator(str.casefold)] = Field(default=VarianceMethod.STANDARD_DEVIATION),
     number_of_deviations:       Annotated[int, Field(description="Number of deviations")] = Field(default=2),
+    predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = Field(default=None),
     volumetric:                 Annotated[bool, Field(description="Volumetric thresholding")] = Field(default=False),
     automatic:                  Annotated[bool, Field(description="Automatic thresholding")] = Field(default=False),
     **kwargs:                   Annotated[Any, Field(description="Additional keyword arguments")]
@@ -59,6 +60,23 @@ def threshold(
     This is the global threshold that constrains the adaptive threshold
     within a certain range, as defined by global_limits (default [0.7, 1.5])
     """
+
+    # A predefined threshold has been requested (ie. a manual or measurement one)
+    if predefined_threshold is not None:
+        final_threshold = predefined_threshold
+        final_threshold *= threshold_correction_factor
+        # For manual thresholds in the GUI, min/max filtering is not applied
+        if threshold_min is not None and threshold_max is not None:
+            final_threshold = min(max(final_threshold, threshold_min), threshold_max)
+        orig_threshold = predefined_threshold
+        guide_threshold = None
+        binary_image, sigma = apply_threshold(
+            image=image,
+            threshold=final_threshold,
+            mask=mask,
+            smoothing=smoothing
+            )
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     if automatic:
         # Use automatic settings

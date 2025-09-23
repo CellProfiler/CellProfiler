@@ -1,5 +1,3 @@
-import skimage
-import skimage.measure
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.text import Integer

@@ -48,6 +48,9 @@ wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubun
 [target.osx-arm64.pypi-dependencies]
 wxpython = "==4.2.1"
 
+[target.osx-arm64.dependencies]
+libgfortran5 = "==14.2.0"
+
 [feature.mysql.dependencies]
 pkg-config = "<1.0.0"
 mysql = "=8.0"

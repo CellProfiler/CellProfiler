@@ -1,5 +1,6 @@
 import math
 import numpy
+import xarray as xr
 
 from ..utilities.image import crop_image
 
@@ -69,12 +70,11 @@ class Image:
         channelstack=False
     ):
         self.__image = None
+        self.__xarray_image = None
 
         self.__mask = None
 
         self.__has_mask = False
-
-        self.parent_image = parent_image
 
         self.__crop_mask = None
 
@@ -87,8 +87,15 @@ class Image:
 
         self.__scale = scale
 
+        if parent_image and parent_image.has_xarray:
+            image = xr.DataArray(image, dims=parent_image.xarray_data.dims, coords=parent_image.xarray_data.coords, attrs=parent_image.xarray_data.attrs)
+        self.parent_image = parent_image
+
         if image is not None:
-            self.set_image(image, convert)
+            if type(image) is xr.DataArray:
+                self.set_xarray(image, convert)
+            else:
+                self.set_image(image, convert)
 
         if mask is not None:
             self.mask = mask
@@ -130,6 +137,18 @@ class Image:
     def spacing(self, spacing):
         self.__spacing = spacing
 
+    def get_xarray(self):
+        return self.__xarray_image
+
+    def set_xarray(self, image, convert=True):
+        self.set_image(image.data, convert)
+        image.data = self.__image
+        self.__xarray_image = image
+
+    @property
+    def has_xarray(self):
+        return self.__xarray_image is not None
+
     def get_image(self):
         """Return the primary image"""
         return self.__image
@@ -169,6 +188,7 @@ class Image:
 
     image = property(get_image, set_image)
     pixel_data = property(get_image, set_image)
+    xarray_data = property(get_xarray, set_xarray)
 
     @property
     def has_parent_image(self):

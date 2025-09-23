@@ -10,6 +10,7 @@ import weakref
 import numpy
 from skimage.exposure import rescale_intensity
 from skimage.util import img_as_float32
+import xarray as xr
 
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
@@ -556,6 +557,18 @@ class FileImage(AbstractImage):
 
             img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
 
+        md = rdr.get_series_metadata()
+        dims = ("x", "y")
+        coords = {}
+        if md['SizeC'][0] > 1 and len(img.shape) == 3:
+            dims = dims + ("c",)
+        elif md['SizeZ'][0] > 1 and len(img.shape) == 3:
+            dims = ("z",) + dims
+        elif md['SizeZ'][0] > 1 and md['SizeC'][0] > 1 and len(img.shape) == 4:
+            dims = ("z",) + dims + ("c",)
+        if "c" in dims:
+            coords = {"c": list(map(lambda x: x["label"], rdr._reader.attrs["omero"]["channels"]))}
+        img = xr.DataArray(img, dims=dims, coords=coords)
         self.__image = Image(
             img,
             path_name=self.get_pathname(),

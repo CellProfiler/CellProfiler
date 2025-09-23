@@ -50,6 +50,7 @@ class GaussianFilter(ImageProcessing):
         dimensions = x.dimensions
 
         x_data = x.pixel_data
+        x_array_data = x.xarray_data
 
         sigma = numpy.divide(self.sigma.value, x.spacing) #library function
 

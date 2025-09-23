@@ -2,7 +2,7 @@ import abc
 import uuid
 
 from ._validation_error import ValidationError
-
+from enum import Enum
 
 class Setting(abc.ABC):
     """A module setting which holds a single string value
@@ -106,6 +106,8 @@ class Setting(abc.ABC):
     def __eq__(self, x):
         # we test explicitly for other Settings to prevent matching if
         # their .values are the same.
+        if isinstance(x, Enum):
+            return self.unicode_value == x.value
         if isinstance(x, Setting):
             return self.__key == x.__key
         return self.eq(x)
@@ -169,4 +171,6 @@ class Setting(abc.ABC):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
+        if isinstance(self.__value, Enum):
+            return str(self.__value.value)
         return str(self.value_text)

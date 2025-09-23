@@ -1,19 +1,17 @@
 import numpy
-import matplotlib.cm
-import centrosome.cpmorphology
-from typing import Annotated, Any, Optional, Tuple, Callable
-from pydantic import Field, validate_call, BeforeValidator, ConfigDict
+from typing import Annotated, Optional, Tuple
+from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.opts.convertobjectstoimage import ImageMode
-from ..types import ObjectLabelSet
-from ..functions.object_processing import image_mode_black_and_white, image_mode_grayscale, image_mode_color, image_mode_uint16
+from cellprofiler_library.types import ObjectLabelSet, ImageAny
+from cellprofiler_library.functions.object_processing import image_mode_black_and_white, image_mode_grayscale, image_mode_color, image_mode_uint16
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def convert_objects_to_image(
         image_mode: Annotated[ImageMode, Field(description="Color format to be used for conversion")],
         objects_labels : Annotated[ObjectLabelSet, Field(description="Labels of the objects")],
-        objects_shape : Annotated[tuple, Field(description="Shape of the objects")],
+        objects_shape : Annotated[Tuple[int, ...], Field(description="Shape of the objects")],
         colormap_value : Annotated[Optional[str], Field(description="Colormap to be used for conversion")] = None
-        ):
+        ) -> ImageAny:
     
     alpha = numpy.zeros(objects_shape)
 

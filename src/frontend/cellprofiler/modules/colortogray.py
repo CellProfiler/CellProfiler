@@ -43,14 +43,8 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_library.modules._colortogray import color_to_gray
-from cellprofiler_library.opts.colortogray import ConversionMethod
+from cellprofiler_library.opts.colortogray import ConversionMethod, ImageChannelType, Channel
 
-COMBINE = "Combine"
-SPLIT = "Split"
-
-CH_RGB = "RGB"
-CH_HSV = "HSV"
-CH_CHANNELS = "Channels"
 
 SLOT_CHANNEL_COUNT = 19
 SLOT_FIXED_COUNT = 20
@@ -73,38 +67,47 @@ class ColorToGray(Module):
 
         self.combine_or_split = Choice(
             "Conversion method",
-            [COMBINE, SPLIT],
+            [ConversionMethod.COMBINE, ConversionMethod.SPLIT],
             doc="""\
 How do you want to convert the color image?
 
--  *%(SPLIT)s:* Splits the channels of a color
+-  *{SPLIT}:* Splits the channels of a color
    image (e.g., red, green, blue) into separate grayscale images.
--  *%(COMBINE)s:* Converts a color image to a grayscale image by
-   combining channels together (e.g., red, green, blue)."""
-            % globals(),
+-  *{COMBINE}:* Converts a color image to a grayscale image by
+   combining channels together (e.g., red, green, blue).""".format(
+       **{
+           "SPLIT": ConversionMethod.SPLIT,
+           "COMBINE": ConversionMethod.COMBINE,
+       }
+   ),
         )
 
         self.rgb_or_channels = Choice(
             "Image type",
-            [CH_RGB, CH_HSV, CH_CHANNELS],
+            [ImageChannelType.RGB, ImageChannelType.HSV, ImageChannelType.CHANNELS],
             doc="""\
 This setting provides three options to choose from:
 
--  *%(CH_RGB)s:* The RGB (red, green, blue) color space is the typical
+-  *{CH_RGB}:* The RGB (red, green, blue) color space is the typical
    model in which color images are stored. Choosing this option will
    split the image into red, green, and blue component images.
--  *%(CH_HSV)s:* The HSV (hue, saturation, value) color space is based
+-  *{CH_HSV}:* The HSV (hue, saturation, value) color space is based
    on color characteristics such as tint, shade, and tone.
    Choosing this option will split the image into the hue,
    saturation, and value component images.
--  *%(CH_CHANNELS)s:* Many images contain color channels other than RGB
+-  *{CH_CHANNELS}:* Many images contain color channels other than RGB
    or HSV. For instance, GIF and PNG formats can have an alpha
    channel that encodes transparency. TIF formats can have an arbitrary
    number of channels which represent pixel measurements made by
    different detectors, filters or lighting conditions. This setting
    allows you to handle a more complex model for images that
-   have more than three channels."""
-            % globals(),
+   have more than three channels.""".format(
+       **{
+           "CH_RGB": ImageChannelType.RGB,
+           "CH_HSV": ImageChannelType.HSV,
+           "CH_CHANNELS": ImageChannelType.CHANNELS,
+       }
+   )
         )
 
         # The following settings are used for the combine option
@@ -352,7 +355,7 @@ Select the name of the output grayscale image.""",
         vv = [self.image_name, self.combine_or_split]
         if self.should_combine():
             vv += [self.grayscale_name, self.rgb_or_channels]
-            if self.rgb_or_channels in (CH_RGB, CH_HSV):
+            if self.rgb_or_channels in (ImageChannelType.RGB, ImageChannelType.HSV):
                 vv.extend(
                     [
                         self.red_contribution,
@@ -368,7 +371,7 @@ Select the name of the output grayscale image.""",
                 vv += [self.channel_button]
         else:
             vv += [self.rgb_or_channels]
-            if self.rgb_or_channels == CH_RGB:
+            if self.rgb_or_channels == ImageChannelType.RGB:
                 for v_use, v_name in (
                     (self.use_red, self.red_name),
                     (self.use_green, self.green_name),
@@ -377,7 +380,7 @@ Select the name of the output grayscale image.""",
                     vv.append(v_use)
                     if v_use.value:
                         vv.append(v_name)
-            elif self.rgb_or_channels == CH_HSV:
+            elif self.rgb_or_channels == ImageChannelType.HSV:
                 for v_use, v_name in (
                     (self.use_hue, self.hue_name),
                     (self.use_saturation, self.saturation_name),
@@ -386,12 +389,14 @@ Select the name of the output grayscale image.""",
                     vv.append(v_use)
                     if v_use.value:
                         vv.append(v_name)
-            else:
+            elif self.rgb_or_channels == ImageChannelType.CHANNELS:
                 for channel in self.channels:
                     vv += [channel.channel_choice, channel.image_name]
                     if channel.can_remove:
                         vv += [channel.remover]
                 vv += [self.channel_button]
+            else:
+                raise ValueError(f"Unknown RGB/HSV type: {self.rgb_or_channels}")
         return vv
 
     def settings(self):
@@ -427,11 +432,11 @@ Select the name of the output grayscale image.""",
 
     def should_combine(self):
         """True if we are supposed to combine RGB to gray"""
-        return self.combine_or_split == COMBINE
+        return self.combine_or_split == ConversionMethod.COMBINE
 
     def should_split(self):
         """True if we are supposed to split each color into an image"""
-        return self.combine_or_split == SPLIT
+        return self.combine_or_split == ConversionMethod.SPLIT
 
     def validate_module(self, pipeline):
         """Test to see if the module is in a valid state to run
@@ -440,14 +445,14 @@ Select the name of the output grayscale image.""",
         Make sure that we output at least one image if split
         """
         if self.should_split():
-            if (self.rgb_or_channels == CH_RGB) and not any(
+            if (self.rgb_or_channels == ImageChannelType.RGB) and not any(
                 [self.use_red.value, self.use_blue.value, self.use_green.value]
             ):
                 raise ValidationError(
                     "You must output at least one of the color images when in split mode",
                     self.use_red,
                 )
-            if (self.rgb_or_channels == CH_HSV) and not any(
+            if (self.rgb_or_channels == ImageChannelType.HSV) and not any(
                 [self.use_hue.value, self.use_saturation.value, self.use_value.value]
             ):
                 raise ValidationError(
@@ -460,7 +465,7 @@ Select the name of the output grayscale image.""",
 
         Used when combining channels to find the channels to combine
         """
-        if self.rgb_or_channels in (CH_RGB, CH_HSV):
+        if self.rgb_or_channels in (ImageChannelType.RGB, ImageChannelType.HSV):
             return [
                 (i, contribution.value)
                 for i, contribution in enumerate(
@@ -495,11 +500,11 @@ Select the name of the output grayscale image.""",
 
     def channels_and_image_names(self):
         """Return tuples of channel indexes and the image names for output"""
-        if self.rgb_or_channels == CH_RGB:
+        if self.rgb_or_channels == ImageChannelType.RGB:
             rgb = (
-                (self.use_red.value, self.red_name.value, "Red"),
-                (self.use_green.value, self.green_name.value, "Green"),
-                (self.use_blue.value, self.blue_name.value, "Blue"),
+                (self.use_red.value, self.red_name.value, Channel.RED.value),
+                (self.use_green.value, self.green_name.value, Channel.GREEN.value),
+                (self.use_blue.value, self.blue_name.value, Channel.BLUE.value),
             )
             return [
                 (i, name, title)
@@ -507,11 +512,11 @@ Select the name of the output grayscale image.""",
                 if use_it
             ]
 
-        if self.rgb_or_channels == CH_HSV:
+        if self.rgb_or_channels == ImageChannelType.HSV:
             hsv = (
-                (self.use_hue.value, self.hue_name.value, "Hue"),
-                (self.use_saturation.value, self.saturation_name.value, "Saturation"),
-                (self.use_value.value, self.value_name.value, "Value"),
+                (self.use_hue.value, self.hue_name.value, Channel.HUE.value),
+                (self.use_saturation.value, self.saturation_name.value, Channel.SATURATION.value),
+                (self.use_value.value, self.value_name.value, Channel.VALUE.value),
             )
             return [
                 (i, name, title)
@@ -552,10 +557,10 @@ Select the name of the output grayscale image.""",
             ConversionMethod.SPLIT: self.add_split_image_to_workspace,
         }
 
-        combine_or_split = self.combine_or_split.value.casefold()
+        combine_or_split = self.combine_or_split.value
 
         channels, contributions = init_channels_and_contributions_fn[combine_or_split]()
-        output = color_to_gray(image.pixel_data, self.rgb_or_channels.value.casefold(), self.should_combine(), channels, contributions)
+        output = color_to_gray(image.pixel_data, self.rgb_or_channels.value, self.should_combine(), channels, contributions)
         add_to_workspace_fn[combine_or_split](workspace, image, output)
 
     def display(self, workspace, figure):
@@ -648,7 +653,7 @@ Select the name of the output grayscale image.""",
             #
             setting_values = (
                 setting_values[:2]
-                + [CH_RGB]
+                + [ImageChannelType.RGB]
                 + setting_values[2:]
                 + ["1", "Red: 1", "1", "Channel1"]
             )

@@ -21,9 +21,7 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.cpmorphology
-import matplotlib.cm
-import numpy
+
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
@@ -122,7 +120,9 @@ Preferences*.
 
         pixel_data = convert_objects_to_image(self.image_mode.value, object_labels, objects.shape, str(colormap_value))
 
-        convert = False if self.image_mode.value.casefold() == ImageMode.UINT16 else True
+        if self.image_mode.value not in ImageMode.__members__:
+            raise ValueError(f"Unknown image mode: {self.image_mode.value}")
+        convert = False if self.image_mode.value == ImageMode.UINT16 else True
         image = Image(
             pixel_data,
             parent_image=objects.parent_image,

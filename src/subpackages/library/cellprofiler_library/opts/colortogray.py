@@ -1,19 +1,19 @@
 from enum import Enum
 
 class ConversionMethod(str, Enum):
-    COMBINE = "combine"
-    SPLIT = "split"
+    COMBINE = "Combine"
+    SPLIT = "Split"
 
 
 class ImageChannelType(str, Enum):
-    RGB = "rgb"
-    HSV = "hsv"
-    CHANNELS = "channels"
+    RGB = "RGB"
+    HSV = "HSV"
+    CHANNELS = "Channels"
 
 class Channel(str, Enum):
-    RED = "red"
-    GREEN = "green"
-    BLUE = "blue"
-    HUE = "hue"
-    SATURATION = "saturation"
-    VALUE = "value"
+    RED = "Red"
+    GREEN = "Green"
+    BLUE = "Blue"
+    HUE = "Hue"
+    SATURATION = "Saturation"
+    VALUE = "Value"

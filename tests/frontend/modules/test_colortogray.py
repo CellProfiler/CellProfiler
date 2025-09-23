@@ -12,6 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.colortogray import ConversionMethod, ImageChannelType
 
 IMAGE_NAME = "image"
 OUTPUT_IMAGE_F = "outputimage%d"
@@ -37,7 +38,7 @@ def test_combine():
     ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
-    ctg.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
+    ctg.combine_or_split.value = ConversionMethod.COMBINE
     ctg.red_contribution.value = 1
     ctg.green_contribution.value = 2
     ctg.blue_contribution.value = 3
@@ -82,7 +83,7 @@ def test_split_all():
     ctg = cellprofiler.modules.colortogray.ColorToGray()
     ctg.set_module_num(2)
     ctg.image_name.value = "my_image"
-    ctg.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
+    ctg.combine_or_split.value = ConversionMethod.SPLIT
     ctg.use_red.value = True
     ctg.use_blue.value = True
     ctg.use_green.value = True
@@ -146,9 +147,9 @@ def test_combine_channels():
     module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
-    module.combine_or_split.value = cellprofiler.modules.colortogray.COMBINE
+    module.combine_or_split.value = ConversionMethod.COMBINE
     module.grayscale_name.value = OUTPUT_IMAGE_F % 1
-    module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
+    module.rgb_or_channels.value = ImageChannelType.CHANNELS
     module.add_channel()
     module.add_channel()
 
@@ -193,8 +194,8 @@ def test_split_channels():
     module = cellprofiler.modules.colortogray.ColorToGray()
     module.set_module_num(1)
     module.image_name.value = IMAGE_NAME
-    module.combine_or_split.value = cellprofiler.modules.colortogray.SPLIT
-    module.rgb_or_channels.value = cellprofiler.modules.colortogray.CH_CHANNELS
+    module.combine_or_split.value = ConversionMethod.SPLIT
+    module.rgb_or_channels.value = ImageChannelType.CHANNELS
     module.add_channel()
     module.add_channel()
     module.add_channel()
@@ -254,7 +255,7 @@ def test_load_split():
     assert module.use_green.value
     assert module.green_name.value == "TestGreen"
     assert not module.use_blue.value
-    assert module.rgb_or_channels == cellprofiler.modules.colortogray.CH_RGB
+    assert module.rgb_or_channels == ImageChannelType.RGB
 
 
 def test_load_v2():
@@ -273,8 +274,8 @@ def test_load_v2():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.colortogray.ColorToGray)
     assert module.image_name == "DNA"
-    assert module.combine_or_split == cellprofiler.modules.colortogray.COMBINE
-    assert module.rgb_or_channels == cellprofiler.modules.colortogray.CH_CHANNELS
+    assert module.combine_or_split == ConversionMethod.COMBINE
+    assert module.rgb_or_channels == ImageChannelType.CHANNELS
     assert module.grayscale_name == "OrigGrayw"
     assert module.red_contribution == 1
     assert module.green_contribution == 3

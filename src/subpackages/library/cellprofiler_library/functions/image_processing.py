@@ -6,7 +6,7 @@ import centrosome.threshold
 import scipy
 import matplotlib
 from typing import Any, Optional, Tuple, Callable, Union, List
-from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale
+from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectLabelsDense
 from ..opts import threshold as Threshold
 
 
@@ -595,12 +595,12 @@ def split_multichannel(input_image: Image2DColor) -> List[Image2DGrayscale]:
      return split_rgb(input_image)
 
 def convert_image_to_objects(
-        data:           Annotated[Any, Field(description="Image to be converted to Objects")], 
+        data:           Annotated[ImageAny, Field(description="Image to be converted to Objects")], 
         cast_to_bool:   Annotated[bool, Field(description="Convert a grayscale image to binary before converting it to an object")], 
         preserve_label: Annotated[bool, Field(description="Preserve original labels of objects")], 
         background:     Annotated[int, Field(description="Pixel value of the background")], 
         connectivity:   Annotated[Union[int, None], Field(description="Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor")]
-        ) -> Any:
+        ) -> ObjectLabelsDense:
     # Compatibility with skimage
     connectivity = None if connectivity == 0 else connectivity
 

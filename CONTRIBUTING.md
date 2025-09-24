@@ -160,6 +160,9 @@ This will download and build the necessary dependencies, preferably in a virtual
 When working on CellProfiler from your Text Editor or IDE of choice, make sure to activate the virtual environment so that any accessory tooling like LSPs are able to recognize import statements and the like.
 Keep in mind that type checkers like `pyright`, `mypy`, etc. can have some limited use, paricularly in `cellprofiler-library` but in general most of CellProfiler is untyped.
 
+If contributing to CellProfiler's core codebase, reading the [Wiki](https://github.com/CellProfiler/CellProfiler/wiki) sections under "Contributing and filing issues" has sections detailing the inner workings of the codebase.
+Gaining familiarity with those will aide in contributions that aren't local to CellProfiler modules.
+
 ### Testing
 We strongly encourage contributions with tests. We use [pytest](doc.pytest.org/en/latest/) as our test framework and have designed a set of test fixtures for unit testing CellProfiler modules. To execute the full test suite, run:
 

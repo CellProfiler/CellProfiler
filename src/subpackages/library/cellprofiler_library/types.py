@@ -1,0 +1,71 @@
+from typing import Any, Iterable, Optional, Union, Annotated, get_origin, get_args
+from pydantic import Field, AfterValidator
+import numpy as np
+import numpy.typing as npt
+from numpy.typing import NDArray
+
+
+class CellProfilerInputValidationError(ValueError):
+    def __init__(self, message: str):
+        self.message = f"CellProfiler Input Validation Error: {message}"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+    
+""" 
+Image Types can be classified into:
+3D/2D: "3D" or "2D"
+Single channel/multi-channel: "single" or "multi"
+Data type: uint8, uint16, float32, float64, bool
+Tiled or single: "tiled" or "single"
+"""
+def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, dtype: type, shape_override: Optional[Iterable[int]] = None):
+    def validate(input_image: npt.NDArray[Any]):
+        if shape_override is not None:
+            if input_image.shape != shape_override:
+                raise CellProfilerInputValidationError(f"Expected an array of shape {shape_override}, got {input_image.shape}") 
+        else:
+            if is_3d:
+                if input_image.ndim < 3 or input_image.ndim > 4: # not 3D or 3D multi-channel
+                    raise CellProfilerInputValidationError(f"Expected a 3D or 4D array ([c], z, y, x), got {input_image.ndim}D")
+                if input_image.ndim == 3 and input_image.shape[0] <= 1: # Only one z channel
+                    raise CellProfilerInputValidationError(f"Expected a 3D array with at least 2 z channels, got {input_image.shape[1]}")
+                if input_image.ndim == 4:
+                    if input_image.shape[1] <= 1:
+                        raise CellProfilerInputValidationError(f"Expected a 4D array with at least 2 z channels, got {input_image.shape[2]}")
+                    if input_image.shape[0] <= 1:
+                        raise CellProfilerInputValidationError(f"Expected a 4D array with at least 2 c channels, got {input_image.shape[1]}")
+                if is_multi_channel:
+                    if input_image.shape[0] <= 1:
+                        raise CellProfilerInputValidationError(f"Expected a 5D array with at least 2 c channels, got {input_image.shape[0]}")
+                    
+            else: # 2d image. 
+                if is_multi_channel: # color
+                    if input_image.ndim != 3:
+                        raise CellProfilerInputValidationError(f"Expected a 3D array (cyx),got {input_image.ndim}D")
+                else: # grayscale
+                    if input_image.ndim != 2:
+                        raise CellProfilerInputValidationError(f"Expected a 2D array (yx),got {input_image.ndim}D")
+        if get_origin(dtype) is Union:
+            if input_image.dtype not in get_args(dtype):
+                raise CellProfilerInputValidationError(f"Expected an array of type {dtype}, got {input_image.dtype}")
+        elif input_image.dtype != dtype:
+            raise CellProfilerInputValidationError(f"Expected an array of type {dtype}, got {input_image.dtype}")
+        if is_tiled:
+            pass
+        return input_image
+    return validate
+
+Image2DColor = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
+Image2DColorMask = Annotated[NDArray[np.bool_], Field(description="2D color mask"), AfterValidator(create_type_validator(False, True, False, np.bool_))]
+Image2DGrayscale = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="2D grayscale image of type float32"), AfterValidator(create_type_validator(False, False, False, Union[np.float32, np.float64]))]
+Image2DGrayscaleMask = Annotated[NDArray[np.bool_], Field(description="2D grayscale mask"), AfterValidator(create_type_validator(False, False, False, np.bool_))]
+
+Image3DColor = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, Union[np.float32, np.float64]))]
+Image3DColorMask = Annotated[NDArray[np.bool_], Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, np.bool_))]
+Image3DGrayscale = Annotated[NDArray[Union[np.float32, np.float64]], Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Union[np.float32, np.float64]))]
+Image3DGrayscaleMask = Annotated[NDArray[np.bool_], Field(description="3D grayscale mask"), AfterValidator(create_type_validator(True, False, False, np.bool_))]
+
+ImageGrayscale = Union[Image2DGrayscale, Image3DGrayscale]
+ImageGrayscaleMask = Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

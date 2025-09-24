@@ -1,30 +1,51 @@
+from pydantic import Field, BeforeValidator, validate_call, ConfigDict
+from typing import Optional, Tuple, Annotated, Any, Union
+
 from ..functions.image_processing import (
     get_adaptive_threshold,
     get_global_threshold,
     apply_threshold,
 )
+from ..opts.threshold import (
+    Scope,
+    Method,
+    Assignment,
+    AveragingMethod,
+    VarianceMethod,
+)
+from ..types import ImageGrayscale, ImageGrayscaleMask
 
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def threshold(
-    image,
-    mask=None,
-    threshold_scope="global",
-    threshold_method="otsu",
-    assign_middle_to_foreground="foreground",
-    log_transform=False,
-    threshold_correction_factor=1,
-    threshold_min=0,
-    threshold_max=1,
-    window_size=50,
-    smoothing=0,
-    lower_outlier_fraction=0.05,
-    upper_outlier_fraction=0.05,
-    averaging_method="mean",
-    variance_method="standard_deviation",
-    number_of_deviations=2,
-    volumetric=False,
-    automatic=False,
-    **kwargs,
-):
+    image:                      Annotated[ImageGrayscale, Field(description="Image to threshold")],
+    mask:                       Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
+    threshold_scope:            Annotated[Scope, Field(description="Thresholding scope")] = Field(default=Scope.GLOBAL),
+    threshold_method:           Annotated[Method, Field(description="Thresholding method")] = Field(default=Method.OTSU),
+    assign_middle_to_foreground:Annotated[Assignment, Field(description="Assign middle to foreground")] = Field(default=Assignment.FOREGROUND),
+    log_transform:              Annotated[bool, Field(description="Log transform")] = Field(default=False),
+    threshold_correction_factor:Annotated[float, Field(description="Threshold correction factor")] = Field(default=1),
+    threshold_min:              Annotated[Optional[float], Field(description="Minimum threshold")] = Field(default=0),
+    threshold_max:              Annotated[Optional[float], Field(description="Maximum threshold")] = Field(default=1),
+    window_size:                Annotated[int, Field(description="Window size for adaptive thresholding")] = Field(default=50),
+    smoothing:                  Annotated[float, Field(description="Smoothing factor")] = Field(default=0),
+    lower_outlier_fraction:     Annotated[float, Field(description="Lower outlier fraction")] = Field(default=0.05),
+    upper_outlier_fraction:     Annotated[float, Field(description="Upper outlier fraction")] = Field(default=0.05),
+    averaging_method:           Annotated[AveragingMethod, Field(description="Averaging method")] = Field(default=AveragingMethod.MEAN),
+    variance_method:            Annotated[VarianceMethod, Field(description="Variance method")] = Field(default=VarianceMethod.STANDARD_DEVIATION),
+    number_of_deviations:       Annotated[int, Field(description="Number of deviations")] = Field(default=2),
+    predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = Field(default=None),
+    volumetric:                 Annotated[bool, Field(description="Volumetric thresholding")] = Field(default=False),
+    automatic:                  Annotated[bool, Field(description="Automatic thresholding")] = Field(default=False),
+    **kwargs:                   Annotated[Any, Field(description="Additional keyword arguments")]
+) -> Tuple[
+    Annotated[Union[Any, float, int], Field(description="Final threshold")],
+    Annotated[Union[Any, float, int], Field(description="Original threshold")],
+    Annotated[Union[Any, float, int], Field(description="Guide threshold")],
+    Annotated[ImageGrayscaleMask, Field(description="Binary image")],
+    Annotated[float, Field(description="Sigma value")],
+
+]:
     """
     Returns three threshold values and a binary image.
     Thresholds returned are:
@@ -40,15 +61,32 @@ def threshold(
     within a certain range, as defined by global_limits (default [0.7, 1.5])
     """
 
+    # A predefined threshold has been requested (ie. a manual or measurement one)
+    if predefined_threshold is not None:
+        final_threshold = predefined_threshold
+        final_threshold *= threshold_correction_factor
+        # For manual thresholds in the GUI, min/max filtering is not applied
+        if threshold_min is not None and threshold_max is not None:
+            final_threshold = min(max(final_threshold, threshold_min), threshold_max)
+        orig_threshold = predefined_threshold
+        guide_threshold = None
+        binary_image, sigma = apply_threshold(
+            image=image,
+            threshold=final_threshold,
+            mask=mask,
+            smoothing=smoothing
+            )
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
+
     if automatic:
         # Use automatic settings
         smoothing = 1
         log_transform = False
-        threshold_scope = "global"
-        threshold_method = "minimum_cross_entropy"
+        threshold_scope = Scope.GLOBAL
+        threshold_method = Method.MINIMUM_CROSS_ENTROPY
 
     # Only pass robust_background kwargs when selected as the threshold_method
-    if threshold_method.casefold() == "robust_background":
+    if threshold_method == Method.ROBUST_BACKGROUND:
         kwargs = {
             "lower_outlier_fraction": lower_outlier_fraction,
             "upper_outlier_fraction": upper_outlier_fraction,
@@ -57,7 +95,7 @@ def threshold(
             "number_of_deviations": number_of_deviations,
         }
 
-    if threshold_scope.casefold() == "adaptive":
+    if threshold_scope == Scope.ADAPTIVE:
         final_threshold = get_adaptive_threshold(
             image,
             mask=mask,
@@ -107,7 +145,7 @@ def threshold(
 
         return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
-    elif threshold_scope.casefold() == "global":
+    elif threshold_scope == Scope.GLOBAL:
         final_threshold = get_global_threshold(
             image,
             mask=mask,

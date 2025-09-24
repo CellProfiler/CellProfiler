@@ -19,6 +19,7 @@ YES          YES          YES
 import centrosome.smooth
 import centrosome.threshold
 import numpy
+from typing import Dict, Union
 import scipy.interpolate
 import scipy.ndimage
 import skimage.filters
@@ -47,6 +48,7 @@ from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
 from cellprofiler_library.modules import threshold
+import cellprofiler_library.opts.threshold as ThresholdOpts
 from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
@@ -72,6 +74,24 @@ TM_SAUVOLA = "Sauvola"
 
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
+
+enum_map: Dict[str, Union[ThresholdOpts.Scope, ThresholdOpts.Method, ThresholdOpts.OtsuMethod, ThresholdOpts.Assignment, ThresholdOpts.AveragingMethod, ThresholdOpts.VarianceMethod]] = {
+    O_TWO_CLASS: ThresholdOpts.OtsuMethod.TWO_CLASS,
+    O_THREE_CLASS: ThresholdOpts.OtsuMethod.THREE_CLASS,
+    O_FOREGROUND: ThresholdOpts.Assignment.FOREGROUND,
+    O_BACKGROUND: ThresholdOpts.Assignment.BACKGROUND,
+    RB_MEAN: ThresholdOpts.AveragingMethod.MEAN,
+    RB_MEDIAN: ThresholdOpts.AveragingMethod.MEDIAN,
+    RB_MODE: ThresholdOpts.AveragingMethod.MODE,
+    RB_SD: ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
+    RB_MAD: ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION,
+    TS_GLOBAL: ThresholdOpts.Scope.GLOBAL,
+    TS_ADAPTIVE: ThresholdOpts.Scope.ADAPTIVE,
+    TM_LI: ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
+    TM_OTSU: ThresholdOpts.Method.OTSU,
+    TM_ROBUST_BACKGROUND: ThresholdOpts.Method.ROBUST_BACKGROUND,
+    TM_SAUVOLA: ThresholdOpts.Method.SAUVOLA,
+}
 
 PROTIP_RECOMMEND_ICON = "thumb-up.png"
 PROTIP_AVOID_ICON = "thumb-down.png"
@@ -832,7 +852,7 @@ staining.
         converted_str = gui_setting_str
         for replacement in rep_list:
             converted_str = converted_str.replace(*replacement)
-        return converted_str
+        return converted_str.lower()
 
     def get_threshold(self, input_image, workspace, automatic=False):
         """
@@ -841,8 +861,8 @@ staining.
         # Handle manual and measurement thresholds, which are not supported
         # by cellprofiler_library
         if self.threshold_operation == TM_MANUAL:
-            final_threshold = self.manual_threshold.value 
-            orig_threshold = self.manual_threshold.value
+            final_threshold = float(self.manual_threshold.value) 
+            orig_threshold = float(self.manual_threshold.value)
             guide_threshold = None 
             binary_image, sigma = apply_threshold(
                 input_image.pixel_data,
@@ -857,7 +877,7 @@ staining.
                 )
             )
             final_threshold = orig_threshold
-            final_threshold *= self.threshold_correction_factor.value
+            final_threshold *= float(self.threshold_correction_factor.value)
             final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
             guide_threshold = None 
             binary_image, sigma = apply_threshold(
@@ -868,22 +888,24 @@ staining.
             )
         else:
             # Convert threshold method for CellProfiler Library
-            if self.threshold_scope == "Global":
-                if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
+            if self.threshold_scope.value == TS_GLOBAL:
+                if self.global_operation.value == TM_OTSU and self.two_class_otsu.value == O_THREE_CLASS:
+                    threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
-                    threshold_method = self.convert_setting(self.global_operation.value)
-            elif self.threshold_scope == "Adaptive":
-                if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
+                    threshold_method = ThresholdOpts.Method(enum_map[self.global_operation.value])
+            elif self.threshold_scope.value == TS_ADAPTIVE:
+                if self.local_operation.value == TM_OTSU and self.two_class_otsu.value == O_THREE_CLASS:
+                    threshold_method = ThresholdOpts.Method.MULTI_OTSU
                 else:
-                    threshold_method = self.convert_setting(self.local_operation.value)
+                    threshold_method = ThresholdOpts.Method(enum_map[self.local_operation.value])
+            else:
+                raise NotImplementedError(f"Threshold scope {self.threshold_scope.value} is not supported.")
             final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
-                    threshold_scope=self.threshold_scope.value,
+                    threshold_scope=ThresholdOpts.Scope(enum_map[self.threshold_scope.value].value),
                     threshold_method=threshold_method,
-                    assign_middle_to_foreground=self.assign_middle_to_foreground.value,
+                    assign_middle_to_foreground=ThresholdOpts.Assignment(enum_map[self.assign_middle_to_foreground.value]),
                     log_transform=self.log_transform.value,
                     threshold_correction_factor=self.threshold_correction_factor.value,
                     threshold_min=self.threshold_range.min,
@@ -892,8 +914,8 @@ staining.
                     smoothing=self.threshold_smoothing_scale.value,
                     lower_outlier_fraction=self.lower_outlier_fraction.value,
                     upper_outlier_fraction=self.upper_outlier_fraction.value,
-                    averaging_method=self.averaging_method.value,
-                    variance_method=self.convert_setting(self.variance_method.value),
+                    averaging_method=ThresholdOpts.AveragingMethod(enum_map[self.averaging_method.value]),
+                    variance_method=ThresholdOpts.VarianceMethod(enum_map[self.variance_method.value]),
                     number_of_deviations=self.number_of_deviations.value,
                     volumetric=input_image.volumetric,  
                     automatic=automatic

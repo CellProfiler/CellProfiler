@@ -304,12 +304,12 @@ def __apply_threshold_function(
 def get_adaptive_threshold(
     image:                          Annotated[ImageGrayscale, Field(description="Image to threshold")],
     mask:                           Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
-    threshold_method:               Annotated[Threshold.Method, Field(description="Thresholding method"), BeforeValidator(str.casefold)] = Threshold.Method.OTSU,
+    threshold_method:               Annotated[Threshold.Method, Field(description="Thresholding method")] = Threshold.Method.OTSU,
     window_size:                    Annotated[int, Field(description="Window size for adaptive thresholding")] = 50,
     threshold_min:                  Annotated[float, Field(description="Minimum threshold")] = 0,
     threshold_max:                  Annotated[float, Field(description="Maximum threshold")] = 1,
     threshold_correction_factor:    Annotated[float, Field(description="Threshold correction factor")] = 1,
-    assign_middle_to_foreground:    Annotated[Threshold.Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Threshold.Assignment.FOREGROUND,
+    assign_middle_to_foreground:    Annotated[Threshold.Assignment, Field(description="Assign middle to foreground")] = Threshold.Assignment.FOREGROUND,
     global_limits:                  Annotated[Tuple[float, float], Field(description="Global limits for thresholding")] = (0.7, 1.5),
     log_transform:                  Annotated[bool, Field(description="Log transform")] = False,
     volumetric:                     Annotated[bool, Field(description="Volumetric thresholding")] = False,
@@ -342,7 +342,7 @@ def get_adaptive_threshold(
     conversion_dict = None
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
-    bin_wanted = 0 if assign_middle_to_foreground.casefold() == Threshold.Assignment.FOREGROUND else 1
+    bin_wanted = 0 if assign_middle_to_foreground == Threshold.Assignment.FOREGROUND else 1
 
     thresh_out = None
     threshold_fn = lambda x: None
@@ -427,11 +427,11 @@ def get_adaptive_threshold(
 def get_global_threshold(
     image:                       Annotated[ImageGrayscale, Field(description="Image to threshold")],
     mask:                        Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
-    threshold_method:            Annotated[Threshold.Method, Field(description="Thresholding method"), BeforeValidator(str.casefold)] = Threshold.Method.OTSU,
+    threshold_method:            Annotated[Threshold.Method, Field(description="Thresholding method")] = Threshold.Method.OTSU,
     threshold_min:               Annotated[float, Field(description="Minimum threshold")] = 0,
     threshold_max:               Annotated[float, Field(description="Maximum threshold")] = 1,
     threshold_correction_factor: Annotated[float, Field(description="Threshold correction factor")] = 1,
-    assign_middle_to_foreground: Annotated[Threshold.Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Threshold.Assignment.FOREGROUND,
+    assign_middle_to_foreground: Annotated[Threshold.Assignment, Field(description="Assign middle to foreground")] = Threshold.Assignment.FOREGROUND,
     log_transform:               Annotated[bool, Field(description="Log transform")] = False,
     **kwargs:                    Annotated[Any, Field(description="Additional keyword arguments")],
 ) -> Annotated[float, Field(description="Threshold")]:
@@ -450,15 +450,15 @@ def get_global_threshold(
         # All pixels are the same value
         threshold = image.ravel()[0]
 
-    elif threshold_method.casefold() in (Threshold.Method.MINIMUM_CROSS_ENTROPY, Threshold.Method.SAUVOLA):
+    elif threshold_method in (Threshold.Method.MINIMUM_CROSS_ENTROPY, Threshold.Method.SAUVOLA):
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         threshold = skimage.filters.threshold_li(image, tolerance=tol)
-    elif threshold_method.casefold() == Threshold.Method.ROBUST_BACKGROUND:
+    elif threshold_method == Threshold.Method.ROBUST_BACKGROUND:
         threshold = get_threshold_robust_background(image, **kwargs)
-    elif threshold_method.casefold() == Threshold.Method.OTSU:
+    elif threshold_method == Threshold.Method.OTSU:
         threshold = skimage.filters.threshold_otsu(image)
-    elif threshold_method.casefold() == Threshold.Method.MULTI_OTSU:
-        bin_wanted = 0 if assign_middle_to_foreground.casefold() == Threshold.Assignment.FOREGROUND else 1
+    elif threshold_method == Threshold.Method.MULTI_OTSU:
+        bin_wanted = 0 if assign_middle_to_foreground == Threshold.Assignment.FOREGROUND else 1
         kwargs["nbins"] = kwargs.get("nbins", 128)
         threshold = skimage.filters.threshold_multiotsu(image, **kwargs)
         threshold = threshold[bin_wanted]

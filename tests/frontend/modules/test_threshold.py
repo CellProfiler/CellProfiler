@@ -20,6 +20,7 @@ from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
 from cellprofiler_core.constants.module._identify import TS_GLOBAL
 import cellprofiler_library.modules
 import cellprofiler_library.functions
+import cellprofiler_library.opts.threshold as ThresholdOpts 
 import tests.frontend.modules
 
 INPUT_IMAGE_NAME = "inputimage"
@@ -583,7 +584,7 @@ def test_threshold_li_adaptive_image():
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "minimum_cross_entropy",
+        threshold_method = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
         window_size = 3
     )
 
@@ -618,7 +619,7 @@ def test_threshold_li_adaptive_image_masked():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "minimum_cross_entropy",
+        threshold_method = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
         window_size = 3
     )
 
@@ -727,10 +728,10 @@ def test_threshold_robust_background_mean_sd_volume():
 
     t_local_expected, _, _, _, _ = cellprofiler_library.modules.threshold(
         data,
-        threshold_method = "robust_background",
-        threshold_scope = "global",
-        averaging_method = "mean",
-        variance_method = "standard_deviation", 
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
+        threshold_scope = ThresholdOpts.Scope.GLOBAL,
+        averaging_method = ThresholdOpts.AveragingMethod.MEAN,
+        variance_method = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, 
     )
 
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -757,10 +758,10 @@ def test_threshold_robust_background_median_sd_volume():
 
     t_local_expected, _, _, _, _ = cellprofiler_library.modules.threshold(
         data,
-        threshold_method = "robust_background",
-        threshold_scope = "global",
-        averaging_method = "median",
-        variance_method = "standard_deviation",
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
+        threshold_scope = ThresholdOpts.Scope.GLOBAL,
+        averaging_method = ThresholdOpts.AveragingMethod.MEDIAN,
+        variance_method = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, 
     )
 
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -787,10 +788,10 @@ def test_threshold_robust_background_mode_sd_volume():
 
     t_local_expected, t_global_expected, _, _, _ = cellprofiler_library.modules.threshold(
         data,
-        threshold_method = "robust_background",
-        threshold_scope = "global",
-        averaging_method = "mode",
-        variance_method = "standard_deviation",
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
+        threshold_scope = ThresholdOpts.Scope.GLOBAL,
+        averaging_method = ThresholdOpts.AveragingMethod.MODE,
+        variance_method = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, 
     )
 
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -819,10 +820,10 @@ def test_threshold_robust_background_mean_mad_volume():
 
     t_local_expected, t_global_expected, _, _, _ = cellprofiler_library.modules.threshold(
         data,
-        threshold_method = "robust_background",
-        threshold_scope = "global",
-        averaging_method = "mean",
-        variance_method = "median_absolute_deviation",
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
+        threshold_scope = ThresholdOpts.Scope.GLOBAL,
+        averaging_method = ThresholdOpts.AveragingMethod.MEAN,
+        variance_method = ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION, 
     )
 
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -853,17 +854,17 @@ def test_threshold_robust_background_adaptive():
 
     t_guide_expected = cellprofiler_library.functions.image_processing.get_global_threshold(
         data,
-        threshold_method = "robust_background",
-        averaging_method = "mean",
-        variance_method = "standard_deviation"
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
+        averaging_method = ThresholdOpts.AveragingMethod.MEAN,
+        variance_method = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION
     )
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "robust_background",
+        threshold_method = ThresholdOpts.Method.ROBUST_BACKGROUND,
         window_size = 3,
-        averaging_method = "mean",
-        variance_method = "standard_deviation"
+        averaging_method = ThresholdOpts.AveragingMethod.MEAN,
+        variance_method = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
     )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
@@ -933,7 +934,7 @@ def test_threshold_otsu_partial_mask_uniform_data():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "otsu",
+        threshold_method = ThresholdOpts.Method.OTSU,
         window_size = 3,
         nbins = 128
     )
@@ -966,7 +967,7 @@ def test_threshold_otsu_uniform_data():
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "otsu",
+        threshold_method = ThresholdOpts.Method.OTSU,
         window_size = 3
     )
 
@@ -1003,7 +1004,7 @@ def test_threshold_otsu_image():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "otsu",
+        threshold_method = ThresholdOpts.Method.OTSU,
         window_size = 3
     )
 
@@ -1041,7 +1042,7 @@ def test_threshold_otsu_volume():
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "otsu",
+        threshold_method = ThresholdOpts.Method.OTSU,
         window_size = 3,
         volumetric = True
     )
@@ -1117,7 +1118,7 @@ def test_threshold_otsu3_image():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "multiotsu",
+        threshold_method = ThresholdOpts.Method.MULTI_OTSU,
         window_size = 3,
         nbins = 128
     )
@@ -1159,7 +1160,7 @@ def test_threshold_otsu3_volume():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "multiotsu",
+        threshold_method = ThresholdOpts.Method.MULTI_OTSU,
         window_size = 3,
         volumetric = True,
         nbins = 128,
@@ -1204,7 +1205,7 @@ def test_threshold_otsu3_oblong_volume():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "multiotsu",
+        threshold_method = ThresholdOpts.Method.MULTI_OTSU,
         window_size = 3,
         volumetric = True,
         nbins = 128,
@@ -1293,8 +1294,8 @@ def test_threshold_otsu3_volume_log():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "multiotsu",
-        assign_middle_to_foreground = "foreground",
+        threshold_method = ThresholdOpts.Method.MULTI_OTSU,
+        assign_middle_to_foreground = ThresholdOpts.Assignment.FOREGROUND,
         window_size = 3,
         volumetric = True,
         log_transform = True,
@@ -1328,7 +1329,7 @@ def test_threshold_sauvola_image():
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "sauvola",
+        threshold_method = ThresholdOpts.Method.SAUVOLA,
         window_size = 3,
     )
 
@@ -1363,7 +1364,7 @@ def test_threshold_sauvola_image_masked():
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
         mask = mask,
-        threshold_method = "sauvola",
+        threshold_method = ThresholdOpts.Method.SAUVOLA,
         window_size = 3,
     )
 
@@ -1393,7 +1394,7 @@ def test_threshold_sauvola_volume():
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,
-        threshold_method = "sauvola",
+        threshold_method = ThresholdOpts.Method.SAUVOLA,
         window_size = 3,
         volumetric = True
     )

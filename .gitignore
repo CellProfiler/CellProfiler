@@ -29,3 +29,19 @@ scratch/
 
 # pixi environments
 .pixi
+
+# AI/Agents
+Agent.md
+agent.md
+Agents.md
+agents.md
+Claude.md
+claude.md
+.cursor/
+.claude/
+*.mcp.json
+*.cursor
+*.mdc
+opencode.json
+opencode.jsonc
+.opencode/

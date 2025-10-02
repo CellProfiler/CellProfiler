@@ -35,6 +35,9 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
+from cellprofiler_library.modules._graytocolor import gray_to_rgb, gray_to_stacked_color, gray_to_composite_color
+from cellprofiler_library.types import Image2DGrayscale
+from cellprofiler_library.opts.graytocolor import Scheme
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1
@@ -516,78 +519,83 @@ pixel values are multiplied by this weight before assigning the color.
         input_image_names = []
         channel_names = []
         channelstack =  self.scheme_choice == SCHEME_STACK
-        if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
-            for color_scheme_setting in self.color_scheme_settings:
-                if color_scheme_setting.image_name.is_blank:
-                    channel_names.append("Blank")
-                    continue
-                image_name = color_scheme_setting.image_name.value
-                input_image_names.append(image_name)
-                channel_names.append(image_name)
-                image = imgset.get_image(image_name, must_be_grayscale=True)
-                multiplier = (
-                    color_scheme_setting.intensities
-                    * color_scheme_setting.adjustment_factor.value
-                )
-                pixel_data = image.pixel_data
-                if self.wants_rescale.value:
-                    pixel_data = pixel_data / numpy.max(pixel_data)
-                if parent_image is not None:
-                    if parent_image.pixel_data.shape != pixel_data.shape:
-                        raise ValueError(
-                            "The %s image and %s image have different sizes (%s vs %s)"
-                            % (
-                                parent_image_name,
-                                color_scheme_setting.image_name.value,
-                                parent_image.pixel_data.shape,
-                                image.pixel_data.shape,
-                            )
-                        )
-                    rgb_pixel_data += numpy.dstack([pixel_data] * 3) * multiplier
-                else:
-                    parent_image = image
-                    parent_image_name = color_scheme_setting.image_name.value
-                    rgb_pixel_data = numpy.dstack([pixel_data] * 3) * multiplier
+        if self.scheme_choice.value not in (SCHEME_STACK, SCHEME_COMPOSITE):
+            if self.scheme_choice.value == SCHEME_RGB:
+                image_arr: List[Image2DGrayscale] = [
+                    None if self.red_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.red_image_name.value, must_be_grayscale=True).pixel_data,
+                    None if self.green_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.green_image_name.value, must_be_grayscale=True).pixel_data,
+                    None if self.blue_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.blue_image_name.value, must_be_grayscale=True).pixel_data,
+                ]
+                adjustment_factor_array = [
+                    self.red_adjustment_factor.value,
+                    self.green_adjustment_factor.value,
+                    self.blue_adjustment_factor.value,
+                ]
+                intensities = [
+                    (1.0, 0.0, 0.0),
+                    (0.0, 1.0, 0.0),
+                    (0.0, 0.0, 1.0),
+                ]
+                rgb_pixel_data = gray_to_rgb(image_arr, adjustment_factor_array, intensities, self.wants_rescale.value)
+                # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
+                non_blank_image_names = [i for i in [self.red_image_name.value, self.green_image_name.value, self.blue_image_name.value] if i != LEAVE_THIS_BLACK]
+                assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
+                parent_image = imgset.get_image(non_blank_image_names[0], must_be_grayscale=True)
+            elif self.scheme_choice == SCHEME_CMYK:
+                image_arr: List[Image2DGrayscale] = [
+                    None if self.cyan_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.cyan_image_name.value, must_be_grayscale=True).pixel_data,
+                    None if self.magenta_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.magenta_image_name.value, must_be_grayscale=True).pixel_data,
+                    None if self.yellow_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.yellow_image_name.value, must_be_grayscale=True).pixel_data,
+                    None if self.gray_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.gray_image_name.value, must_be_grayscale=True).pixel_data,
+                ]
+                adjustment_factor_array = [
+                    self.cyan_adjustment_factor.value,
+                    self.magenta_adjustment_factor.value,
+                    self.yellow_adjustment_factor.value,
+                    self.gray_adjustment_factor.value,
+                ]
+                intensities = [
+                    (0, 0.5, 0.5),
+                    (0.5, 0, 0.5),
+                    (0.5, 0.5, 0),
+                    (1.0/3.0, 1.0/3.0, 1.0/3.0),
+                ]
+
+                rgb_pixel_data = gray_to_rgb(image_arr, adjustment_factor_array, intensities, self.wants_rescale.value)
+                # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
+                non_blank_image_names = [i for i in [self.cyan_image_name, self.magenta_image_name, self.yellow_image_name, self.gray_image_name] if i != LEAVE_THIS_BLACK]
+                assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
+                parent_image = imgset.get_image(non_blank_image_names[0], must_be_grayscale=True)
+            else:
+                raise ValueError(f"Unimplemented scheme?: {self.scheme_choice}")
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
             channel_names = input_image_names
-            source_channels = [
+            source_channels: List[Image2DGrayscale] = [
                 imgset.get_image(name, must_be_grayscale=True).pixel_data
                 for name in input_image_names
             ]
-            parent_image = imgset.get_image(input_image_names[0])
-            for idx, pd in enumerate(source_channels):
-                if pd.shape != source_channels[0].shape:
-                    raise ValueError(
-                        "The %s image and %s image have different sizes (%s vs %s)"
-                        % (
-                            self.stack_channels[0].image_name.value,
-                            self.stack_channels[idx].image_name.value,
-                            source_channels[0].shape,
-                            pd.pixel_data.shape,
-                        )
-                    )
-            if self.scheme_choice == SCHEME_STACK:
-                rgb_pixel_data = numpy.dstack(source_channels)
-            else:
-                colors = []
-                pixel_data = parent_image.pixel_data
-                if self.wants_rescale.value:
-                    pixel_data = pixel_data / numpy.max(pixel_data)
+            if self.scheme_choice.value == SCHEME_STACK:
+                rgb_pixel_data = gray_to_stacked_color(source_channels)
+                parent_image = imgset.get_image(input_image_names[0])
+            elif self.scheme_choice.value == SCHEME_COMPOSITE:
+                parent_image = imgset.get_image(input_image_names[0])
+                color_array = []
+                weight_array = []
                 for sc in self.stack_channels:
                     color_tuple = sc.color.to_rgb()
-                    color = (
-                        sc.weight.value
-                        * numpy.array(color_tuple).astype(pixel_data.dtype)
-                        / 255
-                    )
-                    colors.append(color[numpy.newaxis, numpy.newaxis, :])
-                rgb_pixel_data = pixel_data[:, :, numpy.newaxis] * colors[0]
-                for image, color in zip(source_channels[1:], colors[1:]):
-                    if self.wants_rescale.value:
-                        image = image / numpy.max(image)
-                    rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
-
+                    color_array += [color_tuple]
+                    weight_array += [sc.weight.value]
+                rgb_pixel_data = gray_to_composite_color(
+                source_channels,
+                self.scheme_choice,
+                self.wants_rescale.value,
+                color_array,
+                weight_array,
+                
+            )
+            else:
+                raise ValueError(f"Unimplemented scheme: {self.scheme_choice}")
         if self.scheme_choice != SCHEME_STACK and self.wants_rescale.value:
             # If we rescaled, clip values that went out of range after multiplication
             rgb_pixel_data[rgb_pixel_data > 1] = 1

@@ -1,37 +1,33 @@
 from enum import Enum
 
 class Scope(str, Enum):
-    GLOBAL = "global"
-    ADAPTIVE = "adaptive"
+    GLOBAL = "Global"
+    ADAPTIVE = "Adaptive"
 
 class OtsuMethod(str, Enum):
-    TWO_CLASS = "two_classes"
-    THREE_CLASS = "three_classes"
+    TWO_CLASS = "Two classes"
+    THREE_CLASS = "Three classes"
 
 class Method(str, Enum):
-    OTSU = "otsu"
-    MINIMUM_CROSS_ENTROPY = "minimum_cross_entropy"
-    ROBUST_BACKGROUND = "robust_background"
-    MULTI_OTSU = "multi_otsu"
-    SAUVOLA = "sauvola"
-    MAX_INTENSITY_PERCENTAGE = "max_intensity_percentage" # For MeasureColocalization
-    MANUAL = "manual" # For IdentifyPrimaryObjects
-    MEASUREMENT = "measurement" # For IdentifyPrimaryObjects
+    OTSU = "Otsu"
+    MINIMUM_CROSS_ENTROPY = "Minimum Cross-Entropy"
+    ROBUST_BACKGROUND = "Robust Background"
+    MULTI_OTSU = "Multi-Otsu"
+    SAUVOLA = "Sauvola"
+    MAX_INTENSITY_PERCENTAGE = "Max Intensity Percentage" # For MeasureColocalization
+    MANUAL = "Manual" # For IdentifyPrimaryObjects
+    MEASUREMENT = "Measurement" # For IdentifyPrimaryObjects
 
 class Assignment(str, Enum):
     # assign_middle_to_foreground
-    FOREGROUND = "foreground"
-    BACKGROUND = "background"
+    FOREGROUND = "Foreground"
+    BACKGROUND = "Background"
 
 class AveragingMethod(str, Enum):
-    MEAN = "mean"
-    MEDIAN = "median"
-    MODE = "mode"
+    MEAN = "Mean"
+    MEDIAN = "Median"
+    MODE = "Mode"
 
 class VarianceMethod(str, Enum):
-    STANDARD_DEVIATION = "standard_deviation"
-    MEDIAN_ABSOLUTE_DEVIATION = "median_absolute_deviation"
-
-class OTSUThresholdMethod(str, Enum):
-    TWO_CLASS = "two_classes"
-    THREE_CLASS = "three_classes"
+    STANDARD_DEVIATION = "Standard deviation"
+    MEDIAN_ABSOLUTE_DEVIATION = "Median absolute deviation"

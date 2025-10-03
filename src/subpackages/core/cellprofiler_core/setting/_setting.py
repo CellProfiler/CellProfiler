@@ -1,6 +1,6 @@
 import abc
 import uuid
-
+from enum import Enum
 from ._validation_error import ValidationError
 
 
@@ -108,6 +108,8 @@ class Setting(abc.ABC):
         # their .values are the same.
         if isinstance(x, Setting):
             return self.__key == x.__key
+        if isinstance(x, Enum):
+            return self.__value == x.value
         return self.eq(x)
 
     def eq(self, x):
@@ -169,4 +171,6 @@ class Setting(abc.ABC):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
+        if isinstance(self.__value, Enum):
+            return self.__value.value
         return str(self.value_text)

@@ -25,6 +25,7 @@ See also **ColorToGray** and **InvertForPrinting**.
 """
 
 import numpy
+from typing import List
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Color, Binary
@@ -35,7 +36,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
-from cellprofiler_library.modules._graytocolor import gray_to_rgb, gray_to_stacked_color, gray_to_composite_color
+from cellprofiler_library.modules._graytocolor import gray_to_rgb, gray_to_stacked_color, gray_to_composite_color, gray_to_color
 from cellprofiler_library.types import Image2DGrayscale
 from cellprofiler_library.opts.graytocolor import Scheme
 
@@ -51,10 +52,10 @@ OFF_STACK_CHANNELS_V2 = 16
 OFF_STACK_CHANNEL_COUNT_V3 = 16
 OFF_STACK_CHANNEL_COUNT = 17
 
-SCHEME_RGB = "RGB"
-SCHEME_CMYK = "CMYK"
-SCHEME_STACK = "Stack"
-SCHEME_COMPOSITE = "Composite"
+# Scheme.RGB = "RGB"
+# Scheme.CMYK = "CMYK"
+# Scheme.STACK = "Stack"
+# Scheme.COMPOSITE = "Composite"
 LEAVE_THIS_BLACK = "Leave this black"
 
 DEFAULT_COLORS = [
@@ -78,7 +79,7 @@ class GrayToColor(Module):
     def create_settings(self):
         self.scheme_choice = Choice(
             "Select a color scheme",
-            [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK, SCHEME_COMPOSITE],
+            [Scheme.RGB, Scheme.CMYK, Scheme.STACK, Scheme.COMPOSITE],
             doc="""\
 This module can use one of two color schemes to combine images:
 
@@ -102,8 +103,9 @@ This module can use one of two color schemes to combine images:
    intensity by the color and the resulting color images are added
    together. An arbitrary number of channels can be composited into a
    single color image.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB, "SCHEME_CMYK": Scheme.CMYK, "SCHEME_STACK": Scheme.STACK, "SCHEME_COMPOSITE": Scheme.COMPOSITE}
+            )
         )
 
         self.wants_rescale = Binary(
@@ -134,8 +136,9 @@ in clipping.""",
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
 Select the input image to be displayed in red.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
 
         self.green_image_name = ImageSubscriber(
@@ -146,8 +149,9 @@ Select the input image to be displayed in red.
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
 Select the input image to be displayed in green.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
 
         self.blue_image_name = ImageSubscriber(
@@ -158,8 +162,9 @@ Select the input image to be displayed in green.
 *(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
 
 Select the input image to be displayed in blue.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
 
         self.rgb_image_name = ImageName(
@@ -179,8 +184,9 @@ Enter the relative weight for the red image. If all relative weights are
 equal, all three colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
 
         self.green_adjustment_factor = Float(
@@ -194,8 +200,9 @@ Enter the relative weight for the green image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
 
         self.blue_adjustment_factor = Float(
@@ -209,8 +216,9 @@ Enter the relative weight for the blue image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_RGB": Scheme.RGB}
+            )
         )
         # # # # # # # # # # # # # #
         #
@@ -225,8 +233,9 @@ weights.
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
 Select the input image to be displayed in cyan.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.magenta_image_name = ImageSubscriber(
@@ -237,8 +246,9 @@ Select the input image to be displayed in cyan.
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
 Select the input image to be displayed in magenta.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.yellow_image_name = ImageSubscriber(
@@ -249,8 +259,9 @@ Select the input image to be displayed in magenta.
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
 Select the input image to be displayed in yellow.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.gray_image_name = ImageSubscriber(
@@ -261,8 +272,9 @@ Select the input image to be displayed in yellow.
 *(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
 
 Select the input image that will determine each pixel's brightness.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.cyan_adjustment_factor = Float(
@@ -276,8 +288,9 @@ Enter the relative weight for the cyan image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.magenta_adjustment_factor = Float(
@@ -291,8 +304,9 @@ Enter the relative weight for the magenta image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.yellow_adjustment_factor = Float(
@@ -306,8 +320,9 @@ Enter the relative weight for the yellow image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         self.gray_adjustment_factor = Float(
@@ -321,8 +336,9 @@ Enter the relative weight for the brightness image. If all relative
 weights are equal, all colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
-"""
-            % globals(),
+""".format(
+                **{"SCHEME_CMYK": Scheme.CMYK}
+            )
         )
 
         # # # # # # # # # # # # # #
@@ -355,8 +371,9 @@ weights.
 *(Used only if "%(SCHEME_STACK)s" or "%(SCHEME_COMPOSITE)s" is chosen)*
 
 Select the input image to add to the stacked image.
-"""
-                % globals(),
+""".format(
+                **{"SCHEME_STACK": Scheme.STACK, "SCHEME_COMPOSITE": Scheme.COMPOSITE}
+            )
             ),
         )
         group.append(
@@ -368,8 +385,9 @@ Select the input image to add to the stacked image.
 *(Used only if "%(SCHEME_COMPOSITE)s" is chosen)*
 
 The color to be assigned to the above image.
-"""
-                % globals(),
+""".format(
+                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE}
+            )
             ),
         )
         group.append(
@@ -383,8 +401,9 @@ The color to be assigned to the above image.
 
 The weighting of the above image relative to the others. The image’s
 pixel values are multiplied by this weight before assigning the color.
-"""
-                % globals(),
+""".format(
+                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE}
+            )
             ),
         )
 
@@ -399,7 +418,7 @@ pixel values are multiplied by this weight before assigning the color.
 
     @property
     def color_scheme_settings(self):
-        if self.scheme_choice == SCHEME_RGB:
+        if self.scheme_choice == Scheme.RGB:
             return [
                 ColorSchemeSettings(
                     self.red_image_name, self.red_adjustment_factor, 1, 0, 0
@@ -411,7 +430,7 @@ pixel values are multiplied by this weight before assigning the color.
                     self.blue_image_name, self.blue_adjustment_factor, 0, 0, 1
                 ),
             ]
-        elif self.scheme_choice == SCHEME_CMYK:
+        elif self.scheme_choice == Scheme.CMYK:
             return [
                 ColorSchemeSettings(
                     self.cyan_image_name, self.cyan_adjustment_factor, 0, 0.5, 0.5
@@ -478,15 +497,15 @@ pixel values are multiplied by this weight before assigning the color.
             for color_scheme_setting in self.color_scheme_settings
         ]
         result += [self.rgb_image_name]
-        if self.scheme_choice != SCHEME_STACK:
+        if self.scheme_choice != Scheme.STACK:
             result += [self.wants_rescale]
         for color_scheme_setting in self.color_scheme_settings:
             if not color_scheme_setting.image_name.is_blank:
                 result.append(color_scheme_setting.adjustment_factor)
-        if self.scheme_choice in (SCHEME_STACK, SCHEME_COMPOSITE):
+        if self.scheme_choice in (Scheme.STACK, Scheme.COMPOSITE):
             for sc_group in self.stack_channels:
                 result.append(sc_group.image_name)
-                if self.scheme_choice == SCHEME_COMPOSITE:
+                if self.scheme_choice == Scheme.COMPOSITE:
                     result.append(sc_group.color)
                     result.append(sc_group.weight)
                 if hasattr(sc_group, "remover"):
@@ -499,7 +518,7 @@ pixel values are multiplied by this weight before assigning the color.
 
         We need at least one image name to be filled in
         """
-        if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
+        if self.scheme_choice not in (Scheme.STACK, Scheme.COMPOSITE):
             if all(
                 [
                     color_scheme_setting.image_name.is_blank
@@ -518,9 +537,9 @@ pixel values are multiplied by this weight before assigning the color.
         rgb_pixel_data = None
         input_image_names = []
         channel_names = []
-        channelstack =  self.scheme_choice == SCHEME_STACK
-        if self.scheme_choice.value not in (SCHEME_STACK, SCHEME_COMPOSITE):
-            if self.scheme_choice.value == SCHEME_RGB:
+        channelstack =  self.scheme_choice == Scheme.STACK
+        if self.scheme_choice.value not in (Scheme.STACK, Scheme.COMPOSITE):
+            if self.scheme_choice.value == Scheme.RGB:
                 image_arr: List[Image2DGrayscale] = [
                     None if self.red_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.red_image_name.value, must_be_grayscale=True).pixel_data,
                     None if self.green_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.green_image_name.value, must_be_grayscale=True).pixel_data,
@@ -536,12 +555,19 @@ pixel values are multiplied by this weight before assigning the color.
                     (0.0, 1.0, 0.0),
                     (0.0, 0.0, 1.0),
                 ]
-                rgb_pixel_data = gray_to_rgb(image_arr, adjustment_factor_array, intensities, self.wants_rescale.value)
+                rgb_pixel_data = gray_to_color(
+                # rgb_pixel_data = gray_to_rgb(
+                    pixel_data_arr = image_arr, 
+                    scheme = self.scheme_choice.value,
+                    adjustment_factor_array = adjustment_factor_array, 
+                    intensities = intensities, 
+                    wants_rescale = self.wants_rescale.value
+                    )
                 # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
                 non_blank_image_names = [i for i in [self.red_image_name.value, self.green_image_name.value, self.blue_image_name.value] if i != LEAVE_THIS_BLACK]
                 assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
                 parent_image = imgset.get_image(non_blank_image_names[0], must_be_grayscale=True)
-            elif self.scheme_choice == SCHEME_CMYK:
+            elif self.scheme_choice.value == Scheme.CMYK:
                 image_arr: List[Image2DGrayscale] = [
                     None if self.cyan_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.cyan_image_name.value, must_be_grayscale=True).pixel_data,
                     None if self.magenta_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.magenta_image_name.value, must_be_grayscale=True).pixel_data,
@@ -561,7 +587,13 @@ pixel values are multiplied by this weight before assigning the color.
                     (1.0/3.0, 1.0/3.0, 1.0/3.0),
                 ]
 
-                rgb_pixel_data = gray_to_rgb(image_arr, adjustment_factor_array, intensities, self.wants_rescale.value)
+                rgb_pixel_data = gray_to_color(
+                    pixel_data_arr = image_arr, 
+                    scheme=self.scheme_choice.value,
+                    adjustment_factor_array = adjustment_factor_array, 
+                    intensities = intensities, 
+                    wants_rescale = self.wants_rescale.value
+                    )
                 # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
                 non_blank_image_names = [i for i in [self.cyan_image_name, self.magenta_image_name, self.yellow_image_name, self.gray_image_name] if i != LEAVE_THIS_BLACK]
                 assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
@@ -575,28 +607,29 @@ pixel values are multiplied by this weight before assigning the color.
                 imgset.get_image(name, must_be_grayscale=True).pixel_data
                 for name in input_image_names
             ]
-            if self.scheme_choice.value == SCHEME_STACK:
+            if self.scheme_choice.value == Scheme.STACK:
                 rgb_pixel_data = gray_to_stacked_color(source_channels)
                 parent_image = imgset.get_image(input_image_names[0])
-            elif self.scheme_choice.value == SCHEME_COMPOSITE:
+            elif self.scheme_choice.value == Scheme.COMPOSITE:
                 parent_image = imgset.get_image(input_image_names[0])
                 color_array = []
                 weight_array = []
                 for sc in self.stack_channels:
-                    color_tuple = sc.color.to_rgb()
-                    color_array += [color_tuple]
+                    color_array += [sc.color.to_rgb()]
                     weight_array += [sc.weight.value]
-                rgb_pixel_data = gray_to_composite_color(
-                source_channels,
-                self.scheme_choice,
-                self.wants_rescale.value,
-                color_array,
-                weight_array,
+                rgb_pixel_data = gray_to_color(
+                    pixel_data_arr = source_channels,
+                    scheme=self.scheme_choice.value,
+                    color_array = color_array,
+                    weight_array = weight_array,
+                    wants_rescale =self.wants_rescale.value,
                 
             )
             else:
                 raise ValueError(f"Unimplemented scheme: {self.scheme_choice}")
-        if self.scheme_choice != SCHEME_STACK and self.wants_rescale.value:
+            
+        # TODO move this to library/module
+        if self.scheme_choice.value != Scheme.STACK and self.wants_rescale.value:
             # If we rescaled, clip values that went out of range after multiplication
             rgb_pixel_data[rgb_pixel_data > 1] = 1
 
@@ -623,11 +656,11 @@ pixel values are multiplied by this weight before assigning the color.
         images = workspace.display_data.images
         nsubplots = len(input_image_names)
 
-        if self.scheme_choice == SCHEME_CMYK:
+        if self.scheme_choice == Scheme.CMYK:
             subplots = (3, 2)
             subplot_indices = ((0, 0), (0, 1), (1, 0), (1, 1), (2, 0))
             color_subplot = (2, 1)
-        elif self.scheme_choice == SCHEME_RGB:
+        elif self.scheme_choice == Scheme.RGB:
             subplots = (2, 2)
             subplot_indices = ((0, 0), (0, 1), (1, 0))
             color_subplot = (1, 1)
@@ -664,7 +697,7 @@ pixel values are multiplied by this weight before assigning the color.
             #
             # Was RGB-only. Convert values to CYMK-style
             #
-            setting_values = [SCHEME_CMYK] + setting_values + ["None"] * 4 + [1] * 4
+            setting_values = [Scheme.CMYK.value] + setting_values + ["None"] * 4 + [1] * 4
             variable_revision_number = 2
         if variable_revision_number == 2:
             #

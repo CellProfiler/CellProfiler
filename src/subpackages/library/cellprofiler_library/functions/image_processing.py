@@ -6,7 +6,7 @@ import centrosome.threshold
 import scipy
 import matplotlib
 from typing import Annotated, Any, Optional, Tuple, Callable, Union
-from pydantic import Field, BeforeValidator
+from pydantic import Field
 from ..types import ImageGrayscale, ImageGrayscaleMask
 from ..opts import threshold as Threshold
 

@@ -1,7 +1,7 @@
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_library.functions.image_processing import convert_image_to_objects
+from cellprofiler_library.modules._convertimagetoobjects import convert_image_to_objects
 
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.

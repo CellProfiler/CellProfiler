@@ -649,7 +649,7 @@ def clip_high(output_pixels: Image2D) -> Image2D:
     return numpy.where(output_pixels > 1, 1, output_pixels)
 
 def fix_illumination_function(
-        input_image_shape: tuple,
+        input_image_shape: Tuple[int, ...],
         illum_function_pixel_data: Image2D,
         ) -> Image2D:
     """

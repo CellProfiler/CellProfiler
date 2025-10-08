@@ -1,9 +1,9 @@
 from typing import Annotated, Optional, Tuple, List
 from pydantic import Field, validate_call, ConfigDict
 import numpy
-from ..types import Image2D, Image2DMask
+from cellprofiler_library.types import Image2D, Image2DMask
 from cellprofiler_library.functions.image_processing import get_cropped_mask, get_cropped_image_mask, get_cropped_image_pixels
-from ..opts.crop import RemovalMethod, Measurement
+from cellprofiler_library.opts.crop import RemovalMethod, Measurement
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def crop(
@@ -29,12 +29,15 @@ def crop(
 
     return cropped_pixel_data, mask, image_mask
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_area_retained_after_cropping(cropping: Image2DMask) -> int:
-    return numpy.sum(cropping)
+    return numpy.sum(cropping.astype(float))
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_original_image_area(orig_image_pixels: Image2D) -> int:
     return numpy.product(orig_image_pixels.shape)
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_measurements(cropping: Image2DMask, orig_image_pixels:Image2D, cropped_image_name: str = "CroppedImage") -> List[Tuple[str, str, int]]:
     orig_image_area = measure_original_image_area(orig_image_pixels)
     area_retained_after_cropping = measure_area_retained_after_cropping(cropping)

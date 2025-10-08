@@ -7,8 +7,8 @@ import scipy
 import matplotlib
 import math
 from typing import Any, Optional, Tuple, Callable, Union, List
-from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask
-from ..opts import threshold as Threshold
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask
+from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.crop import RemovalMethod
 
 def rgb_to_greyscale(image):
@@ -670,7 +670,7 @@ def get_ellipse_cropping(
 
 def get_rectangle_cropping(
     orig_image_pixels:      Image2D,
-    bounding_box:           Tuple[Union[int, None], Union[int, None], Union[int, None], Union[int, None]],
+    bounding_box:           Tuple[Optional[int], Optional[int], Optional[int], Optional[int]],
     validate_boundaries:    bool = True
 ) -> Image2DMask:
     cropping = numpy.ones(orig_image_pixels.shape[:2], bool)
@@ -696,7 +696,7 @@ def crop_image(
         image:          Union[Image2D, Image2DMask],
         crop_mask:      Image2DMask,
         crop_internal:  Optional[bool]=False
-    ) -> Image2D:
+    ) -> Union[Image2D, Image2DMask]:
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
     i_cumsum = numpy.cumsum(i_histogram != 0)
@@ -756,7 +756,7 @@ def get_cropped_mask(
             mask = crop_image(cropping, cropping, crop_internal)
     else:
         raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
-    
+    assert mask is not None
     return mask
 
 

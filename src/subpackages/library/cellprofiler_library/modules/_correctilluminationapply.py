@@ -1,19 +1,18 @@
-from typing import Annotated, Any, Optional, Tuple, Callable, Union
-from pydantic import Field, validate_call, BeforeValidator, ConfigDict
+from typing import Annotated, Optional
+from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.opts.correctilluminationapply import Method
-from ..types import Image2D, Image2DGrayscale
+from ..types import Image2D
 from ..functions.image_processing import fix_illumination_function, apply_divide, apply_subtract, clip_low, clip_high
-import numpy
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def correct_illumination_apply(
-        image_pixels: Annotated[Image2D, Field(description="Pixel data of image to apply the illumination function to")],
-        illum_function_pixel_data: Annotated[Image2D, Field(description="Pixel data of illumination function")],
-        method_divide_or_subtract: Annotated[Method, Field(description="Method to apply the illumination function")],
-        truncate_low: Annotated[Optional[bool], Field(description="Set output image values less than 0 equal to 0?")],
-        truncate_high: Annotated[Optional[bool], Field(description="Set output image values greater than 1 equal to 1?")],
-        ) -> Annotated[Image2DGrayscale, Field(description="Pixel data of image with illumination function applied")]:
+        image_pixels:               Annotated[Image2D, Field(description="Pixel data of image to apply the illumination function to")],
+        illum_function_pixel_data:  Annotated[Image2D, Field(description="Pixel data of illumination function")],
+        method_divide_or_subtract:  Annotated[Method, Field(description="Method to apply the illumination function")],
+        truncate_low:               Annotated[Optional[bool], Field(description="Set output image values less than 0 equal to 0?")],
+        truncate_high:              Annotated[Optional[bool], Field(description="Set output image values greater than 1 equal to 1?")],
+        ) -> Annotated[Image2D, Field(description="Pixel data of image with illumination function applied")]:
     """
     Perform illumination according to the parameters of one image setting group
     """

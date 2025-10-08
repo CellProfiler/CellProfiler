@@ -599,7 +599,7 @@ def split_multichannel(input_image: Image2DColor) -> List[Image2DGrayscale]:
 # ConvertImageToObjects
 ################################################################################
 
-def convert_image_to_objects(
+def image_to_objects(
         data:           Annotated[ImageAny, Field(description="Image to be converted to Objects")], 
         cast_to_bool:   Annotated[bool, Field(description="Convert a grayscale image to binary before converting it to an object")], 
         preserve_label: Annotated[bool, Field(description="Preserve original labels of objects")], 

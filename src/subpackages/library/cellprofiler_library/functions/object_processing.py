@@ -5,8 +5,9 @@ import scipy.ndimage
 import skimage.morphology
 import mahotas
 import matplotlib.cm
-import numpy.typing as npt
+from numpy.typing import NDArray
 from typing import Optional, Literal, Tuple
+from cellprofiler_library.types import ObjectLabelsDense, ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary
 
 
 def shrink_to_point(labels, fill):
@@ -459,34 +460,34 @@ def fill_convex_hulls(labels):
 #############################################################
 
 def image_mode_black_and_white(
-        pixel_data:     npt.NDArray, 
-        mask:           npt.NDArray, 
-        alpha:          npt.NDArray,
-        labels:         Optional[npt.NDArray] = None,
+        pixel_data:     ObjectLabelsDense, 
+        mask:           ImageAnyMask, 
+        alpha:          NDArray[numpy.int32],
+        labels:         Optional[NDArray[ObjectLabel]] = None,
         colormap_value: Optional[str] = None
-        ) -> Tuple[npt.NDArray, npt.NDArray]:
+        ) -> Tuple[ImageBinary, NDArray[numpy.int32]]:
     pixel_data[mask] = True
     alpha[mask] = 1
-    return pixel_data, alpha
+    return pixel_data.astype(numpy.bool_), alpha
 
 def image_mode_grayscale(
-        pixel_data:     npt.NDArray, 
-        mask:           npt.NDArray,
-        alpha:          npt.NDArray,
-        labels:         npt.NDArray,
+        pixel_data:     ObjectLabelsDense, 
+        mask:           ImageAnyMask,
+        alpha:          NDArray[numpy.int32],
+        labels:         NDArray[ObjectLabel],
         colormap_value: Optional[str] = None
-        ) -> Tuple[npt.NDArray, npt.NDArray]:
+        ) -> Tuple[ImageGrayscale, NDArray[numpy.int32]]:
     pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
     alpha[mask] = 1
-    return pixel_data, alpha
+    return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_color(
-        pixel_data:     npt.NDArray, 
-        mask:           npt.NDArray,
-        alpha:          npt.NDArray,
-        labels:         npt.NDArray,
+        pixel_data:     ObjectLabelsDense, 
+        mask:           ImageAnyMask,
+        alpha:          NDArray[numpy.int32],
+        labels:         NDArray[ObjectLabel],
         colormap_value: str
-        ) -> Tuple[npt.NDArray, npt.NDArray]:
+        ) -> Tuple[ImageColor, NDArray[numpy.int32]]:
     if colormap_value == "colorcube":
         # Colorcube missing from matplotlib
         cm_name = "gist_rainbow"
@@ -518,16 +519,16 @@ def image_mode_color(
         )[mask, :3]
 
     alpha[mask] += 1
-    return pixel_data, alpha
+    return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_uint16(
-        pixel_data:     npt.NDArray, 
-        mask:           npt.NDArray,
-        alpha:          npt.NDArray,
-        labels:         npt.NDArray,
+        pixel_data:     ObjectLabelsDense, 
+        mask:           ImageAnyMask,
+        alpha:          NDArray[numpy.int32],
+        labels:         NDArray[ObjectLabel],
         colormap_value: Optional[str] = None
-        ) -> Tuple[npt.NDArray, npt.NDArray]:
+        ) -> Tuple[NDArray[numpy.uint16], NDArray[numpy.int32]]:
     pixel_data[mask] = labels[mask]
     alpha[mask] = 1
-    return pixel_data, alpha
+    return pixel_data.astype(numpy.uint16), alpha
 

@@ -120,7 +120,7 @@ Preferences*.
 
         pixel_data = convert_objects_to_image(self.image_mode.value, object_labels, objects.shape, str(colormap_value))
 
-        if self.image_mode.value not in ImageMode.__members__:
+        if self.image_mode.value not in [i.value for i in ImageMode]:
             raise ValueError(f"Unknown image mode: {self.image_mode.value}")
         convert = False if self.image_mode.value == ImageMode.UINT16 else True
         image = Image(

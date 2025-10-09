@@ -21,11 +21,6 @@ jobs:
         - os: ubuntu-latest
           platform_id: manylinux_x86_64
           manylinux_image: manylinux2014
-          python_version: '3.8'
-          python: 38
-        - os: ubuntu-latest
-          platform_id: manylinux_x86_64
-          manylinux_image: manylinux2014
           python_version: '3.9'
           python: 39
         - os: ubuntu-latest
@@ -34,10 +29,6 @@ jobs:
           python_version: '3.10'
           python: 310
 
-        - os: windows-latest
-          platform_id: win_amd64
-          python_version: '3.8'
-          python: 38
         - os: windows-latest
           platform_id: win_amd64
           python_version: '3.9'
@@ -50,10 +41,6 @@ jobs:
         # macos x86_64 (intel)
         - os: macos-13
           platform_id: macosx_x86_64
-          python_version: '3.8'
-          python: 38
-        - os: macos-13
-          platform_id: macosx_x86_64
           python_version: '3.9'
           python: 39
         - os: macos-13
@@ -62,10 +49,6 @@ jobs:
           python: 310
 
         # macos arm64 (apple silicon)
-        - os: macos-14
-          platform_id: macosx_arm64
-          python_version: '3.8'
-          python: 38
         - os: macos-14
           platform_id: macosx_arm64
           python_version: '3.9'

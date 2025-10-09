@@ -7,6 +7,7 @@ platforms = ["osx-64"]
 
 [tasks]
 build = "python -m build"
+tag = "ggrep -Po '(?<=version=")\d+\.\d+\.\d+(?=",)' setup.py | xargs -I{} git tag -a v{} -m 'version {}'"
 publish = "twine upload dist/*"
 
 [pypi-dependencies]

@@ -634,9 +634,9 @@ def erode_objects_with_structuring_element(
 ################################################################################
 
 def dilate_objects_with_structuring_element(
-    labels: npt.NDArray,
-    structuring_element: npt.NDArray
-) -> npt.NDArray:
+    labels: ObjectSegmentation,
+    structuring_element: StructuringElement
+) -> ObjectSegmentation:
     """Dilate objects based on the structuring element provided.
     
     This function is similar to the "Expand" function of ExpandOrShrinkObjects,
@@ -654,10 +654,25 @@ def dilate_objects_with_structuring_element(
     Returns:
         Dilated objects array with same dimensions as input
     """
-    import cellprofiler.utilities.morphology
-    
-    # Apply dilation using the morphology utility
-    y_data = cellprofiler.utilities.morphology.dilation(labels, structuring_element)
+    is_strel_2d = structuring_element.ndim == 2
+
+    is_img_2d = labels.ndim == 2
+
+    if is_strel_2d and not is_img_2d:
+        y_data = numpy.zeros_like(labels)
+
+        for index, plane in enumerate(labels):
+
+            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
+
+        return y_data
+
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+
+    y_data = skimage.morphology.dilation(labels, structuring_element)
     
     return y_data
 

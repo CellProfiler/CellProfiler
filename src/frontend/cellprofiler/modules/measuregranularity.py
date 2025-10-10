@@ -1,9 +1,5 @@
 import logging
-
-import cellprofiler_core.workspace
 import numpy
-import scipy.ndimage
-import skimage.morphology
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary, ValidationError

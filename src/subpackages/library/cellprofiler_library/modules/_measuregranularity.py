@@ -3,21 +3,21 @@ from numpy.typing import NDArray
 from pydantic import validate_call, ConfigDict, Field
 from typing import Annotated, List
 from cellprofiler_library.functions.measurement import get_granularity_measurements, ObjectRecord
-from cellprofiler_library.opts.measuregranularity import C_GRANULARITY
 from cellprofiler_library.functions.image_processing import apply_grayscale_tophat_filter, downsample_image_and_mask
-
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_granularity(
-        im_pixel_data: Annotated[NDArray[np.float32], Field(description="Pixel values of the image")],
-        im_mask: Annotated[NDArray[np.bool_], Field(description="Boolean mask of where the measurements should be made")],
-        subsample_size: Annotated[float, Field(description="Subsampling factor for granularity measurements")],
-        image_sample_size: Annotated[float, Field(description="Subsampling factor for background reduction")],
-        element_size: Annotated[int, Field(description="Radius of structuring element")],
-        object_records: Annotated[List[ObjectRecord], Field(description="Object records")],
-        granular_spectrum_length: Annotated[int, Field(description="Range of the granular spectrum")],
-        dimensions: Annotated[int, Field(description="Dimensionality of the image")] = 2,
+        im_pixel_data:              Annotated[ImageGrayscale, Field(description="Pixel values of the image")],
+        im_mask:                    Annotated[ImageGrayscaleMask, Field(description="Boolean mask of where the measurements should be made")],
+        subsample_size:             Annotated[float, Field(description="Subsampling factor for granularity measurements")],
+        image_sample_size:          Annotated[float, Field(description="Subsampling factor for background reduction")],
+        element_size:               Annotated[int, Field(description="Radius of structuring element")],
+        object_records:             Annotated[List[ObjectRecord], Field(description="Object records")],
+        granular_spectrum_length:   Annotated[int, Field(description="Range of the granular spectrum")],
+        dimensions:                 Annotated[int, Field(description="Dimensionality of the image")] = 2,
         ):
+    # TODO: PR #5034 update the return types of this funciton
     #
     # Downsample the image and mask
     #

@@ -4,16 +4,12 @@
 Options and enums for ErodeObjects module
 """
 
-from enum import Enum
+# Note: ErodeObjects is a simple morphological operation module that doesn't require
+# complex enums. The main configuration is handled through the StructuringElement
+# setting which is managed by the core framework. This file is created for 
+# consistency with the refactoring pattern but may be minimal.
 
+# Currently no custom enums needed for ErodeObjects as it uses standard
+# StructuringElement configuration from cellprofiler_core. For structuring element shapes,
+# see cellprofiler_library.opts.structuring_elements
 
-class PreserveMidpoints(str, Enum):
-    """Options for preserving object midpoints during erosion"""
-    PREVENT_REMOVAL = "Yes"
-    ALLOW_REMOVAL = "No"
-
-
-class RelabelObjects(str, Enum):
-    """Options for relabeling objects after erosion"""
-    RELABEL = "Yes"
-    KEEP_ORIGINAL = "No"

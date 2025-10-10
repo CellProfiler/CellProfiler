@@ -8,9 +8,10 @@ import matplotlib
 import math
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.crop import RemovalMethod
+from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
 
 def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
@@ -135,10 +136,17 @@ def morphological_skeleton_3d(image):
 
 
 ################################################################################
+# Morphological Operations Helpers
+################################################################################
+
+def get_structuring_element(shape: Union[StructuringElementShape2D, StructuringElementShape3D], size: int) -> StructuringElement:
+    return getattr(skimage.morphology, shape.value.lower())(size)
+
+################################################################################
 # ErodeImage
 ################################################################################
 
-def morphology_erosion(image, structuring_element):
+def morphology_erosion(image: ImageAny, structuring_element: StructuringElement) -> ImageAny:
     """Apply morphological erosion to an image.
     
     Args:

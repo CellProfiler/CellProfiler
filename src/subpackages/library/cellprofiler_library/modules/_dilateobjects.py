@@ -7,18 +7,17 @@ This module contains the core algorithms for object dilation operations.
 """
 
 from pydantic import validate_call, ConfigDict
-import numpy as np
-import numpy.typing as npt
-
-from ..types import ImageAny
-from ..functions.object_processing import dilate_objects_with_structuring_element
-
+from typing import Union, Tuple
+from cellprofiler_library.types import StructuringElement, ObjectSegmentation
+from cellprofiler_library.functions.object_processing import dilate_objects_with_structuring_element
+from cellprofiler_library.functions.image_processing import get_structuring_element
+from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def dilate_objects(
-    labels: npt.NDArray,
-    structuring_element: np.ndarray
-) -> npt.NDArray:
+    labels: ObjectSegmentation,
+    structuring_element: Union[StructuringElement, Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], int]]
+) -> ObjectSegmentation:
     """Dilate objects based on the structuring element provided.
     
     This function is similar to the "Expand" function of ExpandOrShrinkObjects,
@@ -36,6 +35,8 @@ def dilate_objects(
     Returns:
         Dilated objects array with same dimensions as input
     """
+    if isinstance(structuring_element, tuple):
+        structuring_element = get_structuring_element(structuring_element[0], structuring_element[1])
     return dilate_objects_with_structuring_element(
         labels=labels,
         structuring_element=structuring_element

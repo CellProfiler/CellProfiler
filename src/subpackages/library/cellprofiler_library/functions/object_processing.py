@@ -3,11 +3,12 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 import skimage.morphology
+import cellprofiler.utilities.morphology
 import mahotas
 import matplotlib.cm
 from numpy.typing import NDArray
 from typing import Optional, Literal, Tuple
-from cellprofiler_library.types import ObjectSegmentation, ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary
+from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary, ObjectSegmentation, StructuringElement
 
 
 def shrink_to_point(labels, fill):
@@ -537,11 +538,11 @@ def image_mode_uint16(
 ################################################################################
 
 def erode_objects_with_structuring_element(
-    labels: npt.NDArray,
-    structuring_element: npt.NDArray,
+    labels: ObjectSegmentation,
+    structuring_element: StructuringElement,
     preserve_midpoints: bool = True,
     relabel_objects: bool = False
-) -> npt.NDArray:
+) -> ObjectSegmentation:
     """Erode objects based on the structuring element provided.
     
     This function is similar to the "Shrink" function of ExpandOrShrinkObjects,
@@ -559,7 +560,7 @@ def erode_objects_with_structuring_element(
     Returns:
         Eroded objects array with same dimensions as input
     """
-    import cellprofiler.utilities.morphology
+    
     
     # Calculate morphological gradient to identify object boundaries
     contours = cellprofiler.utilities.morphology.morphological_gradient(

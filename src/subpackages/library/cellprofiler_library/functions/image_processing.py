@@ -165,7 +165,7 @@ def morphology_erosion(image: ImageAny, structuring_element: StructuringElement)
 # DilateImage
 ################################################################################
 
-def morphology_dilation(image, structuring_element):
+def morphology_dilation(image: ImageAny, structuring_element: StructuringElement) -> ImageAny:
     """Apply morphological dilation to an image.
     
     Args:

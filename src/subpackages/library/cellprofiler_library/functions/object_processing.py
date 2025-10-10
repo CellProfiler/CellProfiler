@@ -10,7 +10,6 @@ from numpy.typing import NDArray
 from typing import Optional, Literal, Tuple
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary, ObjectSegmentation, StructuringElement
 
-
 def shrink_to_point(labels, fill):
     """
     Remove all pixels but one from filled objects.
@@ -533,6 +532,36 @@ def image_mode_uint16(
     alpha[mask] = 1
     return pixel_data, alpha
 
+
+################################################################################
+# Morphological Operations Helpers
+################################################################################
+
+def morphological_gradient(x_data: ObjectSegmentation, structuring_element: StructuringElement) -> ObjectSegmentation:
+    is_strel_2d = structuring_element.ndim == 2
+
+    is_img_2d = x_data.ndim == 2
+
+    if is_strel_2d and not is_img_2d:
+        y_data = numpy.zeros_like(x_data)
+
+        for index, plane in enumerate(x_data):
+            y_data[index] = scipy.ndimage.morphological_gradient(
+                plane, footprint=structuring_element
+            )
+
+        return y_data
+
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+
+    y_data = scipy.ndimage.morphological_gradient(x_data, footprint=structuring_element)
+
+    return y_data
+
+
 ################################################################################
 # ErodeObjects
 ################################################################################
@@ -563,7 +592,7 @@ def erode_objects_with_structuring_element(
     
     
     # Calculate morphological gradient to identify object boundaries
-    contours = cellprofiler.utilities.morphology.morphological_gradient(
+    contours = morphological_gradient(
         labels, structuring_element
     )
     

@@ -10,4 +10,5 @@ Options and enums for ErodeImage module
 # consistency with the refactoring pattern but may be minimal.
 
 # Currently no custom enums needed for ErodeImage as it uses standard
-# StructuringElement configuration from cellprofiler_core
+# StructuringElement configuration from cellprofiler_core. For structuring element shapes,
+# see cellprofiler_library.opts.structuring_elements

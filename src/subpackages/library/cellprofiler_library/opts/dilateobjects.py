@@ -4,11 +4,12 @@
 Options and enums for DilateObjects module
 """
 
-from enum import Enum
+# Note: DilateObjects is a simple morphological operation module that doesn't require
+# complex enums. The main configuration is handled through the StructuringElement
+# setting which is managed by the core framework. This file is created for 
+# consistency with the refactoring pattern but may be minimal.
 
-
-class HandleOverlaps(str, Enum):
-    """Options for handling overlaps during dilation"""
-    PRESERVE = "Preserve overlap"
-    OUTLINE = "Outline overlap"
+# Currently no custom enums needed for DilateObjects as it uses standard
+# StructuringElement configuration from cellprofiler_core. For structuring element shapes,
+# see cellprofiler_library.opts.structuring_elements
 

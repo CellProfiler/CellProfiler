@@ -6,6 +6,7 @@ import centrosome.threshold
 import scipy
 import matplotlib
 import math
+from numpy.typing import NDArray
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
@@ -1069,7 +1070,13 @@ def apply_threshold_to_objects(
 # MeasureGranularity
 ################################################################################
 
-def rescale_pixel_data_and_mask(new_shape, subsample_size, im_pixel_data, im_mask, dimensions):
+def rescale_pixel_data_and_mask(
+    new_shape: Union[Tuple[int, ...], NDArray[numpy.float64]], 
+    subsample_size: float, 
+    im_pixel_data: ImageGrayscale, 
+    im_mask: ImageGrayscaleMask, 
+    dimensions: int
+    ) -> Tuple[ImageGrayscale, ImageGrayscaleMask]:
     if dimensions == 2:
         i, j = (
             numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
@@ -1091,7 +1098,12 @@ def rescale_pixel_data_and_mask(new_shape, subsample_size, im_pixel_data, im_mas
     return pixels, mask
 
 
-def restore_scale(dimensions, orig_shape, scaled_shape, scaled_pixels):
+def restore_scale(
+    dimensions: int, 
+    orig_shape: NDArray[numpy.float64], 
+    scaled_shape: NDArray[numpy.float64], 
+    scaled_pixels: ImageGrayscale
+    ) -> ImageGrayscale:
     if dimensions == 2:
         i, j = numpy.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
         #
@@ -1111,7 +1123,12 @@ def restore_scale(dimensions, orig_shape, scaled_shape, scaled_pixels):
         scaled_pixels = scipy.ndimage.map_coordinates(scaled_pixels, (k, i, j), order=1).astype(float)
     return scaled_pixels
 
-def downsample_image_and_mask(im_pixel_data, im_mask, dimensions, subsample_size):
+def downsample_image_and_mask(
+    im_pixel_data: ImageGrayscale, 
+    im_mask: ImageGrayscaleMask, 
+    dimensions: int, 
+    subsample_size: float
+    ) -> Tuple[ImageGrayscale, ImageGrayscaleMask, NDArray[numpy.float64]]:
     #
     # Downsample the image and mask
     #
@@ -1124,7 +1141,14 @@ def downsample_image_and_mask(im_pixel_data, im_mask, dimensions, subsample_size
         mask = im_mask.copy()
     return pixels, mask, new_shape
 
-def apply_grayscale_tophat_filter(pixels, mask, dimensions, image_sample_size, radius, new_shape):
+def apply_grayscale_tophat_filter(
+    pixels: ImageGrayscale, 
+    mask: ImageGrayscaleMask, 
+    dimensions: int, 
+    image_sample_size: float, 
+    radius: int, 
+    new_shape: NDArray[numpy.float64]
+    ) -> ImageGrayscale:
     back_pixels, back_mask, back_shape = downsample_image_and_mask(pixels, mask, dimensions, image_sample_size)
     # radius = element_size
     footprint = get_morphology_footprint(radius, dimensions)

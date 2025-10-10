@@ -11,7 +11,7 @@ import centrosome.fastemd
 
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable
+from typing import Tuple, Optional, Dict, Callable, List
 from scipy.linalg import lstsq
 from numpy.typing import NDArray
 
@@ -22,13 +22,38 @@ from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
-from cellprofiler_library.opts.measuregranularity import C_GRANULARITY
 
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ObjectSegmentation
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
+#
+# For each object, build a little record
+#
+class ObjectRecord(object):
+    def __init__(
+            self, 
+            name: str, 
+            segmented: ObjectSegmentation, 
+            im_mask: ImageGrayscaleMask, 
+            im_pixel_data: ImageGrayscale
+            ):
+        self.name = name
+        self.labels = segmented
+        self.nobjects = np.max(self.labels)
+        if self.nobjects != 0:
+            self.range = np.arange(1, np.max(self.labels) + 1)
+            self.labels = self.labels.copy()
+            self.labels[~im_mask] = 0
+            self.current_mean = fix(
+                scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
+            )
+            self.start_mean = np.maximum(
+                self.current_mean, np.finfo(float).eps
+            )
+
+            
 def measure_image_overlap_statistics(
     ground_truth_image,
     test_image,
@@ -1603,14 +1628,15 @@ def linear_costes(
 # Measure Granularity
 ###############################################################################
 def get_granularity_measurements(
-        im_pixel_data,
-        pixels, 
-        mask, 
-        new_shape,
-        granular_spectrum_length,
-        dimensions,
-        object_records
+        im_pixel_data: ImageGrayscale,
+        pixels: ImageGrayscale, 
+        mask: ImageGrayscaleMask, 
+        new_shape: NDArray[numpy.float64],
+        granular_spectrum_length: int,
+        dimensions: int,
+        object_records: List[ObjectRecord]
         ):
+    # TODO: PR #5034 update the return types of this funciton
     # Transcribed from the Matlab module: granspectr function
     #
     # CALCULATES GRANULAR SPECTRUM, ALSO KNOWN AS SIZE DISTRIBUTION,

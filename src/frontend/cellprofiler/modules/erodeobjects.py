@@ -23,14 +23,12 @@ YES          YES          NO
 
 """
 
-import numpy
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import StructuringElement, Binary
 
 from cellprofiler.modules._help import HELP_FOR_STREL
 from cellprofiler_library.modules._erodeobjects import erode_objects
-from cellprofiler_library.opts.erodeobjects import PreserveMidpoints, RelabelObjects
 
 
 class ErodeObjects(ObjectProcessing):
@@ -97,8 +95,8 @@ label numbers.""",
         y_data = erode_objects(
             labels=x_data,
             structuring_element=self.structuring_element.value,
-            preserve_midpoints=PreserveMidpoints.PREVENT_REMOVAL if self.preserve_midpoints.value else PreserveMidpoints.ALLOW_REMOVAL,
-            relabel_objects=RelabelObjects.RELABEL if self.relabel_objects.value else RelabelObjects.KEEP_ORIGINAL
+            preserve_midpoints=self.preserve_midpoints.value,
+            relabel_objects=self.relabel_objects.value
         )
 
         y = Objects()

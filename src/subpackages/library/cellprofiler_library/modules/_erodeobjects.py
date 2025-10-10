@@ -7,21 +7,19 @@ This module contains the core algorithms for object erosion operations.
 """
 
 from pydantic import validate_call, ConfigDict
-import numpy as np
-import numpy.typing as npt
-
-from ..types import ImageAny
-from ..opts.erodeobjects import PreserveMidpoints, RelabelObjects
-from ..functions.object_processing import erode_objects_with_structuring_element
-
+from typing import Union, Tuple
+from cellprofiler_library.types import StructuringElement, ObjectSegmentation
+from cellprofiler_library.functions.object_processing import erode_objects_with_structuring_element
+from cellprofiler_library.functions.image_processing import get_structuring_element
+from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def erode_objects(
-    labels: npt.NDArray,
-    structuring_element: np.ndarray,
-    preserve_midpoints: PreserveMidpoints = PreserveMidpoints.PREVENT_REMOVAL,
-    relabel_objects: RelabelObjects = RelabelObjects.KEEP_ORIGINAL
-) -> npt.NDArray:
+    labels: ObjectSegmentation,
+    structuring_element: Union[StructuringElement, Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], int]],
+    preserve_midpoints: bool = True,
+    relabel_objects: bool = False
+) -> ObjectSegmentation:
     """Erode objects based on the structuring element provided.
     
     This function is similar to the "Shrink" function of ExpandOrShrinkObjects,
@@ -39,12 +37,11 @@ def erode_objects(
     Returns:
         Eroded objects array with same dimensions as input
     """
-    preserve_flag = preserve_midpoints == PreserveMidpoints.PREVENT_REMOVAL
-    relabel_flag = relabel_objects == RelabelObjects.RELABEL
-    
+    if isinstance(structuring_element, tuple):
+        structuring_element = get_structuring_element(structuring_element[0], structuring_element[1])
     return erode_objects_with_structuring_element(
         labels=labels,
         structuring_element=structuring_element,
-        preserve_midpoints=preserve_flag,
-        relabel_objects=relabel_flag
+        preserve_midpoints=preserve_midpoints,
+        relabel_objects=relabel_objects
     )

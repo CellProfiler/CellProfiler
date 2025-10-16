@@ -9,13 +9,14 @@ import math
 from numpy.typing import NDArray
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import centrosome.filter
-from typing import Any, Optional, Tuple, Callable, Union, List
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
+from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
+T = TypeVar("T", bound=ImageAny)
 
 def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
     pd = imag_pixels
@@ -1169,25 +1170,25 @@ def apply_grayscale_tophat_filter(
 ###############################################################################
 
 def __mask(
-        pixel_data: NDArray[numpy.float32],
-        mask:       NDArray[numpy.bool_],
-        ) -> NDArray[numpy.float32]:
+        pixel_data: T,
+        mask:       ImageAnyMask,
+        ) -> T:
     data = numpy.zeros_like(pixel_data)
     data[mask] = pixel_data[mask]
     return data
 
 def __unmask(
-        data:       NDArray[numpy.float64],
-        pixel_data: ImageGrayscale, 
-        mask:       NDArray[numpy.bool_],
-        ) -> NDArray[numpy.float64]:
+        data:       T,
+        pixel_data: T, 
+        mask:       ImageAnyMask,
+        ) -> T:
     data[~mask] = pixel_data[~mask]
     return data
 
 def __structuring_element(
         radius, 
         volumetric
-        ):
+        ) -> NDArray[numpy.uint8]:
     if volumetric:
         return skimage.morphology.ball(radius)
 
@@ -1200,7 +1201,7 @@ def enhance_speckles(
         im_volumetric:  bool,
         radius:         float,
         accuracy:       SpeckleAccuracy,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     data = __mask(im_pixel_data, im_mask)
     footprint = __structuring_element(radius, im_volumetric)
 
@@ -1228,7 +1229,7 @@ def enhance_neurites(
         radius:             float,
         method:             NeuriteMethod,
         neurite_rescale:    bool,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     data = __mask(im_pixel_data, im_mask)
 
     if method == NeuriteMethod.GRADIENT:
@@ -1271,7 +1272,7 @@ def enhance_circles(
         im_mask:        ImageGrayscaleMask,
         im_volumetric:  bool,
         radius:         float,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     data = __mask(im_pixel_data, im_mask)
     if im_volumetric:
         result = numpy.zeros_like(data)
@@ -1286,7 +1287,7 @@ def enhance_texture(
         im_pixel_data:  ImageGrayscale,
         im_mask:        ImageGrayscaleMask,
         sigma:          float,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     mask = im_mask
     data = __mask(im_pixel_data, mask)
     gmask = skimage.filters.gaussian(mask.astype(float), sigma, mode="constant")
@@ -1304,7 +1305,7 @@ def enhance_dark_holes(
         dark_hole_radius_max:   int,
         min_radius:             Optional[int] = None,
         max_radius:             Optional[int] = None,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     if min_radius is None:
         min_radius = max(1, int(dark_hole_radius_min / 2))
     if max_radius is None:
@@ -1336,7 +1337,7 @@ def enhance_dic(
         angle:          float,
         decay:          float,
         smoothing:      float,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     pixel_data = im_pixel_data
 
     if im_volumetric:
@@ -1356,7 +1357,7 @@ def suppress(
         im_mask:        ImageGrayscaleMask,
         im_volumetric:  bool,
         radius:         float,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     data = __mask(im_pixel_data, im_mask)
     footprint = __structuring_element(radius, im_volumetric)
     result = skimage.morphology.opening(data, footprint)

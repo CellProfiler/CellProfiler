@@ -1,11 +1,8 @@
-import numpy
-import skimage
 from cellprofiler_library.functions.image_processing import enhance_speckles, enhance_neurites, enhance_circles, enhance_texture, enhance_dark_holes, enhance_dic, suppress
 from pydantic import Field, ConfigDict, validate_call
-from typing import Annotated, Optional
+from typing import Annotated
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 from ..opts.enhanceorsuppressfeatures import OperationMethod, EnhanceMethod, SpeckleAccuracy, NeuriteMethod
-from numpy.typing import NDArray
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def enhance_or_suppress_features(
@@ -24,7 +21,7 @@ def enhance_or_suppress_features(
         smoothing_value:        Annotated[float, Field(description="Smoothing value")] = 2.0,
         dic_angle:              Annotated[float, Field(description="Angle")] = 0.0,
         dic_decay:              Annotated[float, Field(description="Decay")] = 0.95,
-        ):
+        ) -> ImageGrayscale:
     if method == OperationMethod.ENHANCE:
         if enhance_method == EnhanceMethod.SPECKLES:
             result = enhance_speckles(im_pixel_data, im_mask, im_volumetric, radius, speckle_accuracy)

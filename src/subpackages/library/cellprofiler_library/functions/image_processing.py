@@ -15,6 +15,7 @@ from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
+from ..opts.morph import RepeatMethod
 
 T = TypeVar("T", bound=ImageAny)
 
@@ -1135,13 +1136,11 @@ def suppress(
 # Morphological Operations (from Morph module)
 ################################################################################
 
-# Import RepeatMethod enum for repeat logic
-from ..opts.morph import RepeatMethod
 
 def apply_branchpoints(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
-        ) -> NDArray[numpy.float64]:
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
     """Apply branchpoints morphological operation.
     
     Removes all pixels except those that are the branchpoints of a skeleton.
@@ -1150,10 +1149,10 @@ def apply_branchpoints(
     return centrosome.cpmorphology.branchpoints(pixel_data, mask)
 
 def apply_bridge(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply bridge morphological operation.
     
     Sets a pixel to 1 if it has two non-zero neighbors that are on
@@ -1162,10 +1161,10 @@ def apply_bridge(
     return centrosome.cpmorphology.bridge(pixel_data, mask, count)
 
 def apply_clean(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply clean morphological operation.
     
     Removes isolated pixels.
@@ -1173,9 +1172,9 @@ def apply_clean(
     return centrosome.cpmorphology.clean(pixel_data, mask, count)
 
 def apply_convex_hull(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
-        ) -> NDArray[numpy.float64]:
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
     """Apply convex hull morphological operation.
     
     Finds the convex hull of a binary image.
@@ -1186,10 +1185,10 @@ def apply_convex_hull(
         return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
 
 def apply_diag(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply diag morphological operation.
     
     Fills in pixels whose neighbors are diagonally connected to 4-connect
@@ -1198,9 +1197,9 @@ def apply_diag(
     return centrosome.cpmorphology.diag(pixel_data, mask, count)
 
 def apply_distance(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
         rescale_values: bool,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply distance transform morphological operation.
     
     Computes the distance transform of a binary image.
@@ -1211,9 +1210,9 @@ def apply_distance(
     return image
 
 def apply_endpoints(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
-        ) -> NDArray[numpy.float64]:
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
     """Apply endpoints morphological operation.
     
     Removes all pixels except the ones that are at the end of a skeleton.
@@ -1221,10 +1220,10 @@ def apply_endpoints(
     return centrosome.cpmorphology.endpoints(pixel_data, mask)
 
 def apply_fill(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply fill morphological operation.
     
     Sets a pixel to 1 if all of its neighbors are 1.
@@ -1232,10 +1231,10 @@ def apply_fill(
     return centrosome.cpmorphology.fill(pixel_data, mask, count)
 
 def apply_hbreak(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply hbreak morphological operation.
     
     Removes pixels that form vertical bridges between horizontal lines.
@@ -1243,10 +1242,10 @@ def apply_hbreak(
     return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
 
 def apply_majority(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply majority morphological operation.
     
     Each pixel takes on the value of the majority that surround it.
@@ -1254,10 +1253,10 @@ def apply_majority(
     return centrosome.cpmorphology.majority(pixel_data, mask, count)
 
 def apply_openlines(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         linelength: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply openlines morphological operation.
     
     Performs an erosion followed by a dilation using rotating linear structural
@@ -1266,10 +1265,10 @@ def apply_openlines(
     return centrosome.cpmorphology.openlines(pixel_data, linelength=linelength, mask=mask)
 
 def apply_remove(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply remove morphological operation.
     
     Removes pixels that are otherwise surrounded by others (4 connected).
@@ -1277,9 +1276,9 @@ def apply_remove(
     return centrosome.cpmorphology.remove(pixel_data, mask, count)
 
 def apply_shrink(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply shrink morphological operation.
     
     Performs a thinning operation that erodes unless that operation would change
@@ -1288,9 +1287,9 @@ def apply_shrink(
     return centrosome.cpmorphology.binary_shrink(pixel_data, count)
 
 def apply_skelpe(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
-        ) -> NDArray[numpy.float64]:
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
     """Apply skelpe morphological operation.
     
     Performs a skeletonizing operation using the metric, PE * D to control the
@@ -1304,10 +1303,10 @@ def apply_skelpe(
     )
 
 def apply_spur(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply spur morphological operation.
     
     Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor.
@@ -1315,10 +1314,10 @@ def apply_spur(
     return centrosome.cpmorphology.spur(pixel_data, mask, count)
 
 def apply_thicken(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply thicken morphological operation.
     
     Dilates the exteriors of objects where that dilation does not 8-connect the
@@ -1327,10 +1326,10 @@ def apply_thicken(
     return centrosome.cpmorphology.thicken(pixel_data, mask, count)
 
 def apply_thin(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> NDArray[numpy.float64]:
+        ) -> ImageGrayscale:
     """Apply thin morphological operation.
     
     Thin lines preserving the Euler number using the thinning algorithm.
@@ -1338,9 +1337,9 @@ def apply_thin(
     return centrosome.cpmorphology.thin(pixel_data, mask, count)
 
 def apply_vbreak(
-        pixel_data: Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
-        ) -> NDArray[numpy.float64]:
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
     """Apply vbreak morphological operation.
     
     Removes pixels that form horizontal bridges between vertical lines.

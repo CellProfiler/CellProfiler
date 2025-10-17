@@ -44,8 +44,7 @@ Measurements made by this module
 """
 
 import numpy
-import skimage.measure
-from typing import Annotated, Optional, Tuple, List, Union
+from typing import List
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, ValidationError

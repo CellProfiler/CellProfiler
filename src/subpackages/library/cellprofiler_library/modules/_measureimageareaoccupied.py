@@ -1,17 +1,17 @@
-from typing import Annotated, Optional, Tuple, List, Union
+from typing import Annotated, Optional, Tuple
 from pydantic import Field, validate_call, ConfigDict
-from numpy.typing import NDArray
 import skimage.measure
 import numpy as np
-
 from ..types import ImageBinary, ObjectLabelsDense, ImageAny
 from ..functions.measurement import measure_surface_area
 
 
-
-
-
-def measure_image_area_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> Tuple[float, float, float]:
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def measure_image_area_perimeter(
+    im_pixel_data: Annotated[ImageBinary, Field(description="Binary image pixel data")],
+    im_volumetric: Annotated[bool, Field(description="Image is volumetric")],
+    im_spacing: Annotated[Optional[Tuple[float, ...]], Field(description="Image spacing")] = None
+    ) -> Tuple[float, float, float]:
 
     area_occupied = np.sum(im_pixel_data > 0)
 
@@ -29,8 +29,12 @@ def measure_image_area_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool
 
 
 
-def measure_objects_area_perimeter(label_image: ObjectLabelsDense, mask: Optional[ImageAny], volumetric: bool, spacing: Optional[Tuple[float, ...]] = None) -> Tuple[float, float, float]:
-    # if objects.has_parent_image:
+def measure_objects_area_perimeter(
+    label_image: ObjectLabelsDense, 
+    mask: Optional[ImageAny], 
+    volumetric: bool, 
+    spacing: Optional[Tuple[float, ...]] = None
+    ) -> Tuple[float, float, float]:
     if mask is not None:
         label_image[~mask] = 0
         total_area = np.sum(mask)

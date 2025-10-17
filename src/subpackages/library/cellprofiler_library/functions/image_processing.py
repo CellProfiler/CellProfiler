@@ -1355,11 +1355,11 @@ def apply_vbreak(
 ################################################################################
 
 def create_overlay_base_image(
-    obj_shape: Annotated[Optional[Tuple[int, ...]], Field(description="Object dimensions (height, width, [depth]) for creating blank RGB image when no input provided", default=None)],
-    obj_dimensions: Annotated[Optional[int], Field(description="Spatial dimensionality (2 or 3) for objects when creating blank image", default=None)],
-    im_pixel_data: Annotated[Optional[Union[ImageAny, NDArray[numpy.float64]]], Field(description="Input image pixel data to use as base (None creates blank RGB image)", default=None)],
-    im_multichannel: Annotated[bool, Field(description="Whether input image already has multiple color channels", default=False)],
-    im_dimensions: Annotated[Optional[int], Field(description="Spatial dimensionality (2 or 3) of input image", default=None)]
+    obj_shape: Optional[Tuple[int, ...]] = None,
+    obj_dimensions: Optional[int] = None,
+    im_pixel_data: Optional[ImageAny] = None,
+    im_multichannel: bool = False,
+    im_dimensions: Optional[int] = None
 ) -> Tuple[ImageColor, Optional[int]]:
     """Creates base image for overlay outlines processing.
     
@@ -1390,11 +1390,11 @@ def create_overlay_base_image(
 
 
 def overlay_outlines_grayscale(
-    pixel_data: Annotated[Optional[ImageColor], Field(description="RGB base image pixel data to overlay outlines on and convert to grayscale")],
-    brightness_mode: Annotated[BrightnessMode, Field(description="Brightness control mode determining outline intensity (max possible vs max image)")],
-    object_labels_list: Annotated[List[ObjectLabelSet], Field(description="List of object label sets containing segmented regions for outline generation")],
-    line_mode_value: Annotated[str, Field(description="Line drawing mode controlling outline appearance (inner, outer, thick)")],
-    is_volumetric: Annotated[bool, Field(description="Whether objects require 3D volumetric plane-wise processing")]
+    pixel_data: Optional[ImageColor], 
+    brightness_mode: BrightnessMode, 
+    object_labels_list: List[ObjectLabelSet], 
+    line_mode_value: str, 
+    is_volumetric: bool, 
 ) -> ImageGrayscale:
     """Overlay outlines on RGB image and convert to grayscale with brightness control.
     
@@ -1420,11 +1420,11 @@ def overlay_outlines_grayscale(
 
 
 def overlay_outlines_color(
-    pixel_data: Annotated[ImageColor, Field(description="RGB base image to overlay colored outlines on")],
-    object_labels_list: Annotated[List[ObjectLabelSet], Field(description="Object label sets for outline generation")],
-    colors_list: Annotated[List[Tuple[int, int, int]], Field(description="RGB color tuples (0-255) for each object set")],
-    line_mode_value: Annotated[str, Field(description="Line drawing mode (inner, outer, thick)")],
-    is_volumetric: Annotated[bool, Field(description="Whether objects require 3D plane-wise processing")]
+    pixel_data: ImageColor, 
+    object_labels_list: List[ObjectLabelSet], 
+    colors_list: List[Tuple[int, int, int]], 
+    line_mode_value: str, 
+    is_volumetric: bool, 
 ) -> ImageColor:
     """Overlay colored outlines on RGB image.
     
@@ -1446,11 +1446,11 @@ def overlay_outlines_color(
 
 
 def overlay_outlines_on_image(
-    pixel_data: Annotated[NDArray[numpy.float64], Field(description="Image pixel data to draw outlines on")],
-    obj_labels_list: Annotated[ObjectLabelSet, Field(description="Object label set containing segmented regions")],
-    obj_volumetric: Annotated[bool, Field(description="Whether objects require 3D plane-wise processing")],
-    color: Annotated[Union[float, Tuple[float, float, float]], Field(description="Outline color (grayscale float or RGB tuple 0.0-1.0)")],
-    line_mode_value: Annotated[str, Field(description="Line drawing mode (inner, outer, thick)")],
+    pixel_data: ImageAny, 
+    obj_labels_list: ObjectLabelSet, 
+    obj_volumetric: bool, 
+    color: Union[float, Tuple[float, float, float]], 
+    line_mode_value: str, 
 ) -> ImageColor:
     """Draw object outlines on image.
     
@@ -1487,9 +1487,9 @@ def overlay_outlines_on_image(
 
 
 def resize_labels_for_overlay(
-    pixel_data: Annotated[NDArray[numpy.float64], Field(description="Target image with desired output dimensions")],
-    labels: Annotated[NDArray[numpy.int32], Field(description="Object labels to resize for matching dimensions")]
-) -> NDArray[numpy.int32]:
+    pixel_data: ImageAny, 
+    labels: ObjectSegmentation, 
+) -> ObjectSegmentation:
     """Resize labels to match image dimensions.
     
     Args:

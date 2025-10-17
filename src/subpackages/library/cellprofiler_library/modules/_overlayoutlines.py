@@ -18,7 +18,7 @@ def overlay_outlines(
     line_mode:          Annotated[LineMode, Field(description="Line style mode for drawing outlines", default=LineMode.INNER)],
     obj_shape:          Annotated[Optional[Tuple[int, ...]], Field(description="Object dimensions for creating blank base image when no input image provided", default=None)], 
     obj_dimensions:     Annotated[Optional[int], Field(description="Number of dimensions for objects (2D or 3D) when creating blank image", default=None)], 
-    im_pixel_data:      Annotated[Optional[Union[ImageAny, NDArray[np.float64]]], Field(description="Input image pixel data to overlay outlines on (None to create blank image)", default=None)], 
+    im_pixel_data:      Annotated[Optional[ImageAny], Field(description="Input image pixel data to overlay outlines on (None to create blank image)", default=None)], 
     im_multichannel:    Annotated[bool, Field(description="Whether input image has multiple color channels (False if overlaying on blank image)", default=False)], 
     im_dimensions:      Annotated[Optional[int], Field(description="Number of spatial dimensions in input image (2D or 3D), None if overlaying on blank image", default=None)],
     object_labels_list: Annotated[List[ObjectLabelSet], Field(description="List of object label sets containing segmented object data for outline generation", default_factory=list)],

@@ -24,7 +24,7 @@ from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ObjectSegmentation
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ObjectSegmentation, ObjectLabelsDense
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
@@ -1491,9 +1491,9 @@ def get_granularity_measurements(
 
 def measure_surface_area(
         label_image: ObjectLabelsDense, 
-        spacing:Optional[Tuple[float, ...]]=None, 
-        index:Optional[NDArray[np.int32]]=None,
-        )->NDArray[np.float64]:
+        spacing: Optional[Tuple[float, ...]]=None, 
+        index: Optional[NDArray[np.int32]]=None,
+        ) -> NDArray[np.float64]:
     if spacing is None:
         spacing = (1.0,) * label_image.ndim
 
@@ -1512,7 +1512,11 @@ def measure_surface_area(
     )
 
 
-def measure_label_surface_area(label_image: ObjectLabelsDense, label:int, spacing: Tuple[float, ...]) -> float:
+def measure_label_surface_area(
+        label_image: ObjectLabelsDense, 
+        label: int, 
+        spacing: Tuple[float, ...]
+        ) -> float:
     verts, faces, _, _ = skimage.measure.marching_cubes(
         label_image == label, spacing=spacing, level=0, method="lorensen"
     )

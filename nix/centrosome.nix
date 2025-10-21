@@ -17,14 +17,12 @@
 buildPythonPackage {
   pname = "centrosome";
   version = "1.3.0";
-  src = ./..;
-
-  # src = fetchFromGitHub {
-  #   owner = "afermg";
-  #   repo = "centrosome";
-  #   rev = "d9313e13c557264f8899f6bac3a5210e4580b40e";
-  #   sha256 = "sha256-ufCLHpYdC6XeWGIa4TulhuO08+ZtQ8iSZv0uGcRhZkQ=";
-  # };
+  src = fetchFromGitHub {
+    owner = "afermg";
+    repo = "centrosome";
+    rev = "4eff192965db7815755b5823d5eeb8fc63303b81";
+    sha256 = "sha256-F9bVzj0e3VhPOkBPlV+IxLbT9hBcqJiXlnbnxEckrtM=";
+  };
   pyproject = true;
   buildInputs = [
     cython

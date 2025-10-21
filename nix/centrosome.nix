@@ -17,13 +17,14 @@
 buildPythonPackage {
   pname = "centrosome";
   version = "1.3.0";
+  src = ./..;
 
-  src = fetchFromGitHub {
-    owner = "afermg";
-    repo = "centrosome";
-    rev = "d9313e13c557264f8899f6bac3a5210e4580b40e";
-    sha256 = "sha256-ufCLHpYdC6XeWGIa4TulhuO08+ZtQ8iSZv0uGcRhZkQ=";
-  };
+  # src = fetchFromGitHub {
+  #   owner = "afermg";
+  #   repo = "centrosome";
+  #   rev = "d9313e13c557264f8899f6bac3a5210e4580b40e";
+  #   sha256 = "sha256-ufCLHpYdC6XeWGIa4TulhuO08+ZtQ8iSZv0uGcRhZkQ=";
+  # };
   pyproject = true;
   buildInputs = [
     cython
@@ -37,7 +38,7 @@ buildPythonPackage {
     scikit-image
     pytest
   ];
-  pythonImportsCheck = [];
+  pythonImportsCheck = [ ];
 
   meta = {
     description = "Centrosome";

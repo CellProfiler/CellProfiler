@@ -3031,9 +3031,9 @@ class TestWhiteTophat(unittest.TestCase):
             "GlfbnTMQ6D/G0/uKnEjrP7RqrXnOdMM/4A8ROHauxT+W/BqsnbDSP4xRkmj"
             "HxNU/TugfQWuE5z8="
         )
-        data = np.fromstring(data)
+        data = np.frombuffer(data)
         data.shape = (40, 40)
-        expected = np.fromstring(expected)
+        expected = np.frombuffer(expected)
         expected.shape = (40, 40)
         result = morph.white_tophat(data, 3)
         #

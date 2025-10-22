@@ -21,10 +21,8 @@ YES          YES          NO
 """
 
 import cellprofiler_core.object
-import numpy
-import skimage.measure
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
-
+from cellprofiler_library.modules._shrinktoobjectcenters import shrink_to_object_centers
 
 class ShrinkToObjectCenters(ObjectProcessing):
     module_name = "ShrinkToObjectCenters"
@@ -34,21 +32,42 @@ class ShrinkToObjectCenters(ObjectProcessing):
     variable_revision_number = 1
 
     def run(self, workspace):
+        #
+        # Get all inputs
+        #
         input_objects = workspace.object_set.get_objects(self.x_name.value)
+        input_segemnted = input_objects.segmented
+        output_segmented = None
 
+        input_small_removed_segmented = None
+        output_small_removed_segmented = None
+        if input_objects.has_small_removed_segmented:
+            input_small_removed_segmented = input_objects.small_removed_segmented
+        
+        input_unedited_segmented = None
+        output_unedited_segmented = None
+        if input_objects.has_unedited_segmented:
+            input_unedited_segmented = input_objects.unedited_segmented
+
+        #
+        # Perform shrinking
+        #
+        output_segmented = shrink_to_object_centers(input_segemnted)
+
+        if input_small_removed_segmented is not None:
+            output_small_removed_segmented = shrink_to_object_centers(input_small_removed_segmented)
+
+        if input_unedited_segmented is not None:
+            output_unedited_segmented = shrink_to_object_centers(input_unedited_segmented)
+        
+        #
+        # Create output objects
+        #
         output_objects = cellprofiler_core.object.Objects()
 
-        output_objects.segmented = self.find_centroids(input_objects.segmented)
-
-        if input_objects.has_small_removed_segmented:
-            output_objects.small_removed_segmented = self.find_centroids(
-                input_objects.small_removed_segmented
-            )
-
-        if input_objects.has_unedited_segmented:
-            output_objects.unedited_segmented = self.find_centroids(
-                input_objects.unedited_segmented
-            )
+        output_objects.segmented = output_segmented
+        output_objects.small_removed_segmented = output_small_removed_segmented
+        output_objects.unedited_segmented = output_unedited_segmented
 
         output_objects.parent_image = input_objects.parent_image
 
@@ -58,22 +77,6 @@ class ShrinkToObjectCenters(ObjectProcessing):
 
         if self.show_window:
             workspace.display_data.x_data = input_objects.segmented
-
             workspace.display_data.y_data = output_objects.segmented
-
             workspace.display_data.dimensions = input_objects.dimensions
 
-    @staticmethod
-    def find_centroids(label_image):
-        input_props = skimage.measure.regionprops(
-            label_image, intensity_image=None, cache=True
-        )
-
-        input_centroids = [numpy.int_(obj["centroid"]) for obj in input_props]
-
-        output_segmented = numpy.zeros_like(label_image)
-
-        for ind, arr in enumerate(input_centroids):
-            output_segmented[tuple(arr)] = ind + 1
-
-        return output_segmented

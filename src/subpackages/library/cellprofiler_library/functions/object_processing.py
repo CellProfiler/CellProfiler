@@ -676,3 +676,24 @@ def dilate_objects_with_structuring_element(
     
     return y_data
 
+
+###############################################################################
+# ShrinkToObjectCenters
+###############################################################################
+
+
+def find_centroids(
+        label_image: ObjectSegmentation
+    ) -> ObjectSegmentation:
+    input_props = skimage.measure.regionprops(
+        label_image, intensity_image=None, cache=True
+    )
+
+    input_centroids = [numpy.int_(obj["centroid"]) for obj in input_props]
+
+    output_segmented = numpy.zeros_like(label_image)
+
+    for ind, arr in enumerate(input_centroids):
+        output_segmented[tuple(arr)] = ind + 1
+
+    return output_segmented

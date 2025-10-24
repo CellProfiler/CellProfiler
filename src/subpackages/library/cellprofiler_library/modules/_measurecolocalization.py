@@ -1,18 +1,11 @@
-from typing import List, Tuple, Generator
-from ..types import Image2DGrayscale, ImageGrayscale, ImageGrayscaleMask
 import numpy as np
-from ..functions.image_processing import apply_threshold, get_global_threshold
-import cellprofiler_library.opts.threshold as Threshold
-from ..functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
-from ..opts.measurecolocalization import MeasurementFormat, MeasurementType
-from pydantic import Field
-from typing import Annotated, Optional, Dict, Any, Union
-from ..opts.measurecolocalization import CostesMethod
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-import scipy.ndimage
-from ..types import ObjectLabelsDense
 from numpy.typing import NDArray
-from pydantic import validate_call, ConfigDict, BeforeValidator
+from typing import List, Tuple, Annotated, Optional, Dict, Union
+from pydantic import validate_call, ConfigDict, BeforeValidator, Field
+from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
+from cellprofiler_library.opts.measurecolocalization import MeasurementFormat, MeasurementType
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel
+from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -25,7 +18,9 @@ def run_image_pair_images(
     im1_thr_percentage: Annotated[float, Field(description="Threshold value for the first image"), BeforeValidator(np.float64)]=100, 
     im2_thr_percentage: Annotated[float, Field(description="Threshold value for the second image"), BeforeValidator(np.float64)]=100, 
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")] = [MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
-    **kwargs
+    im1_scale:          Annotated[Optional[np.float64], Field(description="")] = None,
+    im2_scale:          Annotated[Optional[np.float64], Field(description="")] = None,
+    costes_method:      Annotated[Optional[CostesMethod], Field(description="")] = CostesMethod.FAST,
     ) -> Annotated[
         Tuple[
             Dict[str, np.float64],
@@ -87,12 +82,9 @@ def run_image_pair_images(
                 ]
 
             if MeasurementType.COSTES in measurement_types:
-                im1_scale = kwargs.get("first_image_scale", None)
-                im2_scale = kwargs.get("second_image_scale", None)
-                costes_method = kwargs.get("costes_method", CostesMethod.FAST)
                 assert costes_method in CostesMethod.__members__.values(), "costes_method must be one of {}".format(CostesMethod.__members__.values())
                 
-                C1, C2 = measure_costes_coefficient(im1_pixels, im2_pixels, im1_scale, im2_scale, costes_method=costes_method,)
+                C1, C2 = measure_costes_coefficient(im1_pixels, im2_pixels, im1_scale, im2_scale, costes_method=costes_method)
                 
                 summary += [
                     (im1_name, im2_name, "-", "Manders Coefficient (Costes)", "%.3f" % C1),
@@ -139,8 +131,8 @@ def run_image_pair_images(
     return measurements, summary
 
 
-def get_object_result_array(col_order_list, measurement_name, measurement_array):
-    summary = []
+def get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
+    summary: List[Tuple[str, str, str, str, str]] = []
     summary += [
         (*col_order_list, f"Mean {measurement_name}", "%.3f" % np.mean(measurement_array)),
         (*col_order_list, f"Median {measurement_name}", "%.3f" % np.median(measurement_array)),
@@ -151,9 +143,9 @@ def get_object_result_array(col_order_list, measurement_name, measurement_array)
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def run_image_pair_objects(
-    im1_pixels:         Annotated[NDArray[np.float32], Field(description="First image pixels")],
-    im2_pixels:         Annotated[NDArray[np.float32], Field(description="Second image pixels")],
-    labels:             Annotated[NDArray[np.int32], Field(description="Labels")],
+    im1_pixels:         Annotated[NDArray[Pixel], Field(description="First image pixels")],
+    im2_pixels:         Annotated[NDArray[Pixel], Field(description="Second image pixels")],
+    labels:             Annotated[NDArray[ObjectLabel], Field(description="Labels")],
     object_count:       Annotated[int, Field(description="Object count")],
     im1_name:           Annotated[str, Field(description="First image name")] = "First image",
     im2_name:           Annotated[str, Field(description="Second image name")] = "Second image",
@@ -161,15 +153,18 @@ def run_image_pair_objects(
     mask:               Annotated[Optional[ImageGrayscaleMask], Field(description="Mask")] = None, 
     im1_thr_percentage: Annotated[float, Field(description="First image threshold value"), BeforeValidator(np.float64)]=100, 
     im2_thr_percentage: Annotated[float, Field(description="Second image threshold value"), BeforeValidator(np.float64)]=100, 
-    im1_costes_pixels:  Annotated[Optional[NDArray[np.float32]], Field(description="First image pixel data for costes")]=None,
-    im2_costes_pixels:  Annotated[Optional[NDArray[np.float32]], Field(description="Second image pixel data for costes")]=None,
+    im1_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="First image pixel data for costes")]=None,
+    im2_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="Second image pixel data for costes")]=None,
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")]=[MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
-    **kwargs
+    im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding")]=None,
+    im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
+    costes_method:      Annotated[CostesMethod, Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
     ) -> Tuple[
         Dict[str, NDArray[np.float64]],
         List[Tuple[str, str, str, str, str]]
         ]:
-
+    if MeasurementType.COSTES in measurement_types:
+        assert costes_method is not None, "Costes requires a costes method"
     """Calculate per-object correlations between intensities in two images"""
     summary = []
 
@@ -237,22 +232,16 @@ def run_image_pair_objects(
 
 
         if MeasurementType.COSTES in measurement_types:
-            assert im1_costes_pixels is not None, "Costes pixels are not available"
-            assert im2_costes_pixels is not None, "Costes pixels are not available"
-            im1_scale = kwargs.get("first_image_scale", None)
-            im2_scale = kwargs.get("second_image_scale", None)
-            costes_method = kwargs.get("costes_method", CostesMethod.FAST)
-            assert costes_method in CostesMethod.__members__.values(), f"Costes method {costes_method} is invalid"
             C1, C2 = measure_costes_coefficient_from_objects(
-                im1_pixels, 
-                im2_pixels, 
-                im1_costes_pixels, 
-                im2_costes_pixels, 
-                labels, 
-                lrange, 
-                im1_scale, 
-                im2_scale, 
-                costes_method,
+                im1_pixels = im1_pixels, 
+                im2_pixels = im2_pixels, 
+                im1_costes_pixels = im1_costes_pixels, 
+                im2_costes_pixels = im2_costes_pixels, 
+                labels = labels, 
+                lrange = lrange, 
+                im1_scale = im1_scale, 
+                im2_scale = im2_scale, 
+                costes_method = costes_method,
             )
             summary += get_object_result_array([im1_name, im2_name, object_name], "Manders coeff (Costes)", C1)
             summary += get_object_result_array([im2_name, im1_name, object_name], "Manders coeff (Costes)", C2)

@@ -681,26 +681,31 @@ You can set a different threshold for each image selected in the module.
                 # Prepare the images for the measurements
                 #
                 im1_pixel_data, im2_pixel_data, mask, im1_thr_percentage, im2_thr_percentage = self.prepare_images(workspace, im1_name, im2_name)
-                kwargs = {}
                 measurement_types = self.get_measurement_types()
                 if MeasurementType.COSTES in measurement_types:
-                    kwargs["costes_method"] = self.fast_costes.value
-                    kwargs["first_image_scale"] = workspace.image_set.get_image(im1_name).scale
-                    kwargs["second_image_scale"] = workspace.image_set.get_image(im2_name).scale
+                    costes_method = self.fast_costes.value
+                    first_image_scale = workspace.image_set.get_image(im1_name).scale
+                    second_image_scale = workspace.image_set.get_image(im2_name).scale
+                else:
+                    costes_method = None
+                    first_image_scale = None
+                    second_image_scale = None
                 
                 #
                 # Run colocalization measurements on the images
                 #
                 colocalization_measurements, measurements_summary = run_image_pair_images(
-                    im1_pixel_data, 
-                    im2_pixel_data, 
-                    im1_name, 
-                    im2_name, 
-                    mask, 
-                    im1_thr_percentage, 
-                    im2_thr_percentage, 
-                    measurement_types, 
-                    **kwargs
+                    im1_pixel_data = im1_pixel_data, 
+                    im2_pixel_data = im2_pixel_data, 
+                    im1_name = im1_name, 
+                    im2_name = im2_name, 
+                    mask = mask, 
+                    im1_thr_percentage = im1_thr_percentage, 
+                    im2_thr_percentage = im2_thr_percentage, 
+                    measurement_types = measurement_types, 
+                    im1_scale = first_image_scale,
+                    im2_scale = second_image_scale,
+                    costes_method = costes_method
                 )
                 statistics += measurements_summary
                 for measurement_name, measurement_value in colocalization_measurements.items():
@@ -708,7 +713,6 @@ You can set a different threshold for each image selected in the module.
 
             if self.wants_objects():
                 for object_name in self.objects_list.value:
-                    kwargs = {}
                     #
                     # Prepare the images and objects for the measurements
                     #
@@ -725,29 +729,36 @@ You can set a different threshold for each image selected in the module.
                     ) = self.prepare_images_objects(workspace, im1_name, im2_name, object_name)
 
                     measurement_types = self.get_measurement_types()
-                    if MeasurementType.COSTES in measurement_types:
-                        kwargs["costes_method"] = self.fast_costes.value
-                        kwargs["first_image_scale"] = workspace.image_set.get_image(im1_name).scale
-                        kwargs["second_image_scale"] = workspace.image_set.get_image(im2_name).scale
+                    if MeasurementType.COSTES.value in measurement_types:
+                        costes_method = self.fast_costes.value
+                        im1_scale = workspace.image_set.get_image(im1_name).scale
+                        im2_scale = workspace.image_set.get_image(im2_name).scale
+                    else:
+                        costes_method = None
+                        im1_scale = None
+                        im2_scale = None
 
                     #
                     # Run colocalization measurements on the objects
                     #
                     colocalization_measurements, measurements_summary = run_image_pair_objects(
-                        first_pixels.astype(numpy.float32), 
-                        second_pixels.astype(numpy.float32), 
-                        labels, 
-                        object_count, 
-                        im1_name, 
-                        im2_name, 
-                        object_name, 
-                        mask, 
-                        im1_thr_percentage, 
-                        im2_thr_percentage, 
-                        first_image_costes_pixels, 
-                        second_image_costes_pixels, 
-                        measurement_types, 
-                        **kwargs
+                        im1_pixels = first_pixels.astype(numpy.float32), 
+                        im2_pixels = second_pixels.astype(numpy.float32), 
+                        labels = labels, 
+                        object_count = object_count, 
+                        im1_name = im1_name, 
+                        im2_name = im2_name, 
+                        object_name = object_name, 
+                        mask = mask, 
+                        im1_thr_percentage = im1_thr_percentage, 
+                        im2_thr_percentage = im2_thr_percentage, 
+                        im1_costes_pixels = first_image_costes_pixels, 
+                        im2_costes_pixels = second_image_costes_pixels, 
+                        measurement_types = measurement_types, 
+                        im1_scale = im1_scale,
+                        im2_scale = im2_scale,
+                        costes_method = costes_method
+
                     )
                     statistics += measurements_summary
                     for measurement_name, measurement_value in colocalization_measurements.items():

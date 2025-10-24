@@ -81,6 +81,9 @@ References
 import numpy
 import scipy.ndimage
 import scipy.stats
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from scipy.linalg import lstsq
+
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary, ValidationError
@@ -94,14 +97,14 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.utilities.core.object import size_similarly
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.linalg import lstsq
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.image import Image
-
-M_IMAGES = "Across entire image"
-M_OBJECTS = "Within objects"
-M_IMAGES_AND_OBJECTS = "Both"
+from cellprofiler_library.functions.image_processing import apply_threshold_to_objects
+from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts
+from cellprofiler_library.functions.image_processing import apply_threshold, get_global_threshold
+import cellprofiler_library.opts.threshold as Threshold 
+from cellprofiler_library.opts.measurecolocalization import MeasurementType, MeasurementFormat, Target, CostesMethod
+from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects
 
 # The number of settings per threshold
 THRESHOLD_SETTING_COUNT = 2
@@ -111,34 +114,6 @@ SAVE_MASK_SETTING_COUNT = 3
 
 # The number of settings other than the threshold or save image mask settings 
 FIXED_SETTING_COUNT = 17
-
-M_FAST = "Fast"
-M_FASTER = "Faster"
-M_ACCURATE = "Accurate"
-
-"""Feature name format for the correlation measurement"""
-F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
-
-"""Feature name format for the slope measurement"""
-F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
-
-"""Feature name format for the overlap coefficient measurement"""
-F_OVERLAP_FORMAT = "Correlation_Overlap_%s_%s"
-
-"""Feature name format for the Manders Coefficient measurement"""
-F_K_FORMAT = "Correlation_K_%s_%s"
-
-"""Feature name format for the Manders Coefficient measurement"""
-F_KS_FORMAT = "Correlation_KS_%s_%s"
-
-"""Feature name format for the Manders Coefficient measurement"""
-F_MANDERS_FORMAT = "Correlation_Manders_%s_%s"
-
-"""Feature name format for the RWC Coefficient measurement"""
-F_RWC_FORMAT = "Correlation_RWC_%s_%s"
-
-"""Feature name format for the Costes Coefficient measurement"""
-F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
@@ -165,7 +140,7 @@ Select the objects to be measured.""",
 
         self.thresholds_list = []
 
-        self.thr = Float(
+        self.threshold_percentage = Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
             minval=0,
@@ -182,20 +157,25 @@ measurements.
 
         self.images_or_objects = Choice(
             "Select where to measure correlation",
-            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
+            [Target.IMAGES.value, Target.OBJECTS.value, Target.IMAGES_AND_OBJECTS.value],
             doc="""\
 You can measure the correlation in several ways:
 
--  *%(M_OBJECTS)s:* Measure correlation only in those pixels previously
+-  *{M_OBJECTS}s:* Measure correlation only in those pixels previously
    identified as within an object. You will be asked to choose which object
    type to measure within.
--  *%(M_IMAGES)s:* Measure the correlation across all pixels in the
+-  *{M_IMAGES}s:* Measure the correlation across all pixels in the
    images.
--  *%(M_IMAGES_AND_OBJECTS)s:* Calculate both measurements above.
+-  *{M_IMAGES_AND_OBJECTS}s:* Calculate both measurements above.
 
 All methods measure correlation on a pixel by pixel basis.
-"""
-            % globals(),
+""".format(
+                **{
+                    "M_OBJECTS": Target.OBJECTS.value, 
+                    "M_IMAGES": Target.IMAGES.value, 
+                    "M_IMAGES_AND_OBJECTS": Target.IMAGES_AND_OBJECTS.value
+                }
+            ),
         )
 
         self.spacer = Divider(line=True)
@@ -295,8 +275,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
         self.fast_costes = Choice(
             "Method for Costes thresholding",
-            [M_FASTER, M_FAST, M_ACCURATE],
-            doc=f"""\
+            [CostesMethod.FASTER.value, CostesMethod.FAST.value, CostesMethod.ACCURATE.value],
+            doc="""\
 This setting determines the method used to calculate the threshold for use within the
 Costes calculations. The *{M_FAST}* and *{M_ACCURATE}* modes will test candidate thresholds
 in descending order until the optimal threshold is reached. Selecting *{M_FAST}* will attempt 
@@ -311,7 +291,13 @@ In the vast majority of instances the results of all strategies should be identi
 
 Alternatively, you may want to disable these specific measurements entirely 
 (available when "*Run All Metrics?*" is set to "*No*").
-"""
+""".format(
+                **{
+                    "M_FAST": CostesMethod.FAST.value, 
+                    "M_FASTER": CostesMethod.FASTER.value, 
+                    "M_ACCURATE": CostesMethod.ACCURATE.value
+                }
+            ),
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
         self.save_mask_list = []
@@ -426,7 +412,7 @@ You can set a different threshold for each image selected in the module.
         """Return the settings to be saved in the pipeline"""
         result = [
             self.images_list,
-            self.thr
+            self.threshold_percentage
             ]
         result += [self.wants_channel_thresholds, self.thresholds_count]
         for threshold in self.thresholds_list:
@@ -460,7 +446,7 @@ You can set a different threshold for each image selected in the module.
         result = [
             self.images_list,
             self.spacer,
-            self.thr,
+            self.threshold_percentage,
             self.wants_channel_thresholds,
         ]
         if self.wants_channel_thresholds.value:
@@ -504,7 +490,7 @@ You can set a different threshold for each image selected in the module.
         """Return the settings to be displayed in the help menu"""
         help_settings = [
             self.images_or_objects,
-            self.thr,
+            self.threshold_percentage,
             self.wants_channel_thresholds,
             self.wants_threshold_visualization,
             self.threshold_visualization_list,
@@ -525,7 +511,7 @@ You can set a different threshold for each image selected in the module.
         # 4 fixed settings + <n settings for threshold> + 12 fixed settings
         fixed_settings_set_1 = (
             self.images_list,
-            self.thr,
+            self.threshold_percentage,
             self.wants_channel_thresholds,
             self.thresholds_count
 
@@ -575,11 +561,11 @@ You can set a different threshold for each image selected in the module.
 
     def wants_images(self):
         """True if the user wants to measure correlation on whole images"""
-        return self.images_or_objects in (M_IMAGES, M_IMAGES_AND_OBJECTS)
+        return self.images_or_objects.value in (Target.IMAGES, Target.IMAGES_AND_OBJECTS)
 
     def wants_objects(self):
         """True if the user wants to measure per-object correlations"""
-        return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
+        return self.images_or_objects.value in (Target.OBJECTS, Target.IMAGES_AND_OBJECTS)
     
     def verify_image_dims(self, workspace, image_name1, image_name2):
         """Verify that the images have the same dimensions and return the dimensions"""
@@ -591,7 +577,95 @@ You can set a different threshold for each image selected in the module.
                 self.images_list
             )
         return image1_dims
+        
+    def prepare_images(self, workspace, first_image_name, second_image_name):
+        im1 = workspace.image_set.get_image(first_image_name, must_be_grayscale=True)
+        im2 = workspace.image_set.get_image(second_image_name, must_be_grayscale=True)
+        
+        im1_pixel_count = numpy.prod(im1.pixel_data.shape)
+        im2_pixel_count = numpy.prod(im2.pixel_data.shape)
+        
+        im1_mask = im1.mask
+        im2_mask = im2.mask
+        
+        im1_pixel_data = im1.pixel_data
+        im2_pixel_data = im2.pixel_data
+        if im1_pixel_count < im2_pixel_count:
+            im2_pixel_data = im1.crop_image_similarly(im2.pixel_data)
+            im2_mask = im1.crop_image_similarly(im2.mask)
+        elif im2_pixel_count < im1_pixel_count:
+            im1_pixel_data = im2.crop_image_similarly(im1.pixel_data)
+            im1_mask = im2.crop_image_similarly(im1.mask)
+        mask = (
+            im1_mask
+            & im2_mask
+            & (~numpy.isnan(im1_pixel_data))
+            & (~numpy.isnan(im2_pixel_data))
+        )
+        im1_thr_percentage = self.get_image_threshold_value(first_image_name)
+        im2_thr_percentage = self.get_image_threshold_value(second_image_name)
+        return im1_pixel_data, im2_pixel_data, mask, im1_thr_percentage, im2_thr_percentage
 
+    def prepare_images_objects(self, workspace, first_image_name, second_image_name, object_name):
+        im1= workspace.image_set.get_image(first_image_name, must_be_grayscale=True) # NDArray[np.float32]
+        im2 = workspace.image_set.get_image(second_image_name, must_be_grayscale=True)
+        objects = workspace.object_set.get_objects(object_name)
+        labels = objects.segmented
+        object_count = objects.count
+        try:
+            im1_pixels = objects.crop_image_similarly(im1.pixel_data)
+            im1_mask = objects.crop_image_similarly(im1.mask)
+        except ValueError:
+            im1_pixels, m1 = size_similarly(labels, im1.pixel_data)
+            im1_mask, m1 = size_similarly(labels, im1.mask)
+            im1_mask[~m1] = False
+        try:
+            im2_pixels = objects.crop_image_similarly(im2.pixel_data)
+            im2_mask = objects.crop_image_similarly(im2.mask)
+        except ValueError:
+            im2_pixels, m1 = size_similarly(labels, im2.pixel_data)
+            im2_mask, m1 = size_similarly(labels, im2.mask)
+            im2_mask[~m1] = False
+        mask = (labels > 0) & im1_mask & im2_mask
+        im1_pixels = im1_pixels[mask]
+        im2_pixels = im2_pixels[mask]
+        labels = labels[mask]
+        im1_pixel_data = im1.pixel_data
+        #
+        # Code below is used for the Costes' automated thresholding
+        #
+        im1_mask = im1.mask
+        im1_pixel_count = numpy.prod(im1.pixel_data.shape)
+        im2_pixel_data = im2.pixel_data
+        im2_mask = im2.mask
+        im2_pixel_count = numpy.prod(im2.pixel_data.shape)
+        #
+        # Crop the larger image similarly to the smaller one
+        #
+        if im1_pixel_count < im2_pixel_count:
+            im2_pixel_data = im1.crop_image_similarly(im2_pixel_data)
+            im2_mask = im1.crop_image_similarly(im2_mask)
+        elif im2_pixel_count < im1_pixel_count:
+            im1_pixel_data = im2.crop_image_similarly(im1_pixel_data)
+            im1_mask = im2.crop_image_similarly(im1_mask)
+        mask = (
+            im1_mask
+            & im2_mask
+            & (~numpy.isnan(im1_pixel_data))
+            & (~numpy.isnan(im2_pixel_data))
+        )
+        #
+        # fi and si are used to obtain the costes threshold values for their respective images
+        #
+        im1_costes_pixels = None
+        im2_costes_pixels = None
+        if mask is not None and numpy.any(mask):
+            im1_costes_pixels = im1_pixel_data[mask]
+            im2_costes_pixels = im2_pixel_data[mask]
+        im1_thr_percentage = self.get_image_threshold_value(first_image_name)
+        im2_thr_percentage = self.get_image_threshold_value(second_image_name)
+        return im1_costes_pixels, im2_costes_pixels, labels, object_count, mask, im1_pixels, im2_pixels, im1_thr_percentage, im2_thr_percentage
+    
     def run(self, workspace):
         """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
@@ -599,18 +673,85 @@ You can set a different threshold for each image selected in the module.
         image_dims = None
         if len(self.images_list.value) < 2:
             raise ValueError("At least 2 images must be selected for analysis.")
-        for first_image_name, second_image_name in self.get_image_pairs():
-            image_dims = self.verify_image_dims(workspace, first_image_name, second_image_name)
+        for im1_name, im2_name in self.get_image_pairs():
+            image_dims = self.verify_image_dims(workspace, im1_name, im2_name)
 
             if self.wants_images():
-                statistics += self.run_image_pair_images(
-                    workspace, first_image_name, second_image_name
+                #
+                # Prepare the images for the measurements
+                #
+                im1_pixel_data, im2_pixel_data, mask, im1_thr_percentage, im2_thr_percentage = self.prepare_images(workspace, im1_name, im2_name)
+                kwargs = {}
+                measurement_types = self.get_measurement_types()
+                if MeasurementType.COSTES in measurement_types:
+                    kwargs["costes_method"] = self.fast_costes.value
+                    kwargs["first_image_scale"] = workspace.image_set.get_image(im1_name).scale
+                    kwargs["second_image_scale"] = workspace.image_set.get_image(im2_name).scale
+                
+                #
+                # Run colocalization measurements on the images
+                #
+                colocalization_measurements, measurements_summary = run_image_pair_images(
+                    im1_pixel_data, 
+                    im2_pixel_data, 
+                    im1_name, 
+                    im2_name, 
+                    mask, 
+                    im1_thr_percentage, 
+                    im2_thr_percentage, 
+                    measurement_types, 
+                    **kwargs
                 )
+                statistics += measurements_summary
+                for measurement_name, measurement_value in colocalization_measurements.items():
+                    workspace.measurements.add_image_measurement(measurement_name, measurement_value)
+
             if self.wants_objects():
                 for object_name in self.objects_list.value:
-                    statistics += self.run_image_pair_objects(
-                        workspace, first_image_name, second_image_name, object_name
+                    kwargs = {}
+                    #
+                    # Prepare the images and objects for the measurements
+                    #
+                    (
+                        first_image_costes_pixels, 
+                        second_image_costes_pixels, 
+                        labels, 
+                        object_count, 
+                        mask, 
+                        first_pixels, 
+                        second_pixels, 
+                        im1_thr_percentage, 
+                        im2_thr_percentage
+                    ) = self.prepare_images_objects(workspace, im1_name, im2_name, object_name)
+
+                    measurement_types = self.get_measurement_types()
+                    if MeasurementType.COSTES in measurement_types:
+                        kwargs["costes_method"] = self.fast_costes.value
+                        kwargs["first_image_scale"] = workspace.image_set.get_image(im1_name).scale
+                        kwargs["second_image_scale"] = workspace.image_set.get_image(im2_name).scale
+
+                    #
+                    # Run colocalization measurements on the objects
+                    #
+                    colocalization_measurements, measurements_summary = run_image_pair_objects(
+                        first_pixels.astype(numpy.float32), 
+                        second_pixels.astype(numpy.float32), 
+                        labels, 
+                        object_count, 
+                        im1_name, 
+                        im2_name, 
+                        object_name, 
+                        mask, 
+                        im1_thr_percentage, 
+                        im2_thr_percentage, 
+                        first_image_costes_pixels, 
+                        second_image_costes_pixels, 
+                        measurement_types, 
+                        **kwargs
                     )
+                    statistics += measurements_summary
+                    for measurement_name, measurement_value in colocalization_measurements.items():
+                        workspace.measurements.add_measurement(object_name, measurement_name, measurement_value)
 
         if self.wants_masks_saved.value:
             self.save_requested_masks(workspace)
@@ -618,6 +759,20 @@ You can set a different threshold for each image selected in the module.
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
             workspace.display_data.dimensions = image_dims
+            
+    def get_measurement_types(self):
+        measurement_types = []
+        if self.do_corr_and_slope:
+            measurement_types.append(MeasurementType.CORRELATION)
+        if self.do_manders:
+            measurement_types.append(MeasurementType.MANDERS)
+        if self.do_rwc:
+            measurement_types.append(MeasurementType.RWC)
+        if self.do_overlap:
+            measurement_types.append(MeasurementType.OVERLAP)
+        if self.do_costes:
+            measurement_types.append(MeasurementType.COSTES)
+        return measurement_types
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
@@ -670,13 +825,9 @@ You can set a different threshold for each image selected in the module.
             plotting_row += 1
 
             # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
-            image_pixel_data = image.pixel_data
-            image_mask = image.mask
-            image_mask = image_mask & (~numpy.isnan(image_pixel_data))
             threshold_value = self.get_image_threshold_value(image_name)
             if self.wants_images():
-                
-                thr_i_out = self.get_thresholded_mask(workspace, image_name, t_val=threshold_value)
+                thr_i_out = self.get_thresholded_mask(image_name, workspace)
                 figure.subplot_imshow_grayscale(
                     idx,
                     plotting_row, 
@@ -688,7 +839,7 @@ You can set a different threshold for each image selected in the module.
                 plotting_row += 1
             if self.wants_objects():
                 for object_name in self.objects_list.value:
-                    threshold_mask_image = self.get_thresholded_mask(workspace, image_name, object_name=object_name, t_val=threshold_value)
+                    threshold_mask_image = self.get_thresholded_mask(image_name, workspace, object_name=object_name)
                     figure.subplot_imshow_grayscale(
                         idx,
                         plotting_row,
@@ -698,21 +849,10 @@ You can set a different threshold for each image selected in the module.
                     )
                     plotting_row += 1
 
-    def get_thresholded_mask(self, workspace, image_name, object_name=None, t_val=None):
-        """
-        Get the numpy array of the mask of the thresholded image
+    def get_thresholded_mask(self, image_name, workspace, object_name=None):
 
-        :param image: The image object
-        :type image: cellprofiler_core.image.Image
-        :param objects: The objects object, Performs thresholding on the entire image if None
-        :type objects: cellprofiler_core.object.Objects
-        :param t_val: The threshold value to use for thresholding. If not None, the default / user specified value will be overridden
-        :type t_val: float
-        :return: The numpy array of the mask of the thresholded image
-        """
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-        if t_val is None:
-            t_val = self.get_image_threshold_value(image_name)
+        t_val = self.get_image_threshold_value(image_name)
         # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
         image_pixel_data = image.pixel_data
         image_mask = image.mask
@@ -720,38 +860,23 @@ You can set a different threshold for each image selected in the module.
         output_image_arr = numpy.zeros_like(image_pixel_data)
         if object_name is None:
             # perform on the entire image
+            
             if numpy.any(image_mask):
-                    thr_i = t_val * numpy.max(image_pixel_data) / 100
-                    output_image_arr = image_pixel_data > thr_i
+                thr_i = get_global_threshold(image_pixel_data, None, Threshold.Method.MAX_INTENSITY_PERCENTAGE, max_intensity_percentage=t_val)
+                output_image_arr, _ = apply_threshold(image_pixel_data, thr_i)
         else:
             # perform on the object
             objects = workspace.object_set.get_objects(object_name)
             labels = objects.segmented
             try:
-                image_pixels = objects.crop_image_similarly(image.pixel_data)
-                image_mask = objects.crop_image_similarly(image.mask)
+                image_pixels = objects.crop_image_similarly(image_pixel_data)
+                image_mask = objects.crop_image_similarly(image_mask)
             except ValueError:
-                image_pixels, m1 = size_similarly(labels, image.pixel_data)
-                image_mask, m1 = size_similarly(labels, image.mask)
+                image_pixels, m1 = size_similarly(labels, image_pixel_data)
+                image_mask, m1 = size_similarly(labels, image_mask)
                 image_mask[~m1] = False
+            output_image_arr = apply_threshold_to_objects(image_pixels, labels, t_val, image_mask)  
 
-            mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
-            labels = labels[mask]
-            
-            if numpy.any(mask):
-                image_pixels = image_pixels[mask]
-            n_objects = objects.count
-
-            if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
-                lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
-                # Threshold as percentage of maximum intensity of objects in each channel
-                scaled_image = (t_val / 100) * fix(
-                    scipy.ndimage.maximum(image_pixels, labels, lrange)
-                )
-
-                # convert 1d array into 2d image using mask as index
-                output_image_arr = numpy.zeros_like(mask)
-                output_image_arr[mask] = (image_pixels >= scaled_image[labels - 1])
         return output_image_arr
 
     def save_requested_masks(self, workspace):
@@ -763,7 +888,8 @@ You can set a different threshold for each image selected in the module.
             original_image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             
             # Call the relevant funcitons to get the thresholded masks
-            output_image = Image(self.get_thresholded_mask(workspace, image_name, object_name), parent_image=original_image)
+            t_val = self.get_image_threshold_value(image_name)
+            output_image = Image(self.get_thresholded_mask(image_name, workspace, object_name), parent_image=original_image)
 
             # Save the mask to the image set
             workspace.image_set.add(save_image_name, output_image)
@@ -774,1013 +900,7 @@ You can set a different threshold for each image selected in the module.
             for threshold in self.thresholds_list:
                 if threshold.image_name == image_name:
                     return threshold.threshold_for_channel.value
-        return self.thr.value
-
-    def run_image_pair_images(self, workspace, first_image_name, second_image_name):
-        """Calculate the correlation between the pixels of two images"""
-        first_image = workspace.image_set.get_image(
-            first_image_name, must_be_grayscale=True
-        )
-        second_image = workspace.image_set.get_image(
-            second_image_name, must_be_grayscale=True
-        )
-        first_pixel_data = first_image.pixel_data
-        first_mask = first_image.mask
-        first_pixel_count = numpy.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
-        second_mask = second_image.mask
-        second_pixel_count = numpy.product(second_pixel_data.shape)
-        #
-        # Crop the larger image similarly to the smaller one
-        #
-        if first_pixel_count < second_pixel_count:
-            second_pixel_data = first_image.crop_image_similarly(second_pixel_data)
-            second_mask = first_image.crop_image_similarly(second_mask)
-        elif second_pixel_count < first_pixel_count:
-            first_pixel_data = second_image.crop_image_similarly(first_pixel_data)
-            first_mask = second_image.crop_image_similarly(first_mask)
-        mask = (
-            first_mask
-            & second_mask
-            & (~numpy.isnan(first_pixel_data))
-            & (~numpy.isnan(second_pixel_data))
-        )
-        result = []
-        if numpy.any(mask):
-            fi = first_pixel_data[mask]
-            si = second_pixel_data[mask]
-
-            if self.do_corr_and_slope:
-                #
-                # Perform the correlation, which returns:
-                # [ [ii, ij],
-                #   [ji, jj] ]
-                #
-                corr = numpy.corrcoef((fi, si))[1, 0]
-                #
-                # Find the slope as a linear regression to
-                # A * i1 + B = i2
-                #
-                coeffs = lstsq(numpy.array((fi, numpy.ones_like(fi))).transpose(), si)[
-                    0
-                ]
-                slope = coeffs[0]
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        "-",
-                        "Correlation",
-                        "%.3f" % corr,
-                    ],
-                    [first_image_name, second_image_name, "-", "Slope", "%.3f" % slope],
-                ]
-
-            if any((self.do_manders, self.do_rwc, self.do_overlap)):
-                # Get channel-specific thresholds from thresholds array
-                # Threshold as percentage of maximum intensity in each channel
-                thr_fi = self.get_image_threshold_value(first_image_name) * numpy.max(fi) / 100
-                thr_si = self.get_image_threshold_value(second_image_name) * numpy.max(si) / 100
-                thr_fi_out = fi > thr_fi
-                thr_si_out = si > thr_si
-                combined_thresh = (thr_fi_out) & (thr_si_out)
-                fi_thresh = fi[combined_thresh]
-                si_thresh = si[combined_thresh]
-                tot_fi_thr = fi[(fi > thr_fi)].sum()
-                tot_si_thr = si[(si > thr_si)].sum()
-
-            if self.do_manders:
-                # Manders Coefficient
-                M1 = 0
-                M2 = 0
-                M1 = fi_thresh.sum() / tot_fi_thr
-                M2 = si_thresh.sum() / tot_si_thr
-
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        "-",
-                        "Manders Coefficient",
-                        "%.3f" % M1,
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        "-",
-                        "Manders Coefficient",
-                        "%.3f" % M2,
-                    ],
-                ]
-
-            if self.do_rwc:
-                # RWC Coefficient
-                RWC1 = 0
-                RWC2 = 0
-                Rank1 = numpy.lexsort([fi])
-                Rank2 = numpy.lexsort([si])
-                Rank1_U = numpy.hstack([[False], fi[Rank1[:-1]] != fi[Rank1[1:]]])
-                Rank2_U = numpy.hstack([[False], si[Rank2[:-1]] != si[Rank2[1:]]])
-                Rank1_S = numpy.cumsum(Rank1_U)
-                Rank2_S = numpy.cumsum(Rank2_U)
-                Rank_im1 = numpy.zeros(fi.shape, dtype=int)
-                Rank_im2 = numpy.zeros(si.shape, dtype=int)
-                Rank_im1[Rank1] = Rank1_S
-                Rank_im2[Rank2] = Rank2_S
-
-                R = max(Rank_im1.max(), Rank_im2.max()) + 1
-                Di = abs(Rank_im1 - Rank_im2)
-                weight = ((R - Di) * 1.0) / R
-                weight_thresh = weight[combined_thresh]
-                RWC1 = (fi_thresh * weight_thresh).sum() / tot_fi_thr
-                RWC2 = (si_thresh * weight_thresh).sum() / tot_si_thr
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        "-",
-                        "RWC Coefficient",
-                        "%.3f" % RWC1,
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        "-",
-                        "RWC Coefficient",
-                        "%.3f" % RWC2,
-                    ],
-                ]
-
-            if self.do_overlap:
-                # Overlap Coefficient
-                overlap = 0
-                overlap = (fi_thresh * si_thresh).sum() / numpy.sqrt(
-                    (fi_thresh ** 2).sum() * (si_thresh ** 2).sum()
-                )
-                K1 = (fi_thresh * si_thresh).sum() / (fi_thresh ** 2).sum()
-                K2 = (fi_thresh * si_thresh).sum() / (si_thresh ** 2).sum()
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        "-",
-                        "Overlap Coefficient",
-                        "%.3f" % overlap,
-                    ]
-                ]
-
-            if self.do_costes:
-                # Orthogonal Regression for Costes' automated threshold
-                scale = get_scale(first_image.scale, second_image.scale)
-                if self.fast_costes == M_FASTER:
-                    thr_fi_c, thr_si_c = self.bisection_costes(fi, si, scale)
-                else:
-                    thr_fi_c, thr_si_c = self.linear_costes(fi, si, scale)
-
-                # Costes' thershold calculation
-                combined_thresh_c = (fi > thr_fi_c) & (si > thr_si_c)
-                fi_thresh_c = fi[combined_thresh_c]
-                si_thresh_c = si[combined_thresh_c]
-                tot_fi_thr_c = fi[(fi > thr_fi_c)].sum()
-                tot_si_thr_c = si[(si > thr_si_c)].sum()
-
-                # Costes' Automated Threshold
-                C1 = 0
-                C2 = 0
-                C1 = fi_thresh_c.sum() / tot_fi_thr_c
-                C2 = si_thresh_c.sum() / tot_si_thr_c
-
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        "-",
-                        "Manders Coefficient (Costes)",
-                        "%.3f" % C1,
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        "-",
-                        "Manders Coefficient (Costes)",
-                        "%.3f" % C2,
-                    ],
-                ]
-
-        else:
-            corr = numpy.NaN
-            slope = numpy.NaN
-            C1 = numpy.NaN
-            C2 = numpy.NaN
-            M1 = numpy.NaN
-            M2 = numpy.NaN
-            RWC1 = numpy.NaN
-            RWC2 = numpy.NaN
-            overlap = numpy.NaN
-            K1 = numpy.NaN
-            K2 = numpy.NaN
-
-        #
-        # Add the measurements
-        #
-        if self.do_corr_and_slope:
-            corr_measurement = F_CORRELATION_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            slope_measurement = F_SLOPE_FORMAT % (first_image_name, second_image_name)
-            workspace.measurements.add_image_measurement(corr_measurement, corr)
-            workspace.measurements.add_image_measurement(slope_measurement, slope)
-        if self.do_overlap:
-            overlap_measurement = F_OVERLAP_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            k_measurement_1 = F_K_FORMAT % (first_image_name, second_image_name)
-            k_measurement_2 = F_K_FORMAT % (second_image_name, first_image_name)
-            workspace.measurements.add_image_measurement(overlap_measurement, overlap)
-            workspace.measurements.add_image_measurement(k_measurement_1, K1)
-            workspace.measurements.add_image_measurement(k_measurement_2, K2)
-        if self.do_manders:
-            manders_measurement_1 = F_MANDERS_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            manders_measurement_2 = F_MANDERS_FORMAT % (
-                second_image_name,
-                first_image_name,
-            )
-            workspace.measurements.add_image_measurement(manders_measurement_1, M1)
-            workspace.measurements.add_image_measurement(manders_measurement_2, M2)
-        if self.do_rwc:
-            rwc_measurement_1 = F_RWC_FORMAT % (first_image_name, second_image_name)
-            rwc_measurement_2 = F_RWC_FORMAT % (second_image_name, first_image_name)
-            workspace.measurements.add_image_measurement(rwc_measurement_1, RWC1)
-            workspace.measurements.add_image_measurement(rwc_measurement_2, RWC2)
-        if self.do_costes:
-            costes_measurement_1 = F_COSTES_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            costes_measurement_2 = F_COSTES_FORMAT % (
-                second_image_name,
-                first_image_name,
-            )
-            workspace.measurements.add_image_measurement(costes_measurement_1, C1)
-            workspace.measurements.add_image_measurement(costes_measurement_2, C2)
-
-        return result
-
-    def run_image_pair_objects(
-        self, workspace, first_image_name, second_image_name, object_name
-    ):
-        """Calculate per-object correlations between intensities in two images"""
-        first_image = workspace.image_set.get_image(
-            first_image_name, must_be_grayscale=True
-        )
-        second_image = workspace.image_set.get_image(
-            second_image_name, must_be_grayscale=True
-        )
-        objects = workspace.object_set.get_objects(object_name)
-        #
-        # Crop both images to the size of the labels matrix
-        #
-        labels = objects.segmented
-        try:
-            first_pixels = objects.crop_image_similarly(first_image.pixel_data)
-            first_mask = objects.crop_image_similarly(first_image.mask)
-        except ValueError:
-            first_pixels, m1 = size_similarly(labels, first_image.pixel_data)
-            first_mask, m1 = size_similarly(labels, first_image.mask)
-            first_mask[~m1] = False
-        try:
-            second_pixels = objects.crop_image_similarly(second_image.pixel_data)
-            second_mask = objects.crop_image_similarly(second_image.mask)
-        except ValueError:
-            second_pixels, m1 = size_similarly(labels, second_image.pixel_data)
-            second_mask, m1 = size_similarly(labels, second_image.mask)
-            second_mask[~m1] = False
-        mask = (labels > 0) & first_mask & second_mask
-        first_pixels = first_pixels[mask]
-        second_pixels = second_pixels[mask]
-        labels = labels[mask]
-        result = []
-        first_pixel_data = first_image.pixel_data
-        first_mask = first_image.mask
-        first_pixel_count = numpy.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
-        second_mask = second_image.mask
-        second_pixel_count = numpy.product(second_pixel_data.shape)
-        #
-        # Crop the larger image similarly to the smaller one
-        #
-        if first_pixel_count < second_pixel_count:
-            second_pixel_data = first_image.crop_image_similarly(second_pixel_data)
-            second_mask = first_image.crop_image_similarly(second_mask)
-        elif second_pixel_count < first_pixel_count:
-            first_pixel_data = second_image.crop_image_similarly(first_pixel_data)
-            first_mask = second_image.crop_image_similarly(first_mask)
-        mask = (
-            first_mask
-            & second_mask
-            & (~numpy.isnan(first_pixel_data))
-            & (~numpy.isnan(second_pixel_data))
-        )
-        if numpy.any(mask):
-            fi = first_pixel_data[mask]
-            si = second_pixel_data[mask]
-
-        n_objects = objects.count
-        # Handle case when both images for the correlation are completely masked out
-
-        if n_objects == 0:
-            corr = numpy.zeros((0,))
-            overlap = numpy.zeros((0,))
-            K1 = numpy.zeros((0,))
-            K2 = numpy.zeros((0,))
-            M1 = numpy.zeros((0,))
-            M2 = numpy.zeros((0,))
-            RWC1 = numpy.zeros((0,))
-            RWC2 = numpy.zeros((0,))
-            C1 = numpy.zeros((0,))
-            C2 = numpy.zeros((0,))
-        elif numpy.where(mask)[0].__len__() == 0:
-            corr = numpy.zeros((n_objects,))
-            corr[:] = numpy.NaN
-            overlap = K1 = K2 = M1 = M2 = RWC1 = RWC2 = C1 = C2 = corr
-        else:
-            lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
-
-            if self.do_corr_and_slope:
-                #
-                # The correlation is sum((x-mean(x))(y-mean(y)) /
-                #                         ((n-1) * std(x) *std(y)))
-                #
-
-                mean1 = fix(scipy.ndimage.mean(first_pixels, labels, lrange))
-                mean2 = fix(scipy.ndimage.mean(second_pixels, labels, lrange))
-                #
-                # Calculate the standard deviation times the population.
-                #
-                std1 = numpy.sqrt(
-                    fix(
-                        scipy.ndimage.sum(
-                            (first_pixels - mean1[labels - 1]) ** 2, labels, lrange
-                        )
-                    )
-                )
-                std2 = numpy.sqrt(
-                    fix(
-                        scipy.ndimage.sum(
-                            (second_pixels - mean2[labels - 1]) ** 2, labels, lrange
-                        )
-                    )
-                )
-                x = first_pixels - mean1[labels - 1]  # x - mean(x)
-                y = second_pixels - mean2[labels - 1]  # y - mean(y)
-                corr = fix(
-                    scipy.ndimage.sum(
-                        x * y / (std1[labels - 1] * std2[labels - 1]), labels, lrange
-                    )
-                )
-                # Explicitly set the correlation to NaN for masked objects
-                corr[scipy.ndimage.sum(1, labels, lrange) == 0] = numpy.NaN
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Mean Correlation coeff",
-                        "%.3f" % numpy.mean(corr),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Median Correlation coeff",
-                        "%.3f" % numpy.median(corr),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Min Correlation coeff",
-                        "%.3f" % numpy.min(corr),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Max Correlation coeff",
-                        "%.3f" % numpy.max(corr),
-                    ],
-                ]
-
-            if any((self.do_manders, self.do_rwc, self.do_overlap)):
-                # Get channel-specific thresholds from thresholds array
-                im1_threshold = self.get_image_threshold_value(first_image_name)
-                im2_threshold = self.get_image_threshold_value(second_image_name)
-                # Threshold as percentage of maximum intensity of objects in each channel
-                tff = (im1_threshold / 100) * fix(
-                    scipy.ndimage.maximum(first_pixels, labels, lrange)
-                )
-                tss = (im2_threshold / 100) * fix(
-                    scipy.ndimage.maximum(second_pixels, labels, lrange)
-                )
-
-                combined_thresh = (first_pixels >= tff[labels - 1]) & (
-                    second_pixels >= tss[labels - 1]
-                )
-                fi_thresh = first_pixels[combined_thresh]
-                si_thresh = second_pixels[combined_thresh]
-                tot_fi_thr = scipy.ndimage.sum(
-                    first_pixels[first_pixels >= tff[labels - 1]],
-                    labels[first_pixels >= tff[labels - 1]],
-                    lrange,
-                )
-                tot_si_thr = scipy.ndimage.sum(
-                    second_pixels[second_pixels >= tss[labels - 1]],
-                    labels[second_pixels >= tss[labels - 1]],
-                    lrange,
-                )
-
-            if self.do_manders:
-                # Manders Coefficient
-                M1 = numpy.zeros(len(lrange))
-                M2 = numpy.zeros(len(lrange))
-
-                if numpy.any(combined_thresh):
-                    M1 = numpy.array(
-                        scipy.ndimage.sum(fi_thresh, labels[combined_thresh], lrange)
-                    ) / numpy.array(tot_fi_thr)
-                    M2 = numpy.array(
-                        scipy.ndimage.sum(si_thresh, labels[combined_thresh], lrange)
-                    ) / numpy.array(tot_si_thr)
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Mean Manders coeff",
-                        "%.3f" % numpy.mean(M1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Median Manders coeff",
-                        "%.3f" % numpy.median(M1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Min Manders coeff",
-                        "%.3f" % numpy.min(M1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Max Manders coeff",
-                        "%.3f" % numpy.max(M1),
-                    ],
-                ]
-                result += [
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Mean Manders coeff",
-                        "%.3f" % numpy.mean(M2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Median Manders coeff",
-                        "%.3f" % numpy.median(M2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Min Manders coeff",
-                        "%.3f" % numpy.min(M2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Max Manders coeff",
-                        "%.3f" % numpy.max(M2),
-                    ],
-                ]
-
-            if self.do_rwc:
-                # RWC Coefficient
-                RWC1 = numpy.zeros(len(lrange))
-                RWC2 = numpy.zeros(len(lrange))
-                [Rank1] = numpy.lexsort(([labels], [first_pixels]))
-                [Rank2] = numpy.lexsort(([labels], [second_pixels]))
-                Rank1_U = numpy.hstack(
-                    [[False], first_pixels[Rank1[:-1]] != first_pixels[Rank1[1:]]]
-                )
-                Rank2_U = numpy.hstack(
-                    [[False], second_pixels[Rank2[:-1]] != second_pixels[Rank2[1:]]]
-                )
-                Rank1_S = numpy.cumsum(Rank1_U)
-                Rank2_S = numpy.cumsum(Rank2_U)
-                Rank_im1 = numpy.zeros(first_pixels.shape, dtype=int)
-                Rank_im2 = numpy.zeros(second_pixels.shape, dtype=int)
-                Rank_im1[Rank1] = Rank1_S
-                Rank_im2[Rank2] = Rank2_S
-
-                R = max(Rank_im1.max(), Rank_im2.max()) + 1
-                Di = abs(Rank_im1 - Rank_im2)
-                weight = (R - Di) * 1.0 / R
-                weight_thresh = weight[combined_thresh]
-
-                if numpy.any(combined_thresh):
-                    RWC1 = numpy.array(
-                        scipy.ndimage.sum(
-                            fi_thresh * weight_thresh, labels[combined_thresh], lrange
-                        )
-                    ) / numpy.array(tot_fi_thr)
-                    RWC2 = numpy.array(
-                        scipy.ndimage.sum(
-                            si_thresh * weight_thresh, labels[combined_thresh], lrange
-                        )
-                    ) / numpy.array(tot_si_thr)
-
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Mean RWC coeff",
-                        "%.3f" % numpy.mean(RWC1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Median RWC coeff",
-                        "%.3f" % numpy.median(RWC1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Min RWC coeff",
-                        "%.3f" % numpy.min(RWC1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Max RWC coeff",
-                        "%.3f" % numpy.max(RWC1),
-                    ],
-                ]
-                result += [
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Mean RWC coeff",
-                        "%.3f" % numpy.mean(RWC2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Median RWC coeff",
-                        "%.3f" % numpy.median(RWC2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Min RWC coeff",
-                        "%.3f" % numpy.min(RWC2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Max RWC coeff",
-                        "%.3f" % numpy.max(RWC2),
-                    ],
-                ]
-
-            if self.do_overlap:
-                # Overlap Coefficient
-                if numpy.any(combined_thresh):
-                    fpsq = scipy.ndimage.sum(
-                        first_pixels[combined_thresh] ** 2,
-                        labels[combined_thresh],
-                        lrange,
-                    )
-                    spsq = scipy.ndimage.sum(
-                        second_pixels[combined_thresh] ** 2,
-                        labels[combined_thresh],
-                        lrange,
-                    )
-                    pdt = numpy.sqrt(numpy.array(fpsq) * numpy.array(spsq))
-
-                    overlap = fix(
-                        scipy.ndimage.sum(
-                            first_pixels[combined_thresh]
-                            * second_pixels[combined_thresh],
-                            labels[combined_thresh],
-                            lrange,
-                        )
-                        / pdt
-                    )
-                    K1 = fix(
-                        (
-                            scipy.ndimage.sum(
-                                first_pixels[combined_thresh]
-                                * second_pixels[combined_thresh],
-                                labels[combined_thresh],
-                                lrange,
-                            )
-                        )
-                        / (numpy.array(fpsq))
-                    )
-                    K2 = fix(
-                        scipy.ndimage.sum(
-                            first_pixels[combined_thresh]
-                            * second_pixels[combined_thresh],
-                            labels[combined_thresh],
-                            lrange,
-                        )
-                        / numpy.array(spsq)
-                    )
-                else:
-                    overlap = K1 = K2 = numpy.zeros(len(lrange))
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Mean Overlap coeff",
-                        "%.3f" % numpy.mean(overlap),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Median Overlap coeff",
-                        "%.3f" % numpy.median(overlap),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Min Overlap coeff",
-                        "%.3f" % numpy.min(overlap),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Max Overlap coeff",
-                        "%.3f" % numpy.max(overlap),
-                    ],
-                ]
-
-            if self.do_costes:
-                # Orthogonal Regression for Costes' automated threshold
-                scale = get_scale(first_image.scale, second_image.scale)
-
-                if self.fast_costes == M_FASTER:
-                    thr_fi_c, thr_si_c = self.bisection_costes(fi, si, scale)
-                else:
-                    thr_fi_c, thr_si_c = self.linear_costes(fi, si, scale)
-
-                # Costes' thershold for entire image is applied to each object
-                fi_above_thr = first_pixels > thr_fi_c
-                si_above_thr = second_pixels > thr_si_c
-                combined_thresh_c = fi_above_thr & si_above_thr
-                fi_thresh_c = first_pixels[combined_thresh_c]
-                si_thresh_c = second_pixels[combined_thresh_c]
-                if numpy.any(fi_above_thr):
-                    tot_fi_thr_c = scipy.ndimage.sum(
-                        first_pixels[first_pixels >= thr_fi_c],
-                        labels[first_pixels >= thr_fi_c],
-                        lrange,
-                    )
-                else:
-                    tot_fi_thr_c = numpy.zeros(len(lrange))
-                if numpy.any(si_above_thr):
-                    tot_si_thr_c = scipy.ndimage.sum(
-                        second_pixels[second_pixels >= thr_si_c],
-                        labels[second_pixels >= thr_si_c],
-                        lrange,
-                    )
-                else:
-                    tot_si_thr_c = numpy.zeros(len(lrange))
-
-                # Costes Automated Threshold
-                C1 = numpy.zeros(len(lrange))
-                C2 = numpy.zeros(len(lrange))
-                if numpy.any(combined_thresh_c):
-                    C1 = numpy.array(
-                        scipy.ndimage.sum(
-                            fi_thresh_c, labels[combined_thresh_c], lrange
-                        )
-                    ) / numpy.array(tot_fi_thr_c)
-                    C2 = numpy.array(
-                        scipy.ndimage.sum(
-                            si_thresh_c, labels[combined_thresh_c], lrange
-                        )
-                    ) / numpy.array(tot_si_thr_c)
-                result += [
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Mean Manders coeff (Costes)",
-                        "%.3f" % numpy.mean(C1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Median Manders coeff (Costes)",
-                        "%.3f" % numpy.median(C1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Min Manders coeff (Costes)",
-                        "%.3f" % numpy.min(C1),
-                    ],
-                    [
-                        first_image_name,
-                        second_image_name,
-                        object_name,
-                        "Max Manders coeff (Costes)",
-                        "%.3f" % numpy.max(C1),
-                    ],
-                ]
-                result += [
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Mean Manders coeff (Costes)",
-                        "%.3f" % numpy.mean(C2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Median Manders coeff (Costes)",
-                        "%.3f" % numpy.median(C2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Min Manders coeff (Costes)",
-                        "%.3f" % numpy.min(C2),
-                    ],
-                    [
-                        second_image_name,
-                        first_image_name,
-                        object_name,
-                        "Max Manders coeff (Costes)",
-                        "%.3f" % numpy.max(C2),
-                    ],
-                ]
-
-        if self.do_corr_and_slope:
-            measurement = "Correlation_Correlation_%s_%s" % (
-                first_image_name,
-                second_image_name,
-            )
-            workspace.measurements.add_measurement(object_name, measurement, corr)
-        if self.do_manders:
-            manders_measurement_1 = F_MANDERS_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            manders_measurement_2 = F_MANDERS_FORMAT % (
-                second_image_name,
-                first_image_name,
-            )
-            workspace.measurements.add_measurement(
-                object_name, manders_measurement_1, M1
-            )
-            workspace.measurements.add_measurement(
-                object_name, manders_measurement_2, M2
-            )
-        if self.do_rwc:
-            rwc_measurement_1 = F_RWC_FORMAT % (first_image_name, second_image_name)
-            rwc_measurement_2 = F_RWC_FORMAT % (second_image_name, first_image_name)
-            workspace.measurements.add_measurement(object_name, rwc_measurement_1, RWC1)
-            workspace.measurements.add_measurement(object_name, rwc_measurement_2, RWC2)
-        if self.do_overlap:
-            overlap_measurement = F_OVERLAP_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            k_measurement_1 = F_K_FORMAT % (first_image_name, second_image_name)
-            k_measurement_2 = F_K_FORMAT % (second_image_name, first_image_name)
-            workspace.measurements.add_measurement(
-                object_name, overlap_measurement, overlap
-            )
-            workspace.measurements.add_measurement(object_name, k_measurement_1, K1)
-            workspace.measurements.add_measurement(object_name, k_measurement_2, K2)
-        if self.do_costes:
-            costes_measurement_1 = F_COSTES_FORMAT % (
-                first_image_name,
-                second_image_name,
-            )
-            costes_measurement_2 = F_COSTES_FORMAT % (
-                second_image_name,
-                first_image_name,
-            )
-            workspace.measurements.add_measurement(
-                object_name, costes_measurement_1, C1
-            )
-            workspace.measurements.add_measurement(
-                object_name, costes_measurement_2, C2
-            )
-
-        if n_objects == 0:
-            return [
-                [
-                    first_image_name,
-                    second_image_name,
-                    object_name,
-                    "Mean correlation",
-                    "-",
-                ],
-                [
-                    first_image_name,
-                    second_image_name,
-                    object_name,
-                    "Median correlation",
-                    "-",
-                ],
-                [
-                    first_image_name,
-                    second_image_name,
-                    object_name,
-                    "Min correlation",
-                    "-",
-                ],
-                [
-                    first_image_name,
-                    second_image_name,
-                    object_name,
-                    "Max correlation",
-                    "-",
-                ],
-            ]
-        else:
-            return result
-
-    def linear_costes(self, fi, si, scale_max=255):
-        """
-        Finds the Costes Automatic Threshold for colocalization using a linear algorithm.
-        Candiate thresholds are gradually decreased until Pearson R falls below 0.
-        If "Fast" mode is enabled the "steps" between tested thresholds will be increased
-        when Pearson R is much greater than 0.
-        """
-        i_step = 1 / scale_max
-        non_zero = (fi > 0) | (si > 0)
-        xvar = numpy.var(fi[non_zero], axis=0, ddof=1)
-        yvar = numpy.var(si[non_zero], axis=0, ddof=1)
-
-        xmean = numpy.mean(fi[non_zero], axis=0)
-        ymean = numpy.mean(si[non_zero], axis=0)
-
-        z = fi[non_zero] + si[non_zero]
-        zvar = numpy.var(z, axis=0, ddof=1)
-
-        covar = 0.5 * (zvar - (xvar + yvar))
-
-        denom = 2 * covar
-        num = (yvar - xvar) + numpy.sqrt(
-            (yvar - xvar) * (yvar - xvar) + 4 * (covar * covar)
-        )
-        a = num / denom
-        b = ymean - a * xmean
-
-        # Start at 1 step above the maximum value
-        img_max = max(fi.max(), si.max())
-        i = i_step * ((img_max // i_step) + 1)
-
-        num_true = None
-        fi_max = fi.max()
-        si_max = si.max()
-
-        # Initialise without a threshold
-        costReg, _ = scipy.stats.pearsonr(fi, si)
-        thr_fi_c = i
-        thr_si_c = (a * i) + b
-        while i > fi_max and (a * i) + b > si_max:
-            i -= i_step
-        while i > i_step:
-            thr_fi_c = i
-            thr_si_c = (a * i) + b
-            combt = (fi < thr_fi_c) | (si < thr_si_c)
-            try:
-                # Only run pearsonr if the input has changed.
-                if (positives := numpy.count_nonzero(combt)) != num_true:
-                    costReg, _ = scipy.stats.pearsonr(fi[combt], si[combt])
-                    num_true = positives
-
-                if costReg <= 0:
-                    break
-                elif self.fast_costes.value == M_ACCURATE or i < i_step * 10:
-                    i -= i_step
-                elif costReg > 0.45:
-                    # We're way off, step down 10x
-                    i -= i_step * 10
-                elif costReg > 0.35:
-                    # Still far from 0, step 5x
-                    i -= i_step * 5
-                elif costReg > 0.25:
-                    # Step 2x
-                    i -= i_step * 2
-                else:
-                    i -= i_step
-            except ValueError:
-                break
-        return thr_fi_c, thr_si_c
-
-    def bisection_costes(self, fi, si, scale_max=255):
-        """
-        Finds the Costes Automatic Threshold for colocalization using a bisection algorithm.
-        Candidate thresholds are selected from within a window of possible intensities,
-        this window is narrowed based on the R value of each tested candidate.
-        We're looking for the first point below 0, and R value can become highly variable
-        at lower thresholds in some samples. Therefore the candidate tested in each
-        loop is 1/6th of the window size below the maximum value (as opposed to the midpoint).
-        """
-
-        non_zero = (fi > 0) | (si > 0)
-        xvar = numpy.var(fi[non_zero], axis=0, ddof=1)
-        yvar = numpy.var(si[non_zero], axis=0, ddof=1)
-
-        xmean = numpy.mean(fi[non_zero], axis=0)
-        ymean = numpy.mean(si[non_zero], axis=0)
-
-        z = fi[non_zero] + si[non_zero]
-        zvar = numpy.var(z, axis=0, ddof=1)
-
-        covar = 0.5 * (zvar - (xvar + yvar))
-
-        denom = 2 * covar
-        num = (yvar - xvar) + numpy.sqrt(
-            (yvar - xvar) * (yvar - xvar) + 4 * (covar * covar)
-        )
-        a = num / denom
-        b = ymean - a * xmean
-
-        # Initialise variables
-        left = 1
-        right = scale_max
-        mid = ((right - left) // (6/5)) + left
-        lastmid = 0
-        # Marks the value with the last positive R value.
-        valid = 1
-
-        while lastmid != mid:
-            thr_fi_c = mid / scale_max
-            thr_si_c = (a * thr_fi_c) + b
-            combt = (fi < thr_fi_c) | (si < thr_si_c)
-            if numpy.count_nonzero(combt) <= 2:
-                # Can't run pearson with only 2 values.
-                left = mid - 1
-            else:
-                try:
-                    costReg, _ = scipy.stats.pearsonr(fi[combt], si[combt])
-                    if costReg < 0:
-                        left = mid - 1
-                    elif costReg >= 0:
-                        right = mid + 1
-                        valid = mid
-                except ValueError:
-                    # Catch misc Pearson errors with low sample numbers
-                    left = mid - 1
-            lastmid = mid
-            if right - left > 6:
-                mid = ((right - left) // (6 / 5)) + left
-            else:
-                mid = ((right - left) // 2) + left
-
-        thr_fi_c = (valid - 1) / scale_max
-        thr_si_c = (a * thr_fi_c) + b
-
-        return thr_fi_c, thr_si_c
+        return self.threshold_percentage.value
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for all measurements made by this module"""
@@ -1791,12 +911,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            F_CORRELATION_FORMAT % (first_image, second_image),
+                            MeasurementFormat.CORRELATION_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_SLOPE_FORMAT % (first_image, second_image),
+                            MeasurementFormat.SLOPE_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1804,17 +924,17 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            F_OVERLAP_FORMAT % (first_image, second_image),
+                            MeasurementFormat.OVERLAP_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_K_FORMAT % (first_image, second_image),
+                            MeasurementFormat.K_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_K_FORMAT % (second_image, first_image),
+                            MeasurementFormat.K_FORMAT.value % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1822,12 +942,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            F_MANDERS_FORMAT % (first_image, second_image),
+                            MeasurementFormat.MANDERS_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_MANDERS_FORMAT % (second_image, first_image),
+                            MeasurementFormat.MANDERS_FORMAT.value % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1836,12 +956,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            F_RWC_FORMAT % (first_image, second_image),
+                            MeasurementFormat.RWC_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_RWC_FORMAT % (second_image, first_image),
+                            MeasurementFormat.RWC_FORMAT.value % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1849,12 +969,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            F_COSTES_FORMAT % (first_image, second_image),
+                            MeasurementFormat.COSTES_FORMAT.value % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            F_COSTES_FORMAT % (second_image, first_image),
+                            MeasurementFormat.COSTES_FORMAT.value % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1866,7 +986,7 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                F_CORRELATION_FORMAT % (first_image, second_image),
+                                MeasurementFormat.CORRELATION_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             )
                         ]
@@ -1874,17 +994,17 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                F_OVERLAP_FORMAT % (first_image, second_image),
+                                MeasurementFormat.OVERLAP_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                F_K_FORMAT % (first_image, second_image),
+                                MeasurementFormat.K_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                F_K_FORMAT % (second_image, first_image),
+                                MeasurementFormat.K_FORMAT.value % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1892,12 +1012,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                F_MANDERS_FORMAT % (first_image, second_image),
+                                MeasurementFormat.MANDERS_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                F_MANDERS_FORMAT % (second_image, first_image),
+                                MeasurementFormat.MANDERS_FORMAT.value % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1905,12 +1025,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                F_RWC_FORMAT % (first_image, second_image),
+                                MeasurementFormat.RWC_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                F_RWC_FORMAT % (second_image, first_image),
+                                MeasurementFormat.RWC_FORMAT.value % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1918,12 +1038,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                F_COSTES_FORMAT % (first_image, second_image),
+                                MeasurementFormat.COSTES_FORMAT.value % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                F_COSTES_FORMAT % (second_image, first_image),
+                                MeasurementFormat.COSTES_FORMAT.value % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -2022,7 +1142,7 @@ You can set a different threshold for each image selected in the module.
             variable_revision_number = 4
         if variable_revision_number == 4:
             # Add costes mode switch
-            setting_values += [M_FASTER]
+            setting_values += [CostesMethod.FASTER.value]
             variable_revision_number = 5
 
         if variable_revision_number == 5:

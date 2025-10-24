@@ -8,13 +8,13 @@ from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
 from cellprofiler_core.setting.text import Integer, Float
-from cellprofiler.modules.threshold import TM_MANUAL, TM_MEASUREMENT
 
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
 from cellprofiler_library.modules import identifyprimaryobjects
+import cellprofiler_library.opts.threshold as ThresholdOpts
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -1080,10 +1080,10 @@ If "*{NO}*" is selected, the following settings are used:
             self.x_name.value, must_be_grayscale=True
         )
 
-        if self.threshold.threshold_operation == TM_MANUAL:
+        if self.threshold.threshold_operation == ThresholdOpts.Method.MANUAL:
             predefined_threshold = self.threshold.manual_threshold.value
             predefined_threshold = predefined_threshold
-        elif self.threshold.threshold_operation == TM_MEASUREMENT:
+        elif self.threshold.threshold_operation == ThresholdOpts.Method.MEASUREMENT:
             predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
                     self.threshold.thresholding_measurement.value
@@ -1092,27 +1092,24 @@ If "*{NO}*" is selected, the following settings are used:
         else:
             predefined_threshold = None
 
-        if self.threshold.threshold_scope == "Global":
+        if self.threshold.threshold_scope == ThresholdOpts.Scope.GLOBAL:
             if (
-                self.threshold.global_operation == "Otsu"
-                and self.threshold.two_class_otsu == "Three classes"
+                self.threshold.global_operation == ThresholdOpts.Method.OTSU
+                and self.threshold.two_class_otsu == ThresholdOpts.OtsuMethod.THREE_CLASS
             ):
-                threshold_method = "multiotsu"
+                threshold_method = ThresholdOpts.Method.MULTI_OTSU
             else:
-                threshold_method = self.convert_setting(
-                    self.threshold.global_operation.value
-                )
-        elif self.threshold.threshold_scope == "Adaptive":
+                threshold_method = self.threshold.global_operation.value
+        elif self.threshold.threshold_scope == ThresholdOpts.Scope.ADAPTIVE:
             if (
-                self.threshold.local_operation == "Otsu"
-                and self.threshold.two_class_otsu == "Three classes"
+                self.threshold.local_operation == ThresholdOpts.Method.OTSU
+                and self.threshold.two_class_otsu == ThresholdOpts.OtsuMethod.THREE_CLASS
             ):
-                threshold_method = "multiotsu"
+                threshold_method = ThresholdOpts.Method.MULTI_OTSU
             else:
-                threshold_method = self.convert_setting(
-                    self.threshold.local_operation.value
-                )
-
+                threshold_method = self.threshold.local_operation.value
+        else:
+            raise NotImplementedError(f"Unimplemented threshold scope {self.threshold.threshold_scope}")
         (
             labeled_image,
             unedited_labels,
@@ -1143,7 +1140,7 @@ If "*{NO}*" is selected, the following settings are used:
             lower_outlier_fraction=self.threshold.lower_outlier_fraction.value,
             upper_outlier_fraction=self.threshold.upper_outlier_fraction.value,
             averaging_method=self.threshold.averaging_method.value,
-            variance_method=self.convert_setting(self.threshold.variance_method.value),
+            variance_method=self.threshold.variance_method.value,
             number_of_deviations=self.threshold.number_of_deviations.value,
             automatic=self.basic,
             exclude_size=self.exclude_size.value,

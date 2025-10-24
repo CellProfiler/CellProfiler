@@ -1,15 +1,27 @@
-from typing import Literal, Annotated, Optional
 import numpy
 import skimage
 import scipy
 import centrosome
 import centrosome.propagate
+from typing import Annotated, Optional, Union, Tuple
 from pydantic import validate_call, ConfigDict, Field
-from ..types import Image2DGrayscale, Image2DGrayscaleMask, ObjectSegmentation
+from cellprofiler_library.types import Image2DGrayscale, Image2DGrayscaleMask, ObjectSegmentation, ImageGrayscale, ImageGrayscaleMask
 from cellprofiler_library.modules import threshold
 from cellprofiler_library.functions.object_processing import filter_labels
 from cellprofiler_library.opts.identifysecondaryobjects import SecondaryObjectMethod
 import cellprofiler_library.opts.threshold as ThresholdOpts
+
+
+CP_Output_Type = Tuple[
+    Union[float, ImageGrayscale],
+    Union[float, ImageGrayscale],
+    Optional[float],
+    ImageGrayscaleMask,
+    float,
+    ObjectSegmentation,
+    ObjectSegmentation,
+    ObjectSegmentation
+]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifysecondaryobjects(
@@ -18,9 +30,9 @@ def identifysecondaryobjects(
     unedited_objects:           Annotated[Optional[ObjectSegmentation], Field(description="Unedited object segmentations")] = None,
     mask:                       Annotated[Optional[Image2DGrayscaleMask], Field(description="Input mask")] = None,
     secondary_object_method:    Annotated[SecondaryObjectMethod , Field(description="Method to determine edges of secondary objects")] = SecondaryObjectMethod.PROPAGATION,
-    threshold_method:           Annotated[str, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY, #TODO: change type to enum from threshold module
-    threshold_scope:            Annotated[str, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL, #TODO: change type to enum from threshold module
-    assign_middle_to_foreground:Annotated[str, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND, #TODO: change type to enum from threshold module
+    threshold_method:           Annotated[ThresholdOpts.Method, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY, 
+    threshold_scope:            Annotated[ThresholdOpts.Scope, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL, 
+    assign_middle_to_foreground:Annotated[ThresholdOpts.Assignment, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND, 
     log_transform:              Annotated[bool, Field(description="Apply log transform to image before thresholding")] = False,
     threshold_correction_factor:Annotated[float, Field(description="Multiply threshold by this factor")] = 1.0,
     threshold_min:              Annotated[float, Field(description="Minimum threshold value")] = 0.0,
@@ -29,8 +41,8 @@ def identifysecondaryobjects(
     threshold_smoothing:        Annotated[float, Field(description="Smoothing factor for thresholding")] = 0.0,
     lower_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for lower outlier detection")] = 0.05,
     upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
-    averaging_method:           Annotated[str, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, #TODO: change type to enum from threshold module
-    variance_method:            Annotated[str, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, #TODO: change type to enum from threshold module
+    averaging_method:           Annotated[ThresholdOpts.AveragingMethod, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, 
+    variance_method:            Annotated[ThresholdOpts.VarianceMethod, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, 
     number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
     predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = None,
     distance_to_dilate:         Annotated[int, Field(description="Number of pixels by which to expand the primary objects")] = 10,
@@ -38,7 +50,7 @@ def identifysecondaryobjects(
     discard_edge:               Annotated[bool, Field(description="Discard objects touching the edge of the image")] = False,
     regularization_factor:      Annotated[float, Field(description="Regularization factor")] = 0.05,
     return_cp_output:           Annotated[bool, Field(description="Return CellProfiler output")] = False,
-):
+    ) -> Union[ObjectSegmentation, CP_Output_Type]:
     if image.shape != objects.shape:
         raise ValueError(
             f"""

@@ -1,13 +1,13 @@
-import centrosome.cpmorphology
 import numpy
+from numpy.typing import NDArray
 import scipy.ndimage
 import skimage.morphology
-import cellprofiler.utilities.morphology
-import mahotas
 import matplotlib.cm
-from numpy.typing import NDArray
-from typing import Optional, Literal, Tuple
-from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary, ObjectSegmentation, StructuringElement
+import mahotas
+import centrosome.cpmorphology
+import cellprofiler.utilities.morphology
+from typing import Optional, Literal, Tuple, Union
+from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
 
@@ -663,20 +663,27 @@ def filter_on_border(labeled_image, mask=None):
 
 
 def separate_neighboring_objects(
-    image,
-    labeled_image,
-    mask=None,
+    image: Image2DGrayscale,
+    labeled_image: ObjectSegmentation,
+    mask: Optional[Image2DGrayscaleMask] = None,
     unclump_method: UnclumpMethod = UnclumpMethod.INTENSITY,
     watershed_method: WatershedMethod = WatershedMethod.INTENSITY,
     fill_holes_method: FillHolesMethod = FillHolesMethod.THRESHOLDING,
-    filter_size=None,
-    min_size=10,
-    max_size=40,
-    low_res_maxima=False,
-    maxima_suppression_size=7,
-    automatic_suppression=False,
-    return_cp_output=False,
-):
+    filter_size: Optional[float] = None,
+    min_size: int = 10,
+    max_size: int = 40,
+    low_res_maxima: bool = False,
+    maxima_suppression_size: float = 7,
+    automatic_suppression: bool = False,
+    return_cp_output: bool = False,
+    ) -> Union[
+        ObjectSegmentation,
+        Tuple[
+            ObjectSegmentation,
+            ObjectSegmentation,
+            float
+        ]
+    ]:
 
     if unclump_method == UnclumpMethod.NONE or watershed_method == WatershedMethod.NONE:
         if return_cp_output:
@@ -888,7 +895,7 @@ def size_similarly(labels, secondary):
     mask[:i_max, :j_max] = 1
     return result, mask
 
-def outline(labels):
+def outline(labels: ObjectSegmentation) -> ObjectSegmentation:
     """Given a label matrix, return a matrix of the outlines of the labeled objects
     
     If a pixel is not zero and has at least one neighbor with a different

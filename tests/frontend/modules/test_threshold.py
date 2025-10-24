@@ -1298,7 +1298,7 @@ def test_threshold_otsu3_image_log():
     t_expected = cellprofiler_library.functions.image_processing.get_global_threshold(
         data,
         mask = mask,
-        threshold_method = "multiotsu",
+        threshold_method = "Multi-Otsu",
         log_transform = True,
     )
 

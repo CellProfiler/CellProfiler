@@ -1,3 +1,7 @@
+from centrosome import cpmorphology
+import numpy
+import scipy
+from typing import Annotated, Optional, Union, Tuple
 # from cellprofiler_library.functions.object_processing import identify_primary_objects
 from cellprofiler_library.modules import threshold
 from cellprofiler_library.functions.object_processing import (
@@ -5,23 +9,36 @@ from cellprofiler_library.functions.object_processing import (
     filter_on_border,
     filter_on_size
 )
-from centrosome import cpmorphology
-import numpy
-import scipy
-from typing import Annotated, Optional, Dict, Any, Union
-from pydantic import validate_call, ConfigDict, AfterValidator, Field
-from numpy.typing import NDArray
-from ..types import Image2DGrayscale, Image2DGrayscaleMask
+from pydantic import validate_call, ConfigDict, Field
+from cellprofiler_library.types import Image2DGrayscale, Image2DGrayscaleMask, ObjectSegmentation, ImageGrayscale, ImageGrayscaleMask
 import cellprofiler_library.opts.threshold as ThresholdOpts
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
+
+CP_Output_Type = Tuple[
+    ObjectSegmentation,
+    ObjectSegmentation,
+    ObjectSegmentation,
+    ObjectSegmentation,
+    ObjectSegmentation,
+    ObjectSegmentation,
+    float,
+    int,
+    Union[float, ImageGrayscale],
+    Union[float, ImageGrayscale],
+    Optional[float],
+    ImageGrayscaleMask,
+    float,
+    float
+]
+
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifyprimaryobjects(
     image:                      Annotated[Image2DGrayscale, Field(description="Input image")],
     mask:                       Annotated[Optional[Image2DGrayscaleMask], Field(description="Input mask")] = None,      
-    threshold_method:           Annotated[str, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY, #TODO: change type to enum from threshold module
-    threshold_scope:            Annotated[str, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL, #TODO: change type to enum from threshold module
-    assign_middle_to_foreground:Annotated[str, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND, #TODO: change type to enum from threshold module
+    threshold_method:           Annotated[ThresholdOpts.Method, Field(description="Thresholding method")] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
+    threshold_scope:            Annotated[ThresholdOpts.Scope, Field(description="Thresholding scope")] = ThresholdOpts.Scope.GLOBAL,
+    assign_middle_to_foreground:Annotated[ThresholdOpts.Assignment, Field(description="Assign middle to foreground")] = ThresholdOpts.Assignment.BACKGROUND,
     log_transform:              Annotated[bool, Field(description="Apply log transform to image before thresholding")] = False,
     threshold_correction_factor:Annotated[float, Field(description="Multiply threshold by this factor")] = 1.0,
     threshold_min:              Annotated[float, Field(description="Minimum threshold value")] = 0.0,
@@ -30,8 +47,8 @@ def identifyprimaryobjects(
     threshold_smoothing:        Annotated[float, Field(description="Smoothing factor for thresholding")] = 0.0,
     lower_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for lower outlier detection")] = 0.05,
     upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
-    averaging_method:           Annotated[str, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, #TODO: change type to enum from threshold module
-    variance_method:            Annotated[str, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, #TODO: change type to enum from threshold module
+    averaging_method:           Annotated[ThresholdOpts.AveragingMethod, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN,
+    variance_method:            Annotated[ThresholdOpts.VarianceMethod, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
     number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
     automatic:                  Annotated[bool, Field(description="Automatically determine thresholding parameters")] = False,
     exclude_size:               Annotated[bool, Field(description="Exclude objects smaller than this size")] = True,
@@ -48,7 +65,7 @@ def identifyprimaryobjects(
     maximum_object_count:       Annotated[Optional[int], Field(description="Maximum number of objects to threshold")] = None,
     predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = None,
     return_cp_output:           Annotated[bool, Field(description="Return CellProfiler output")] = False
-):
+) -> Union[ObjectSegmentation, CP_Output_Type]:
     
     if automatic:
         # Define automatic settings by recursively calling identifyprimaryobjects and defining 
@@ -77,9 +94,9 @@ def identifyprimaryobjects(
     final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
         image=image,
         mask=mask,
-        threshold_scope=threshold_scope.casefold(),
-        threshold_method=threshold_method.casefold(),
-        assign_middle_to_foreground=assign_middle_to_foreground.casefold(),
+        threshold_scope=threshold_scope,
+        threshold_method=threshold_method,
+        assign_middle_to_foreground=assign_middle_to_foreground,
         log_transform=log_transform,
         threshold_correction_factor=threshold_correction_factor,
         threshold_min=threshold_min,
@@ -88,8 +105,8 @@ def identifyprimaryobjects(
         smoothing=threshold_smoothing,
         lower_outlier_fraction=lower_outlier_fraction,
         upper_outlier_fraction=upper_outlier_fraction,
-        averaging_method=averaging_method.casefold(),
-        variance_method=variance_method.casefold(),
+        averaging_method=averaging_method,
+        variance_method=variance_method,
         number_of_deviations=number_of_deviations,
         volumetric=False,  # IdentifyPrimaryObjects does not support 3D
         predefined_threshold=predefined_threshold,
@@ -184,7 +201,7 @@ def identifyprimaryobjects(
             border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
             size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
             object_count = 0
-
+            
     if return_cp_output:
         return (
             labeled_image,

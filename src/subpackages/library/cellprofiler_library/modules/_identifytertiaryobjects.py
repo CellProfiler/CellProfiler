@@ -1,16 +1,22 @@
 import numpy
-from cellprofiler_library.functions.object_processing import outline
-from typing import Annotated, Optional
-from ..types import ObjectSegmentation
+from typing import Annotated, Union, Tuple
 from pydantic import validate_call, ConfigDict, Field
+from cellprofiler_library.functions.object_processing import outline
+from cellprofiler_library.types import ObjectSegmentation
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def identifytertiaryobjects(
-        primary_labels:     Annotated[Optional[ObjectSegmentation], Field(description="Primary object segmentations")] = None,
-        secondary_labels:   Annotated[Optional[ObjectSegmentation], Field(description="Secondary object segmentations")] = None,
+        primary_labels:     Annotated[ObjectSegmentation, Field(description="Primary object segmentations")] = None,
+        secondary_labels:   Annotated[ObjectSegmentation, Field(description="Secondary object segmentations")] = None,
         shrink_primary:     Annotated[bool, Field(description="Shrink the primary objects")] = True,
         return_cp_output:   Annotated[bool, Field(description="Return CellProfiler output")] = False
-):
+) -> Union[
+    ObjectSegmentation,
+    Tuple[
+        ObjectSegmentation,
+        ObjectSegmentation
+    ]
+]:
     # If size/shape differences were too extreme, raise an error.
     if primary_labels.shape != secondary_labels.shape:
         raise ValueError(

@@ -24,6 +24,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float, LabelName
 
 from cellprofiler_library.modules import identifysecondaryobjects
+import cellprofiler_library.opts.threshold as ThresholdOpts
 
 
 __doc__ = """\
@@ -551,26 +552,23 @@ segmentation.""",
         else:
             predefined_threshold = None
 
-        if self.threshold.threshold_scope == "Global":
+        if self.threshold.threshold_scope == ThresholdOpts.Scope.GLOBAL:
             if (
-                self.threshold.global_operation == "Otsu"
-                and self.threshold.two_class_otsu == "Three classes"
+                self.threshold.global_operation == ThresholdOpts.Method.OTSU
+                and self.threshold.two_class_otsu == ThresholdOpts.OtsuMethod.THREE_CLASS
             ):
-                threshold_method = "multiotsu"
+                threshold_method = ThresholdOpts.Method.MULTI_OTSU
             else:
-                threshold_method = self.convert_setting(
-                    self.threshold.global_operation.value
-                )
-        elif self.threshold.threshold_scope == "Adaptive":
+                threshold_method = self.threshold.global_operation.value
+
+        elif self.threshold.threshold_scope == ThresholdOpts.Scope.ADAPTIVE:
             if (
-                self.threshold.local_operation == "Otsu"
-                and self.threshold.two_class_otsu == "Three classes"
+                self.threshold.local_operation == ThresholdOpts.Method.OTSU
+                and self.threshold.two_class_otsu == ThresholdOpts.OtsuMethod.THREE_CLASS
             ):
-                threshold_method = "multiotsu"
+                threshold_method = ThresholdOpts.Method.MULTI_OTSU
             else:
-                threshold_method = self.convert_setting(
-                    self.threshold.local_operation.value
-                )
+                threshold_method = self.threshold.local_operation.value
 
         (
             final_threshold,
@@ -599,7 +597,7 @@ segmentation.""",
             lower_outlier_fraction=self.threshold.lower_outlier_fraction.value,
             upper_outlier_fraction=self.threshold.upper_outlier_fraction.value,
             averaging_method=self.threshold.averaging_method.value,
-            variance_method=self.convert_setting(self.threshold.variance_method.value),
+            variance_method=self.threshold.variance_method.value,
             number_of_deviations=self.threshold.number_of_deviations.value,
             predefined_threshold=predefined_threshold if predefined_threshold else None,
             distance_to_dilate=self.distance_to_dilate.value,

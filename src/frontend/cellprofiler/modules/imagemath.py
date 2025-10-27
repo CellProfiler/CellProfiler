@@ -99,55 +99,55 @@ Select the operation to perform. Note that if more than two images are
 chosen, then operations will be performed sequentially from first to
 last, e.g., for “Divide”, (Image1 / Image2) / Image3
 
--  *%(O_ADD)s:* Adds the first image to the second, and so on.
--  *%(O_SUBTRACT)s:* Subtracts the second image from the first.
--  *%(O_DIFFERENCE)s:* The absolute value of the difference between the
+-  *{O_ADD}:* Adds the first image to the second, and so on.
+-  *{O_SUBTRACT}:* Subtracts the second image from the first.
+-  *{O_DIFFERENCE}:* The absolute value of the difference between the
    first and second images.
--  *%(O_MULTIPLY)s:* Multiplies the first image by the second.
--  *%(O_DIVIDE)s:* Divides the first image by the second.
--  *%(O_AVERAGE)s:* Calculates the mean intensity of the images loaded
+-  *{O_MULTIPLY}:* Multiplies the first image by the second.
+-  *{O_DIVIDE}:* Divides the first image by the second.
+-  *{O_AVERAGE}:* Calculates the mean intensity of the images loaded
    in the module. This is equivalent to the Add option divided by the
    number of images loaded by this module. If you would like to average
    all of the images in an entire pipeline, i.e., across cycles, you
    should instead use the **CorrectIlluminationCalculate** module and
    choose the *All* (vs. *Each*) option.
--  *%(O_MINIMUM)s:* Returns the element-wise minimum value at each
+-  *{O_MINIMUM}:* Returns the element-wise minimum value at each
    pixel location.
--  *%(O_MAXIMUM)s:* Returns the element-wise maximum value at each
+-  *{O_MAXIMUM}:* Returns the element-wise maximum value at each
    pixel location.
--  *%(O_STDEV)s:* Returns the element-wise standard deviation value at each
+-  *{O_STDEV}:* Returns the element-wise standard deviation value at each
    pixel location.   
--  *%(O_INVERT)s:* Subtracts the image intensities from 1. This makes
+-  *{O_INVERT}:* Subtracts the image intensities from 1. This makes
    the darkest color the brightest and vice-versa. Note that if a
    mask has been applied to the image, the mask will also be inverted.
--  *%(O_LOG_TRANSFORM)s:* Log transforms each pixel’s intensity. The
+-  *{O_LOG_TRANSFORM}:* Log transforms each pixel’s intensity. The
    actual function is log\ :sub:`2`\ (image + 1), transforming values
    from 0 to 1 into values from 0 to 1.
--  *%(O_LOG_TRANSFORM_LEGACY)s:* Log\ :sub:`2` transform for backwards
+-  *{O_LOG_TRANSFORM_LEGACY}:* Log\ :sub:`2` transform for backwards
    compatibility.
--  *%(O_NONE)s:* This option is useful if you simply want to select some
+-  *{O_NONE}:* This option is useful if you simply want to select some
    of the later options in the module, such as adding, multiplying, or
    exponentiating your image by a constant.
 
 The following are operations that produce binary images. In a binary
 image, the foreground has a truth value of “true” (ones) and the background has
-a truth value of “false” (zeros). The operations, *%(O_OR)s, %(O_AND)s and
-%(O_NOT)s* will convert the input images to binary by changing all zero
+a truth value of “false” (zeros). The operations, *{O_OR}, {O_AND} and
+{O_NOT}* will convert the input images to binary by changing all zero
 values to background (false) and all other values to foreground (true).
 
--  *%(O_AND)s:* a pixel in the output image is in the foreground only
+-  *{O_AND}:* a pixel in the output image is in the foreground only
    if all corresponding pixels in the input images are also in the
    foreground.
--  *%(O_OR)s:* a pixel in the output image is in the foreground if a
+-  *{O_OR}:* a pixel in the output image is in the foreground if a
    corresponding pixel in any of the input images is also in the
    foreground.
--  *%(O_NOT)s:* the foreground of the input image becomes the
+-  *{O_NOT}:* the foreground of the input image becomes the
    background of the output image and vice-versa.
--  *%(O_EQUALS)s:* a pixel in the output image is in the foreground if
+-  *{O_EQUALS}:* a pixel in the output image is in the foreground if
    the corresponding pixels in the input images have the same value.
 
-Note that *%(O_INVERT)s*, *%(O_LOG_TRANSFORM)s*,
-*%(O_LOG_TRANSFORM_LEGACY)s* and *%(O_NONE)s* operate on only a
+Note that *{O_INVERT}*, *{O_LOG_TRANSFORM}*,
+*{O_LOG_TRANSFORM_LEGACY}* and *{O_NONE}* operate on only a
 single image.
 """.format(
     **{
@@ -263,10 +263,10 @@ Enter a name for the resulting image.""",
                 doc="""\
 You can perform math operations using two images or you can use a
 measurement for one of the operands. For instance, to divide the
-intensity of one image by another, choose *%(IM_IMAGE)s* for both and
+intensity of one image by another, choose *{IM_IMAGE}* for both and
 pick the respective images. To divide the intensity of an image by its
 median intensity, use **MeasureImageIntensity** prior to this module to
-calculate the median intensity, then select *%(IM_MEASUREMENT)s* and
+calculate the median intensity, then select *{IM_MEASUREMENT}* and
 use the median intensity measurement as the denominator.
 """.format(
     **{

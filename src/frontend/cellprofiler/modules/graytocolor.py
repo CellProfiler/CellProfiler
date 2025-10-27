@@ -83,22 +83,22 @@ class GrayToColor(Module):
             doc="""\
 This module can use one of two color schemes to combine images:
 
--  *%(SCHEME_RGB)s*: Each input image determines the intensity of one
+-  *{SCHEME_RGB}*: Each input image determines the intensity of one
    of the color channels: red, green, and blue.
--  *%(SCHEME_CMYK)s*: Three of the input images are combined to
+-  *{SCHEME_CMYK}*: Three of the input images are combined to
    determine the colors (cyan, magenta, and yellow) and a fourth is used
    only for brightness. The cyan image adds equally to the green and
    blue intensities. The magenta image adds equally to the red and blue
    intensities. The yellow image adds equally to the red and green
    intensities.
--  *%(SCHEME_STACK)s*: The channels are stacked in the order listed,
+-  *{SCHEME_STACK}*: The channels are stacked in the order listed,
    from top to bottom. An arbitrary number of channels is allowed.
 
    For example, you could create a 5-channel image by providing
    5 grayscale images. The first grayscale image you provide will fill
    the first channel, the second grayscale image you provide will fill
    the second channel, and so on.
--  *%(SCHEME_COMPOSITE)s*: A color is assigned to each grayscale image.
+-  *{SCHEME_COMPOSITE}*: A color is assigned to each grayscale image.
    Each grayscale image is converted to color by multiplying the
    intensity by the color and the resulting color images are added
    together. An arbitrary number of channels can be composited into a
@@ -133,7 +133,7 @@ in clipping.""",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Select the input image to be displayed in red.
 """.format(
@@ -146,7 +146,7 @@ Select the input image to be displayed in red.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Select the input image to be displayed in green.
 """.format(
@@ -159,7 +159,7 @@ Select the input image to be displayed in green.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Select the input image to be displayed in blue.
 """.format(
@@ -178,7 +178,7 @@ Select the input image to be displayed in blue.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Enter the relative weight for the red image. If all relative weights are
 equal, all three colors contribute equally in the final image. To weight
@@ -194,7 +194,7 @@ weights.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Enter the relative weight for the green image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
@@ -210,7 +210,7 @@ weights.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_RGB)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_RGB}" is selected as the color scheme)*
 
 Enter the relative weight for the blue image. If all relative weights
 are equal, all three colors contribute equally in the final image. To
@@ -230,7 +230,7 @@ weights.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Select the input image to be displayed in cyan.
 """.format(
@@ -243,7 +243,7 @@ Select the input image to be displayed in cyan.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Select the input image to be displayed in magenta.
 """.format(
@@ -256,7 +256,7 @@ Select the input image to be displayed in magenta.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Select the input image to be displayed in yellow.
 """.format(
@@ -269,7 +269,7 @@ Select the input image to be displayed in yellow.
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Select the input image that will determine each pixel's brightness.
 """.format(
@@ -282,7 +282,7 @@ Select the input image that will determine each pixel's brightness.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Enter the relative weight for the cyan image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
@@ -298,7 +298,7 @@ weights.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Enter the relative weight for the magenta image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
@@ -314,7 +314,7 @@ weights.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Enter the relative weight for the yellow image. If all relative weights
 are equal, all colors contribute equally in the final image. To weight
@@ -330,7 +330,7 @@ weights.
             value=1,
             minval=0,
             doc="""\
-*(Used only if "%(SCHEME_CMYK)s" is selected as the color scheme)*
+*(Used only if "{SCHEME_CMYK}" is selected as the color scheme)*
 
 Enter the relative weight for the brightness image. If all relative
 weights are equal, all colors contribute equally in the final image. To
@@ -368,7 +368,7 @@ weights.
                 "Image name",
                 "None",
                 doc="""\
-*(Used only if "%(SCHEME_STACK)s" or "%(SCHEME_COMPOSITE)s" is chosen)*
+*(Used only if "{SCHEME_STACK}" or "{SCHEME_COMPOSITE}" is chosen)*
 
 Select the input image to add to the stacked image.
 """.format(
@@ -382,7 +382,7 @@ Select the input image to add to the stacked image.
                 "Color",
                 default_color,
                 doc="""\
-*(Used only if "%(SCHEME_COMPOSITE)s" is chosen)*
+*(Used only if "{SCHEME_COMPOSITE}" is chosen)*
 
 The color to be assigned to the above image.
 """.format(
@@ -397,7 +397,7 @@ The color to be assigned to the above image.
                 1.0,
                 minval=0.5 / 255,
                 doc="""\
-*(Used only if "%(SCHEME_COMPOSITE)s" is chosen)*
+*(Used only if "{SCHEME_COMPOSITE}" is chosen)*
 
 The weighting of the above image relative to the others. The image’s
 pixel values are multiplied by this weight before assigning the color.

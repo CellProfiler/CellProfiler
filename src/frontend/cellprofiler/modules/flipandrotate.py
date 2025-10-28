@@ -29,6 +29,7 @@ from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
+from cellprofiler_library.modules._flipandrotate import flip_and_rotate
 from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateDirection, RotationCycle, RotationCoordinateAlignmnet, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, IO_ALL, C_ALL
 
 class FlipAndRotate(Module):
@@ -221,115 +222,141 @@ negative as clockwise.""".format(
         pixel_data = image.pixel_data.copy()
         mask = image.mask
 
-        if self.flip_choice != FlipDirection.NONE:
-            if self.flip_choice == FlipDirection.LEFT_TO_RIGHT:
-                i, j = numpy.mgrid[
-                    0 : pixel_data.shape[0], pixel_data.shape[1] - 1 : -1 : -1
-                ]
-            elif self.flip_choice == FlipDirection.TOP_TO_BOTTOM:
-                i, j = numpy.mgrid[
-                    pixel_data.shape[0] - 1 : -1 : -1, 0 : pixel_data.shape[1]
-                ]
-            elif self.flip_choice == FlipDirection.BOTH:
-                i, j = numpy.mgrid[
-                    pixel_data.shape[0] - 1 : -1 : -1, pixel_data.shape[1] - 1 : -1 : -1
-                ]
-            else:
-                raise NotImplementedError(
-                    "Unknown flipping operation: %s" % self.flip_choice.value
-                )
-            mask = mask[i, j]
-            if pixel_data.ndim == 2:
-                pixel_data = pixel_data[i, j]
-            else:
-                pixel_data = pixel_data[i, j, :]
 
-        if self.rotate_choice != RotateDirection.NONE:
-            if self.rotate_choice == RotateDirection.ANGLE:
-                angle = self.angle.value
-            elif self.rotate_choice == RotateDirection.COORDINATES:
-                xdiff = self.second_pixel.x - self.first_pixel.x
-                ydiff = self.second_pixel.y - self.first_pixel.y
-                if self.horiz_or_vert == RotationCoordinateAlignmnet.VERTICALLY:
-                    angle = -numpy.arctan2(ydiff, xdiff) * 180.0 / numpy.pi
-                elif self.horiz_or_vert == RotationCoordinateAlignmnet.HORIZONTALLY:
-                    angle = numpy.arctan2(xdiff, ydiff) * 180.0 / numpy.pi
-                else:
-                    raise NotImplementedError(
-                        "Unknown axis: %s" % self.horiz_or_vert.value
-                    )
-            elif self.rotate_choice == RotateDirection.MOUSE:
-                d = self.get_dictionary()
-                if (
-                    self.how_often == RotationCycle.ONCE
-                    and D_ANGLE in d
-                    and d[D_ANGLE] is not None
-                ):
-                    angle = d[D_ANGLE]
-                else:
-                    angle = workspace.interaction_request(
-                        self, pixel_data, workspace.measurements.image_set_number
-                    )
-                if self.how_often == RotationCycle.ONCE:
-                    d[D_ANGLE] = angle
-            else:
-                raise NotImplementedError(
-                    "Unknown rotation method: %s" % self.rotate_choice.value
-                )
-            rangle = angle * numpy.pi / 180.0
-            mask = scipy.ndimage.rotate(mask.astype(float), angle, reshape=True) > 0.50
-            crop = (
-                scipy.ndimage.rotate(
-                    numpy.ones(pixel_data.shape[:2]), angle, reshape=True
-                )
-                > 0.50
+        ######
+        rotate_angle = self.angle.value
+        state_dict_for_mouse_mode = self.get_dictionary()
+        mouse_mode_cycle = self.how_often.value
+
+        def mouse_interaction_request_handler(pixel_data):
+            return workspace.interaction_request(
+                self, pixel_data, workspace.measurements.image_set_number
             )
-            mask = mask & crop
-            pixel_data = scipy.ndimage.rotate(pixel_data, angle, reshape=True)
-            if self.wants_crop.value:
-                #
-                # We want to find the largest rectangle that fits inside
-                # the crop. The cumulative sum in the i and j direction gives
-                # the length of the rectangle in each direction and
-                # multiplying them gives you the area.
-                #
-                # The left and right halves are symmetric, so we compute
-                # on just two of the quadrants.
-                #
-                half = (numpy.array(crop.shape) / 2).astype(int)
-                #
-                # Operate on the lower right
-                #
-                quartercrop = crop[half[0] :, half[1] :]
-                ci = numpy.cumsum(quartercrop, 0)
-                cj = numpy.cumsum(quartercrop, 1)
-                carea_d = ci * cj
-                carea_d[quartercrop == 0] = 0
-                #
-                # Operate on the upper right by flipping I
-                #
-                quartercrop = crop[crop.shape[0] - half[0] - 1 :: -1, half[1] :]
-                ci = numpy.cumsum(quartercrop, 0)
-                cj = numpy.cumsum(quartercrop, 1)
-                carea_u = ci * cj
-                carea_u[quartercrop == 0] = 0
-                carea = carea_d + carea_u
-                max_carea = numpy.max(carea)
-                max_area = numpy.argwhere(carea == max_carea)[0] + half
-                min_i = max(crop.shape[0] - max_area[0] - 1, 0)
-                max_i = max_area[0] + 1
-                min_j = max(crop.shape[1] - max_area[1] - 1, 0)
-                max_j = max_area[1] + 1
-                ii = numpy.index_exp[min_i:max_i, min_j:max_j]
-                crop = numpy.zeros(pixel_data.shape, bool)
-                crop[ii] = True
-                mask = mask[ii]
-                pixel_data = pixel_data[ii]
-            else:
-                crop = None
-        else:
-            crop = None
-            angle = 0
+        '''
+        # if self.flip_choice != FlipDirection.NONE:
+        #     if self.flip_choice == FlipDirection.LEFT_TO_RIGHT:
+        #         i, j = numpy.mgrid[
+        #             0 : pixel_data.shape[0], pixel_data.shape[1] - 1 : -1 : -1
+        #         ]
+        #     elif self.flip_choice == FlipDirection.TOP_TO_BOTTOM:
+        #         i, j = numpy.mgrid[
+        #             pixel_data.shape[0] - 1 : -1 : -1, 0 : pixel_data.shape[1]
+        #         ]
+        #     elif self.flip_choice == FlipDirection.BOTH:
+        #         i, j = numpy.mgrid[
+        #             pixel_data.shape[0] - 1 : -1 : -1, pixel_data.shape[1] - 1 : -1 : -1
+        #         ]
+        #     else:
+        #         raise NotImplementedError(
+        #             "Unknown flipping operation: %s" % self.flip_choice.value
+        #         )
+        #     mask = mask[i, j]
+        #     if pixel_data.ndim == 2:
+        #         pixel_data = pixel_data[i, j]
+        #     else:
+        #         pixel_data = pixel_data[i, j, :]
+
+        # if self.rotate_choice != RotateDirection.NONE:
+        #     if self.rotate_choice == RotateDirection.ANGLE:
+        #         angle = self.angle.value
+        #     elif self.rotate_choice == RotateDirection.COORDINATES:
+        #         xdiff = self.second_pixel.x - self.first_pixel.x
+        #         ydiff = self.second_pixel.y - self.first_pixel.y
+        #         if self.horiz_or_vert == RotationCoordinateAlignmnet.VERTICALLY:
+        #             angle = -numpy.arctan2(ydiff, xdiff) * 180.0 / numpy.pi
+        #         elif self.horiz_or_vert == RotationCoordinateAlignmnet.HORIZONTALLY:
+        #             angle = numpy.arctan2(xdiff, ydiff) * 180.0 / numpy.pi
+        #         else:
+        #             raise NotImplementedError(
+        #                 "Unknown axis: %s" % self.horiz_or_vert.value
+        #             )
+        #     elif self.rotate_choice == RotateDirection.MOUSE:
+        #         d = self.get_dictionary()
+        #         if (
+        #             self.how_often == RotationCycle.ONCE
+        #             and D_ANGLE in d
+        #             and d[D_ANGLE] is not None
+        #         ):
+        #             angle = d[D_ANGLE]
+        #         else:
+        #             angle = workspace.interaction_request(
+        #                 self, pixel_data, workspace.measurements.image_set_number
+        #             )
+        #         if self.how_often == RotationCycle.ONCE:
+        #             d[D_ANGLE] = angle
+        #     else:
+        #         raise NotImplementedError(
+        #             "Unknown rotation method: %s" % self.rotate_choice.value
+        #         )
+        #     rangle = angle * numpy.pi / 180.0
+        #     mask = scipy.ndimage.rotate(mask.astype(float), angle, reshape=True) > 0.50
+        #     crop = (
+        #         scipy.ndimage.rotate(
+        #             numpy.ones(pixel_data.shape[:2]), angle, reshape=True
+        #         )
+        #         > 0.50
+        #     )
+        #     mask = mask & crop
+        #     pixel_data = scipy.ndimage.rotate(pixel_data, angle, reshape=True)
+        #     if self.wants_crop.value:
+        #         #
+        #         # We want to find the largest rectangle that fits inside
+        #         # the crop. The cumulative sum in the i and j direction gives
+        #         # the length of the rectangle in each direction and
+        #         # multiplying them gives you the area.
+        #         #
+        #         # The left and right halves are symmetric, so we compute
+        #         # on just two of the quadrants.
+        #         #
+        #         half = (numpy.array(crop.shape) / 2).astype(int)
+        #         #
+        #         # Operate on the lower right
+        #         #
+        #         quartercrop = crop[half[0] :, half[1] :]
+        #         ci = numpy.cumsum(quartercrop, 0)
+        #         cj = numpy.cumsum(quartercrop, 1)
+        #         carea_d = ci * cj
+        #         carea_d[quartercrop == 0] = 0
+        #         #
+        #         # Operate on the upper right by flipping I
+        #         #
+        #         quartercrop = crop[crop.shape[0] - half[0] - 1 :: -1, half[1] :]
+        #         ci = numpy.cumsum(quartercrop, 0)
+        #         cj = numpy.cumsum(quartercrop, 1)
+        #         carea_u = ci * cj
+        #         carea_u[quartercrop == 0] = 0
+        #         carea = carea_d + carea_u
+        #         max_carea = numpy.max(carea)
+        #         max_area = numpy.argwhere(carea == max_carea)[0] + half
+        #         min_i = max(crop.shape[0] - max_area[0] - 1, 0)
+        #         max_i = max_area[0] + 1
+        #         min_j = max(crop.shape[1] - max_area[1] - 1, 0)
+        #         max_j = max_area[1] + 1
+        #         ii = numpy.index_exp[min_i:max_i, min_j:max_j]
+        #         crop = numpy.zeros(pixel_data.shape, bool)
+        #         crop[ii] = True
+        #         mask = mask[ii]
+        #         pixel_data = pixel_data[ii]
+        #     else:
+        #         crop = None
+        # else:
+        #     crop = None
+        #     angle = 0
+        '''
+        pixel_data, mask, crop, angle = flip_and_rotate(
+            pixel_data, 
+            mask, 
+            self.flip_choice, 
+            self.rotate_choice, 
+            rotate_angle, 
+            (self.first_pixel.x, self.first_pixel.y),
+            (self.second_pixel.x, self.second_pixel.y), 
+            self.horiz_or_vert, 
+            state_dict_for_mouse_mode, 
+            mouse_mode_cycle,
+            mouse_interaction_request_handler,
+            wants_crop=self.wants_crop.value,
+        )
         output_image = Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(

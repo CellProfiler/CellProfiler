@@ -2,28 +2,30 @@ import warnings
 
 import numpy
 import centrosome
-
+from pydantic import Field, validate_call, ConfigDict
+from typing import Annotated, Optional
 from ..functions.image_processing import (
     enhance_edges_sobel,
     enhance_edges_log,
     enhance_edges_prewitt,
     enhance_edges_canny,
 )
+from ..opts.enhanceedges import EdgeFindingMethod, EdgeDirection
+from ..types import Image2DGrayscale, Image2DGrayscaleMask
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def enhanceedges(
-    image,
-    mask=None,
-    method="sobel",
-    automatic_threshold=True,
-    direction="all",
-    automatic_gaussian=True,
-    sigma=10,
-    manual_threshold=0.2,
-    threshold_adjustment_factor=1.0,
-    automatic_low_threshold=True,
-    low_threshold=0.1,
-):
+    image:                          Annotated[Image2DGrayscale, Field(description="Input image")],
+    mask:                           Annotated[Optional[Image2DGrayscaleMask], Field(description="Mask of the input image")] = None,
+    method:                         Annotated[EdgeFindingMethod, Field(description="Edge finding method")] = EdgeFindingMethod.SOBEL,
+    automatic_threshold:            Annotated[bool, Field(description="Automatically calculate the threshold?")] = True,
+    direction:                      Annotated[EdgeDirection, Field(description="Select edge direction to enhance")] = EdgeDirection.ALL,
+    sigma:                          Annotated[int, Field(description="Gaussian's sigma value")] = 10,
+    manual_threshold:               Annotated[float, Field(description="Absolute threshold")] = 0.2,
+    threshold_adjustment_factor:    Annotated[float, Field(description="Threshold adjustment factor")] = 1.0,
+    automatic_low_threshold:        Annotated[bool, Field(description="Automatically calculate the low / soft threshold cutoff for the Canny method?")] = True,
+    low_threshold:                  Annotated[float, Field(description="Low threshold value")] = 0.1,
+) -> Image2DGrayscale:
     """EnhanceEdges module
 
     Parameters
@@ -64,13 +66,13 @@ def enhanceedges(
     if mask is None:
         mask = numpy.ones(image.shape, bool)
 
-    if method.casefold() == "sobel":
+    if method == EdgeFindingMethod.SOBEL:
         output_pixels = enhance_edges_sobel(image, mask, direction)
-    elif method.casefold() == "log":
+    elif method == EdgeFindingMethod.LOG:
         output_pixels = enhance_edges_log(image, mask, sigma)
-    elif method.casefold() == "prewitt":
+    elif method == EdgeFindingMethod.PREWITT:
         output_pixels = enhance_edges_prewitt(image, mask, direction)
-    elif method.casefold() == "canny":
+    elif method == EdgeFindingMethod.CANNY:
         output_pixels = enhance_edges_canny(
             image,
             mask,
@@ -81,9 +83,9 @@ def enhanceedges(
             manual_threshold=manual_threshold,
             threshold_adjustment_factor=threshold_adjustment_factor,
         )
-    elif method.casefold() == "roberts":
+    elif method == EdgeFindingMethod.ROBERTS:
         output_pixels = centrosome.filter.roberts(image, mask)
-    elif method.casefold() == "kirsch":
+    elif method == EdgeFindingMethod.KIRSCH:
         output_pixels = centrosome.kirsch.kirsch(image)
     else:
         raise NotImplementedError(f"{method} edge detection method is not implemented.")

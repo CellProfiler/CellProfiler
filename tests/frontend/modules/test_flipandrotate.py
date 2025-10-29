@@ -10,7 +10,7 @@ import cellprofiler.modules.flipandrotate
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateDirection, RotationCycle, RotationCoordinateAlignmnet
+from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateDirection, RotationCoordinateAlignmnet
 
 IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"

@@ -29,8 +29,8 @@ from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
-from cellprofiler_library.modules._flipandrotate import flip_and_rotate
-from cellprofiler_library.opts.flipandrotate import RotateDirection, RotationCycle, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, IO_ALL, C_ALL
+from cellprofiler_library.modules._flipandrotate import flip_and_rotate, flip_image, rotate_image
+from cellprofiler_library.opts.flipandrotate import RotateMethod, RotationCycle, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, IO_ALL, C_ALL
 
 class FlipAndRotate(Module):
     category = "Image Processing"
@@ -75,10 +75,10 @@ Select how the image is to be flipped.""",
    *Done* button on the image after rotating the image appropriately.
 """.format(
     **{
-        "ROTATE_NONE": RotateDirection.NONE.value,
-        "ROTATE_ANGLE": RotateDirection.ANGLE.value,
-        "ROTATE_COORDINATES": RotateDirection.COORDINATES.value,
-        "ROTATE_MOUSE": RotateDirection.MOUSE.value,
+        "ROTATE_NONE": RotateMethod.NONE.value,
+        "ROTATE_ANGLE": RotateMethod.ANGLE.value,
+        "ROTATE_COORDINATES": RotateMethod.COORDINATES.value,
+        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
     }
 ),
         )
@@ -111,7 +111,7 @@ calculated.
 -  *{IO_ONCE}:* Define the rotation only once (on the first image), then apply it to all images.
 """.format(
     **{
-        "ROTATE_MOUSE": RotateDirection.MOUSE.value,
+        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
         "IO_INDIVIDUALLY": RotationCycle.INDIVIDUALLY.value,
         "IO_ONCE": RotationCycle.ONCE.value,
     }
@@ -128,7 +128,7 @@ After rotation, if the specified points are aligned horizontally, this point on 
 left of the other point. If the specified points are aligned vertically, this point of the image will be positioned
 above the other point.
 """.format(
-                **{"ROTATE_COORDINATES": RotateDirection.COORDINATES.value}
+                **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
             ),
         )
 
@@ -142,7 +142,7 @@ After rotation, if the specified points are aligned horizontally, this point on 
 right of the other point. If the specified points are aligned vertically, this point of the image will be positioned
 below the other point.
 """.format(
-                **{"ROTATE_COORDINATES": RotateDirection.COORDINATES.value}
+                **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
             ),
         )
 
@@ -154,7 +154,7 @@ below the other point.
 
 Specify whether you would like the coordinate points that you entered to
 be horizontally or vertically aligned after the rotation is complete.""".format(
-    **{"ROTATE_COORDINATES": RotateDirection.COORDINATES.value}
+    **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
 ),
         )
 
@@ -167,7 +167,7 @@ be horizontally or vertically aligned after the rotation is complete.""".format(
 Enter the angle you would like to rotate the image. This setting is in
 degrees, with positive angles corresponding to counterclockwise and
 negative as clockwise.""".format(
-    **{"ROTATE_ANGLE": RotateDirection.ANGLE.value}
+    **{"ROTATE_ANGLE": RotateMethod.ANGLE.value}
 ),
         )
 
@@ -192,18 +192,18 @@ negative as clockwise.""".format(
             self.flip_choice,
             self.rotate_choice,
         ]
-        if self.rotate_choice == RotateDirection.NONE:
+        if self.rotate_choice == RotateMethod.NONE:
             pass
-        elif self.rotate_choice == RotateDirection.ANGLE:
+        elif self.rotate_choice == RotateMethod.ANGLE:
             result += [self.wants_crop, self.angle]
-        elif self.rotate_choice == RotateDirection.COORDINATES:
+        elif self.rotate_choice == RotateMethod.COORDINATES:
             result += [
                 self.wants_crop,
                 self.first_pixel,
                 self.second_pixel,
                 self.horiz_or_vert,
             ]
-        elif self.rotate_choice == RotateDirection.MOUSE:
+        elif self.rotate_choice == RotateMethod.MOUSE:
             result += [self.wants_crop, self.how_often]
         else:
             raise NotImplementedError(
@@ -213,7 +213,7 @@ negative as clockwise.""".format(
 
     def prepare_group(self, workspace, grouping, image_numbers):
         """Initialize the angle if appropriate"""
-        if self.rotate_choice == RotateDirection.MOUSE and self.how_often == RotationCycle.ONCE:
+        if self.rotate_choice == RotateMethod.MOUSE and self.how_often == RotationCycle.ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
     def run(self, workspace):
@@ -227,25 +227,48 @@ negative as clockwise.""".format(
         rotate_angle = self.angle.value
         state_dict_for_mouse_mode = self.get_dictionary()
         mouse_mode_cycle = self.how_often.value
-
-        def mouse_interaction_request_handler(pixel_data):
-            return workspace.interaction_request(
+        
+        if self.rotate_choice == RotateMethod.MOUSE:
+            # perform flip and rotate separately
+            pixel_data, mask = flip_image(pixel_data, mask, self.flip_choice.value)
+            # state_dict_for_mouse_mode = self.get_dictionary()
+            assert state_dict_for_mouse_mode is not None, "state_dict_for_mouse_mode must be provided for rotate_choice == RotateMethod.MOUSE"
+            assert mouse_mode_cycle is not None, "mouse_mode_cycle must be provided for rotate_choice == RotateMethod.MOUSE"
+            if (
+                mouse_mode_cycle == RotationCycle.ONCE
+                and D_ANGLE in state_dict_for_mouse_mode
+                and state_dict_for_mouse_mode[D_ANGLE] is not None
+            ):
+                angle = state_dict_for_mouse_mode[D_ANGLE]
+            else:
+                angle = workspace.interaction_request(
                 self, pixel_data, workspace.measurements.image_set_number
             )
-        pixel_data, mask, crop, angle = flip_and_rotate(
-            pixel_data, 
-            mask, 
-            self.flip_choice, 
-            self.rotate_choice, 
-            rotate_angle, 
-            (self.first_pixel.x, self.first_pixel.y),
-            (self.second_pixel.x, self.second_pixel.y), 
-            self.horiz_or_vert, 
-            state_dict_for_mouse_mode, 
-            mouse_mode_cycle,
-            mouse_interaction_request_handler,
-            wants_crop=self.wants_crop.value,
-        )
+            if mouse_mode_cycle == RotationCycle.ONCE:
+                state_dict_for_mouse_mode[D_ANGLE] = angle
+            pixel_data, mask, crop, angle = rotate_image(
+                pixel_data,
+                mask,
+                RotateMethod.ANGLE,
+                angle,
+                None,
+                None,
+                None,
+                wants_crop=self.wants_crop.value,
+            )
+
+        else:
+            pixel_data, mask, crop, angle = flip_and_rotate(
+                pixel_data, 
+                mask, 
+                self.flip_choice.value, 
+                self.rotate_choice.value, 
+                rotate_angle, 
+                (self.first_pixel.x, self.first_pixel.y),
+                (self.second_pixel.x, self.second_pixel.y), 
+                self.horiz_or_vert,
+                wants_crop=self.wants_crop.value,
+            )
         output_image = Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
@@ -470,13 +493,13 @@ negative as clockwise.""".format(
         if variable_revision_number == 1:
             # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
             if setting_values[3] == "Mouse":
-                setting_values[3] = RotateDirection.MOUSE
+                setting_values[3] = RotateMethod.MOUSE
             elif setting_values[3] == "None":
-                setting_values[3] = RotateDirection.NONE
+                setting_values[3] = RotateMethod.NONE
             elif setting_values[3] == "Coordinates":
-                setting_values[3] = RotateDirection.COORDINATES
+                setting_values[3] = RotateMethod.COORDINATES
             elif setting_values[3] == "Angle":
-                setting_values[3] = RotateDirection.ANGLE
+                setting_values[3] = RotateMethod.ANGLE
             variable_revision_number = 2
         return setting_values, variable_revision_number
 

@@ -14,6 +14,8 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
 
+from cellprofiler_library.opts.smooth import SmoothingMethod
+
 INPUT_IMAGE_NAME = "myimage"
 OUTPUT_IMAGE_NAME = "myfilteredimage"
 
@@ -53,7 +55,7 @@ def test_load_v02():
     assert smooth.filtered_image_name == "OutputImage"
     assert smooth.wants_automatic_object_size
     assert smooth.object_size == 19
-    assert smooth.smoothing_method == cellprofiler.modules.smooth.MEDIAN_FILTER
+    assert smooth.smoothing_method == SmoothingMethod.MEDIAN_FILTER
     assert not smooth.clip
 
 
@@ -74,7 +76,7 @@ def test_fit_polynomial():
         expected = centrosome.smooth.fit_polynomial(image, mask, clip)
         assert numpy.all((expected >= 0) & (expected <= 1)) == clip
         workspace, module = make_workspace(image, mask)
-        module.smoothing_method.value = cellprofiler.modules.smooth.FIT_POLYNOMIAL
+        module.smoothing_method.value = SmoothingMethod.FIT_POLYNOMIAL
         module.clip.value = clip
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -92,7 +94,7 @@ def test_gaussian_auto_small():
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
-    module.smoothing_method.value = cellprofiler.modules.smooth.GAUSSIAN_FILTER
+    module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert not (result is None)
@@ -108,7 +110,7 @@ def test_gaussian_auto_large():
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
-    module.smoothing_method.value = cellprofiler.modules.smooth.GAUSSIAN_FILTER
+    module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert not (result is None)
@@ -125,7 +127,7 @@ def test_gaussian_manual():
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
     expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
-    module.smoothing_method.value = cellprofiler.modules.smooth.GAUSSIAN_FILTER
+    module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.wants_automatic_object_size.value = False
     module.object_size.value = 15.0
     module.run(workspace)
@@ -143,7 +145,7 @@ def test_median():
     mask[40:60, 45:65] = False
     expected = centrosome.filter.median_filter(image, mask, object_size / 2 + 1)
     workspace, module = make_workspace(image, mask)
-    module.smoothing_method.value = cellprofiler.modules.smooth.MEDIAN_FILTER
+    module.smoothing_method.value = SmoothingMethod.MEDIAN_FILTER
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert not (result is None)
@@ -164,7 +166,7 @@ def test_bilateral():
         sigma_spatial=sigma,
     )
     workspace, module = make_workspace(image, mask)
-    module.smoothing_method.value = cellprofiler.modules.smooth.SMOOTH_KEEPING_EDGES
+    module.smoothing_method.value = SmoothingMethod.SMOOTH_KEEPING_EDGES
     module.sigma_range.value = sigma_range
     module.wants_automatic_object_size.value = False
     module.object_size.value = 16.0 * 2.35

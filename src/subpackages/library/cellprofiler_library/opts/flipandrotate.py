@@ -6,7 +6,7 @@ class FlipDirection(str, Enum):
     TOP_TO_BOTTOM = "Top to bottom"
     BOTH = "Left to right and top to bottom"
 
-class RotateDirection(str, Enum):
+class RotateMethod(str, Enum):
     NONE = "Do not rotate"
     ANGLE = "Enter angle"
     COORDINATES = "Enter coordinates"
@@ -29,7 +29,7 @@ M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 FLIP_ALL = [FlipDirection.NONE, FlipDirection.LEFT_TO_RIGHT, FlipDirection.TOP_TO_BOTTOM, FlipDirection.BOTH]
 
-ROTATE_ALL = [RotateDirection.NONE, RotateDirection.ANGLE, RotateDirection.COORDINATES, RotateDirection.MOUSE]
+ROTATE_ALL = [RotateMethod.NONE, RotateMethod.ANGLE, RotateMethod.COORDINATES, RotateMethod.MOUSE]
 
 IO_ALL = [RotationCycle.INDIVIDUALLY, RotationCycle.ONCE]
 

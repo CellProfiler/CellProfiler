@@ -24,7 +24,7 @@ from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary,ObjectSegmentation, ObjectLabelsDense
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
@@ -1870,3 +1870,96 @@ def measure_image_intensities(
         pixel_lower_qrt,
         pixel_upper_qrt,
     ), percentile_measures
+
+
+###############################################################################
+# MeasureObjectIntensity
+###############################################################################
+
+
+def measure_object_area_occupied(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.int_]:
+    return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes))
+
+def measure_integrated_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(limg, llabels, lindexes))
+
+def measure_mean_intensity(integrated_intensity: NDArray[numpy.float_], lcount: NDArray[numpy.int_]) -> NDArray[numpy.float_]:   
+    return integrated_intensity / lcount
+
+def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], mean_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
+    #
+    # This function takes in mean_intensity as an array where each element is the mean intensity of the corresponding label in lindexes
+    # which is then converted into a 1D array of pixels where each pixel is the mean intensity of the corresponding label in llabels
+    # It's done this way as it makes the code more readable in the main function
+    #
+    mean_intensity_per_label = numpy.zeros((max(lindexes),))
+    mean_intensity_per_label[lindexes - 1] = mean_intensity
+    # mean_intensity[llabels - 1] replaces label numbers with mean intensity creating a 1D array of intensities
+    mean_intensity_pixels = mean_intensity_per_label[llabels - 1]
+    return numpy.sqrt(
+        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            scipy.ndimage.mean(
+                (limg - mean_intensity_pixels) ** 2,
+                llabels,
+                lindexes,
+            )
+        )
+    )
+def measure_min_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        scipy.ndimage.minimum(limg, llabels, lindexes)
+    )
+
+def measure_max_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        scipy.ndimage.maximum(limg, llabels, lindexes)
+    )
+
+def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    # Compute the position of the intensity maximum
+    max_position = numpy.array(
+        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            scipy.ndimage.maximum_position(limg, llabels, lindexes)
+        ),
+        dtype=int,
+    )
+    max_position = numpy.reshape(
+        max_position, (max_position.shape[0],)
+    )
+    return max_position
+
+def measure_center_of_mass_binary(coordinates: NDArray[numpy.int_], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    cm = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        scipy.ndimage.mean(coordinates, llabels, lindexes)
+        )
+    return cm
+
+def measure_center_of_mass_intensity(coordinates_mesh: NDArray[numpy.int_], limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], integrated_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
+    coordinate_scaled_pixels = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        scipy.ndimage.sum(coordinates_mesh * limg, llabels, lindexes)
+    )
+    center_of_mass_intensity = coordinate_scaled_pixels / integrated_intensity
+    return center_of_mass_intensity
+
+def measure_mass_displacement(center_of_mass_binary: Tuple[NDArray[numpy.float_], NDArray[numpy.float_], NDArray[numpy.float_]], center_of_mass_intensity: Tuple[NDArray[numpy.float_], NDArray[numpy.float_], NDArray[numpy.float_]]) -> NDArray[numpy.float_]:
+    diff_x = center_of_mass_binary[0] - center_of_mass_intensity[0]
+    diff_y = center_of_mass_binary[1] - center_of_mass_intensity[1]
+    diff_z = center_of_mass_binary[2] - center_of_mass_intensity[2]
+    mass_displacement = numpy.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z)
+    return mass_displacement
+
+def measure_quartile_intensity(indices:NDArray[numpy.int_], areas: NDArray[numpy.int_], fraction: float, limg: NDArray[Pixel], order):
+    qindex = indices.astype(float) + areas * fraction
+    qfraction = qindex - numpy.floor(qindex)
+    qindex = qindex.astype(int)
+    qmask = qindex < indices + areas - 1
+    qi = qindex[qmask]
+    qf = qfraction[qmask]
+    _dest = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
+    #
+    # In some situations (e.g., only 3 points), there may
+    # not be an upper bound.
+    #
+    qmask_no_upper = (~qmask) & (areas > 0)
+    dest_no_upper = limg[order[qindex[qmask_no_upper]]]
+    return qmask, _dest, qmask_no_upper, dest_no_upper

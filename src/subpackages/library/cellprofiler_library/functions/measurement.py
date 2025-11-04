@@ -11,7 +11,7 @@ import centrosome.fastemd
 
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List, Any
+from typing import Tuple, Optional, Dict, Callable, List, Union, Any, Any
 from scipy.linalg import lstsq
 from numpy.typing import NDArray
 
@@ -24,7 +24,7 @@ from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ObjectSegmentation, ObjectLabelsDense
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary,ObjectSegmentation, ObjectLabelsDense
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
@@ -1490,7 +1490,7 @@ def get_granularity_measurements(
 ################################################################################
 
 def measure_surface_area(
-        label_image: ObjectLabelsDense, 
+        label_image: Union[ImageBinary, ObjectLabelsDense], 
         spacing: Optional[Tuple[float, ...]]=None, 
         index: Optional[NDArray[np.int32]]=None,
         ) -> NDArray[np.float64]:
@@ -1510,6 +1510,72 @@ def measure_surface_area(
             for label in index
         ]
     )
+
+
+def measure_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> np.float_:
+    if im_volumetric:
+        perimeter = measure_surface_area(im_pixel_data > 0, spacing=im_spacing)
+    else:
+        perimeter = skimage.measure.perimeter(im_pixel_data > 0)
+    return perimeter
+
+def measure_area_occupied(im_pixel_data: ImageBinary) -> np.float_:
+    return np.sum(im_pixel_data > 0)
+
+def measure_total_area(im_pixel_data: ImageBinary) -> np.int_:
+    return np.prod(np.shape(im_pixel_data))
+
+
+def measure_object_perimeter(
+        label_image: ObjectLabelsDense,
+        mask: Optional[ImageAny] = None,
+        regionprops: Optional[List[Any]] = None,
+        volumetric: bool = False,
+        spacing: Optional[Tuple[float, ...]] = None
+        ) -> np.float_:
+    """ Uses skimage.measure.regionprops to calculate the perimeter for 2D. Uses skimage.measure.mesh_surface_area to calculate the perimeter for 3D"""
+    if regionprops is None:
+        if mask is not None:
+            label_image[~mask] = 0
+        regionprops = skimage.measure.regionprops(label_image)
+    if volumetric:
+        labels = np.unique(label_image)
+        if labels[0] == 0:
+            labels = labels[1:]
+        
+    if volumetric:
+        perimeter = measure_surface_area(label_image, spacing=spacing, index=labels)
+    else:
+        perimeter = np.sum(
+            [np.round(region["perimeter"]) for region in regionprops]
+        )
+    return perimeter
+
+def measure_objects_area_occupied(
+    label_image: Optional[ObjectLabelsDense],
+    mask: Optional[ImageAny] = None,
+    regionprops: Optional[List[Any]] = None,
+    ) -> np.float_:
+    """ Area occupied can either be calculated from the label image (with/without mask) or if regionprops are already computed, they can be passed in"""
+    if regionprops is None:
+        assert label_image is not None, "Either label_image or region_properties must be provided"
+        if mask is not None:
+            label_image[~mask] = 0
+        regionprops = skimage.measure.regionprops(label_image)
+
+    return np.sum([region["area"] for region in regionprops])
+
+def measure_objects_total_area(
+    label_image: Optional[ObjectLabelsDense],
+    mask: Optional[ImageAny] = None,
+    ) -> np.int_:
+    """ Total area can either be calculated from the label image or from the mask"""
+    if mask is not None:
+        total_area = np.sum(mask)
+    else:
+        total_area = np.product(label_image.shape)
+    return total_area
+
 
 
 def measure_label_surface_area(

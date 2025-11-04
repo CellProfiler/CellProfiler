@@ -269,13 +269,25 @@ class MeasureObjectIntensity(Module):
     ###############################################################################
     # Helpers
     ###############################################################################
+    def get_count(self, limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.int_]:
+        return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes))
+
     def get_integrated_intensity(self, limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
         return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(limg, llabels, lindexes))
     
     def get_mean_intensity(self, integrated_intensity: NDArray[numpy.float_], lcount: NDArray[numpy.int_]) -> NDArray[numpy.float_]:   
         return integrated_intensity / lcount
     
-    def get_std_intensity(self, limg: NDArray[Pixel], mean_intensity_pixels: NDArray[numpy.float_], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+    def get_std_intensity(self, limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], mean_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
+        #
+        # This function takes in mean_intensity as an array where each element is the mean intensity of the corresponding label in lindexes
+        # which is then converted into a 1D array of pixels where each pixel is the mean intensity of the corresponding label in llabels
+        # It's done this way as it makes the code more readable in the main function
+        #
+        mean_intensity_per_label = numpy.zeros((max(lindexes),))
+        mean_intensity_per_label[lindexes - 1] = mean_intensity
+        # mean_intensity[llabels - 1] replaces label numbers with mean intensity creating a 1D array of intensities
+        mean_intensity_pixels = mean_intensity_per_label[llabels - 1]
         return numpy.sqrt(
             centrosome.cpmorphology.fixup_scipy_ndimage_result(
                 scipy.ndimage.mean(
@@ -329,7 +341,7 @@ class MeasureObjectIntensity(Module):
         return mass_displacement
     
     # TODO: what to name this function?
-    def foo(self, indices, areas, fraction, limg, order):
+    def foo(self, indices:NDArray[numpy.int_], areas: NDArray[numpy.int_], fraction: float, limg: NDArray[Pixel], order):
         qindex = indices.astype(float) + areas * fraction
         qfraction = qindex - numpy.floor(qindex)
         qindex = qindex.astype(int)
@@ -344,12 +356,235 @@ class MeasureObjectIntensity(Module):
         qmask_no_upper = (~qmask) & (areas > 0)
         dest_no_upper = limg[order[qindex[qmask_no_upper]]]
         return qmask, _dest, qmask_no_upper, dest_no_upper
-        dest[lindexes[qmask] - 1] = _dest
-        dest[lindexes[qmask_no_upper] - 1] = limg[order[qindex[qmask_no_upper]]]
+    
+    def get_location_measurements(
+            self,
+            masked_image_shape: Tuple[int, ...],
+            lmask: NDArray[numpy.bool_],
+            limg: NDArray[Pixel],
+            llabels: NDArray[ObjectLabel],
+            lindexes: NDArray[numpy.int_],
+            integrated_intensity: NDArray[numpy.float_],
+    ):
+        mesh_z, mesh_y, mesh_x = numpy.mgrid[
+            0 : masked_image_shape[0],
+            0 : masked_image_shape[1],
+            0 : masked_image_shape[2],
+        ]
+
+        mesh_x = mesh_x[lmask]
+        mesh_y = mesh_y[lmask]
+        mesh_z = mesh_z[lmask]
+        # Compute the position of the intensity maximum
+        max_position = self.get_max_position(limg, llabels, lindexes)
+
+        # Get the coordinates of the maximum intensity
+        _max_x = mesh_x[max_position]
+        _max_y = mesh_y[max_position]
+        _max_z = mesh_z[max_position]
+
+        # The mass displacement is the distance between the center
+        # of mass of the binary image and of the intensity image. The
+        # center of mass is the average X or Y for the binary image
+        # and the sum of X or Y * intensity / integrated intensity
+        cm_x = self.get_center_of_mass_binary(mesh_x, llabels, lindexes)
+        cm_y = self.get_center_of_mass_binary(mesh_y, llabels, lindexes)
+        cm_z = self.get_center_of_mass_binary(mesh_z, llabels, lindexes)
+
+        _cmi_x = self.get_center_of_mass_intensity(mesh_x, limg, llabels, lindexes, integrated_intensity)
+        _cmi_y = self.get_center_of_mass_intensity(mesh_y, limg, llabels, lindexes, integrated_intensity)
+        _cmi_z = self.get_center_of_mass_intensity(mesh_z, limg, llabels, lindexes, integrated_intensity)
+        _mass_displacement = self.get_mass_displacement((cm_x, cm_y, cm_z), (_cmi_x, _cmi_y, _cmi_z))
+        return (
+            (_max_x, _max_y, _max_z),
+            (_cmi_x, _cmi_y, _cmi_z),
+            _mass_displacement,
+        )
+
+
+    def get_intensity_measurements(self, limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> Tuple[NDArray[numpy.float_], ...]:
+        lcount = self.get_count(limg, llabels, lindexes)
+        _integrated_intensity = self.get_integrated_intensity(limg, llabels, lindexes)
+        _mean_intensity = self.get_mean_intensity(_integrated_intensity, lcount)
+        _std_intensity = self.get_std_intensity(limg, llabels, lindexes, _mean_intensity)
+        _min_intensity = self.get_min_intensity(limg, llabels, lindexes)
+        _max_intensity = self.get_max_intensity(limg, llabels, lindexes)
+        return _integrated_intensity, _mean_intensity, _std_intensity, _min_intensity, _max_intensity
+
+    def get_measureobjectintensity_measurements(self, img: ImageGrayscale, image_mask: ImageGrayscaleMask, object_labels: ObjectLabelSet, nobjects: int, image_dimensions: int, image_has_mask: bool=False) -> Tuple[NDArray[numpy.float64], ...]:
+        if image_has_mask:
+            masked_image = img.copy()
+            masked_image[~image_mask] = 0
+            image_mask = image_mask # TODO: check if this is needed
+        else:
+            masked_image = img
+            image_mask = numpy.ones_like(img, dtype=bool)
+
+        if image_dimensions == 2:
+            img = img.reshape(1, *img.shape)
+            masked_image = masked_image.reshape(1, *masked_image.shape)
+            image_mask = image_mask.reshape(1, *image_mask.shape)
+
+        integrated_intensity = numpy.zeros((nobjects,))
+        integrated_intensity_edge = numpy.zeros((nobjects,))
+        mean_intensity = numpy.zeros((nobjects,))
+        mean_intensity_edge = numpy.zeros((nobjects,))
+        std_intensity = numpy.zeros((nobjects,))
+        std_intensity_edge = numpy.zeros((nobjects,))
+        min_intensity = numpy.zeros((nobjects,))
+        min_intensity_edge = numpy.zeros((nobjects,))
+        max_intensity = numpy.zeros((nobjects,))
+        max_intensity_edge = numpy.zeros((nobjects,))
+        mass_displacement = numpy.zeros((nobjects,))
+        lower_quartile_intensity = numpy.zeros((nobjects,))
+        median_intensity = numpy.zeros((nobjects,))
+        mad_intensity = numpy.zeros((nobjects,))
+        upper_quartile_intensity = numpy.zeros((nobjects,))
+        cmi_x = numpy.zeros((nobjects,))
+        cmi_y = numpy.zeros((nobjects,))
+        cmi_z = numpy.zeros((nobjects,))
+        max_x = numpy.zeros((nobjects,))
+        max_y = numpy.zeros((nobjects,))
+        max_z = numpy.zeros((nobjects,))
+        for labels, lindexes in object_labels:
+            lindexes = lindexes[lindexes != 0]
+
+            if image_dimensions == 2:
+                labels = labels.reshape(1, *labels.shape)
+
+            labels, img = crop_labels_and_image(labels, img)
+            _, masked_image = crop_labels_and_image(labels, masked_image)
+            outlines = skimage.segmentation.find_boundaries(
+                labels, mode="inner"
+            )
+
+            if image_has_mask:
+                _, mask = crop_labels_and_image(labels, image_mask)
+                masked_labels = labels.copy()
+                masked_labels[~mask] = 0
+                masked_outlines = outlines.copy()
+                masked_outlines[~mask] = 0
+            else:
+                masked_labels = labels
+                masked_outlines = outlines
+
+            lmask = masked_labels > 0 & numpy.isfinite(img)  # Ignore NaNs, Infs
+            has_objects = numpy.any(lmask)
+            if has_objects:
+                limg: NDArray[Pixel] = img[lmask] # This is a 1D array of pixels
+                llabels: NDArray[ObjectLabel] = labels[lmask] # This is a 1D array of labels
+
+                (
+                    _integrated_intensity,
+                    _mean_intensity,
+                    _std_intensity,
+                    _min_intensity,
+                    _max_intensity
+                ) = self.get_intensity_measurements(limg, llabels, lindexes)
+
+                (
+                    _max_positions,
+                    _center_of_mass_intensities,
+                    _mass_displacement,
+                ) = self.get_location_measurements(
+                    masked_image.shape,
+                    lmask,
+                    limg,
+                    llabels,
+                    lindexes,
+                    _integrated_intensity,
+                )
+
+                integrated_intensity[lindexes - 1] = _integrated_intensity
+                mean_intensity[lindexes - 1] = _mean_intensity
+                std_intensity[lindexes - 1] = _std_intensity
+                min_intensity[lindexes - 1] = _min_intensity
+                max_intensity[lindexes - 1] = _max_intensity
+                max_x[lindexes - 1] = _max_positions[0]
+                max_y[lindexes - 1] = _max_positions[1]
+                max_z[lindexes - 1] = _max_positions[2]
+                cmi_x[lindexes - 1] = _center_of_mass_intensities[0]
+                cmi_y[lindexes - 1] = _center_of_mass_intensities[1]
+                cmi_z[lindexes - 1] = _center_of_mass_intensities[2]
+                mass_displacement[lindexes - 1] = _mass_displacement
+
+                #
+                # Sort the intensities by label, then intensity.
+                # For each label, find the index above and below
+                # the 25%, 50% and 75% mark and take the weighted
+                # average.
+                #
+                areas = self.get_count(limg, llabels, lindexes).astype(int)
+                indices = numpy.cumsum(areas) - areas
+                order = numpy.lexsort((limg, llabels))
+                for dest, fraction in (
+                    (lower_quartile_intensity, 1.0 / 4.0),
+                    (median_intensity, 1.0 / 2.0),
+                    (upper_quartile_intensity, 3.0 / 4.0),
+                ):
+                    qmask, _dest, qmask_no_upper, _dest_no_upper = self.foo(indices, areas, fraction, limg, order)
+                    dest[lindexes[qmask] - 1] = _dest
+                    dest[lindexes[qmask_no_upper] - 1] = _dest_no_upper
+
+                #
+                # Once again, for the MAD
+                #
+                fraction = 1.0/ image_dimensions
+                madimg = numpy.abs(limg - median_intensity[llabels - 1])
+                order = numpy.lexsort((madimg, llabels))
+
+                qmask, _mad_intensity, qmask_no_upper, _mad_intensity_no_upper = self.foo(indices, areas, fraction, madimg, order)
+                mad_intensity[lindexes[qmask] - 1] = _mad_intensity
+                mad_intensity[lindexes[qmask_no_upper] - 1] = _mad_intensity_no_upper
+
+            emask = masked_outlines > 0
+            eimg = img[emask]
+            elabels = labels[emask]
+            has_edge = len(eimg) > 0
+
+            if has_edge:
+                (
+                    _integrated_intensity_edge,
+                    _mean_intensity_edge,                        
+                    _std_intensity_edge,
+                    _min_intensity_edge,
+                    _max_intensity_edge,
+                ) = self.get_intensity_measurements(eimg, elabels, lindexes)
+
+                integrated_intensity_edge[lindexes - 1] = _integrated_intensity_edge
+                mean_intensity_edge[lindexes - 1] = _mean_intensity_edge
+                std_intensity_edge[lindexes - 1] = _std_intensity_edge
+                min_intensity_edge[lindexes - 1] = _min_intensity_edge
+                max_intensity_edge[lindexes - 1] = _max_intensity_edge
+
+        return (
+            integrated_intensity,
+            integrated_intensity_edge,
+            mean_intensity,
+            mean_intensity_edge,
+            std_intensity,
+            std_intensity_edge,
+            min_intensity,
+            min_intensity_edge,
+            max_intensity,
+            max_intensity_edge,
+            mass_displacement,
+            lower_quartile_intensity,
+            median_intensity,
+            mad_intensity,
+            upper_quartile_intensity,
+            cmi_x,
+            cmi_y,
+            cmi_z,
+            max_x,
+            max_y,
+            max_z,
+        )
 
     ###############################################################################
     # End Helpers
     ###############################################################################
+    
     def run(self, workspace):
         if self.show_window:
             workspace.display_data.col_labels = (
@@ -374,243 +609,43 @@ class MeasureObjectIntensity(Module):
                     )
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
-                if image.has_mask:
-                    masked_image = img.copy()
-                    masked_image[~image.mask] = 0
-                    image_mask = image.mask
-                else:
-                    masked_image = img
-                    image_mask = numpy.ones_like(img, dtype=bool)
+                image_has_mask = image.has_mask
+                image_mask = image.mask
 
-                if image.dimensions == 2:
-                    img = img.reshape(1, *img.shape)
-                    masked_image = masked_image.reshape(1, *masked_image.shape)
-                    image_mask = image_mask.reshape(1, *image_mask.shape)
+
 
                 objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
-                integrated_intensity = numpy.zeros((nobjects,))
-                integrated_intensity_edge = numpy.zeros((nobjects,))
-                mean_intensity = numpy.zeros((nobjects,))
-                mean_intensity_edge = numpy.zeros((nobjects,))
-                std_intensity = numpy.zeros((nobjects,))
-                std_intensity_edge = numpy.zeros((nobjects,))
-                min_intensity = numpy.zeros((nobjects,))
-                min_intensity_edge = numpy.zeros((nobjects,))
-                max_intensity = numpy.zeros((nobjects,))
-                max_intensity_edge = numpy.zeros((nobjects,))
-                mass_displacement = numpy.zeros((nobjects,))
-                lower_quartile_intensity = numpy.zeros((nobjects,))
-                median_intensity = numpy.zeros((nobjects,))
-                mad_intensity = numpy.zeros((nobjects,))
-                upper_quartile_intensity = numpy.zeros((nobjects,))
-                cmi_x = numpy.zeros((nobjects,))
-                cmi_y = numpy.zeros((nobjects,))
-                cmi_z = numpy.zeros((nobjects,))
-                max_x = numpy.zeros((nobjects,))
-                max_y = numpy.zeros((nobjects,))
-                max_z = numpy.zeros((nobjects,))
-                for labels, lindexes in objects.get_labels():
-                    lindexes = lindexes[lindexes != 0]
-
-                    if image.dimensions == 2:
-                        labels = labels.reshape(1, *labels.shape)
-
-                    labels, img = crop_labels_and_image(labels, img)
-                    _, masked_image = crop_labels_and_image(labels, masked_image)
-                    outlines = skimage.segmentation.find_boundaries(
-                        labels, mode="inner"
-                    )
-
-                    if image.has_mask:
-                        _, mask = crop_labels_and_image(labels, image_mask)
-                        masked_labels = labels.copy()
-                        masked_labels[~mask] = 0
-                        masked_outlines = outlines.copy()
-                        masked_outlines[~mask] = 0
-                    else:
-                        masked_labels = labels
-                        masked_outlines = outlines
-
-                    lmask = masked_labels > 0 & numpy.isfinite(img)  # Ignore NaNs, Infs
-                    has_objects = numpy.any(lmask)
-                    if has_objects:
-                        limg: NDArray[Pixel] = img[lmask] # This is a 1D array of pixels
-
-                        llabels: NDArray[ObjectLabel] = labels[lmask]
-
-                        mesh_z, mesh_y, mesh_x = numpy.mgrid[
-                            0 : masked_image.shape[0],
-                            0 : masked_image.shape[1],
-                            0 : masked_image.shape[2],
-                        ]
-
-                        mesh_x = mesh_x[lmask]
-                        mesh_y = mesh_y[lmask]
-                        mesh_z = mesh_z[lmask]
-
-                        lcount = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                            scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes)
-                        )
-
-                        _integrated_intensity = self.get_integrated_intensity(limg, llabels, lindexes)
-                        integrated_intensity[lindexes - 1] = _integrated_intensity
-
-                        _mean_intensity = self.get_mean_intensity(_integrated_intensity, lcount)
-                        mean_intensity[lindexes - 1] = _mean_intensity
-
-                        # mean_intensity[llabels - 1] replaces label numbers with mean intensity creating a 1D array of intensities
-                        mean_intensity_pixels = mean_intensity[llabels - 1]
-                        _std_intensity = self.get_std_intensity(limg, mean_intensity_pixels, llabels, lindexes)
-                        std_intensity[lindexes - 1] = _std_intensity
-
-                        _min_intensity = self.get_min_intensity(limg, llabels, lindexes)
-                        min_intensity[lindexes - 1] = _min_intensity
-
-                        _max_intensity = self.get_max_intensity(limg, llabels, lindexes)
-                        max_intensity[lindexes - 1] = _max_intensity
-
-                        # Compute the position of the intensity maximum
-                        max_position = self.get_max_position(limg, llabels, lindexes)
-
-                        # Get the coordinates of the maximum intensity
-                        max_x[lindexes - 1] = mesh_x[max_position]
-                        max_y[lindexes - 1] = mesh_y[max_position]
-                        max_z[lindexes - 1] = mesh_z[max_position]
-
-                        # The mass displacement is the distance between the center
-                        # of mass of the binary image and of the intensity image. The
-                        # center of mass is the average X or Y for the binary image
-                        # and the sum of X or Y * intensity / integrated intensity
-                        cm_x = self.get_center_of_mass_binary(mesh_x, llabels, lindexes)
-                        cm_y = self.get_center_of_mass_binary(mesh_y, llabels, lindexes)
-                        cm_z = self.get_center_of_mass_binary(mesh_z, llabels, lindexes)
-
-                        # i_x = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.sum(mesh_x * limg, llabels, lindexes)
-                        # )
-                        # i_y = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.sum(mesh_y * limg, llabels, lindexes)
-                        # )
-                        # i_z = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.sum(mesh_z * limg, llabels, lindexes)
-                        # )
-                        _cmi_x = self.get_center_of_mass_intensity(mesh_x, limg, llabels, lindexes, integrated_intensity)
-                        _cmi_y = self.get_center_of_mass_intensity(mesh_y, limg, llabels, lindexes, integrated_intensity)
-                        _cmi_z = self.get_center_of_mass_intensity(mesh_z, limg, llabels, lindexes, integrated_intensity)
-                        cmi_x[lindexes - 1] = _cmi_x
-                        cmi_y[lindexes - 1] = _cmi_y                        
-                        cmi_z[lindexes - 1] = _cmi_z
-
-                        _mass_displacement = self.get_mass_displacement((cm_x, cm_y, cm_z), (_cmi_x, _cmi_y, _cmi_z))
-                        mass_displacement[lindexes - 1] = _mass_displacement
-
-                        #
-                        # Sort the intensities by label, then intensity.
-                        # For each label, find the index above and below
-                        # the 25%, 50% and 75% mark and take the weighted
-                        # average.
-                        #
-                        order = numpy.lexsort((limg, llabels))
-                        areas = lcount.astype(int)
-                        indices = numpy.cumsum(areas) - areas
-                        for dest, fraction in (
-                            (lower_quartile_intensity, 1.0 / 4.0),
-                            (median_intensity, 1.0 / 2.0),
-                            (upper_quartile_intensity, 3.0 / 4.0),
-                        ):
-                            qmask, _dest, qmask_no_upper, _dest_no_upper = self.foo(indices, areas, fraction, limg, order)
-                            dest[lindexes[qmask] - 1] = _dest
-                            dest[lindexes[qmask_no_upper] - 1] = _dest_no_upper
-
-                            # qindex = indices.astype(float) + areas * fraction
-                            # qfraction = qindex - numpy.floor(qindex)
-                            # qindex = qindex.astype(int)
-                            # qmask = qindex < indices + areas - 1
-                            # qi = qindex[qmask]
-                            # qf = qfraction[qmask]
-                            # _dest = (limg[order[qi]] * (1 - qf) + limg[order[qi + 1]] * qf)
-                            # dest[lindexes[qmask] - 1] = _dest
-
-                            # #
-                            # # In some situations (e.g., only 3 points), there may
-                            # # not be an upper bound.
-                            # #
-                            # qmask = (~qmask) & (areas > 0)
-                            # dest[lindexes[qmask] - 1] = limg[order[qindex[qmask]]]
-
-                        #
-                        # Once again, for the MAD
-                        #
-                        fraction = 1.0/ image.dimensions
-                        madimg = numpy.abs(limg - median_intensity[llabels - 1])
-                        order = numpy.lexsort((madimg, llabels))
-
-                        qmask, _mad_intensity, qmask_no_upper, _mad_intensity_no_upper = self.foo(indices, areas, fraction, madimg, order)
-                        # qindex = indices.astype(float) + areas * fraction
-                        # qfraction = qindex - numpy.floor(qindex)
-                        # qindex = qindex.astype(int)
-                        # qmask = qindex < indices + areas - 1
-                        # qi = qindex[qmask]
-                        # qf = qfraction[qmask]
-
-                        # _mad_intensity = (madimg[order[qi]] * (1 - qf) + madimg[order[qi + 1]] * qf)
-                        mad_intensity[lindexes[qmask] - 1] = _mad_intensity
-                        # qmask = (~qmask) & (areas > 0)
-                        # mad_intensity[lindexes[qmask] - 1] = madimg[
-                        #     order[qmask_no_upper[qmask]]
-                        # ]
-                        mad_intensity[lindexes[qmask_no_upper] - 1] = _mad_intensity_no_upper
-
-                    emask = masked_outlines > 0
-                    eimg = img[emask]
-                    elabels = labels[emask]
-                    has_edge = len(eimg) > 0
-
-                    if has_edge:
-                        ecount = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                            scipy.ndimage.sum(numpy.ones(len(eimg)), elabels, lindexes)
-                        )
-                        _integrated_intensity_edge = self.get_integrated_intensity(eimg, elabels, lindexes)
-                        integrated_intensity_edge[lindexes - 1] = _integrated_intensity_edge
-                        # integrated_intensity_edge[
-                        #     lindexes - 1
-                        # ] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.sum(eimg, elabels, lindexes)
-                        # )
-                        _mean_intensity_edge = self.get_mean_intensity(_integrated_intensity_edge, ecount)
-                        mean_intensity_edge[lindexes - 1] = _mean_intensity_edge
-                        # mean_intensity_edge[lindexes - 1] = (
-                        #     integrated_intensity_edge[lindexes - 1] / ecount
-                        # )
-                        mean_intensity_edge_pixels = mean_intensity_edge[elabels - 1]
-                        _std_intensity_edge = self.get_std_intensity(eimg, mean_intensity_edge_pixels, elabels, lindexes)
-                        # std_intensity_edge[lindexes - 1] = numpy.sqrt(
-                        #     centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #         scipy.ndimage.mean(
-                        #             (eimg - mean_intensity_edge[elabels - 1]) ** 2,
-                        #             elabels,
-                        #             lindexes,
-                        #         )
-                        #     )
-                        # )
-                        std_intensity_edge[lindexes - 1] = _std_intensity_edge
-
-                        _min_intensity_edge = self.get_min_intensity(eimg, elabels, lindexes)
-                        min_intensity_edge[lindexes - 1] = _min_intensity_edge
-                        # min_intensity_edge[
-                        #     lindexes - 1
-                        # ] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.minimum(eimg, elabels, lindexes)
-                        # )
-
-                        _max_intensity_edge = self.get_max_intensity(eimg, elabels, lindexes)
-                        max_intensity_edge[lindexes - 1] = _max_intensity_edge
-                        # max_intensity_edge[
-                        #     lindexes - 1
-                        # ] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        #     scipy.ndimage.maximum(eimg, elabels, lindexes)
-                        # )
+                (
+                    integrated_intensity,
+                    integrated_intensity_edge,
+                    mean_intensity,
+                    mean_intensity_edge,
+                    std_intensity,
+                    std_intensity_edge,
+                    min_intensity,
+                    min_intensity_edge,
+                    max_intensity,
+                    max_intensity_edge,
+                    mass_displacement,
+                    lower_quartile_intensity,
+                    median_intensity,
+                    mad_intensity,
+                    upper_quartile_intensity,
+                    cmi_x,
+                    cmi_y,
+                    cmi_z,
+                    max_x,
+                    max_y,
+                    max_z
+                ) = self.get_measureobjectintensity_measurements(
+                    img,
+                    image_mask, 
+                    objects.get_labels(), 
+                    nobjects,
+                    image.dimensions, 
+                    image.has_mask
+                )
 
                 m = workspace.measurements
 

@@ -1594,7 +1594,7 @@ def measure_label_surface_area(
 # MeasureImageIntensity
 ###############################################################################
 
-def get_intensity_measurements(
+def measure_image_intensities(
         pixels: NDArray[np.float32], 
         percentiles: List[int]=[]
     ) -> Tuple[List[float], Dict[int, float]]:

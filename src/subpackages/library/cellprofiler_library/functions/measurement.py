@@ -1367,8 +1367,8 @@ def get_costes_coefficient(
 def measure_costes_coefficient(
         im1_pixels: NDArray[Pixel], 
         im2_pixels: NDArray[Pixel],
-        im1_scale: Optional[np.float64] = None,
-        im2_scale: Optional[np.float64] = None,
+        im1_scale: Optional[float] = None,
+        im2_scale: Optional[float] = None,
         costes_method: CostesMethod = CostesMethod.FAST,
     ) -> Tuple[ np.float64, np.float64]:
     #

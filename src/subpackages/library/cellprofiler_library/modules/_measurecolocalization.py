@@ -18,8 +18,8 @@ def run_image_pair_images(
     im1_thr_percentage: Annotated[float, Field(description="Threshold value for the first image"), BeforeValidator(np.float64)]=100, 
     im2_thr_percentage: Annotated[float, Field(description="Threshold value for the second image"), BeforeValidator(np.float64)]=100, 
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")] = [MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
-    im1_scale:          Annotated[Optional[np.float64], Field(description="")] = None,
-    im2_scale:          Annotated[Optional[np.float64], Field(description="")] = None,
+    im1_scale:          Annotated[Optional[float], Field(description="")] = None,
+    im2_scale:          Annotated[Optional[float], Field(description="")] = None,
     costes_method:      Annotated[Optional[CostesMethod], Field(description="")] = CostesMethod.FAST,
     ) -> Annotated[
         Tuple[
@@ -82,6 +82,7 @@ def run_image_pair_images(
                 ]
 
             if MeasurementType.COSTES in measurement_types:
+                assert costes_method is not None, "costes_method must be one of {}".format(CostesMethod.__members__.values())
                 assert costes_method in CostesMethod.__members__.values(), "costes_method must be one of {}".format(CostesMethod.__members__.values())
                 
                 C1, C2 = measure_costes_coefficient(im1_pixels, im2_pixels, im1_scale, im2_scale, costes_method=costes_method)
@@ -156,8 +157,8 @@ def run_image_pair_objects(
     im1_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="First image pixel data for costes")]=None,
     im2_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="Second image pixel data for costes")]=None,
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")]=[MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
-    im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding")]=None,
-    im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
+    im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding"), BeforeValidator(np.float64)]=None,
+    im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding"), BeforeValidator(np.float64)]=None,
     costes_method:      Annotated[CostesMethod, Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
     ) -> Tuple[
         Dict[str, NDArray[np.float64]],

@@ -1,20 +1,24 @@
+import numpy
+from typing import Annotated, Optional, Dict
+from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.opts.measureimageoverlap import DM
 from cellprofiler_library.functions.measurement import (
     measure_image_overlap_statistics,
     compute_earth_movers_distance,
 )
+from cellprofiler_library.types import ImageBinary, ImageBinaryMask
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measureimageoverlap(
-    ground_truth_image,
-    test_image,
-    mask=None,
-    calculate_emd=False,
-    max_distance=250,
-    penalize_missing=False,
-    decimation_method: DM = DM.KMEANS,
-    max_points=250,
-):
+    ground_truth_image: Annotated[ImageBinary, Field(description="Ground truth binary image")],
+    test_image:         Annotated[ImageBinary, Field(description="Test binary image")],
+    mask:               Annotated[Optional[ImageBinaryMask], Field(description="Mask image")] = None,
+    calculate_emd:      Annotated[bool, Field(description="Calculate Earth Movers Distance")] = False,
+    max_distance:       Annotated[int, Field(description="Maximum distance for EMD")] = 250,
+    penalize_missing:   Annotated[bool, Field(description="Penalize missing points")] = False,
+    decimation_method:  Annotated[DM, Field(description="Decimation method")] = DM.KMEANS,
+    max_points:         Annotated[int, Field(description="Maximum number of points")] = 250,
+) -> Dict[str, numpy.float_]:
 
     data = measure_image_overlap_statistics(
         ground_truth_image=ground_truth_image, test_image=test_image, mask=mask

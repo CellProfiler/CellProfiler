@@ -72,40 +72,13 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Integer
 
+from cellprofiler_library.opts.measureobjectoverlap import Feature, ALL_FEATURES, C_IMAGE_OVERLAP, DM
 from cellprofiler.modules import _help
-
-C_IMAGE_OVERLAP = "Overlap"
-FTR_F_FACTOR = "Ffactor"
-FTR_PRECISION = "Precision"
-FTR_RECALL = "Recall"
-FTR_TRUE_POS_RATE = "TruePosRate"
-FTR_FALSE_POS_RATE = "FalsePosRate"
-FTR_FALSE_NEG_RATE = "FalseNegRate"
-FTR_TRUE_NEG_RATE = "TrueNegRate"
-FTR_RAND_INDEX = "RandIndex"
-FTR_ADJUSTED_RAND_INDEX = "AdjustedRandIndex"
-FTR_EARTH_MOVERS_DISTANCE = "EarthMoversDistance"
-
-FTR_ALL = [
-    FTR_F_FACTOR,
-    FTR_PRECISION,
-    FTR_RECALL,
-    FTR_TRUE_POS_RATE,
-    FTR_TRUE_NEG_RATE,
-    FTR_FALSE_POS_RATE,
-    FTR_FALSE_NEG_RATE,
-    FTR_RAND_INDEX,
-    FTR_ADJUSTED_RAND_INDEX,
-]
 
 O_OBJ = "Segmented objects"
 
 L_LOAD = "Loaded from a previous run"
 L_CP = "From this CP pipeline"
-
-DM_KMEANS = "K Means"
-DM_SKEL = "Skeleton"
-
 
 class MeasureObjectOverlap(Module):
     category = "Measurement"
@@ -163,7 +136,7 @@ objects using the point selection method (see below).""",
 
         self.decimation_method = Choice(
             "Point selection method",
-            choices=[DM_KMEANS, DM_SKEL],
+            choices=[DM.KMEANS, DM.SKELETON],
             doc="""\
 *(Used only when computing the earth mover’s distance)*
 
@@ -185,8 +158,8 @@ worms or neurites.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
                 **{
-                    "DM_KMEANS": DM_KMEANS,
-                    "DM_SKEL": DM_SKEL,
+                    "DM_KMEANS": DM.KMEANS.value,
+                    "DM_SKEL": DM.SKELETON.value,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
@@ -401,24 +374,24 @@ the two objects. Set this setting to “No” to assess no penalty.""",
             objects_GT.ijv, objects_ID.ijv, shape
         )
         m = workspace.measurements
-        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
-        m.add_image_measurement(self.measurement_name(FTR_PRECISION), precision)
-        m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(Feature.F_FACTOR), F_factor)
+        m.add_image_measurement(self.measurement_name(Feature.PRECISION), precision)
+        m.add_image_measurement(self.measurement_name(Feature.RECALL), recall)
         m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_POS_RATE), true_positive_rate
+            self.measurement_name(Feature.TRUE_POS_RATE), true_positive_rate
         )
         m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_POS_RATE), false_positive_rate
+            self.measurement_name(Feature.FALSE_POS_RATE), false_positive_rate
         )
         m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_NEG_RATE), true_negative_rate
+            self.measurement_name(Feature.TRUE_NEG_RATE), true_negative_rate
         )
         m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_NEG_RATE), false_negative_rate
+            self.measurement_name(Feature.FALSE_NEG_RATE), false_negative_rate
         )
-        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX), rand_index)
+        m.add_image_measurement(self.measurement_name(Feature.RAND_INDEX), rand_index)
         m.add_image_measurement(
-            self.measurement_name(FTR_ADJUSTED_RAND_INDEX), adjusted_rand_index
+            self.measurement_name(Feature.ADJUSTED_RAND_INDEX), adjusted_rand_index
         )
 
         def subscripts(condition1, condition2):
@@ -449,7 +422,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         if self.wants_emd:
             emd = self.compute_emd(objects_ID, objects_GT)
             m.add_image_measurement(
-                self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd
+                self.measurement_name(Feature.EARTH_MOVERS_DISTANCE), emd
             )
 
         if self.show_window:
@@ -458,17 +431,17 @@ the two objects. Set this setting to “No” to assess no penalty.""",
             workspace.display_data.false_positives = FP_pixels
             workspace.display_data.false_negatives = FN_pixels
             workspace.display_data.statistics = [
-                (FTR_F_FACTOR, F_factor),
-                (FTR_PRECISION, precision),
-                (FTR_RECALL, recall),
-                (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate),
-                (FTR_RAND_INDEX, rand_index),
-                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index),
+                (Feature.F_FACTOR.value, F_factor),
+                (Feature.PRECISION.value, precision),
+                (Feature.RECALL.value, recall),
+                (Feature.FALSE_POS_RATE.value, false_positive_rate),
+                (Feature.FALSE_NEG_RATE.value, false_negative_rate),
+                (Feature.RAND_INDEX.value, rand_index),
+                (Feature.ADJUSTED_RAND_INDEX.value, adjusted_rand_index),
             ]
             if self.wants_emd:
                 workspace.display_data.statistics.append(
-                    (FTR_EARTH_MOVERS_DISTANCE, emd)
+                    (Feature.EARTH_MOVERS_DISTANCE.value, emd)
                 )
 
     # def compute_rand_index(self, test_labels, ground_truth_labels, mask):
@@ -767,7 +740,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
                     return numpy.sum(demons.areas) * self.max_distance.value
                 else:
                     return 0
-        if self.decimation_method == DM_KMEANS:
+        if self.decimation_method.value == DM.KMEANS:
             isrc, jsrc = self.get_kmeans_points(src_objects, dest_objects)
             idest, jdest = isrc, jsrc
         else:
@@ -963,17 +936,17 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         if (
             object_name == "Image"
             and category == C_IMAGE_OVERLAP
-            and measurement in FTR_ALL
+            and measurement in ALL_FEATURES
         ):
             return ["_".join((self.object_name_GT.value, self.object_name_ID.value))]
 
         return []
 
     def all_features(self):
-        all_features = list(FTR_ALL)
+        all_features = list(ALL_FEATURES)
 
         if self.wants_emd:
-            all_features.append(FTR_EARTH_MOVERS_DISTANCE)
+            all_features.append(Feature.EARTH_MOVERS_DISTANCE)
 
         return all_features
 

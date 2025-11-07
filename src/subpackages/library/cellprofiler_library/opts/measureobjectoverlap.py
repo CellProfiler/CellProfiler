@@ -1,7 +1,7 @@
 from enum import Enum
 
-# Decimation Method for Earh Mover's Distance
-class DM(str, Enum):
+# Decimation Method for Earth Mover's Distance
+class DecimationMethod(str, Enum):
     KMEANS = "K Means"
     SKELETON = "Skeleton"
 

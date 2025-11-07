@@ -2,13 +2,15 @@ import numpy as np
 import numpy
 import scipy
 import scipy.ndimage
+import scipy.sparse
 import skimage
 import centrosome
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.propagate
 import centrosome.fastemd
-
+import centrosome.index
+from functools import reduce
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
 from typing import Tuple, Optional, Dict, Callable, List, Union, Any
@@ -16,17 +18,16 @@ from scipy.linalg import lstsq
 from numpy.typing import NDArray
 
 from cellprofiler_library.opts import measureimageoverlap as mio
-from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
-from cellprofiler_library.functions.segmentation import indices_from_ijv
 from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
+from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
-
+from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as ObjectDecimationMethod
 
 #
 # For each object, build a little record
@@ -321,72 +322,20 @@ def compute_earth_movers_distance(
         mask = mask.reshape(-1, mask.shape[-1])
 
     # ground truth labels
-    dest_labels = scipy.ndimage.label(
-        ground_truth_image & mask, np.ones((3, 3), bool)
-    )[0]
+    dest_labels = scipy.ndimage.label(ground_truth_image & mask, np.ones((3, 3), bool))[0]
+    src_labels = scipy.ndimage.label(test_image & mask, np.ones((3, 3), bool))[0]
     dest_labelset = cast_labels_to_label_set(dest_labels)
-    dest_ijv = convert_labels_to_ijv(dest_labels, validate=False)
-    dest_ijv_indices = indices_from_ijv(dest_ijv, validate=False)
-    dest_count = count_from_ijv(
-        dest_ijv, indices=dest_ijv_indices, validate=False)
-    dest_areas = areas_from_ijv(
-        dest_ijv, indices=dest_ijv_indices, validate=False)
-
-    # test labels
-    src_labels = scipy.ndimage.label(
-        test_image & mask, np.ones((3, 3), bool)
-    )[0]
     src_labelset = cast_labels_to_label_set(src_labels)
-    src_ijv = convert_labels_to_ijv(src_labels, validate=False)
-    src_ijv_indices = indices_from_ijv(src_ijv, validate=False)
-    src_count = count_from_ijv(
-        src_ijv, indices=src_ijv_indices, validate=False)
-    src_areas = areas_from_ijv(
-        src_ijv, indices=src_ijv_indices, validate=False)
-
-    #
-    # if either foreground set is empty, the emd is the penalty.
-    #
-    for lef_count, right_areas in (
-        (src_count, dest_areas),
-        (dest_count, src_areas),
-    ):
-        if lef_count == 0:
-            if penalize_missing:
-                return np.sum(right_areas) * max_distance
-            else:
-                return 0
-    if decimation_method == mio.DM.KMEANS:
-        isrc, jsrc = get_kmeans_points(src_ijv, dest_ijv, max_points)
-        idest, jdest = isrc, jsrc
-    elif decimation_method == mio.DM.SKELETON:
-        isrc, jsrc = get_skeleton_points(src_labelset, src_labels.shape, max_points)
-        idest, jdest = get_skeleton_points(dest_labelset, dest_labels.shape, max_points)
-    else:
-        raise TypeError("Unknown type for decimation method: %s" % decimation_method)
-    src_weights, dest_weights = [
-        get_weights(i, j, get_labels_mask(labelset, shape))
-        for i, j, labelset, shape in (
-            (isrc, jsrc, src_labelset, src_labels.shape),
-            (idest, jdest, dest_labelset, dest_labels.shape),
-        )
-    ]
-    ioff, joff = [
-        src[:, np.newaxis] - dest[np.newaxis, :]
-        for src, dest in ((isrc, idest), (jsrc, jdest))
-    ]
-    c = np.sqrt(ioff * ioff + joff * joff).astype(np.int32)
-    c[c > max_distance] = max_distance
-    extra_mass_penalty = max_distance if penalize_missing else 0
-
-    emd = centrosome.fastemd.emd_hat_int32(
-        src_weights.astype(np.int32),
-        dest_weights.astype(np.int32),
-        c,
-        extra_mass_penalty=extra_mass_penalty,
+    emd = compute_earth_movers_distance_objects(
+        src_objects_labels=src_labelset,
+        dest_objects_labels=dest_labelset,
+        penalize_missing=penalize_missing,
+        max_distance=max_distance,
+        max_points=max_points,
+        decimation_method=decimation_method,
     )
     return emd
-
+    
 
 def get_labels_mask(labelset, shape):
     labels_mask = np.zeros(shape, bool)
@@ -395,7 +344,11 @@ def get_labels_mask(labelset, shape):
     return labels_mask
 
 
-def get_skeleton_points(labelset, shape, max_points):
+def get_skeleton_points(
+        labelset: ObjectLabelSet, 
+        shape: Tuple[int, int], 
+        max_points: int=250,
+    ) -> Tuple[NDArray[np.int32], NDArray[np.int32]]:
     """Get points by skeletonizing the objects and decimating"""
     total_skel = np.zeros(shape, bool)
 
@@ -446,7 +399,11 @@ def get_skeleton_points(labelset, shape, max_points):
     return i, j
 
 
-def get_kmeans_points(src_ijv, dest_ijv, max_points):
+def get_kmeans_points(
+        src_ijv: ObjectSegmentationIJV, 
+        dest_ijv: ObjectSegmentationIJV, 
+        max_points: int=250
+    ) -> Tuple[NDArray[numpy.int_], NDArray[numpy.int_]]:
     """Get representative points in the objects using K means
 
     src_ijv - get some of the foreground points from the source ijv labeling
@@ -464,13 +421,17 @@ def get_kmeans_points(src_ijv, dest_ijv, max_points):
     random_state.seed(ijv.astype(int).flatten())
     kmeans = KMeans(n_clusters=max_points, tol=2, random_state=random_state)
     kmeans.fit(ijv[:, :2])
-    return (
-        kmeans.cluster_centers_[:, 0].astype(np.uint32),
-        kmeans.cluster_centers_[:, 1].astype(np.uint32),
+    return ( # TODO: why uint32 below?
+        kmeans.cluster_centers_[:, 0].astype(np.uint32).astype(np.int64),
+        kmeans.cluster_centers_[:, 1].astype(np.uint32).astype(np.int64),
     )
 
 
-def get_weights(i, j, labels_mask):
+def get_weights(
+        i: NDArray[numpy.int_],
+        j: NDArray[numpy.int_],
+        labels_mask: NDArray[numpy.bool_],
+        ) -> NDArray[numpy.int_]:
     """Return the weights to assign each i,j point
 
     Assign each pixel in the labels mask to the nearest i,j and return
@@ -1970,3 +1931,494 @@ def measure_quartile_intensity(indices:NDArray[numpy.int_], areas: NDArray[numpy
     qmask_no_upper = (~qmask) & (areas > 0)
     dest_no_upper = limg[order[qindex[qmask_no_upper]]]
     return qmask, _dest, qmask_no_upper, dest_no_upper
+
+###############################################################################
+# MeasureObjectOverlap
+###############################################################################
+
+
+def object_overlap_confusion_matrix(
+        dom_ID: NDArray[numpy.int_],
+        id_areas: NDArray[numpy.int_],
+        intersect_matrix: NDArray[Union[numpy.int_, numpy.float_]],
+        FN_area: NDArray[numpy.float_],
+        total_pixels: int
+        ) -> Tuple[
+            int,
+            int,
+            int,
+            int,
+            ]:
+    TP = 0
+    FN = 0
+    FP = 0
+    for i in range(0, len(dom_ID)):
+        d = dom_ID[i]
+        if d == -1:
+            tp = 0
+            fn = id_areas[i]
+            fp = 0
+        else:
+            fp = numpy.sum(intersect_matrix[i][0:d]) + numpy.sum(intersect_matrix[i][(d + 1) : :])
+            tp = intersect_matrix[i][d]
+            fn = FN_area[i][d]
+        TP += tp
+        FN += fn
+        FP += fp
+
+    TN = max(0, total_pixels - TP - FN - FP)
+    return TP, FN, FP, TN
+
+
+def get_dominating_ID_objects(
+        ID_obj: int, 
+        lID: NDArray[numpy.int_],
+        iID: NDArray[numpy.int_],
+        jID: NDArray[numpy.int_],
+        ID_pixels: NDArray[numpy.float_],
+        intersect_matrix: NDArray[Union[numpy.int_, numpy.float_]]
+        ) -> NDArray[numpy.int_]:
+    dom_ID = []
+
+    for i in range(0, ID_obj):
+        indices_jj = numpy.nonzero(lID == i)
+        indices_jj = indices_jj[0]
+        id_i = iID[indices_jj]
+        id_j = jID[indices_jj]
+        ID_pixels[id_i, id_j] = 1
+
+    for i in intersect_matrix:  # loop through the GT objects first
+        if len(i) == 0 or max(i) == 0:
+            id = -1  # we missed the object; arbitrarily assign -1 index
+        else:
+            id = numpy.where(i == max(i))[0][0]  # what is the ID of the max pixels?
+        dom_ID += [id]  # for ea GT object, which is the dominating ID?
+
+    dom_ID = numpy.array(dom_ID)
+
+    
+    return dom_ID
+
+def get_intersect_matrix(
+        iGT: NDArray[numpy.int_],
+        jGT: NDArray[numpy.int_],
+        lGT: NDArray[numpy.int_],
+        iID: NDArray[numpy.int_],
+        jID: NDArray[numpy.int_],
+        lID: NDArray[numpy.int_],
+        ID_obj: int, 
+        GT_obj: int
+        ) -> NDArray[Union[numpy.int_, numpy.float_]]:
+    if len(iGT) == 0 and len(iID) == 0:
+        intersect_matrix = numpy.zeros((0, 0), int)
+    else:
+        #
+        # Build a matrix with rows of i, j, label and a GT/ID flag
+        #
+        all_ijv = numpy.column_stack(
+            (
+                numpy.hstack((iGT, iID)),
+                numpy.hstack((jGT, jID)),
+                numpy.hstack((lGT, lID)),
+                numpy.hstack((numpy.zeros(len(iGT)), numpy.ones(len(iID)))),
+            )
+        )
+        #
+        # Order it so that runs of the same i, j are consecutive
+        #
+        order = numpy.lexsort((all_ijv[:, -1], all_ijv[:, 0], all_ijv[:, 1]))
+        all_ijv = all_ijv[order, :]
+        # Mark the first at each i, j != previous i, j
+        first = numpy.where(
+            numpy.hstack(
+                ([True], ~numpy.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1), [True])
+            )
+        )[0]
+        # Count # at each i, j
+        count = first[1:] - first[:-1]
+        # First indexer - mapping from i,j to index in all_ijv
+        all_ijv_map = centrosome.index.Indexes([count])
+        # Bincount to get the # of ID pixels per i,j
+        id_count = numpy.bincount(all_ijv_map.rev_idx, all_ijv[:, -1]).astype(int)
+        gt_count = count - id_count
+        # Now we can create an indexer that has NxM elements per i,j
+        # where N is the number of GT pixels at that i,j and M is
+        # the number of ID pixels. We can then use the indexer to pull
+        # out the label values for each to populate a sparse array.
+        #
+        cross_map = centrosome.index.Indexes([id_count, gt_count])
+        off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
+        off_id = (
+            all_ijv_map.fwd_idx[cross_map.rev_idx]
+            + cross_map.idx[1]
+            + id_count[cross_map.rev_idx]
+        )
+        intersect_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones(len(off_gt)), (all_ijv[off_id, 2], all_ijv[off_gt, 2])),
+            shape=(ID_obj + 1, GT_obj + 1),
+        ).toarray()[1:, 1:]
+    return intersect_matrix
+
+
+# def compute_rand_index(self, test_labels, ground_truth_labels, mask):
+#     """Calculate the Rand Index
+#
+#     http://en.wikipedia.org/wiki/Rand_index
+#
+#     Given a set of N elements and two partitions of that set, X and Y
+#
+#     A = the number of pairs of elements in S that are in the same set in
+#         X and in the same set in Y
+#     B = the number of pairs of elements in S that are in different sets
+#         in X and different sets in Y
+#     C = the number of pairs of elements in S that are in the same set in
+#         X and different sets in Y
+#     D = the number of pairs of elements in S that are in different sets
+#         in X and the same set in Y
+#
+#     The rand index is:   A + B
+#                          -----
+#                         A+B+C+D
+#
+#
+#     The adjusted rand index is the rand index adjusted for chance
+#     so as not to penalize situations with many segmentations.
+#
+#     Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand
+#     Index as a Metric for Evaluating Supervised Classification",
+#     Lecture Notes in Computer Science,
+#     Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
+#
+#     ExpectedIndex = best possible score
+#
+#     ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2)
+#
+#     MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
+#
+#     A * total - ExpectedIndex
+#     -------------------------
+#     MaxIndex - ExpectedIndex
+#
+#     returns a tuple of the Rand Index and the adjusted Rand Index
+#     """
+#     ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint64)
+#     test_labels = test_labels[mask].astype(numpy.uint64)
+#     if len(test_labels) > 0:
+#         #
+#         # Create a sparse matrix of the pixel labels in each of the sets
+#         #
+#         # The matrix, N(i,j) gives the counts of all of the pixels that were
+#         # labeled with label I in the ground truth and label J in the
+#         # test set.
+#         #
+#         N_ij = scipy.sparse.coo_matrix((numpy.ones(len(test_labels)),
+#                                         (ground_truth_labels, test_labels))).toarray()
+#
+#         def choose2(x):
+#             '''Compute # of pairs of x things = x * (x-1) / 2'''
+#             return x * (x - 1) / 2
+#
+#         #
+#         # Each cell in the matrix is a count of a grouping of pixels whose
+#         # pixel pairs are in the same set in both groups. The number of
+#         # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
+#         #
+#         A = numpy.sum(choose2(N_ij))
+#         #
+#         # B is the sum of pixels that were classified differently by both
+#         # sets. But the easier calculation is to find A, C and D and get
+#         # B by subtracting A, C and D from the N * (N - 1), the total
+#         # number of pairs.
+#         #
+#         # For C, we take the number of pixels classified as "i" and for each
+#         # "j", subtract N(i,j) from N(i) to get the number of pixels in
+#         # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
+#         #
+#         # We do the similar calculation for D
+#         #
+#         N_i = numpy.sum(N_ij, 1)
+#         N_j = numpy.sum(N_ij, 0)
+#         C = numpy.sum((N_i[:, numpy.newaxis] - N_ij) * N_ij) / 2
+#         D = numpy.sum((N_j[numpy.newaxis, :] - N_ij) * N_ij) / 2
+#         total = choose2(len(test_labels))
+#         # an astute observer would say, why bother computing A and B
+#         # when all we need is A+B and C, D and the total can be used to do
+#         # that. The calculations aren't too expensive, though, so I do them.
+#         B = total - A - C - D
+#         rand_index = (A + B) / total
+#         #
+#         # Compute adjusted Rand Index
+#         #
+#         expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
+#         max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
+#
+#         adjusted_rand_index = \
+#             (A * total - expected_index) / (max_index - expected_index)
+#     else:
+#         rand_index = adjusted_rand_index = numpy.nan
+#     return rand_index, adjusted_rand_index
+def compute_rand_index_ijv(
+        gt_ijv: ObjectSegmentationIJV,
+        test_ijv: ObjectSegmentationIJV,
+        shape: Union[Tuple[int, int], NDArray[numpy.int_]]
+    ) -> Tuple[numpy.float_, numpy.float_]:
+    """Compute the Rand Index for an IJV matrix
+
+    This is in part based on the Omega Index:
+    Collins, "Omega: A General Formulation of the Rand Index of Cluster
+    Recovery Suitable for Non-disjoint Solutions", Multivariate Behavioral
+    Research, 1988, 23, 231-242
+
+    The basic idea of the paper is that a pair should be judged to
+    agree only if the number of clusters in which they appear together
+    is the same.
+    """
+    #
+    # The idea here is to assign a label to every pixel position based
+    # on the set of labels given to that position by both the ground
+    # truth and the test set. We then assess each pair of labels
+    # as agreeing or disagreeing as to the number of matches.
+    #
+    # First, add the backgrounds to the IJV with a label of zero
+    #
+    gt_bkgd = numpy.ones(shape, bool)
+    gt_bkgd[gt_ijv[:, 0], gt_ijv[:, 1]] = False
+    test_bkgd = numpy.ones(shape, bool)
+    test_bkgd[test_ijv[:, 0], test_ijv[:, 1]] = False
+    gt_ijv = numpy.vstack(
+        [
+            gt_ijv,
+            numpy.column_stack(
+                [
+                    numpy.argwhere(gt_bkgd),
+                    numpy.zeros(numpy.sum(gt_bkgd), gt_bkgd.dtype),
+                ]
+            ),
+        ]
+    )
+    test_ijv = numpy.vstack(
+        [
+            test_ijv,
+            numpy.column_stack(
+                [
+                    numpy.argwhere(test_bkgd),
+                    numpy.zeros(numpy.sum(test_bkgd), test_bkgd.dtype),
+                ]
+            ),
+        ]
+    )
+    #
+    # Create a unified structure for the pixels where a fourth column
+    # tells you whether the pixels came from the ground-truth or test
+    #
+    u = numpy.vstack(
+        [
+            numpy.column_stack(
+                [gt_ijv, numpy.zeros(gt_ijv.shape[0], gt_ijv.dtype)]
+            ),
+            numpy.column_stack(
+                [test_ijv, numpy.ones(test_ijv.shape[0], test_ijv.dtype)]
+            ),
+        ]
+    )
+    #
+    # Sort by coordinates, then by identity
+    #
+    order = numpy.lexsort([u[:, 2], u[:, 3], u[:, 0], u[:, 1]])
+    u = u[order, :]
+    # Get rid of any duplicate labellings (same point labeled twice with
+    # same label.
+    #
+    first = numpy.hstack([[True], numpy.any(u[:-1, :] != u[1:, :], 1)])
+    u = u[first, :]
+    #
+    # Create a 1-d indexer to point at each unique coordinate.
+    #
+    first_coord_idxs = numpy.hstack(
+        [
+            [0],
+            numpy.argwhere(
+                (u[:-1, 0] != u[1:, 0]) | (u[:-1, 1] != u[1:, 1])
+            ).flatten()
+            + 1,
+            [u.shape[0]],
+        ]
+    )
+    first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
+    indexes = centrosome.index.Indexes([first_coord_counts])
+    #
+    # Count the number of labels at each point for both gt and test
+    #
+    count_test = numpy.bincount(indexes.rev_idx, u[:, 3]).astype(numpy.int64)
+    count_gt = first_coord_counts - count_test
+    #
+    # For each # of labels, pull out the coordinates that have
+    # that many labels. Count the number of similarly labeled coordinates
+    # and record the count and labels for that group.
+    #
+    labels = []
+    for i in range(1, numpy.max(count_test) + 1):
+        for j in range(1, numpy.max(count_gt) + 1):
+            match = (count_test[indexes.rev_idx] == i) & (
+                count_gt[indexes.rev_idx] == j
+            )
+            if not numpy.any(match):
+                continue
+            #
+            # Arrange into an array where the rows are coordinates
+            # and the columns are the labels for that coordinate
+            #
+            lm = u[match, 2].reshape(numpy.sum(match) // (i + j), i + j)
+            #
+            # Sort by label.
+            #
+            order = numpy.lexsort(lm.transpose())
+            lm = lm[order, :]
+            #
+            # Find indices of unique and # of each
+            #
+            lm_first = numpy.hstack(
+                [
+                    [0],
+                    numpy.argwhere(numpy.any(lm[:-1, :] != lm[1:, :], 1)).flatten()
+                    + 1,
+                    [lm.shape[0]],
+                ]
+            )
+            lm_count = lm_first[1:] - lm_first[:-1]
+            for idx, count in zip(lm_first[:-1], lm_count):
+                labels.append((count, lm[idx, :j], lm[idx, j:]))
+    #
+    # We now have our sets partitioned. Do each against each to get
+    # the number of true positive and negative pairs.
+    #
+    max_t_labels = reduce(max, [len(t) for c, t, g in labels], 0)
+    max_g_labels = reduce(max, [len(g) for c, t, g in labels], 0)
+    #
+    # tbl is the contingency table from Table 4 of the Collins paper
+    # It's a table of the number of pairs which fall into M sets
+    # in the ground truth case and N in the test case.
+    #
+    tbl = numpy.zeros(((max_t_labels + 1), (max_g_labels + 1)))
+    for i, (c1, tobject_numbers1, gobject_numbers1) in enumerate(labels):
+        for j, (c2, tobject_numbers2, gobject_numbers2) in enumerate(labels[i:]):
+            nhits_test = numpy.sum(
+                tobject_numbers1[:, numpy.newaxis]
+                == tobject_numbers2[numpy.newaxis, :]
+            )
+            nhits_gt = numpy.sum(
+                gobject_numbers1[:, numpy.newaxis]
+                == gobject_numbers2[numpy.newaxis, :]
+            )
+            if j == 0:
+                N = c1 * (c1 - 1) / 2
+            else:
+                N = c1 * c2
+            tbl[nhits_test, nhits_gt] += N
+
+    N = numpy.sum(tbl)
+    #
+    # Equation 13 from the paper
+    #
+    min_JK = min(max_t_labels, max_g_labels) + 1
+    rand_index = numpy.sum(tbl[:min_JK, :min_JK] * numpy.identity(min_JK)) / N
+    #
+    # Equation 15 from the paper, the expected index
+    #
+    e_omega = (
+        numpy.sum(
+            numpy.sum(tbl[:min_JK, :min_JK], 0)
+            * numpy.sum(tbl[:min_JK, :min_JK], 1)
+        )
+        / N ** 2
+    )
+    #
+    # Equation 16 is the adjusted index
+    #
+    adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
+    return rand_index, adjusted_rand_index
+
+
+def compute_earth_movers_distance_objects(
+        src_objects_labels: ObjectLabelSet,
+        dest_objects_labels: ObjectLabelSet,
+        decimation_method: Union[ObjectDecimationMethod, mio.DM]=ObjectDecimationMethod.KMEANS,
+        max_points: int=250,
+        max_distance: int=250,
+        penalize_missing: bool=False,
+        ) -> np.float_:
+    src_objects_shape = src_objects_labels[0][0].shape
+    dest_objects_shape = dest_objects_labels[0][0].shape
+
+    if len(src_objects_shape) == 0:
+        src_count = 0
+        src_areas = 0
+    else:
+        src_obj_ijv = convert_label_set_to_ijv(src_objects_labels, validate=True)
+        src_count = count_from_ijv(src_obj_ijv, validate=False)
+        src_areas = areas_from_ijv(src_obj_ijv, validate=False)
+
+    if len(dest_objects_shape) == 0:
+        dest_count = 0
+        dest_areas = 0
+    else:
+        dest_obj_ijv = convert_label_set_to_ijv(dest_objects_labels, validate=True)
+        dest_count = count_from_ijv(dest_obj_ijv, validate=False)
+        dest_areas = areas_from_ijv(dest_obj_ijv, validate=False)
+
+    """Compute the earthmovers distance between two sets of objects
+
+    src_objects - move pixels from these objects
+
+    dest_objects - move pixels to these objects
+
+    returns the earth mover's distance
+    """
+    #
+    # if either foreground set is empty, the emd is the penalty.
+    #
+
+    for left_count, right_areas in (
+        (src_count, dest_areas),
+        (dest_count, src_areas),
+        ):
+        if left_count == 0:
+            if penalize_missing:
+                return np.sum(right_areas) * max_distance
+            else:
+                return np.float64(0)
+    
+    if decimation_method in (ObjectDecimationMethod.KMEANS, mio.DM.KMEANS):
+        isrc, jsrc = get_kmeans_points(src_obj_ijv, dest_obj_ijv, max_points)
+        idest, jdest = isrc, jsrc
+
+    elif decimation_method in (ObjectDecimationMethod.SKELETON, mio.DM.SKELETON):
+        assert src_objects_labels is not None, "src_objects_labels must be provided for Skeleton decimation method"
+        assert dest_objects_labels is not None, "dest_objects_labels must be provided for Skeleton decimation method"
+        assert src_objects_shape is not None, "src_objects_shape must be provided for Skeleton decimation method"
+        assert dest_objects_shape is not None, "dest_objects_shape must be provided for Skeleton decimation method"
+        isrc, jsrc = get_skeleton_points(src_objects_labels, src_objects_shape, max_points)
+        idest, jdest = get_skeleton_points(dest_objects_labels, dest_objects_shape, max_points)
+    else:
+        raise TypeError("Unknown type for decimation method: %s" % decimation_method)
+    src_labels_mask = get_labels_mask(src_objects_labels, src_objects_shape)
+    dest_labels_mask = get_labels_mask(dest_objects_labels, dest_objects_shape)
+            
+    src_weights = get_weights(isrc, jsrc, src_labels_mask)
+    dest_weights = get_weights(idest, jdest, dest_labels_mask)
+
+    ioff, joff = [
+        src[:, np.newaxis] - dest[np.newaxis, :]
+        for src, dest in ((isrc, idest), (jsrc, jdest))
+    ]
+    c = np.sqrt(ioff * ioff + joff * joff).astype(np.int32)
+    c[c > max_distance] = max_distance
+    extra_mass_penalty = max_distance if penalize_missing else 0
+
+    emd = centrosome.fastemd.emd_hat_int32(
+        src_weights.astype(np.int32),
+        dest_weights.astype(np.int32),
+        c,
+        extra_mass_penalty=extra_mass_penalty,
+    )
+    return emd

@@ -331,7 +331,6 @@ The file has the following columns:
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
         labels = seed_objects.segmented
         labels_count = numpy.max(labels)
-        label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
 
         skeleton_image = workspace.image_set.get_image(
             skeleton_name, must_be_binary=True
@@ -362,12 +361,11 @@ The file has the following columns:
             skeleton, 
             labels, 
             labels_count, 
-            label_range, 
             fill_small_holes, 
             max_hole_size, 
             self.wants_objskeleton_graph.value, 
             intensity_image.pixel_data if intensity_image else None,
-            self.wants_branchpoint_image.value
+            True # This is hardcoded to True as branchpoint_image output is needed for frontend show_window
             )
         #
         # Save measurements

@@ -84,28 +84,7 @@ from cellprofiler_core.setting.text import Text
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
-
-"""The measurement category"""
-C_OBJSKELETON = "ObjectSkeleton"
-
-"""The trunk count feature"""
-F_NUMBER_TRUNKS = "NumberTrunks"
-
-"""The branch feature"""
-F_NUMBER_NON_TRUNK_BRANCHES = "NumberNonTrunkBranches"
-
-"""The endpoint feature"""
-F_NUMBER_BRANCH_ENDS = "NumberBranchEnds"
-
-"""The neurite length feature"""
-F_TOTAL_OBJSKELETON_LENGTH = "TotalObjectSkeletonLength"
-
-F_ALL = [
-    F_NUMBER_TRUNKS,
-    F_NUMBER_NON_TRUNK_BRANCHES,
-    F_NUMBER_BRANCH_ENDS,
-    F_TOTAL_OBJSKELETON_LENGTH,
-]
+from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON, F_ALL
 
 
 class MeasureObjectSkeleton(Module):
@@ -526,13 +505,13 @@ The file has the following columns:
         #
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        feature = "_".join((C_OBJSKELETON, F_NUMBER_TRUNKS, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
-        feature = "_".join((C_OBJSKELETON, F_NUMBER_NON_TRUNK_BRANCHES, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, skeleton_name))
         m.add_measurement(seed_objects_name, feature, branch_counts)
-        feature = "_".join((C_OBJSKELETON, F_NUMBER_BRANCH_ENDS, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_BRANCH_ENDS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, end_counts)
-        feature = "_".join((C_OBJSKELETON, F_TOTAL_OBJSKELETON_LENGTH, skeleton_name))
+        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.TOTAL_OBJSKELETON_LENGTH, skeleton_name))
         m[seed_objects_name, feature] = total_distance
         #
         # Collect the graph information
@@ -654,7 +633,7 @@ The file has the following columns:
                 self.seed_objects_name.value,
                 "_".join((C_OBJSKELETON, feature, self.image_name.value)),
                 COLTYPE_FLOAT
-                if feature == F_TOTAL_OBJSKELETON_LENGTH
+                if feature == SkeletonMeasurements.TOTAL_OBJSKELETON_LENGTH
                 else COLTYPE_INTEGER,
             )
             for feature in F_ALL

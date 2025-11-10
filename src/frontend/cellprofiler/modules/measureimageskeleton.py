@@ -36,7 +36,8 @@ import skimage.segmentation
 import skimage.util
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-
+from cellprofiler_library.modules._measureimageskeleton import measure_image_skeleton
+from cellprofiler_library.opts.measureimageskeleton import SkeletonMeasurements
 
 def _neighbors(image):
     """
@@ -125,13 +126,9 @@ You can create a morphological skeleton with the
 
         pixels = input_image.pixel_data
 
-        pixels = pixels > 0
+        branch_nodes, endpoint_nodes, skeleton_measurements = measure_image_skeleton(pixels, im_name=self.skeleton_name.value)
 
-        branch_nodes = branches(pixels)
-
-        endpoint_nodes = endpoints(pixels)
-
-        statistics = self.measure(input_image, workspace)
+        statistics = self.measure(workspace, skeleton_measurements)
 
         if self.show_window:
             workspace.display_data.skeleton = pixels
@@ -228,32 +225,22 @@ You can create a morphological skeleton with the
 
         return feature
 
-    def measure(self, image, workspace):
-        data = image.pixel_data
-
-        data = data.astype(bool)
-
+    def measure(self, workspace, skeleton_measurements):
         measurements = workspace.measurements
-
         measurement_name = self.skeleton_name.value
 
+        name_branches = SkeletonMeasurements.BRANCHES.value.format(measurement_name)
+        name_endpoints = SkeletonMeasurements.ENDPOINTS.value.format(measurement_name)
+        
+        num_branches = skeleton_measurements[name_branches]
+        num_endpoints = skeleton_measurements[name_endpoints]
+        
         statistics = []
-
-        name = "Skeleton_Branches_{}".format(measurement_name)
-
-        value = numpy.count_nonzero(branches(data))
-
-        statistics.append(value)
-
-        measurements.add_image_measurement(name, value)
-
-        name = "Skeleton_Endpoints_{}".format(measurement_name)
-
-        value = numpy.count_nonzero(endpoints(data))
-
-        statistics.append(value)
-
-        measurements.add_image_measurement(name, value)
+        statistics.append(num_branches)
+        statistics.append(num_endpoints)
+        
+        measurements.add_image_measurement(name_branches, num_branches)
+        measurements.add_image_measurement(name_endpoints, num_endpoints)
 
         return [statistics]
 

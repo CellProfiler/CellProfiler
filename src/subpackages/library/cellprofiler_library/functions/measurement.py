@@ -302,8 +302,8 @@ def compute_earth_movers_distance(
     dest_labelset = cast_labels_to_label_set(dest_labels)
     src_labelset = cast_labels_to_label_set(src_labels)
     emd = compute_earth_movers_distance_objects(
-        src_objects_labels=src_labelset,
-        dest_objects_labels=dest_labelset,
+        src_objects_label_set=src_labelset,
+        dest_objects_label_set=dest_labelset,
         penalize_missing=penalize_missing,
         max_distance=max_distance,
         max_points=max_points,
@@ -1716,6 +1716,108 @@ def measure_quartile_intensity(indices:NDArray[numpy.int_], areas: NDArray[numpy
 # MeasureObjectOverlap
 ###############################################################################
 
+def calculate_overlap_measurements(
+    objects_GT_labelset: ObjectLabelSet,
+    objects_ID_labelset: ObjectLabelSet,
+    objects_GT_shape: Tuple[int, int],
+    objects_ID_shape: Tuple[int, int],
+    ) -> Tuple[
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        Union[numpy.float_, float],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        int,
+        int,
+    ]:
+    objects_GT_ijv = convert_label_set_to_ijv(objects_GT_labelset)
+    objects_ID_ijv = convert_label_set_to_ijv(objects_ID_labelset)
+    gt_areas: NDArray[numpy.int_] = areas_from_ijv(objects_GT_ijv)
+    id_areas: NDArray[numpy.int_] = areas_from_ijv(objects_ID_ijv)
+
+    iGT, jGT, lGT = objects_GT_ijv.transpose()
+    iID, jID, lID = objects_ID_ijv.transpose()
+
+    ID_obj = 0 if len(lID) == 0 else max(lID)
+    GT_obj = 0 if len(lGT) == 0 else max(lGT)
+
+    xGT, yGT = objects_GT_shape
+    xID, yID = objects_ID_shape
+    GT_pixels = numpy.zeros((xGT, yGT))
+    ID_pixels = numpy.zeros((xID, yID))
+    total_pixels = xGT * yGT
+
+    GT_pixels[iGT, jGT] = 1
+    ID_pixels[iID, jID] = 1
+
+    GT_tot_area = len(iGT)
+
+    #
+    # Intersect matrix [i, j] = number of pixels that are common among object number i from the ground truth and object number j from the test
+    #
+    intersect_matrix = get_intersect_matrix(iGT, jGT, lGT, iID, jID, lID, ID_obj, GT_obj)
+    FN_area = gt_areas[numpy.newaxis, :] - intersect_matrix
+    
+    #
+    # for each object in the ground truth, find the object in the test that has the highest overlap
+    #
+    dom_ID = get_dominating_ID_objects(ID_obj, lID, iID, jID, ID_pixels, intersect_matrix)
+    
+    for i in range(0, len(intersect_matrix.T)):
+        if len(numpy.where(dom_ID == i)[0]) > 1:
+            final_id = numpy.where(intersect_matrix.T[i] == max(intersect_matrix.T[i]))
+            final_id = final_id[0][0]
+            all_id = numpy.where(dom_ID == i)[0]
+            nonfinal = [x for x in all_id if x != final_id]
+            for (n) in nonfinal:  # these others cannot be candidates for the corr ID now
+                intersect_matrix.T[i][n] = 0
+        else:
+            continue
+        
+    TP, FN, FP, TN = object_overlap_confusion_matrix(dom_ID, id_areas, intersect_matrix, FN_area, total_pixels)
+
+    def nan_divide(numerator, denominator):
+        if denominator == 0:
+            return numpy.nan
+        return numpy.float64(float(numerator) / float(denominator))
+    recall = nan_divide(TP, GT_tot_area)
+    precision = nan_divide(TP, (TP + FP))
+    F_factor = nan_divide(2 * (precision * recall), (precision + recall))
+    true_positive_rate = nan_divide(TP, (FN + TP))
+    false_positive_rate = nan_divide(FP, (FP + TN))
+    false_negative_rate = nan_divide(FN, (FN + TP))
+    true_negative_rate = nan_divide(TN, (FP + TN))
+    shape = numpy.maximum(
+        numpy.maximum(numpy.array(objects_GT_shape), numpy.array(objects_ID_shape)),
+        numpy.ones(2, int),
+    )
+    rand_index, adjusted_rand_index = compute_rand_index_ijv(
+        objects_GT_ijv, objects_ID_ijv, shape
+    )
+    return (
+    F_factor,
+    precision,
+    recall,
+    true_positive_rate,
+    false_positive_rate,
+    true_negative_rate,
+    false_negative_rate,
+    rand_index,
+    adjusted_rand_index,
+    GT_pixels,
+    ID_pixels,
+    xGT, 
+    yGT,
+    )
+
+
+
 
 def object_overlap_confusion_matrix(
         dom_ID: NDArray[numpy.int_],
@@ -2120,31 +2222,23 @@ def compute_rand_index_ijv(
 
 
 def compute_earth_movers_distance_objects(
-        src_objects_labels: ObjectLabelSet,
-        dest_objects_labels: ObjectLabelSet,
+        src_objects_label_set: ObjectLabelSet,
+        dest_objects_label_set: ObjectLabelSet,
         decimation_method: Union[ObjectDecimationMethod, mio.DM]=ObjectDecimationMethod.KMEANS,
         max_points: int=250,
         max_distance: int=250,
         penalize_missing: bool=False,
         ) -> np.float_:
-    src_objects_shape = src_objects_labels[0][0].shape
-    dest_objects_shape = dest_objects_labels[0][0].shape
+    src_objects_shape = src_objects_label_set[0][0].shape
+    dest_objects_shape = dest_objects_label_set[0][0].shape
 
-    if len(src_objects_shape) == 0:
-        src_count = 0
-        src_areas = 0
-    else:
-        src_obj_ijv = convert_label_set_to_ijv(src_objects_labels, validate=True)
-        src_count = count_from_ijv(src_obj_ijv, validate=False)
-        src_areas = areas_from_ijv(src_obj_ijv, validate=False)
+    src_obj_ijv = convert_label_set_to_ijv(src_objects_label_set, validate=True)
+    src_count = count_from_ijv(src_obj_ijv, validate=False)
+    src_areas = areas_from_ijv(src_obj_ijv, validate=False)
 
-    if len(dest_objects_shape) == 0:
-        dest_count = 0
-        dest_areas = 0
-    else:
-        dest_obj_ijv = convert_label_set_to_ijv(dest_objects_labels, validate=True)
-        dest_count = count_from_ijv(dest_obj_ijv, validate=False)
-        dest_areas = areas_from_ijv(dest_obj_ijv, validate=False)
+    dest_obj_ijv = convert_label_set_to_ijv(dest_objects_label_set, validate=True)
+    dest_count = count_from_ijv(dest_obj_ijv, validate=False)
+    dest_areas = areas_from_ijv(dest_obj_ijv, validate=False)
 
     """Compute the earthmovers distance between two sets of objects
 
@@ -2173,16 +2267,16 @@ def compute_earth_movers_distance_objects(
         idest, jdest = isrc, jsrc
 
     elif decimation_method in (ObjectDecimationMethod.SKELETON, mio.DM.SKELETON):
-        assert src_objects_labels is not None, "src_objects_labels must be provided for Skeleton decimation method"
-        assert dest_objects_labels is not None, "dest_objects_labels must be provided for Skeleton decimation method"
+        assert src_objects_label_set is not None, "src_objects_labels must be provided for Skeleton decimation method"
+        assert dest_objects_label_set is not None, "dest_objects_labels must be provided for Skeleton decimation method"
         assert src_objects_shape is not None, "src_objects_shape must be provided for Skeleton decimation method"
         assert dest_objects_shape is not None, "dest_objects_shape must be provided for Skeleton decimation method"
-        isrc, jsrc = get_skeleton_points(src_objects_labels, src_objects_shape, max_points)
-        idest, jdest = get_skeleton_points(dest_objects_labels, dest_objects_shape, max_points)
+        isrc, jsrc = get_skeleton_points(src_objects_label_set, src_objects_shape, max_points)
+        idest, jdest = get_skeleton_points(dest_objects_label_set, dest_objects_shape, max_points)
     else:
         raise TypeError("Unknown type for decimation method: %s" % decimation_method)
-    src_labels_mask = get_labels_mask(src_objects_labels, src_objects_shape)
-    dest_labels_mask = get_labels_mask(dest_objects_labels, dest_objects_shape)
+    src_labels_mask = get_labels_mask(src_objects_label_set, src_objects_shape)
+    dest_labels_mask = get_labels_mask(dest_objects_label_set, dest_objects_shape)
             
     src_weights = get_weights(isrc, jsrc, src_labels_mask)
     dest_weights = get_weights(idest, jdest, dest_labels_mask)

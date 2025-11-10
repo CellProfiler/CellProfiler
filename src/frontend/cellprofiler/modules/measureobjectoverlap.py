@@ -63,7 +63,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Integer
 
-from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap, compute_emd
+from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap
 from cellprofiler_library.opts.measureobjectoverlap import Feature, ALL_FEATURES, C_IMAGE_OVERLAP, DecimationMethod
 from cellprofiler.modules import _help
 
@@ -226,8 +226,9 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         objects_GT = workspace.get_objects(object_name_GT)
         objects_ID = workspace.get_objects(object_name_ID)
 
-        objects_GT_ijv = objects_GT.ijv
-        objects_ID_ijv = objects_ID.ijv
+        objects_GT_labelset = objects_GT.get_labels()
+        objects_ID_labelset = objects_ID.get_labels()
+
         (
             F_factor,
             precision,
@@ -242,11 +243,17 @@ the two objects. Set this setting to “No” to assess no penalty.""",
             ID_pixels,
             xGT, 
             yGT,
+            emd
         ) = measure_object_overlap(
-            objects_GT_ijv,
-            objects_ID_ijv,
+            objects_GT_labelset,
+            objects_ID_labelset,
             objects_GT.shape,
             objects_ID.shape,
+            calcualte_emd=self.wants_emd.value,
+            decimation_method=self.decimation_method.value,
+            max_distance=self.max_distance.value,
+            max_points=self.max_points.value,
+            penalize_missing=self.penalize_missing.value
         )
         
         m = workspace.measurements
@@ -296,20 +303,6 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         FP_pixels = maskimg(FP_mask, FP_pixels)
         TN_pixels = maskimg(TN_mask, TN_pixels)
         if self.wants_emd:
-            src_objects_labels = objects_ID.get_labels()
-            dest_objects_labels = objects_GT.get_labels()
-            penalize_missing = self.penalize_missing.value
-            max_distance = self.max_distance.value
-            max_points = self.max_points.value
-            decimation_method = self.decimation_method.value
-            emd = compute_emd(
-                src_objects_labels = src_objects_labels,
-                dest_objects_labels = dest_objects_labels,
-                penalize_missing = penalize_missing,
-                max_distance = max_distance,
-                max_points = max_points,
-                decimation_method = decimation_method,
-            )
             m.add_image_measurement(
                 self.measurement_name(Feature.EARTH_MOVERS_DISTANCE), emd
             )
@@ -329,6 +322,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
                 (Feature.ADJUSTED_RAND_INDEX.value, adjusted_rand_index),
             ]
             if self.wants_emd:
+                assert emd is not None, "Earth Movers Distance was not calculated"
                 workspace.display_data.statistics.append(
                     (Feature.EARTH_MOVERS_DISTANCE.value, emd)
                 )

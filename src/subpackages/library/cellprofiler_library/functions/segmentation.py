@@ -413,6 +413,8 @@ def convert_ijv_to_label_set(ijv, dense_shape=None, validate=True):
     return label_set
 
 def convert_label_set_to_ijv(label_set, validate=True):
+    if label_set[0][0].shape == ():
+        return np.empty_like([], shape=(0,3), dtype=np.int64)
     return np.concatenate(
         [convert_labels_to_ijv(l[0], validate) for l in label_set],
         axis=0

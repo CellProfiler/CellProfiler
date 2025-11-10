@@ -16,7 +16,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
-
+from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON, F_ALL
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"
@@ -125,13 +125,13 @@ def test_empty():
     columns = module.get_measurement_columns(None)
     features = [c[1] for c in columns]
     features.sort()
-    expected = cellprofiler.modules.measureobjectskeleton.F_ALL
+    expected = F_ALL
     expected.sort()
     coltypes = {}
     for feature, expected in zip(features, expected):
         expected_feature = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 expected,
                 IMAGE_NAME,
             )
@@ -140,7 +140,7 @@ def test_empty():
         coltypes[expected_feature] = (
             COLTYPE_FLOAT
             if expected
-            == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
+            == SkeletonMeasurements.TOTAL_OBJSKELETON_LENGTH
             else COLTYPE_INTEGER
         )
     assert all([c[0] == OBJECT_NAME for c in columns])
@@ -148,33 +148,33 @@ def test_empty():
 
     categories = module.get_categories(None, OBJECT_NAME)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
+    assert categories[0] == C_OBJSKELETON
     assert len(module.get_categories(None, "Foo")) == 0
 
     measurements = module.get_measurements(
-        None, OBJECT_NAME, cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
+        None, OBJECT_NAME, C_OBJSKELETON
     )
-    assert len(measurements) == len(cellprofiler.modules.measureobjectskeleton.F_ALL)
+    assert len(measurements) == len(F_ALL)
     assert measurements[0] != measurements[1]
     assert all(
-        [m in cellprofiler.modules.measureobjectskeleton.F_ALL for m in measurements]
+        [m in F_ALL for m in measurements]
     )
 
     assert (
         len(
             module.get_measurements(
-                None, "Foo", cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON
+                None, "Foo", C_OBJSKELETON
             )
         )
         == 0
     )
     assert len(module.get_measurements(None, OBJECT_NAME, "Foo")) == 0
 
-    for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
+    for feature in F_ALL:
         images = module.get_measurement_images(
             None,
             OBJECT_NAME,
-            cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+            C_OBJSKELETON,
             feature,
         )
         assert len(images) == 1
@@ -183,10 +183,10 @@ def test_empty():
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
-    for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
+    for feature in F_ALL:
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 expected,
                 IMAGE_NAME,
             )
@@ -206,12 +206,12 @@ def test_trunk():
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
+        (SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, 0),
+        (SkeletonMeasurements.NUMBER_TRUNKS, 1),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -234,14 +234,14 @@ def test_trunks():
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES,
             [0, 0],
         ),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
+        (SkeletonMeasurements.NUMBER_TRUNKS, [2, 1]),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -265,12 +265,12 @@ def test_branch():
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
+        (SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, 1),
+        (SkeletonMeasurements.NUMBER_TRUNKS, 1),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -296,12 +296,12 @@ def test_img_667():
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 2),
+        (SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, 1),
+        (SkeletonMeasurements.NUMBER_TRUNKS, 2),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -340,12 +340,12 @@ def test_quadrabranch():
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 3),
+        (SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, 0),
+        (SkeletonMeasurements.NUMBER_TRUNKS, 3),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -376,14 +376,14 @@ def test_wrong_size():
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES,
             [0, 0],
         ),
-        (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
+        (SkeletonMeasurements.NUMBER_TRUNKS, [2, 1]),
     ):
         mname = "_".join(
             (
-                cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
+                C_OBJSKELETON,
                 feature,
                 IMAGE_NAME,
             )
@@ -407,8 +407,8 @@ def test_skeleton_length():
     m = workspace.measurements
     ftr = "_".join(
         (
-            cellprofiler.modules.measureobjectskeleton.C_OBJSKELETON,
-            cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH,
+            C_OBJSKELETON,
+            SkeletonMeasurements.TOTAL_OBJSKELETON_LENGTH,
             IMAGE_NAME,
         )
     )

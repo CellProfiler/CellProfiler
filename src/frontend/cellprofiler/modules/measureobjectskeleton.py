@@ -85,7 +85,8 @@ from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
 from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON, F_ALL
-
+from typing import Tuple
+from cellprofiler_library.types import ImageBinary, ObjectSegmentation, NDArray
 
 class MeasureObjectSkeleton(Module):
     module_name = "MeasureObjectSkeleton"
@@ -347,27 +348,8 @@ The file has the following columns:
                 header = ",".join(header)
                 fd.write(header + "\n")
         return True
-
-    def run(self, workspace):
-        """Run the module on the image set"""
-        seed_objects_name = self.seed_objects_name.value
-        skeleton_name = self.image_name.value
-        seed_objects = workspace.object_set.get_objects(seed_objects_name)
-        labels = seed_objects.segmented
-        labels_count = numpy.max(labels)
-        label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
-
-        skeleton_image = workspace.image_set.get_image(
-            skeleton_name, must_be_binary=True
-        )
-        skeleton = skeleton_image.pixel_data
-        if skeleton_image.has_mask:
-            skeleton = skeleton & skeleton_image.mask
-        try:
-            labels = skeleton_image.crop_image_similarly(labels)
-        except:
-            labels, m1 = size_similarly(skeleton, labels)
-            labels[~m1] = 0
+    
+    def get_ring_with_trunks(self, skeleton, labels):
         #
         # The following code makes a ring around the seed objects with
         # the skeleton trunks sticking out of it.
@@ -390,14 +372,48 @@ The file has the following columns:
         closed_labels = grey_erosion(dilated_labels, footprint=my_disk)
         seed_center = closed_labels > 0
         combined_skel = combined_skel & (~seed_center)
+        return dilated_labels, combined_skel, seed_center
+    
+
+    def measure_object_skeleton(
+            self, 
+            skeleton, 
+            cropped_labels, 
+            labels_count, 
+            label_range, 
+            fill_small_holes, 
+            max_hole_size,
+            wants_objskeleton_graph,
+            ) -> Tuple[
+                ObjectSegmentation,
+                ImageBinary,
+                ObjectSegmentation,
+                ImageBinary,
+                ImageBinary, # branch points
+                NDArray[numpy.int32], # branching counts
+                ImageBinary,
+                ObjectSegmentation,
+                ObjectSegmentation, # outside labels
+                NDArray[numpy.float_], # trunk counts
+                NDArray[numpy.float_], # branch counts
+                NDArray[numpy.float_], # end counts
+                NDArray[numpy.float_] # total distance
+
+
+            ]:
+        #
+        # The following code makes a ring around the seed objects with
+        # the skeleton trunks sticking out of it.
+        #
+        dilated_labels, combined_skel, seed_center = self.get_ring_with_trunks(skeleton, cropped_labels)
+        
         #
         # Fill in single holes (but not a one-pixel hole made by
         # a one-pixel image)
         #
-        if self.wants_to_fill_holes:
-
+        if fill_small_holes:
             def size_fn(area, is_object):
-                return (~is_object) and (area <= self.maximum_hole_size.value)
+                return (~is_object) and (area <= max_hole_size)
 
             combined_skel = centrosome.cpmorphology.fill_labeled_holes(
                 combined_skel, ~seed_center, size_fn
@@ -414,7 +430,7 @@ The file has the following columns:
         # Associate all skeleton points with seed objects
         #
         dlabels, distance_map = propagate.propagate(
-            numpy.zeros(labels.shape), dilated_labels, combined_skel, 1
+            numpy.zeros(cropped_labels.shape), dilated_labels, combined_skel, 1
         )
         #
         # Get rid of any branchpoints not connected to seeds
@@ -424,6 +440,7 @@ The file has the following columns:
         # Find the branchpoints
         #
         branch_points = centrosome.cpmorphology.branchpoints(combined_skel)
+
         #
         # Odd case: when four branches meet like this, branchpoints are not
         # assigned because they are arbitrary. So assign them.
@@ -500,6 +517,61 @@ The file has the following columns:
         total_distance = centrosome.cpmorphology.skeleton_length(
             dlabels * outside_skel, label_range
         )
+        
+        return (
+            dilated_labels, # last update on on line 383
+            outside_skel, # 403
+            dlabels, # 407
+            combined_skel, # 413
+            branch_points, # 435
+            branching_counts, # 448
+            end_points, # 452
+            nearby_labels, #459
+            outside_labels, # 462
+            trunk_counts, # 472
+            branch_counts, # 481
+            end_counts, # 488
+            total_distance # 492
+        )
+
+
+    def run(self, workspace):
+        """Run the module on the image set"""
+        seed_objects_name = self.seed_objects_name.value
+        skeleton_name = self.image_name.value
+        seed_objects = workspace.object_set.get_objects(seed_objects_name)
+        labels = seed_objects.segmented
+        labels_count = numpy.max(labels)
+        label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
+
+        skeleton_image = workspace.image_set.get_image(
+            skeleton_name, must_be_binary=True
+        )
+        skeleton = skeleton_image.pixel_data
+        if skeleton_image.has_mask:
+            skeleton = skeleton & skeleton_image.mask
+        try:
+            labels = skeleton_image.crop_image_similarly(labels)
+        except:
+            labels, m1 = size_similarly(skeleton, labels)
+            labels[~m1] = 0
+        max_hole_size = self.maximum_hole_size.value
+        fill_small_holes = self.wants_to_fill_holes.value
+        (
+            dilated_labels,
+            outside_skel,
+            dlabels,
+            combined_skel,
+            branch_points,
+            branching_counts,
+            end_points,
+            nearby_labels,
+            outside_labels,
+            trunk_counts,
+            branch_counts,
+            end_counts,
+            total_distance
+        ) = self.measure_object_skeleton(skeleton, labels, labels_count, label_range, fill_small_holes, max_hole_size, self.wants_objskeleton_graph)
         #
         # Save measurements
         #

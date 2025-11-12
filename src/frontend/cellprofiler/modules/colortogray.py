@@ -76,8 +76,8 @@ How do you want to convert the color image?
 -  *{COMBINE}:* Converts a color image to a grayscale image by
    combining channels together (e.g., red, green, blue).""".format(
        **{
-           "SPLIT": ConversionMethod.SPLIT,
-           "COMBINE": ConversionMethod.COMBINE,
+           "SPLIT": ConversionMethod.SPLIT.value,
+           "COMBINE": ConversionMethod.COMBINE.value,
        }
    ),
         )
@@ -103,9 +103,9 @@ This setting provides three options to choose from:
    allows you to handle a more complex model for images that
    have more than three channels.""".format(
        **{
-           "CH_RGB": ImageChannelType.RGB,
-           "CH_HSV": ImageChannelType.HSV,
-           "CH_CHANNELS": ImageChannelType.CHANNELS,
+           "CH_RGB": ImageChannelType.RGB.value,
+           "CH_HSV": ImageChannelType.HSV.value,
+           "CH_CHANNELS": ImageChannelType.CHANNELS.value,
        }
    )
         )

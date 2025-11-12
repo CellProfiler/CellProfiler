@@ -5,8 +5,7 @@ import centrosome
 import centrosome.threshold
 import scipy
 import matplotlib
-from typing import Annotated, Any, Optional, Tuple, Callable, Union, List
-from pydantic import Field
+from typing import Any, Optional, Tuple, Callable, Union, List
 from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale
 from ..opts import threshold as Threshold
 
@@ -136,13 +135,13 @@ def reduce_noise(image, patch_size, patch_distance, cutoff_distance, channel_axi
 
 
 def get_threshold_robust_background(
-    image:                  Annotated[ImageGrayscale, Field(description="Image to threshold")],
-    lower_outlier_fraction: Annotated[float, Field(description="Lower outlier fraction")] = 0.05,
-    upper_outlier_fraction: Annotated[float, Field(description="Upper outlier fraction")] = 0.05,
+    image:                  ImageGrayscale,
+    lower_outlier_fraction: float = 0.05,
+    upper_outlier_fraction: float = 0.05,
     averaging_method:       Threshold.AveragingMethod = Threshold.AveragingMethod.MEAN,
     variance_method:        Threshold.VarianceMethod = Threshold.VarianceMethod.STANDARD_DEVIATION,
-    number_of_deviations:   Annotated[int, Field(description="Number of deviations")] = 2,
-) -> Annotated[float, Field(description="Threshold")]:
+    number_of_deviations:   int = 2,
+) -> float:
     """Calculate threshold based on mean & standard deviation.
     The threshold is calculated by trimming the top and bottom 5% of
     pixels off the image, then calculating the mean and standard deviation
@@ -211,13 +210,13 @@ def get_threshold_robust_background(
 
 # Helper function for get_adaptive_threshold()
 def __apply_threshold_function(
-        image:              Annotated[ImageGrayscale, Field(description="Image to threshold")],
-        window_size:        Annotated[int, Field(description="Window size for adaptive thresholding")],
-        threshold_method:   Annotated[Threshold.Method, Field(description="Thresholding method")],
-        threshold_fn:       Annotated[Callable[[Any], Any], Field(description="Thresholding function")], 
-        bin_wanted:         Annotated[int, Field(description="Bin wanted")], 
-        **kwargs:           Annotated[Any, Field(description="Additional keyword arguments")],
-        )   -> Annotated[ImageGrayscale, Field(description="Thresholded image")]:
+        image:              ImageGrayscale,
+        window_size:        int,
+        threshold_method:   Threshold.Method,
+        threshold_fn:       Callable[[Any], Any],
+        bin_wanted:         int,
+        **kwargs:           Any,
+)   -> ImageGrayscale:
     image_size = numpy.array(image.shape[:2], dtype=int)
     nblocks = image_size // window_size
     if any(n < 2 for n in nblocks):
@@ -302,19 +301,19 @@ def __apply_threshold_function(
     return thresh_out
 
 def get_adaptive_threshold(
-    image:                          Annotated[ImageGrayscale, Field(description="Image to threshold")],
-    mask:                           Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
-    threshold_method:               Annotated[Threshold.Method, Field(description="Thresholding method")] = Threshold.Method.OTSU,
-    window_size:                    Annotated[int, Field(description="Window size for adaptive thresholding")] = 50,
-    threshold_min:                  Annotated[float, Field(description="Minimum threshold")] = 0,
-    threshold_max:                  Annotated[float, Field(description="Maximum threshold")] = 1,
-    threshold_correction_factor:    Annotated[float, Field(description="Threshold correction factor")] = 1,
-    assign_middle_to_foreground:    Annotated[Threshold.Assignment, Field(description="Assign middle to foreground")] = Threshold.Assignment.FOREGROUND,
-    global_limits:                  Annotated[Tuple[float, float], Field(description="Global limits for thresholding")] = (0.7, 1.5),
-    log_transform:                  Annotated[bool, Field(description="Log transform")] = False,
-    volumetric:                     Annotated[bool, Field(description="Volumetric thresholding")] = False,
-    **kwargs:                       Annotated[Any, Field(description="Additional keyword arguments")]
-) -> Annotated[ImageGrayscale, Field(description="Thresholded image")]:
+    image:                          ImageGrayscale,
+    mask:                           Optional[ImageGrayscaleMask] = None,
+    threshold_method:               Threshold.Method = Threshold.Method.OTSU,
+    window_size:                    int = 50,
+    threshold_min:                  float = 0,
+    threshold_max:                  float = 1,
+    threshold_correction_factor:    float = 1,
+    assign_middle_to_foreground:    Threshold.Assignment = Threshold.Assignment.FOREGROUND,
+    global_limits:                  Tuple[float, float] = (0.7, 1.5),
+    log_transform:                  bool = False,
+    volumetric:                     bool = False,
+    **kwargs:                       Any,
+) -> ImageGrayscale:
 
     if mask is not None:
         # Apply mask and preserve image shape
@@ -425,16 +424,16 @@ def get_adaptive_threshold(
 
 
 def get_global_threshold(
-    image:                       Annotated[ImageGrayscale, Field(description="Image to threshold")],
-    mask:                        Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
-    threshold_method:            Annotated[Threshold.Method, Field(description="Thresholding method")] = Threshold.Method.OTSU,
-    threshold_min:               Annotated[float, Field(description="Minimum threshold")] = 0,
-    threshold_max:               Annotated[float, Field(description="Maximum threshold")] = 1,
-    threshold_correction_factor: Annotated[float, Field(description="Threshold correction factor")] = 1,
-    assign_middle_to_foreground: Annotated[Threshold.Assignment, Field(description="Assign middle to foreground")] = Threshold.Assignment.FOREGROUND,
-    log_transform:               Annotated[bool, Field(description="Log transform")] = False,
-    **kwargs:                    Annotated[Any, Field(description="Additional keyword arguments")],
-) -> Annotated[float, Field(description="Threshold")]:
+    image:                       ImageGrayscale,
+    mask:                        Optional[ImageGrayscaleMask] = None,
+    threshold_method:            Threshold.Method = Threshold.Method.OTSU,
+    threshold_min:               float = 0,
+    threshold_max:               float = 1,
+    threshold_correction_factor: float = 1,
+    assign_middle_to_foreground: Threshold.Assignment = Threshold.Assignment.FOREGROUND,
+    log_transform:               bool = False,
+    **kwargs:                    Any,
+) -> float:
     conversion_dict = None
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
@@ -476,12 +475,12 @@ def get_global_threshold(
 
 
 def apply_threshold(
-        image: Annotated[ImageGrayscale, Field(description="Image to threshold")],
-        threshold: Annotated[Union[float, ImageGrayscale], Field(description="Threshold value")],
-        mask: Annotated[Optional[ImageGrayscaleMask], Field(description="Mask to apply to the image")] = None,
-        smoothing: Annotated[float, Field(description="Smoothing factor")] = 0,
-        ) -> Tuple[Annotated[ImageGrayscaleMask, Field(description="Binary image")], 
-                   Annotated[float, Field(description="Sigma value")]]:
+        image: ImageGrayscale,
+        threshold: Union[float, ImageGrayscale],
+        mask: Optional[ImageGrayscaleMask] = None,
+        smoothing: float = 0,
+        ) -> Tuple[ImageGrayscaleMask,
+                   float]:
     if mask is None:
         # Create a fake mask if one isn't provided
         mask = numpy.full(image.shape, True)
@@ -568,9 +567,9 @@ def gaussian_filter(image, sigma):
 ################################################################################
 
 def combine_colortogray(
-    image:          Annotated[Image2DColor, Field(description="Pixel data of image to threshold")],
-    channels:       Annotated[List[int], Field(description="Array of integer identifier ")],
-    contributions:  Annotated[List[float], Field(description="Array of contribution values")],
+    image:          Image2DColor,
+    channels:       List[int],
+    contributions:  List[float],
     ) -> Image2DGrayscale:
     denominator = sum(contributions)
     _channels = numpy.array(channels, int)
@@ -582,16 +581,16 @@ def combine_colortogray(
         2
     )
     return output_image
-     
+
 def split_hsv(
-        input_image: Annotated[Image2DColor, Field(description="Pixel data of image to be split. Input shape is (x, y, 3) where c is the color channel.")],
-) -> Annotated[List[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel in the HSV color space. ")]:
+        input_image: Image2DColor,
+) -> List[Image2DGrayscale]:
      output_image = matplotlib.colors.rgb_to_hsv(input_image)
      return [i for i in output_image.transpose(2, 0, 1)]
 
-def split_rgb(input_image: Image2DColor) -> Annotated[List[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel of the RGB color space. ")]:  
+def split_rgb(input_image: Image2DColor) -> List[Image2DGrayscale]:
      return [i for i in input_image.transpose(2, 0, 1)]
 
-def split_multichannel(input_image: Image2DColor) -> Annotated[List[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel")]:
+def split_multichannel(input_image: Image2DColor) -> List[Image2DGrayscale]:
      return split_rgb(input_image)
 

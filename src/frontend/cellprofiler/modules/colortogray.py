@@ -606,7 +606,7 @@ Select the name of the output grayscale image.""",
         for index, name, title in self.channels_and_image_names():
             workspace.image_set.add(name, Image(output_image[index], parent_image=image))
             disp_collection.append([output_image, name])
-        
+
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
 

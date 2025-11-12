@@ -1,11 +1,8 @@
 import centrosome.cpmorphology
 import centrosome.zernike
 import numpy
-import scipy.ndimage
-import skimage.measure
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
-from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Divider, Binary, ValidationError
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 
@@ -13,7 +10,7 @@ import cellprofiler.gui.help.content
 import cellprofiler.icons
 
 from cellprofiler_library.modules import measureobjectsizeshape
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures, F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD, ZERNIKE_N
 
 __doc__ = """\
 MeasureObjectSizeShape
@@ -285,7 +282,7 @@ module.""".format(
         """The Zernike numbers measured by this module"""
         if self.calculate_zernikes.value:
             return centrosome.zernike.get_zernike_indexes(
-                ObjectSizeShapeFeatures.ZERNIKE_N.value + 1
+                ZERNIKE_N + 1
             )
         else:
             return []
@@ -299,20 +296,20 @@ module.""".format(
 
     def get_feature_names(self, pipeline):
         """Return the names of the features measured"""
-        feature_names = list(ObjectSizeShapeFeatures.F_STANDARD.value)
+        feature_names = [i.value for i in F_STANDARD]
 
         if pipeline.volumetric():
-            feature_names += list(ObjectSizeShapeFeatures.F_STD_3D.value)
+            feature_names += [i.value for i in F_STD_3D]
             if self.calculate_advanced.value:
-                feature_names += list(ObjectSizeShapeFeatures.F_ADV_3D.value)
+                feature_names += [i.value for i in F_ADV_3D]
         else:
-            feature_names += list(ObjectSizeShapeFeatures.F_STD_2D.value)
+            feature_names += [i.value for i in F_STD_2D]
             if self.calculate_zernikes.value:
                 feature_names += [
                     self.get_zernike_name(index) for index in self.get_zernike_numbers()
                 ]
             if self.calculate_advanced.value:
-                feature_names += list(get_feature_names.F_ADV_2D.values)
+                feature_names += [i.value for i in F_ADV_2D]
 
         return feature_names
 

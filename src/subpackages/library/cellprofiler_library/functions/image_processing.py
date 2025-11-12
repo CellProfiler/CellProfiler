@@ -5,9 +5,9 @@ import centrosome
 import centrosome.threshold
 import scipy
 import matplotlib
-from typing import Annotated, Any, Optional, Tuple, Callable, Union
+from typing import Annotated, Any, Optional, Tuple, Callable, Union, Sequence
 from pydantic import Field
-from ..types import ImageGrayscale, ImageGrayscaleMask
+from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale
 from ..opts import threshold as Threshold
 
 
@@ -561,3 +561,40 @@ def gaussian_filter(image, sigma):
         channel_axis = None
     y_data = skimage.filters.gaussian(image, sigma=sigma, channel_axis=channel_axis)
     return y_data
+
+
+################################################################################
+# ColorToGray
+################################################################################
+
+def combine_colortogray(
+    image:          Annotated[Image2DColor, Field(description="Pixel data of image to threshold")],
+    channels:       Annotated[Sequence[int], Field(description="Array of integer identifier ")],
+    contributions:  Annotated[Sequence[float], Field(description="Array of contribution values")],
+    ) -> Image2DGrayscale:
+    denominator = sum(contributions)
+    _channels = numpy.array(channels, int)
+    _contributions = numpy.array(contributions) / denominator
+
+    output_image = numpy.sum(
+        image[:, :, _channels]
+        * _contributions[numpy.newaxis, numpy.newaxis, :],
+        2
+    )
+    return output_image
+
+     
+def split_hsv(
+        input_image: Annotated[Image2DColor, Field(description="Pixel data of image to be split. Input shape is (x, y, 3) where c is the color channel.")],
+) -> Annotated[Sequence[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel in the HSV color space. ")]:
+     output_image = matplotlib.colors.rgb_to_hsv(input_image)
+     return [i for i in output_image.transpose(2, 0, 1)]
+
+
+def split_rgb(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel of the RGB color space. ")]:  
+     return [i for i in input_image.transpose(2, 0, 1)]
+
+
+def split_multichannel(input_image: Image2DColor) -> Annotated[Sequence[Image2DGrayscale], Field(description="Output is a list of images where each image is a channel")]:
+     return split_rgb(input_image)
+

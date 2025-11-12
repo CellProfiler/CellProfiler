@@ -1,13 +1,11 @@
-from typing import Tuple
+from typing import Tuple, Optional, Annotated, Dict
 import numpy
-import skimage
-import scipy
-
 import centrosome
 import centrosome.zernike
-
+from pydantic import validate_call, ConfigDict, Field
+from cellprofiler_library.types import ObjectLabelsDense
 from cellprofiler_library.functions.measurement import measure_object_size_shape
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.opts.objectsizeshapefeatures import F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD, ZERNIKE_N
 from cellprofiler_library.functions.segmentation import (
     _validate_dense,
     convert_dense_to_label_set,
@@ -31,12 +29,12 @@ DEFAULT_INVALID_VALUE_DTYPE = {
 }
 
 def measureobjectsizeshape(
-    objects,
-    calculate_advanced: bool = True,
-    calculate_zernikes: bool = True,
-    volumetric: bool = False,
-    spacing: Tuple = None,
-):
+    objects:            Annotated[ObjectLabelsDense, Field(description="Object labels in the dense format")],
+    calculate_advanced: Annotated[bool, Field(description="Calculate advanced features?")] = True,
+    calculate_zernikes: Annotated[bool, Field(description="Calculate zernike features?")] = True,
+    volumetric:         Annotated[bool, Field(description="Are the objects volumetric?")] = False,
+    spacing:            Annotated[Optional[Tuple], Field(description="Object spacing")] = None,
+) -> Dict[str, Optional[numpy.float_]]:
     """
     Objects: dense, sparse, ijv, or label objects?
     For now, we will assume dense
@@ -44,22 +42,22 @@ def measureobjectsizeshape(
     # _validate_dense(objects)
 
     # Define the feature names
-    feature_names = list(ObjectSizeShapeFeatures.F_STANDARD.value)
+    feature_names = [i.value for i in F_STANDARD]
     if volumetric:
-        feature_names += list(ObjectSizeShapeFeatures.F_STD_3D.value)
+        feature_names += [i.value for i in F_STD_3D]
         if calculate_advanced:
-            feature_names += list(ObjectSizeShapeFeatures.F_ADV_3D.value)
+            feature_names += [i.value for i in F_ADV_3D]
     else:
-        feature_names += list(ObjectSizeShapeFeatures.F_STD_2D.value)
+        feature_names += [i.value for i in F_STD_2D]
         if calculate_zernikes:
             feature_names += [
                 f"Zernike_{index[0]}_{index[1]}"
                 for index in centrosome.zernike.get_zernike_indexes(
-                    ObjectSizeShapeFeatures.ZERNIKE_N.value + 1
+                    ZERNIKE_N + 1
                 )
             ]
         if calculate_advanced:
-            feature_names += list(ObjectSizeShapeFeatures.F_ADV_2D.value)
+            feature_names += [i.value for i in F_ADV_2D]
 
     if len(objects[objects != 0]) == 0:
         data = dict(zip(feature_names, [None] * len(feature_names)))

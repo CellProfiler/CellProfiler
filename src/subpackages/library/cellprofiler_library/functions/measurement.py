@@ -26,7 +26,7 @@ from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
 from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV, Image2DBinary, Image2DColor, Image2DGrayscale
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures, ZERNIKE_N
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as ObjectDecimationMethod
 from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABELS, VF_KIND, EF_V1, EF_V2, EF_LENGTH, EF_TOTAL_INTENSITY
@@ -443,11 +443,11 @@ def get_weights(
 
 
 def measure_object_size_shape(
-    labels,
-    desired_properties,
+    labels: ObjectSegmentation,
+    desired_properties: List[str],
     calculate_zernikes: bool = True,
     calculate_advanced: bool = True,
-    spacing: Tuple = None
+    spacing: Optional[Tuple] = None
 ):
     label_indices = numpy.unique(labels[labels != 0])
     nobjects = len(label_indices)
@@ -468,7 +468,7 @@ def measure_object_size_shape(
         mean_radius = numpy.zeros(nobjects)
         min_feret_diameter = numpy.zeros(nobjects)
         max_feret_diameter = numpy.zeros(nobjects)
-        zernike_numbers = centrosome.zernike.get_zernike_indexes(ObjectSizeShapeFeatures.ZERNIKE_N.value + 1)
+        zernike_numbers = centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
 
         zf = {}
         for n, m in zernike_numbers:
@@ -655,6 +655,7 @@ def measure_object_size_shape(
         if calculate_advanced:
             features_to_record[ObjectSizeShapeFeatures.F_SOLIDITY.value] = props["solidity"]
     return features_to_record, props["label"], nobjects
+
 
 
 ########################################################

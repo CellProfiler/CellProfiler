@@ -60,7 +60,7 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
 def validate_object_labels_dense(input_image: npt.NDArray[np.generic]) -> NDArray[np.generic]:
     if input_image.ndim != 6:
         raise ValueError(f"Expected ObjectLabelsDense as an array of shape (n, c, z, t, y, x), got {input_image.shape}")
-    return input_image  
+    return input_image
 
 def validate_object_label_set(label_set: Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]) -> Sequence[Tuple[NDArray[np.int32], NDArray[np.int32]]]:
     # label set is a list of 2 tuples
@@ -68,7 +68,7 @@ def validate_object_label_set(label_set: Sequence[Tuple[NDArray[np.int32], NDArr
         if type(label) != tuple or len(label) != 2:
             raise ValueError(f"Expected a list of tuples of length 2, got {label}")
         if type(label[0]) != np.ndarray or type(label[1]) != np.ndarray:
-            raise ValueError(f"Expected a list of tuples of ndarrays, got {label}") 
+            raise ValueError(f"Expected a list of tuples of ndarrays, got {label}")
         if len(label[0].shape) > 3:
             # see cellprofiler_library.functions.segmentation._validate_labels
             raise ValueError(f"Expected labels of shape (y, x) or (z, y, x), got {label[0].shape}")

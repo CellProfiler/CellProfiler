@@ -12,7 +12,7 @@ def convert_objects_to_image(
         objects_shape : Annotated[Tuple[int, ...], Field(description="Shape of the objects")],
         colormap_value : Annotated[Optional[str], Field(description="Colormap to be used for conversion")] = None
         ) -> ImageAny:
-    
+
     alpha = numpy.zeros(objects_shape, numpy.int32)
 
     converter_fn_map = {

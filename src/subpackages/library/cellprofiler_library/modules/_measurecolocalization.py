@@ -157,8 +157,8 @@ def run_image_pair_objects(
     im1_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="First image pixel data for costes")]=None,
     im2_costes_pixels:  Annotated[Optional[NDArray[Pixel]], Field(description="Second image pixel data for costes")]=None,
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")]=[MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
-    im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding"), BeforeValidator(np.float64)]=None,
-    im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding"), BeforeValidator(np.float64)]=None,
+    im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding")]=None,
+    im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
     costes_method:      Annotated[CostesMethod, Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
     ) -> Tuple[
         Dict[str, NDArray[np.float64]],

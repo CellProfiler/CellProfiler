@@ -24,8 +24,6 @@ YES          NO           YES
 """
 
 import centrosome.filter
-import centrosome.kirsch
-import centrosome.otsu
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -35,20 +33,10 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_library.modules import enhanceedges
-
-M_SOBEL = "Sobel"
-M_PREWITT = "Prewitt"
-M_ROBERTS = "Roberts"
-M_LOG = "LoG"
-M_CANNY = "Canny"
-M_KIRSCH = "Kirsch"
+from cellprofiler_library.opts.enhanceedges import EdgeFindingMethod, EdgeDirection
 
 O_BINARY = "Binary"
 O_GRAYSCALE = "Grayscale"
-
-E_ALL = "All"
-E_HORIZONTAL = "Horizontal"
-E_VERTICAL = "Vertical"
 
 
 class EnhanceEdges(Module):
@@ -71,52 +59,63 @@ class EnhanceEdges(Module):
 
         self.method = Choice(
             "Select an edge-finding method",
-            [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH],
+            [EdgeFindingMethod.SOBEL, EdgeFindingMethod.PREWITT, EdgeFindingMethod.ROBERTS, EdgeFindingMethod.LOG, EdgeFindingMethod.CANNY, EdgeFindingMethod.KIRSCH],
             doc="""\
 There are several methods that can be used to enhance edges. Often, it
 is best to test them against each other empirically:
 
--  *%(M_SOBEL)s:* Finds edges using the %(M_SOBEL)s approximation to
-   the derivative. The %(M_SOBEL)s method derives a horizontal and
+-  *{M_SOBEL}:* Finds edges using the {M_SOBEL} approximation to
+   the derivative. The {M_SOBEL} method derives a horizontal and
    vertical gradient measure and returns the square-root of the sum of
    the two squared signals.
--  *%(M_PREWITT)s:* Finds edges using the %(M_PREWITT)s approximation
+-  *{M_PREWITT}:* Finds edges using the {M_PREWITT} approximation
    to the derivative. It returns edges at those points where the
    gradient of the image is maximum.
--  *%(M_ROBERTS)s:* Finds edges using the Roberts approximation to the
-   derivative. The %(M_ROBERTS)s method looks for gradients in the
+-  *{M_ROBERTS}:* Finds edges using the Roberts approximation to the
+   derivative. The {M_ROBERTS} method looks for gradients in the
    diagonal and anti-diagonal directions and returns the square-root of
    the sum of the two squared signals. This method is fast, but it
    creates diagonal artifacts that may need to be removed by smoothing.
--  *%(M_LOG)s:* Applies a Laplacian of Gaussian filter to the image and
+-  *{M_LOG}:* Applies a Laplacian of Gaussian filter to the image and
    finds zero crossings.
--  *%(M_CANNY)s:* Finds edges by looking for local maxima of the
+-  *{M_CANNY}:* Finds edges by looking for local maxima of the
    gradient of the image. The gradient is calculated using the
    derivative of a Gaussian filter. The method uses two thresholds to
    detect strong and weak edges, and includes the weak edges in the
    output only if they are connected to strong edges. This method is
    therefore less likely than the others to be fooled by noise, and more
    likely to detect true weak edges.
--  *%(M_KIRSCH)s:* Finds edges by calculating the gradient among the 8
+-  *{M_KIRSCH}:* Finds edges by calculating the gradient among the 8
    compass points (North, North-east, etc.) and selecting the maximum as
    the pixel’s value.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_SOBEL": EdgeFindingMethod.SOBEL.value, 
+        "M_PREWITT": EdgeFindingMethod.PREWITT.value,
+        "M_ROBERTS": EdgeFindingMethod.ROBERTS.value,
+        "M_LOG": EdgeFindingMethod.LOG.value,
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+        "M_KIRSCH": EdgeFindingMethod.KIRSCH.value,
+    }
+),
         )
 
         self.wants_automatic_threshold = Binary(
             "Automatically calculate the threshold?",
             True,
             doc="""\
-*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+*(Used only with the "{M_CANNY}" option and automatic thresholding)*
 
 Select *Yes* to automatically calculate the threshold using a
 three-category Otsu algorithm performed on the Sobel transform of the
 image.
 
 Select *No* to manually enter the threshold value.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+    }
+),
         )
 
         self.manual_threshold = Float(
@@ -125,39 +124,49 @@ Select *No* to manually enter the threshold value.
             0,
             1,
             doc="""\
-*(Used only with the "%(M_CANNY)s" option and manual thresholding)*
+*(Used only with the "{M_CANNY}" option and manual thresholding)*
 
 The upper cutoff for Canny edges. All Sobel-transformed pixels with this
 value or higher will be marked as an edge. You can enter a threshold
 between 0 and 1.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+    }
+),
         )
 
         self.threshold_adjustment_factor = Float(
             "Threshold adjustment factor",
             1,
             doc="""\
-*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+*(Used only with the "{M_CANNY}" option and automatic thresholding)*
 
 This threshold adjustment factor is a multiplier that is applied to both
 the lower and upper Canny thresholds if they are calculated
 automatically. An adjustment factor of 1 indicates no adjustment. The
 adjustment factor has no effect on any threshold entered manually.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+    }
+),
         )
 
         self.direction = Choice(
             "Select edge direction to enhance",
-            [E_ALL, E_HORIZONTAL, E_VERTICAL],
+            [EdgeDirection.ALL, EdgeDirection.HORIZONTAL, EdgeDirection.VERTICAL],
             doc="""\
-*(Used only with "%(M_PREWITT)s" and "%(M_SOBEL)s" methods)*
+*(Used only with "{M_PREWITT}" and "{M_SOBEL}" methods)*
 
 Select the direction of the edges you aim to identify in the image
 (predominantly horizontal, predominantly vertical, or both).
-"""
-            % globals(),
+""".format(
+    **{
+        "M_PREWITT": EdgeFindingMethod.PREWITT.value,
+        "M_SOBEL": EdgeFindingMethod.SOBEL.value,
+    }
+),
         )
 
         self.wants_automatic_sigma = Binary(
@@ -179,14 +188,17 @@ Select *No* to manually enter the value.
             "Calculate value for low threshold automatically?",
             True,
             doc="""\
-*(Used only with the "%(M_CANNY)s" option and automatic thresholding)*
+*(Used only with the "{M_CANNY}" option and automatic thresholding)*
 
 Select *Yes* to automatically calculate the low / soft threshold
-cutoff for the %(M_CANNY)s method.
+cutoff for the {M_CANNY} method.
 
 Select *No* to manually enter the low threshold value.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+    }
+),
         )
 
         self.low_threshold = Float(
@@ -195,13 +207,17 @@ Select *No* to manually enter the low threshold value.
             0,
             1,
             doc="""\
-*(Used only with the "%(M_CANNY)s" option and manual thresholding)*
+*(Used only with the "{M_CANNY}" option and manual thresholding)*
 
-Enter the soft threshold cutoff for the %(M_CANNY)s method. The
-%(M_CANNY)s method will mark all %(M_SOBEL)s-transformed pixels with
+Enter the soft threshold cutoff for the {M_CANNY} method. The
+{M_CANNY} method will mark all {M_SOBEL}-transformed pixels with
 values below this threshold as not being edges.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_CANNY": EdgeFindingMethod.CANNY.value,
+        "M_SOBEL": EdgeFindingMethod.SOBEL.value,
+    }
+),
         )
 
     def settings(self):
@@ -237,13 +253,13 @@ values below this threshold as not being edges.
     def visible_settings(self):
         settings = [self.image_name, self.output_image_name]
         settings += [self.method]
-        if self.method in (M_SOBEL, M_PREWITT):
+        if self.method in (EdgeFindingMethod.SOBEL, EdgeFindingMethod.PREWITT):
             settings += [self.direction]
-        if self.method in (M_LOG, M_CANNY):
+        if self.method in (EdgeFindingMethod.LOG, EdgeFindingMethod.CANNY):
             settings += [self.wants_automatic_sigma]
             if not self.wants_automatic_sigma.value:
                 settings += [self.sigma]
-        if self.method == M_CANNY:
+        if self.method == EdgeFindingMethod.CANNY:
             settings += [self.wants_automatic_threshold]
             if not self.wants_automatic_threshold.value:
                 settings += [self.manual_threshold]
@@ -287,7 +303,7 @@ values below this threshold as not being edges.
         figure.subplot_imshow_grayscale(
             0, 0, orig_pixels, "Original: %s" % self.image_name.value
         )
-        if self.method == M_CANNY:
+        if self.method == EdgeFindingMethod.CANNY:
             # Canny is binary
             figure.subplot_imshow_bw(
                 0,
@@ -313,9 +329,9 @@ values below this threshold as not being edges.
 
     def get_sigma(self):
         """'Automatic' sigma is only available for Cany and Log methods"""
-        if self.wants_automatic_sigma.value and self.method == M_CANNY:
+        if self.wants_automatic_sigma.value and self.method == EdgeFindingMethod.CANNY:
             return 1.0
-        elif self.wants_automatic_sigma.value and self.method == M_LOG:
+        elif self.wants_automatic_sigma.value and self.method == EdgeFindingMethod.LOG:
             return 2.0
         else:
             return self.sigma.value

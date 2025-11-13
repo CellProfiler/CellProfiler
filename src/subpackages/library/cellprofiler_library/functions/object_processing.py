@@ -460,7 +460,7 @@ def fill_convex_hulls(labels):
 #############################################################
 
 def image_mode_black_and_white(
-        pixel_data:     ObjectSegmentation, 
+        pixel_data:     ImageBinary,
         mask:           ImageAnyMask, 
         alpha:          NDArray[numpy.int32],
         labels:         Optional[NDArray[ObjectLabel]] = None,
@@ -471,7 +471,7 @@ def image_mode_black_and_white(
     return pixel_data.astype(numpy.bool_), alpha
 
 def image_mode_grayscale(
-        pixel_data:     ObjectSegmentation, 
+        pixel_data:     ImageGrayscale,
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],
@@ -482,7 +482,7 @@ def image_mode_grayscale(
     return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_color(
-        pixel_data:     ObjectSegmentation, 
+        pixel_data:     ImageColor,
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],
@@ -522,13 +522,13 @@ def image_mode_color(
     return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_uint16(
-        pixel_data:     ObjectSegmentation, 
+        pixel_data:     NDArray[numpy.int32],
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],
         colormap_value: Optional[str] = None
-        ) -> Tuple[NDArray[numpy.uint16], NDArray[numpy.int32]]:
+        ) -> Tuple[NDArray[numpy.int32], NDArray[numpy.int32]]:
     pixel_data[mask] = labels[mask]
     alpha[mask] = 1
-    return pixel_data.astype(numpy.uint16), alpha
+    return pixel_data, alpha
 

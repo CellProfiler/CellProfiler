@@ -83,6 +83,7 @@ Image2DGrayscale =      Annotated[NDArray[Pixel],       Field(description="2D gr
 Image2DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="2D grayscale mask"),    AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinary =         Annotated[NDArray[np.bool_],    Field(description="2D binary image"),      AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="2D binary mask"),       AfterValidator(create_type_validator(False, False, False, np.bool_))]
+Image2DInt =            Annotated[NDArray[np.int32],    Field(description="2D int32 image"),       AfterValidator(create_type_validator(False, False, False, np.int32))]
 
 Image3DColor =          Annotated[NDArray[Pixel],       Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, Union[np.float32, np.float64]))]
 Image3DColorMask =      Annotated[NDArray[np.bool_],    Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, np.bool_))]
@@ -90,6 +91,7 @@ Image3DGrayscale =      Annotated[NDArray[Pixel],       Field(description="3D gr
 Image3DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="3D grayscale mask"),    AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinary =         Annotated[NDArray[np.bool_],    Field(description="3D binary image"),      AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="3D binary mask"),       AfterValidator(create_type_validator(True, False, False, np.bool_))]
+Image3DInt =            Annotated[NDArray[np.int32],    Field(description="3D int32 image"),       AfterValidator(create_type_validator(True, False, False, np.int32))]
 
 # see cellprofiler_library.functions.segmentation._validate_<type> for more details 
 ObjectLabelsDense =     Annotated[NDArray[ObjectLabel], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
@@ -105,7 +107,7 @@ ImageColorMask =        Union[Image2DColorMask, Image3DColorMask]
 ImageBinary =           Union[Image2DBinary, Image3DBinary]
 ImageBinaryMask =       Union[Image2DBinaryMask, Image3DBinaryMask]
 
-ImageAny =              Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale, Image2DBinary, Image3DBinary]
+ImageAny =              Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale, Image2DBinary, Image3DBinary, Image2DInt, Image3DInt]
 ImageAnyMask =          Union[Image2DColorMask, Image3DColorMask, Image2DGrayscaleMask, Image3DGrayscaleMask, Image2DBinaryMask, Image3DBinaryMask]
 
 Image2D =               Union[Image2DColor, Image2DGrayscale, Image2DBinary]
@@ -113,3 +115,5 @@ Image2DMask =           Union[Image2DColorMask, Image2DGrayscaleMask]
 
 Image3D =               Union[Image3DColor, Image3DGrayscale, Image3DBinary]
 Image3DMask =           Union[Image3DColorMask, Image3DGrayscaleMask]
+
+ImageInt =              Union[Image2DInt, Image3DInt]

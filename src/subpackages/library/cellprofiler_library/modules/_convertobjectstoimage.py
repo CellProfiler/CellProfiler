@@ -1,8 +1,8 @@
 import numpy
-from typing import Annotated, Optional, Tuple
+from typing import Annotated, Optional, Tuple, Callable, Dict, Union
 from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.opts.convertobjectstoimage import ImageMode
-from cellprofiler_library.types import ObjectLabelSet, ImageAny
+from cellprofiler_library.types import ImageBinary, ImageColor, ImageGrayscale, ObjectLabelSet, ImageAny, ImageInt
 from cellprofiler_library.functions.object_processing import image_mode_black_and_white, image_mode_grayscale, image_mode_color, image_mode_uint16
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -13,7 +13,7 @@ def convert_objects_to_image(
         colormap_value : Annotated[Optional[str], Field(description="Colormap to be used for conversion")] = None
         ) -> ImageAny:
     
-    alpha = numpy.zeros(objects_shape)
+    alpha = numpy.zeros(objects_shape, numpy.int32)
 
     converter_fn_map = {
         ImageMode.BINARY: image_mode_black_and_white,
@@ -22,7 +22,10 @@ def convert_objects_to_image(
         ImageMode.UINT16: image_mode_uint16,
     }
 
-    pixel_data_init_map = {
+    pixel_data_init_map: Dict[
+        ImageMode,
+        Callable[[], Union[ImageGrayscale, ImageBinary, ImageColor, ImageInt]]
+    ] = {
         ImageMode.BINARY: lambda: numpy.zeros(objects_shape, bool),
         ImageMode.GRAYSCALE: lambda: numpy.zeros(objects_shape),
         ImageMode.COLOR: lambda: numpy.zeros(objects_shape + (3,)),
@@ -40,4 +43,3 @@ def convert_objects_to_image(
     elif image_mode != ImageMode.BINARY:
         pixel_data[mask] = pixel_data[mask] / alpha[mask]
     return pixel_data
-

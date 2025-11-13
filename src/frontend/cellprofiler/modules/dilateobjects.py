@@ -24,9 +24,8 @@ YES          YES          NO
 
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import StructuringElement
-
-import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
+from cellprofiler_library.modules._dilateobjects import dilate_objects
 
 
 class DilateObjects(ObjectProcessing):
@@ -54,6 +53,6 @@ class DilateObjects(ObjectProcessing):
         return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.morphology.dilation
+        self.function = dilate_objects
 
         super(DilateObjects, self).run(workspace)

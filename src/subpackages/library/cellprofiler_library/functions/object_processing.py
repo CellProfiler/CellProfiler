@@ -629,3 +629,50 @@ def erode_objects_with_structuring_element(
     
     return y_data
 
+################################################################################
+# DilateObjects
+################################################################################
+
+def dilate_objects_with_structuring_element(
+    labels: ObjectSegmentation,
+    structuring_element: StructuringElement
+) -> ObjectSegmentation:
+    """Dilate objects based on the structuring element provided.
+    
+    This function is similar to the "Expand" function of ExpandOrShrinkObjects,
+    with two major distinctions:
+    1. DilateObjects supports 3D objects, unlike ExpandOrShrinkObjects.
+    2. In ExpandOrShrinkObjects, two objects closer than the expansion distance
+       will expand until they meet and then stop there. In this module, the object with
+       the larger object number (the object that is lower in the image) will be expanded
+       on top of the object with the smaller object number.
+    
+    Args:
+        labels: Input labeled objects array
+        structuring_element: Structuring element for dilation operation
+        
+    Returns:
+        Dilated objects array with same dimensions as input
+    """
+    is_strel_2d = structuring_element.ndim == 2
+
+    is_img_2d = labels.ndim == 2
+
+    if is_strel_2d and not is_img_2d:
+        y_data = numpy.zeros_like(labels)
+
+        for index, plane in enumerate(labels):
+
+            y_data[index] = skimage.morphology.dilation(plane, structuring_element)
+
+        return y_data
+
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+
+    y_data = skimage.morphology.dilation(labels, structuring_element)
+    
+    return y_data
+

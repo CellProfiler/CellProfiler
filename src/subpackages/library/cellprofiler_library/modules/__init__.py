@@ -16,3 +16,6 @@ from ._watershed import watershed
 from ._measureimageoverlap import measureimageoverlap
 from ._gaussianfilter import gaussianfilter
 from ._measureobjectsizeshape import measureobjectsizeshape
+from ._identifyprimaryobjects import identifyprimaryobjects
+from ._identifysecondaryobjects import identifysecondaryobjects
+from ._identifytertiaryobjects import identifytertiaryobjects

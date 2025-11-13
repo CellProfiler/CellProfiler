@@ -56,23 +56,23 @@ class ConvertObjectsToImage(Module):
 
         self.image_mode = Choice(
             "Select the color format",
-            ["Color", "Binary (black & white)", "Grayscale", "uint16"],
+            [ImageMode.COLOR, ImageMode.BINARY, ImageMode.GRAYSCALE, ImageMode.UINT16],
             doc="""\
 Select which colors the resulting image should use. You have the
 following options:
 
--  *Color:* Allows you to choose a colormap that will produce jumbled
+-  *{COLOR}:* Allows you to choose a colormap that will produce jumbled
    colors for your objects.
--  *Binary (black & white):* All object pixels will be assigned 1 and
+-  *{BINARY}:* All object pixels will be assigned 1 and
    all background pixels will be assigned 0, creating a binary image.
--  *Grayscale:* Assigns all background pixels to 0 and assigns each object's pixels with a number 
+-  *{GRAYSCALE}:* Assigns all background pixels to 0 and assigns each object's pixels with a number 
    specific to that object. Object numbers can range from 1 to 255 (the maximum value that you can put
-   in an 8-bit integer, use **uint16** if you expect more than 255 objects).
+   in an 8-bit integer, use **{uint16}** if you expect more than 255 objects).
    This creates an image where objects in the top left corner of the image are
    very dark and the colors progress to white toward the bottom right corner of the image.
    Use **SaveImages** to save the resulting image as a .npy file or .tiff file if you want
    to process the label matrix image using another program or in a separate CellProfiler pipeline.
--  *uint16:* Assigns all background pixels to 0 and assigns each object's pixels with a number 
+-  *{uint16}:* Assigns all background pixels to 0 and assigns each object's pixels with a number 
    specific to that object. Object numbers can range from 1 to 65535 (the maximum value that you can put
    in a 16-bit integer). This creates an image where objects in the top left corner of the image are
    very dark and where the colors progress to white toward the bottom right corner of the image
@@ -83,7 +83,14 @@ following options:
 
 You can choose *Color* with a *Gray* colormap to produce jumbled gray
 objects.
-            """,
+            """.format(
+                **{
+                    "COLOR": ImageMode.COLOR.value,
+                    "BINARY": ImageMode.BINARY.value,
+                    "GRAYSCALE": ImageMode.GRAYSCALE.value,
+                    "uint16": ImageMode.UINT16.value,
+                }
+            ),
         )
 
         self.colormap = Colormap(

@@ -1,3 +1,4 @@
+from tkinter import Image
 import numpy
 import skimage.color
 import skimage.morphology
@@ -15,6 +16,7 @@ from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
+from ..opts.morph import RepeatMethod
 
 T = TypeVar("T", bound=ImageAny)
 
@@ -1362,3 +1364,218 @@ def suppress(
     footprint = __structuring_element(radius, im_volumetric)
     result = skimage.morphology.opening(data, footprint)
     return __unmask(result, im_pixel_data, im_mask)
+
+
+################################################################################
+# Morphological Operations (from Morph module)
+################################################################################
+
+
+def apply_branchpoints(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
+    """Apply branchpoints morphological operation.
+    
+    Removes all pixels except those that are the branchpoints of a skeleton.
+    This operation should be applied to an image after skeletonizing.
+    """
+    return centrosome.cpmorphology.branchpoints(pixel_data, mask)
+
+def apply_bridge(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply bridge morphological operation.
+    
+    Sets a pixel to 1 if it has two non-zero neighbors that are on
+    opposite sides of this pixel.
+    """
+    return centrosome.cpmorphology.bridge(pixel_data, mask, count)
+
+def apply_clean(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply clean morphological operation.
+    
+    Removes isolated pixels.
+    """
+    return centrosome.cpmorphology.clean(pixel_data, mask, count)
+
+def apply_convex_hull(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
+    """Apply convex hull morphological operation.
+    
+    Finds the convex hull of a binary image.
+    """
+    if mask is None:
+        return centrosome.cpmorphology.convex_hull_image(pixel_data)
+    else:
+        return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
+
+def apply_diag(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply diag morphological operation.
+    
+    Fills in pixels whose neighbors are diagonally connected to 4-connect
+    pixels that are 8-connected.
+    """
+    return centrosome.cpmorphology.diag(pixel_data, mask, count)
+
+def apply_distance(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        rescale_values: bool,
+        ) -> ImageGrayscale:
+    """Apply distance transform morphological operation.
+    
+    Computes the distance transform of a binary image.
+    """
+    image = scipy.ndimage.distance_transform_edt(pixel_data)
+    if rescale_values:
+        image = image / numpy.max(image)
+    return image
+
+def apply_endpoints(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
+    """Apply endpoints morphological operation.
+    
+    Removes all pixels except the ones that are at the end of a skeleton.
+    """
+    return centrosome.cpmorphology.endpoints(pixel_data, mask)
+
+def apply_fill(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply fill morphological operation.
+    
+    Sets a pixel to 1 if all of its neighbors are 1.
+    """
+    return centrosome.cpmorphology.fill(pixel_data, mask, count)
+
+def apply_hbreak(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply hbreak morphological operation.
+    
+    Removes pixels that form vertical bridges between horizontal lines.
+    """
+    return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
+
+def apply_majority(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply majority morphological operation.
+    
+    Each pixel takes on the value of the majority that surround it.
+    """
+    return centrosome.cpmorphology.majority(pixel_data, mask, count)
+
+def apply_openlines(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        linelength: int,
+        ) -> ImageGrayscale:
+    """Apply openlines morphological operation.
+    
+    Performs an erosion followed by a dilation using rotating linear structural
+    elements.
+    """
+    return centrosome.cpmorphology.openlines(pixel_data, linelength=linelength, mask=mask)
+
+def apply_remove(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply remove morphological operation.
+    
+    Removes pixels that are otherwise surrounded by others (4 connected).
+    """
+    return centrosome.cpmorphology.remove(pixel_data, mask, count)
+
+def apply_shrink(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply shrink morphological operation.
+    
+    Performs a thinning operation that erodes unless that operation would change
+    the image's Euler number.
+    """
+    return centrosome.cpmorphology.binary_shrink(pixel_data, count)
+
+def apply_skelpe(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
+    """Apply skelpe morphological operation.
+    
+    Performs a skeletonizing operation using the metric, PE * D to control the
+    erosion order.
+    """
+    return centrosome.cpmorphology.skeletonize(
+        pixel_data,
+        mask,
+        scipy.ndimage.distance_transform_edt(pixel_data)
+        * centrosome.filter.poisson_equation(pixel_data),
+    )
+
+def apply_spur(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply spur morphological operation.
+    
+    Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor.
+    """
+    return centrosome.cpmorphology.spur(pixel_data, mask, count)
+
+def apply_thicken(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply thicken morphological operation.
+    
+    Dilates the exteriors of objects where that dilation does not 8-connect the
+    object with another.
+    """
+    return centrosome.cpmorphology.thicken(pixel_data, mask, count)
+
+def apply_thin(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        count: int,
+        ) -> ImageGrayscale:
+    """Apply thin morphological operation.
+    
+    Thin lines preserving the Euler number using the thinning algorithm.
+    """
+    return centrosome.cpmorphology.thin(pixel_data, mask, count)
+
+def apply_vbreak(
+        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        mask: Optional[ImageGrayscaleMask],
+        ) -> ImageGrayscale:
+    """Apply vbreak morphological operation.
+    
+    Removes pixels that form horizontal bridges between vertical lines.
+    """
+    return centrosome.cpmorphology.vbreak(pixel_data, mask)

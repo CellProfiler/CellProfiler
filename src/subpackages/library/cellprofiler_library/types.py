@@ -117,3 +117,5 @@ Image3D =               Union[Image3DColor, Image3DGrayscale, Image3DBinary]
 Image3DMask =           Union[Image3DColorMask, Image3DGrayscaleMask]
 
 ImageInt =              Union[Image2DInt, Image3DInt]
+
+StructuringElement =    NDArray[np.uint8]

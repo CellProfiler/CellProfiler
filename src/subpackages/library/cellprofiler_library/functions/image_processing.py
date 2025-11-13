@@ -8,9 +8,10 @@ import matplotlib
 import math
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D, Image2DMask, StructuringElement
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.crop import RemovalMethod
+from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
 
 def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
@@ -132,6 +133,47 @@ def morphological_skeleton_2d(image):
 
 def morphological_skeleton_3d(image):
     return skimage.morphology.skeletonize_3d(image)
+
+
+################################################################################
+# Morphological Operations Helpers
+################################################################################
+
+def get_structuring_element(shape: Union[StructuringElementShape2D, StructuringElementShape3D], size: int) -> StructuringElement:
+    return getattr(skimage.morphology, shape.value.lower())(size)
+
+################################################################################
+# ErodeImage
+################################################################################
+
+def morphology_erosion(image: ImageAny, structuring_element: StructuringElement) -> ImageAny:
+    """Apply morphological erosion to an image.
+    
+    Args:
+        image: Input image (2D or 3D)
+        structuring_element: Structuring element for erosion
+        
+    Returns:
+        Eroded image with same dimensions as input
+    """
+    is_strel_2d = structuring_element.ndim == 2
+    is_img_2d = image.ndim == 2
+    
+    if is_strel_2d and not is_img_2d:
+        # Apply 2D structuring element to 3D image planewise
+        y_data = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            y_data[index] = skimage.morphology.erosion(plane, structuring_element)
+        return y_data
+    
+    if not is_strel_2d and is_img_2d:
+        raise NotImplementedError(
+            "A 3D structuring element cannot be applied to a 2D image."
+        )
+    
+    # Apply erosion directly for matching dimensions
+    y_data = skimage.morphology.erosion(image, structuring_element)
+    return y_data
 
 
 def median_filter(image, window_size, mode):

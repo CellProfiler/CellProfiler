@@ -7,7 +7,7 @@ import mahotas
 import matplotlib.cm
 from numpy.typing import NDArray
 from typing import Optional, Literal, Tuple
-from cellprofiler_library.types import ObjectLabelsDense, ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary
+from cellprofiler_library.types import ObjectSegmentation, ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, ImageBinary
 
 
 def shrink_to_point(labels, fill):
@@ -460,7 +460,7 @@ def fill_convex_hulls(labels):
 #############################################################
 
 def image_mode_black_and_white(
-        pixel_data:     ObjectLabelsDense, 
+        pixel_data:     ObjectSegmentation, 
         mask:           ImageAnyMask, 
         alpha:          NDArray[numpy.int32],
         labels:         Optional[NDArray[ObjectLabel]] = None,
@@ -471,7 +471,7 @@ def image_mode_black_and_white(
     return pixel_data.astype(numpy.bool_), alpha
 
 def image_mode_grayscale(
-        pixel_data:     ObjectLabelsDense, 
+        pixel_data:     ObjectSegmentation, 
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],
@@ -482,7 +482,7 @@ def image_mode_grayscale(
     return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_color(
-        pixel_data:     ObjectLabelsDense, 
+        pixel_data:     ObjectSegmentation, 
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],
@@ -522,7 +522,7 @@ def image_mode_color(
     return pixel_data.astype(numpy.float32), alpha
 
 def image_mode_uint16(
-        pixel_data:     ObjectLabelsDense, 
+        pixel_data:     ObjectSegmentation, 
         mask:           ImageAnyMask,
         alpha:          NDArray[numpy.int32],
         labels:         NDArray[ObjectLabel],

@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.opts.correctilluminationapply import Method
 from ..types import Image2D
-from ..functions.image_processing import fix_illumination_function, apply_divide, apply_subtract, clip_low, clip_high
+from ..functions.image_processing import apply_divide, apply_subtract, clip_low, clip_high
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -16,8 +16,7 @@ def correct_illumination_apply(
     """
     Perform illumination according to the parameters of one image setting group
     """
-
-    illum_function_pixel_data = fix_illumination_function(image_pixels.shape, illum_function_pixel_data)
+    assert image_pixels.shape[:2] == illum_function_pixel_data.shape[:2], "Input image shape and illumination function shape must be equal"
     #
     # Either divide or subtract the illumination image from the original
     #

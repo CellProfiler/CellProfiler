@@ -25,7 +25,7 @@ See also
 
 See also **CorrectIlluminationCalculate**.
 """
-
+import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary
@@ -246,32 +246,40 @@ somewhat empirical.
         illum_function = workspace.image_set.get_image(illum_correct_name)
         illum_function_pixel_data = illum_function.pixel_data
         #
+        # Validate the illumination function
+        #
+        if orig_image.pixel_data.ndim == 2:
+            illum_function = workspace.image_set.get_image(
+                illum_correct_name, must_be_grayscale=True
+            )
+        else:
+            if illum_function_pixel_data.ndim == 2:
+                illum_function_pixel_data = illum_function_pixel_data[
+                    :, :, numpy.newaxis
+                ]
+        if orig_image.pixel_data.shape[:2] != illum_function_pixel_data.shape[:2]:
+            raise ValueError(
+                "This module requires that the image and illumination function have equal dimensions.\n"
+                "The %s image and %s illumination function do not (%s vs %s).\n"
+                "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
+                % (
+                    image_name,
+                    illum_correct_name,
+                    orig_image.pixel_data.shape,
+                    illum_function_pixel_data.shape,
+                )
+            )   
+        #
         # Apply the illumination function
         #
-        try:
-            output_pixels = correct_illumination_apply(
-                orig_image.pixel_data,
-                illum_function_pixel_data,
-                image.divide_or_subtract.value,
-                truncate_low=self.truncate_low.value,
-                truncate_high=self.truncate_high.value,
-            )
-        except ValueError as e:
-            # Update error message to be more descriptive if the error is due to image and illum function being different shapes
-            if "This module requires that the image and illumination function have equal dimensions" in str(e):
-                raise ValueError(
-                    "This module requires that the image and illumination function have equal dimensions.\n"
-                    "The %s image and %s illumination function do not (%s vs %s).\n"
-                    "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
-                    % (
-                        image_name,
-                        illum_correct_name,
-                        orig_image.pixel_data.shape,
-                        illum_function_pixel_data.shape,
-                    )
-                )
-            else:
-                raise e
+        output_pixels = correct_illumination_apply(
+            orig_image.pixel_data,
+            illum_function_pixel_data,
+            image.divide_or_subtract.value,
+            truncate_low=self.truncate_low.value,
+            truncate_high=self.truncate_high.value,
+        )
+
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.

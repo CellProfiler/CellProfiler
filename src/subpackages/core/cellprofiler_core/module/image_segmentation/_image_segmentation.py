@@ -24,6 +24,10 @@ from ...setting.text import LabelName
 class ImageSegmentation(Module):
     category = "Image Segmentation"
 
+    def __init__(self):
+        self.validate_image = None
+        super().__init__()
+
     def add_measurements(self, workspace, object_name=None):
         if object_name is None:
             object_name = self.y_name.value
@@ -152,6 +156,9 @@ class ImageSegmentation(Module):
         x_data = x.pixel_data
 
         args = (setting.value for setting in self.settings()[2:])
+
+        if self.validate_image:
+            self.validate_image(x)
 
         y_data = self.function(x_data, *args)
 

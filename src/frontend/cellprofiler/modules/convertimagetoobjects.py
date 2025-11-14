@@ -109,6 +109,11 @@ If set to 0, a full connectivity of the input dimension is used.
         return __settings__
 
     def run(self, workspace):
+        def _validate_image(img):
+            if img.multichannel is not False:
+                raise TypeError("Input image should be grayscale")
+
+        self.validate_image = _validate_image
         self.function = lambda data, cast_to_bool, preserve_label, background, connectivity: convert_image_to_objects(
             data, cast_to_bool, preserve_label, background, connectivity
         )

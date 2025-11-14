@@ -647,31 +647,3 @@ def clip_low(output_pixels: Image2D) -> Image2D:
 
 def clip_high(output_pixels: Image2D) -> Image2D:
     return numpy.where(output_pixels > 1, 1, output_pixels)
-
-def fix_illumination_function(
-        input_image_shape: Tuple[int, ...],
-        illum_function_pixel_data: Image2D,
-        ) -> Image2D:
-    """
-    Fix the illumination function to be the same shape as the image
-    """
-    if len(input_image_shape) == 2:
-        if illum_function_pixel_data.ndim != 2:
-            illum_function_pixel_data = __must_be_grayscale(illum_function_pixel_data)
-    else:
-        if illum_function_pixel_data.ndim == 2:
-            illum_function_pixel_data = illum_function_pixel_data[
-                :, :, numpy.newaxis
-            ]
-    # Throw an error if image and illum data are incompatible
-    if input_image_shape[:2] != illum_function_pixel_data.shape[:2]:
-        raise ValueError(
-            "This module requires that the image and illumination function have equal dimensions.\n"
-            "The image and illumination function passed do not (%s vs %s).\n"
-            "If they are paired correctly you may want to use the Resize or Crop module to make them the same size."
-            % (
-                input_image_shape,
-                illum_function_pixel_data.shape,
-            )
-        )
-    return illum_function_pixel_data

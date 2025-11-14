@@ -10,6 +10,7 @@ import cellprofiler_core.modules.injectimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.correctilluminationapply import Method
 
 
 def error_callback(calller, event):
@@ -43,7 +44,7 @@ def test_divide():
     image.illum_correct_function_image_name.value = "IllumImage"
     image.corrected_image_name.value = "OutputImage"
     image.divide_or_subtract.value = (
-        cellprofiler.modules.correctilluminationapply.DOS_DIVIDE
+        Method.DIVIDE.value
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -97,7 +98,7 @@ def test_divide_with_clip():
     image.illum_correct_function_image_name.value = "IllumImage"
     image.corrected_image_name.value = "OutputImage"
     image.divide_or_subtract.value = (
-        cellprofiler.modules.correctilluminationapply.DOS_DIVIDE
+        Method.DIVIDE.value
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -147,7 +148,7 @@ def test_subtract():
     image.illum_correct_function_image_name.value = "IllumImage"
     image.corrected_image_name.value = "OutputImage"
     image.divide_or_subtract.value = (
-        cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        Method.SUBTRACT.value
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler_core.measurement.Measurements()
@@ -199,7 +200,7 @@ def test_color_by_bw():
     image.illum_correct_function_image_name.value = "IllumImage"
     image.corrected_image_name.value = "OutputImage"
     image.divide_or_subtract.value = (
-        cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        Method.SUBTRACT.value
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler_core.measurement.Measurements()
@@ -251,7 +252,7 @@ def test_color_by_color():
     image.illum_correct_function_image_name.value = "IllumImage"
     image.corrected_image_name.value = "OutputImage"
     image.divide_or_subtract.value = (
-        cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        Method.SUBTRACT.value
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
     measurements = cellprofiler_core.measurement.Measurements()

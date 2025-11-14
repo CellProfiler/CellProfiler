@@ -1,7 +1,7 @@
 from pydantic import Field, validate_call, ConfigDict
 from typing import Annotated, List, Union, Optional
 
-from cellprofiler_library.opts.colortogray import ImageChannelType
+from ..opts.colortogray import ImageChannelType
 from ..types import Image2DColor, Image2DGrayscale
 from ..functions.image_processing import combine_colortogray, split_hsv, split_rgb, split_multichannel
 

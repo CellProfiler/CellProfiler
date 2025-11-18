@@ -87,33 +87,34 @@ from cellprofiler_core.workspace import Workspace
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
+from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
 
-D_ADJACENT = "Adjacent"
-D_EXPAND = "Expand until adjacent"
-D_WITHIN = "Within a specified distance"
-D_ALL = [D_ADJACENT, D_EXPAND, D_WITHIN]
+# DistanceMethod.ADJACENT = "Adjacent"
+# DistanceMethod.EXPAND = "Expand until adjacent"
+# DistanceMethod.WITHIN = "Within a specified distance"
+# D_ALL = [DistanceMethod.ADJACENT, DistanceMethod.EXPAND, DistanceMethod.WITHIN]
 
-M_NUMBER_OF_NEIGHBORS = "NumberOfNeighbors"
-M_PERCENT_TOUCHING = "PercentTouching"
-M_FIRST_CLOSEST_OBJECT_NUMBER = "FirstClosestObjectNumber"
-M_FIRST_CLOSEST_DISTANCE = "FirstClosestDistance"
-M_SECOND_CLOSEST_OBJECT_NUMBER = "SecondClosestObjectNumber"
-M_SECOND_CLOSEST_DISTANCE = "SecondClosestDistance"
-M_ANGLE_BETWEEN_NEIGHBORS = "AngleBetweenNeighbors"
-M_ALL = [
-    M_NUMBER_OF_NEIGHBORS,
-    M_PERCENT_TOUCHING,
-    M_FIRST_CLOSEST_OBJECT_NUMBER,
-    M_FIRST_CLOSEST_DISTANCE,
-    M_SECOND_CLOSEST_OBJECT_NUMBER,
-    M_SECOND_CLOSEST_DISTANCE,
-    M_ANGLE_BETWEEN_NEIGHBORS,
-]
+# Measurement.NUMBER_OF_NEIGHBORS = "NumberOfNeighbors"
+# Measurement.PERCENT_TOUCHING = "PercentTouching"
+# Measurement.FIRST_CLOSEST_OBJECT_NUMBER = "FirstClosestObjectNumber"
+# Measurement.FIRST_CLOSEST_DISTANCE = "FirstClosestDistance"
+# Measurement.SECOND_CLOSEST_OBJECT_NUMBER = "SecondClosestObjectNumber"
+# Measurement.SECOND_CLOSEST_DISTANCE = "SecondClosestDistance"
+# Measurement.ANGLE_BETWEEN_NEIGHBORS = "AngleBetweenNeighbors"
+# M_ALL = [
+#     Measurement.NUMBER_OF_NEIGHBORS,
+#     Measurement.PERCENT_TOUCHING,
+#     Measurement.FIRST_CLOSEST_OBJECT_NUMBER,
+#     Measurement.FIRST_CLOSEST_DISTANCE,
+#     Measurement.SECOND_CLOSEST_OBJECT_NUMBER,
+#     Measurement.SECOND_CLOSEST_DISTANCE,
+#     Measurement.ANGLE_BETWEEN_NEIGHBORS,
+# ]
 
-C_NEIGHBORS = "Neighbors"
+# C_NEIGHBORS = "Neighbors"
 
-S_EXPANDED = "Expanded"
-S_ADJACENT = "Adjacent"
+# MeasurementScale.EXPANDED = "Expanded"
+# MeasurementScale.ADJACENT = "Adjacent"
 
 
 class MeasureObjectNeighbors(Module):
@@ -142,31 +143,37 @@ as above.""",
         self.distance_method = Choice(
             "Method to determine neighbors",
             D_ALL,
-            D_EXPAND,
+            DistanceMethod.EXPAND,
             doc="""\
 There are several methods by which to determine whether objects are
 neighbors:
 
--  *%(D_ADJACENT)s:* In this mode, two objects must have adjacent
+-  *{D_ADJACENT}:* In this mode, two objects must have adjacent
    boundary pixels to be neighbors.
--  *%(D_EXPAND)s:* The objects are expanded until all pixels on the
+-  *{D_EXPAND}:* The objects are expanded until all pixels on the
    object boundaries are touching another. Two objects are neighbors if
    any of their boundary pixels are adjacent after expansion.
--  *%(D_WITHIN)s:* Each object is expanded by the number of pixels you
+-  *{D_WITHIN}:* Each object is expanded by the number of pixels you
    specify. Two objects are neighbors if they have adjacent pixels after
    expansion. Note that *all* objects are expanded by this amount (e.g., 
    if this distance is set to 10, a pair of objects will count as 
    neighbors if their edges are 20 pixels apart or closer).
 
-For *%(D_ADJACENT)s* and *%(D_EXPAND)s*, the
-*%(M_PERCENT_TOUCHING)s* measurement is the percentage of pixels on
+For *{D_ADJACENT}* and *{D_EXPAND}*, the
+*{M_PERCENT_TOUCHING}* measurement is the percentage of pixels on
 the boundary of an object that touch adjacent objects. For
-*%(D_WITHIN)s*, two objects are touching if any of their boundary
-pixels are adjacent after expansion and *%(M_PERCENT_TOUCHING)s*
+*{D_WITHIN}*, two objects are touching if any of their boundary
+pixels are adjacent after expansion and *{M_PERCENT_TOUCHING}*
 measures the percentage of boundary pixels of an *expanded* object that
 touch adjacent objects.
-"""
-            % globals(),
+""".format(
+    **{
+        "D_ADJACENT": DistanceMethod.ADJACENT.value,
+        "D_EXPAND": DistanceMethod.EXPAND.value,
+        "D_WITHIN": DistanceMethod.WITHIN.value,
+        "M_PERCENT_TOUCHING": Measurement.PERCENT_TOUCHING.value,
+    }
+),
         )
 
         self.distance = Integer(
@@ -179,8 +186,11 @@ touch adjacent objects.
 The Neighbor distance is the number of pixels that each object is
 expanded for the neighbor calculation. Expanded objects that touch are
 considered neighbors.
-"""
-            % globals(),
+""".format(
+    **{
+        "D_WITHIN": DistanceMethod.WITHIN.value,
+    }
+),
         )
 
         self.wants_count_image = Binary(
@@ -286,7 +296,7 @@ previously discarded objects.""".format(
 
     def visible_settings(self):
         result = [self.object_name, self.neighbors_name, self.distance_method]
-        if self.distance_method == D_WITHIN:
+        if self.distance_method == DistanceMethod.WITHIN:
             result += [self.distance]
         result += [self.wants_excluded_objects, self.wants_count_image]
         if self.wants_count_image.value:
@@ -340,7 +350,7 @@ previously discarded objects.""".format(
         angle = numpy.zeros((nobjects,))
         percent_touching = numpy.zeros((nobjects,))
         expanded_labels = None
-        if self.distance_method == D_EXPAND:
+        if self.distance_method == DistanceMethod.EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
             if dimensions == 2:
@@ -357,15 +367,15 @@ previously discarded objects.""".format(
                 labels = labels[k, i, j]
             expanded_labels = labels  # for display
             distance = 1  # dilate once to make touching edges overlap
-            scale = S_EXPANDED
+            scale = MeasurementScale.EXPANDED
             if self.neighbors_are_objects:
                 neighbor_labels = labels.copy()
-        elif self.distance_method == D_WITHIN:
+        elif self.distance_method == DistanceMethod.WITHIN:
             distance = self.distance.value
             scale = str(distance)
-        elif self.distance_method == D_ADJACENT:
+        elif self.distance_method == DistanceMethod.ADJACENT:
             distance = 1
-            scale = S_ADJACENT
+            scale = MeasurementScale.ADJACENT
         else:
             raise ValueError("Unknown distance method: %s" % self.distance_method.value)
         if nneighbors > (1 if self.neighbors_are_objects else 0):
@@ -673,19 +683,19 @@ previously discarded objects.""".format(
         assert isinstance(m, Measurements)
         image_set = workspace.image_set
         features_and_data = [
-            (M_NUMBER_OF_NEIGHBORS, neighbor_count),
-            (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
+            (Measurement.NUMBER_OF_NEIGHBORS.value, neighbor_count),
+            (Measurement.FIRST_CLOSEST_OBJECT_NUMBER.value, first_object_number),
             (
-                M_FIRST_CLOSEST_DISTANCE,
+                Measurement.FIRST_CLOSEST_DISTANCE.value,
                 numpy.sqrt(first_x_vector ** 2 + first_y_vector ** 2),
             ),
-            (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
+            (Measurement.SECOND_CLOSEST_OBJECT_NUMBER.value, second_object_number),
             (
-                M_SECOND_CLOSEST_DISTANCE,
+                Measurement.SECOND_CLOSEST_DISTANCE.value,
                 numpy.sqrt(second_x_vector ** 2 + second_y_vector ** 2),
             ),
-            (M_ANGLE_BETWEEN_NEIGHBORS, angle),
-            (M_PERCENT_TOUCHING, percent_touching),
+            (Measurement.ANGLE_BETWEEN_NEIGHBORS.value, angle),
+            (Measurement.PERCENT_TOUCHING.value, percent_touching),
         ]
         for feature_name, data in features_and_data:
             m.add_measurement(
@@ -840,7 +850,7 @@ previously discarded objects.""".format(
                     sharexy=figure.subplot(0, 0),
                 )
 
-        if self.distance_method == D_EXPAND:
+        if self.distance_method == DistanceMethod.EXPAND:
             figure.subplot_imshow_labels(
                 1,
                 expandplot_position,
@@ -854,12 +864,12 @@ previously discarded objects.""".format(
         return M_ALL
 
     def get_measurement_name(self, feature):
-        if self.distance_method == D_EXPAND:
-            scale = S_EXPANDED
-        elif self.distance_method == D_WITHIN:
+        if self.distance_method == DistanceMethod.EXPAND:
+            scale = MeasurementScale.EXPANDED
+        elif self.distance_method == DistanceMethod.WITHIN:
             scale = str(self.distance.value)
-        elif self.distance_method == D_ADJACENT:
-            scale = S_ADJACENT
+        elif self.distance_method == DistanceMethod.ADJACENT:
+            scale = MeasurementScale.ADJACENT
         if self.neighbors_are_objects:
             return "_".join((C_NEIGHBORS, feature, scale))
         else:
@@ -874,9 +884,9 @@ previously discarded objects.""".format(
                     COLTYPE_INTEGER
                     if feature
                     in (
-                        M_NUMBER_OF_NEIGHBORS,
-                        M_FIRST_CLOSEST_OBJECT_NUMBER,
-                        M_SECOND_CLOSEST_OBJECT_NUMBER,
+                        Measurement.NUMBER_OF_NEIGHBORS,
+                        Measurement.FIRST_CLOSEST_OBJECT_NUMBER,
+                        Measurement.SECOND_CLOSEST_OBJECT_NUMBER,
                     )
                     else COLTYPE_FLOAT,
                 )
@@ -922,11 +932,11 @@ previously discarded objects.""".format(
         self, pipeline, object_name, category, measurement, image_name
     ):
         if measurement in self.get_measurements(pipeline, object_name, category):
-            if self.distance_method == D_EXPAND:
-                return [S_EXPANDED]
-            elif self.distance_method == D_ADJACENT:
-                return [S_ADJACENT]
-            elif self.distance_method == D_WITHIN:
+            if self.distance_method == DistanceMethod.EXPAND:
+                return [MeasurementScale.EXPANDED]
+            elif self.distance_method == DistanceMethod.ADJACENT:
+                return [MeasurementScale.ADJACENT]
+            elif self.distance_method == DistanceMethod.WITHIN:
                 return [str(self.distance.value)]
             else:
                 raise ValueError(

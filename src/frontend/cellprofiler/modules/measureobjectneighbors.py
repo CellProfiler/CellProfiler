@@ -90,6 +90,9 @@ from centrosome.outline import outline
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
 from typing import List, Optional, Union, Tuple
 from numpy.typing import NDArray
+from cellprofiler_library.types import ObjectSegmentation, ObjectLabel
+from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, areas_from_ijv, cast_labels_to_label_set, indices_from_ijv
+from cellprofiler_library.functions.object_processing import relate_labels
 # DistanceMethod.ADJACENT = "Adjacent"
 # DistanceMethod.EXPAND = "Expand until adjacent"
 # DistanceMethod.WITHIN = "Within a specified distance"
@@ -586,20 +589,37 @@ previously discarded objects.""".format(
 
     def baz(
             self, 
-            labels, 
-            neighbor_labels, 
-            distance_method, 
-            dimensions, 
-            objects_small_removed_segmented, 
-            neighbor_small_removed_segmented, 
-            object_numbers, 
-            neighbor_numbers, 
-            nkept_objects, 
-            has_pixels, 
-            neighbor_has_pixels
+            objects_small_removed_segmented: ObjectSegmentation, 
+            kept_labels: ObjectSegmentation,
+            neighbor_small_removed_segmented: ObjectSegmentation, 
+            neighbor_kept_labels: ObjectSegmentation,
+            dimensions: int, 
+            distance_method: DistanceMethod, 
+            wants_excluded_objects: bool=True,
             ):
+        labels = objects_small_removed_segmented.copy()
+        neighbor_labels = neighbor_small_removed_segmented.copy()
+        
+        kept_label_set = cast_labels_to_label_set(kept_labels)
+        neighbor_kept_label_set = cast_labels_to_label_set(neighbor_kept_labels)
+        kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
+        has_pixels = areas_from_ijv(kept_label_ijv) > 0
+        if not wants_excluded_objects:
+            # Remove labels not present in kept segmentation while preserving object IDs.
+            mask = neighbor_kept_labels > 0
+            neighbor_labels[~mask] = 0
+
         nneighbors = numpy.max(neighbor_labels)
+        nkept_objects = len(indices_from_ijv(kept_label_ijv, validate=False))
         nobjects = numpy.max(labels)
+
+        _, object_numbers = relate_labels(labels, kept_labels)
+        if self.neighbors_are_objects:
+            neighbor_numbers = object_numbers
+            neighbor_has_pixels = has_pixels
+        else:
+            _, neighbor_numbers = relate_labels(neighbor_labels, neighbor_kept_labels)
+            neighbor_has_pixels = numpy.bincount(neighbor_kept_labels.ravel())[1:] > 0
 
         neighbor_count = numpy.zeros((nobjects,))
         pixel_count = numpy.zeros((nobjects,))
@@ -735,34 +755,20 @@ previously discarded objects.""".format(
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        labels = objects.small_removed_segmented
-        objects_small_removed_segmented = objects.small_removed_segmented
-        kept_labels = objects.segmented
+        # labels: ObjectSegmentation = objects.small_removed_segmented
+        objects_small_removed_segmented: ObjectSegmentation = objects.small_removed_segmented
+        kept_labels: ObjectSegmentation = objects.segmented
         assert isinstance(objects, Objects)
         has_pixels = objects.areas > 0
 
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
-        neighbor_labels = neighbor_objects.small_removed_segmented
-        neighbor_small_removed_segmented = neighbor_objects.small_removed_segmented
-        neighbor_kept_labels = neighbor_objects.segmented
+        # neighbor_labels: ObjectSegmentation = neighbor_objects.small_removed_segmented
+        neighbor_small_removed_segmented: ObjectSegmentation = neighbor_objects.small_removed_segmented
+        neighbor_kept_labels: ObjectSegmentation = neighbor_objects.segmented
         assert isinstance(neighbor_objects, Objects)
        
         dimensions = len(objects.shape)
-        if not self.wants_excluded_objects.value:
-            # Remove labels not present in kept segmentation while preserving object IDs.
-            mask = neighbor_kept_labels > 0
-            neighbor_labels[~mask] = 0
-        nobjects = numpy.max(labels)
-        nkept_objects = len(objects.indices)
-        nneighbors = numpy.max(neighbor_labels)
 
-        _, object_numbers = objects.relate_labels(labels, kept_labels)
-        if self.neighbors_are_objects:
-            neighbor_numbers = object_numbers
-            neighbor_has_pixels = has_pixels
-        else:
-            _, neighbor_numbers = neighbor_objects.relate_labels(neighbor_labels, neighbor_kept_labels)
-            neighbor_has_pixels = numpy.bincount(neighbor_kept_labels.ravel())[1:] > 0
 
         (
             neighbor_count,
@@ -775,17 +781,14 @@ previously discarded objects.""".format(
             first_objects,
             second_objects,
             expanded_labels,
-        ) = self.baz( labels, 
-            neighbor_labels, 
-            self.distance_method, 
-            dimensions, 
+        ) = self.baz( 
             objects_small_removed_segmented, 
+            kept_labels,
             neighbor_small_removed_segmented, 
-            object_numbers, 
-            neighbor_numbers, 
-            nkept_objects, 
-            has_pixels, 
-            neighbor_has_pixels
+            neighbor_kept_labels,
+            dimensions, 
+            self.distance_method.value, 
+            self.wants_excluded_objects.value,
         )
 
 

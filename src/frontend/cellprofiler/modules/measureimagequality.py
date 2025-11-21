@@ -1050,7 +1050,7 @@ to the foreground pixels or the background pixels.
         """Calculate statistics for a particular image"""
         statistics = []
         if image_group.include_image_scalings.value:
-            statistics += self.retrieve_image_scalings(image_group, workspace)
+            statistics += self.retrieve_image_scalings(image_group, workspace) # cannot be moved to library
         if image_group.check_blur.value:
             statistics += self.calculate_focus_scores(image_group, workspace)
             statistics += self.calculate_correlation(image_group, workspace)
@@ -1078,6 +1078,96 @@ to the foreground pixels or the background pixels.
             workspace.add_measurement("Image", feature, value)
             result += [["{} scaling".format(image_name), value]]
         return result
+    
+
+    def get_focus_score_for_scale_group(
+            self,
+            scale_groups,
+            pixel_data,
+            dimensions,
+            image_mask,
+    ):
+        if image_mask is not None:
+                masked_pixel_data = pixel_data[image_mask]
+        else:
+            masked_pixel_data = pixel_data
+        shape = pixel_data.shape
+        local_focus_score = []
+        for scale in scale_groups:
+            focus_score = 0
+            if len(masked_pixel_data):
+                mean_image_value = numpy.mean(masked_pixel_data)
+                squared_normalized_image = (masked_pixel_data - mean_image_value) ** 2
+                if mean_image_value > 0:
+                    focus_score = numpy.sum(squared_normalized_image) / (
+                        numpy.product(masked_pixel_data.shape) * mean_image_value
+                    )
+            #
+            # Create a labels matrix that grids the image to the dimensions
+            # of the window size
+            #
+            if dimensions == 2:
+                i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
+                m, n = (numpy.array(shape) + scale - 1) // scale
+                i = (i * float(m) / float(shape[0])).astype(int)
+                j = (j * float(n) / float(shape[1])).astype(int)
+                grid = i * n + j + 1
+                grid_range = numpy.arange(0, m * n + 1, dtype=numpy.int32)
+            elif dimensions == 3:
+                k, i, j = numpy.mgrid[
+                    0 : shape[0], 0 : shape[1], 0 : shape[2]
+                ].astype(float)
+                o, m, n = (numpy.array(shape) + scale - 1) // scale
+                k = (k * float(o) / float(shape[0])).astype(int)
+                i = (i * float(m) / float(shape[1])).astype(int)
+                j = (j * float(n) / float(shape[2])).astype(int)
+                grid = k * o + i * n + j + 1  # hmm
+                grid_range = numpy.arange(0, m * n * o + 1, dtype=numpy.int32)
+            else:
+                raise ValueError("Image dimensions must be 2 or 3")
+            if image_mask is not None:
+                grid[numpy.logical_not(image_mask)] = 0
+            
+            #
+            # Do the math per label
+            #
+            local_means = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                scipy.ndimage.mean(pixel_data, grid, grid_range)
+            )
+            local_squared_normalized_image = (
+                pixel_data - local_means[grid]
+            ) ** 2
+            #
+            # Compute the sum of local_squared_normalized_image values for each
+            # grid for means > 0. Exclude grid label = 0 because that's masked
+            #
+            grid_mask = (local_means != 0) & ~numpy.isnan(local_means)
+            nz_grid_range = grid_range[grid_mask]
+            if len(nz_grid_range) and nz_grid_range[0] == 0:
+                nz_grid_range = nz_grid_range[1:]
+                local_means = local_means[1:]
+                grid_mask = grid_mask[1:]
+            local_focus_score += [
+                0
+            ]  # assume the worst - that we can't calculate it
+            if len(nz_grid_range):
+                sums = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                    scipy.ndimage.sum(
+                        local_squared_normalized_image, grid, nz_grid_range
+                    )
+                )
+                pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                    scipy.ndimage.sum(numpy.ones(shape), grid, nz_grid_range)
+                )
+                local_norm_var = sums / (pixel_counts * local_means[grid_mask])
+                local_norm_median = numpy.median(local_norm_var)
+                if numpy.isfinite(local_norm_median) and local_norm_median > 0:
+                    local_focus_score[-1] = (
+                        numpy.var(local_norm_var) / local_norm_median
+                    )
+        return focus_score, scale, local_focus_score
+
+        
 
     def calculate_focus_scores(self, image_group, workspace):
         """Calculate a local blur measurement and a image-wide one"""
@@ -1086,86 +1176,27 @@ to the foreground pixels or the background pixels.
         for image_name in self.images_to_process(image_group, workspace):
 
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            shape = image.pixel_data.shape
+            masked_pixel_data = image.pixel_data
             if image.has_mask:
-                pixel_data = pixel_data[image.mask]
+                masked_pixel_data = masked_pixel_data[image.mask]
 
+            dimensions = image.dimensions
+            has_mask = image.has_mask
+            image_mask = image.mask if has_mask else None
+            pixel_data = image.pixel_data
             local_focus_score = []
-            for scale_group in image_group.scale_groups:
-                scale = scale_group.scale.value
+            scale_groups = [scale_group.scale.value for scale_group in image_group.scale_groups]
 
-                focus_score = 0
-                if len(pixel_data):
-                    mean_image_value = numpy.mean(pixel_data)
-                    squared_normalized_image = (pixel_data - mean_image_value) ** 2
-                    if mean_image_value > 0:
-                        focus_score = numpy.sum(squared_normalized_image) / (
-                            numpy.product(pixel_data.shape) * mean_image_value
-                        )
-                #
-                # Create a labels matrix that grids the image to the dimensions
-                # of the window size
-                #
-                if image.dimensions == 2:
-                    i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
-                    m, n = (numpy.array(shape) + scale - 1) // scale
-                    i = (i * float(m) / float(shape[0])).astype(int)
-                    j = (j * float(n) / float(shape[1])).astype(int)
-                    grid = i * n + j + 1
-                    grid_range = numpy.arange(0, m * n + 1, dtype=numpy.int32)
-                else:
-                    k, i, j = numpy.mgrid[
-                        0 : shape[0], 0 : shape[1], 0 : shape[2]
-                    ].astype(float)
-                    o, m, n = (numpy.array(shape) + scale - 1) // scale
-                    k = (k * float(o) / float(shape[0])).astype(int)
-                    i = (i * float(m) / float(shape[1])).astype(int)
-                    j = (j * float(n) / float(shape[2])).astype(int)
-                    grid = k * o + i * n + j + 1  # hmm
-                    grid_range = numpy.arange(0, m * n * o + 1, dtype=numpy.int32)
-
-                if image.has_mask:
-                    grid[numpy.logical_not(image.mask)] = 0
-                
-                #
-                # Do the math per label
-                #
-                local_means = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                    scipy.ndimage.mean(image.pixel_data, grid, grid_range)
-                )
-                local_squared_normalized_image = (
-                    image.pixel_data - local_means[grid]
-                ) ** 2
-                #
-                # Compute the sum of local_squared_normalized_image values for each
-                # grid for means > 0. Exclude grid label = 0 because that's masked
-                #
-                grid_mask = (local_means != 0) & ~numpy.isnan(local_means)
-                nz_grid_range = grid_range[grid_mask]
-                if len(nz_grid_range) and nz_grid_range[0] == 0:
-                    nz_grid_range = nz_grid_range[1:]
-                    local_means = local_means[1:]
-                    grid_mask = grid_mask[1:]
-                local_focus_score += [
-                    0
-                ]  # assume the worst - that we can't calculate it
-                if len(nz_grid_range):
-                    sums = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        scipy.ndimage.sum(
-                            local_squared_normalized_image, grid, nz_grid_range
-                        )
-                    )
-                    pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                        scipy.ndimage.sum(numpy.ones(shape), grid, nz_grid_range)
-                    )
-                    local_norm_var = sums / (pixel_counts * local_means[grid_mask])
-                    local_norm_median = numpy.median(local_norm_var)
-                    if numpy.isfinite(local_norm_median) and local_norm_median > 0:
-                        local_focus_score[-1] = (
-                            numpy.var(local_norm_var) / local_norm_median
-                        )
-
+            #
+            # Compute the focus score
+            #
+            focus_score, scale, local_focus_score = self.get_focus_score_for_scale_group(
+                scale_groups,
+                pixel_data,
+                dimensions,
+                image_mask,
+            )
+            
             #
             # Add the measurements
             #
@@ -1191,45 +1222,71 @@ to the foreground pixels or the background pixels.
                 ]
 
         return result
+    
+    def get_correlation_for_scale_group(self, pixel_data, scale_groups, image_mask):
+        # Compute Haralick's correlation texture for the given scales
+        image_labels = numpy.ones(pixel_data.shape, int)
+        if image_mask is not None:
+            image_labels[~image_mask] = 0
+        scale_measurements = {}
+        for scale in scale_groups:
+            scale_measurements[scale] = self.get_correlation_for_scale(pixel_data, image_labels, scale)
+        return scale_measurements
+    
+    def get_correlation_for_scale(self, pixel_data, image_labels, scale):
+        # Compute Haralick's correlation texture for the given scale
+        value = centrosome.haralick.Haralick(pixel_data, image_labels, 0, scale).H3()
+
+        if len(value) != 1 or not numpy.isfinite(value[0]):
+            value = 0.0
+        else:
+            value = float(value)
+        return value
 
     def calculate_correlation(self, image_group, workspace):
         """Calculate a correlation measure from the Harlick feature set"""
         result = []
+        scale_groups = [scale_group.scale.value for scale_group in image_group.scale_groups]
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             pixel_data = image.pixel_data
-
-            # Compute Haralick's correlation texture for the given scales
-            image_labels = numpy.ones(pixel_data.shape, int)
-            if image.has_mask:
-                image_labels[~image.mask] = 0
-            for scale_group in image_group.scale_groups:
-                scale = scale_group.scale.value
-
-                value = centrosome.haralick.Haralick(
-                    pixel_data, image_labels, 0, scale
-                ).H3()
-
-                if len(value) != 1 or not numpy.isfinite(value[0]):
-                    value = 0.0
-                else:
-                    value = float(value)
-                    
+            image_mask = image.mask if image.has_mask else None
+            #
+            # Compute the correlation values
+            #
+            scale_measurements = self.get_correlation_for_scale_group(pixel_data, scale_groups, image_mask)
+            for scale in scale_groups:
                 workspace.add_measurement(
                     "Image",
-                    "{}_{}_{}_{:d}".format(
-                        C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale
-                    ),
-                    float(value),
+                    "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale),
+                    scale_measurements[scale],
                 )
                 result += [
                     [
                         "{} {} @{:d}".format(image_name, Feature.CORRELATION.value, scale),
-                        "{:.2f}".format(float(value)),
+                        "{:.2f}".format(scale_measurements[scale]),
                     ]
                 ]
         return result
 
+    def get_saturation_value(self, pixel_data, image_mask):
+        if image_mask is not None:
+            pixel_data = pixel_data[image_mask]
+        pixel_count = numpy.product(pixel_data.shape)
+        if pixel_count == 0:
+            percent_maximal = 0
+            percent_minimal = 0
+        else:
+            number_pixels_maximal = numpy.sum(pixel_data == numpy.max(pixel_data))
+            number_pixels_minimal = numpy.sum(pixel_data == numpy.min(pixel_data))
+            percent_maximal = (
+                100.0 * float(number_pixels_maximal) / float(pixel_count)
+            )
+            percent_minimal = (
+                100.0 * float(number_pixels_minimal) / float(pixel_count)
+            )
+        return percent_minimal, percent_maximal
+    
     def calculate_saturation(self, image_group, workspace):
         """Count the # of pixels at saturation"""
 
@@ -1237,21 +1294,12 @@ to the foreground pixels or the background pixels.
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             pixel_data = image.pixel_data
-            if image.has_mask:
-                pixel_data = pixel_data[image.mask]
-            pixel_count = numpy.product(pixel_data.shape)
-            if pixel_count == 0:
-                percent_maximal = 0
-                percent_minimal = 0
-            else:
-                number_pixels_maximal = numpy.sum(pixel_data == numpy.max(pixel_data))
-                number_pixels_minimal = numpy.sum(pixel_data == numpy.min(pixel_data))
-                percent_maximal = (
-                    100.0 * float(number_pixels_maximal) / float(pixel_count)
-                )
-                percent_minimal = (
-                    100.0 * float(number_pixels_minimal) / float(pixel_count)
-                )
+            image_mask = image.mask if image.has_mask else None
+            #
+            # Compute the saturation values
+            #
+            percent_minimal, percent_maximal = self.get_saturation_value(pixel_data, image_mask)
+
             percent_maximal_name = "{}_{}_{}".format(
                 C_IMAGE_QUALITY, Feature.PERCENT_MAXIMAL.value, image_name
             )
@@ -1277,18 +1325,12 @@ to the foreground pixels or the background pixels.
         for image_name in self.images_to_process(image_group, workspace):
             result += self.run_intensity_measurement(image_name, workspace)
         return result
+    
 
-    def run_intensity_measurement(self, image_name, workspace):
-        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-        pixels = image.pixel_data
-        if image.has_mask:
-            pixels = pixels[image.mask]
-
-        volumetric = workspace.pipeline.volumetric()
-        area_text, area_measurement = (
-            ("Volume", Feature.TOTAL_VOLUME.value) if volumetric else ("Area", Feature.TOTAL_AREA.value)
-        )
-
+    def get_intensity_measurement_values(self, pixels, image_mask):
+        if image_mask is not None:
+            pixels = pixels[image_mask]
+        
         pixel_count = numpy.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
@@ -1306,6 +1348,31 @@ to the foreground pixels or the background pixels.
             pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
             pixel_min = numpy.min(pixels)
             pixel_max = numpy.max(pixels)
+        return pixel_count, pixel_sum, pixel_mean, pixel_std, pixel_mad, pixel_median, pixel_min, pixel_max
+
+
+    def run_intensity_measurement(self, image_name, workspace):
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+        pixels = image.pixel_data
+        image_mask = image.mask if image.has_mask else None
+        volumetric = workspace.pipeline.volumetric()
+        area_text, area_measurement = (
+            ("Volume", Feature.TOTAL_VOLUME.value) if volumetric else ("Area", Feature.TOTAL_AREA.value)
+        )
+
+        #
+        # Compute the intensity measurements
+        #
+        (
+            pixel_count,
+            pixel_sum,
+            pixel_mean,
+            pixel_std,
+            pixel_mad,
+            pixel_median,
+            pixel_min,
+            pixel_max,
+        ) = self.get_intensity_measurement_values(pixels, image_mask)
 
         m = workspace.measurements
         m.add_image_measurement(
@@ -1347,57 +1414,74 @@ to the foreground pixels or the background pixels.
             )
         ]
         return result
+    def get_power_spectrum_measurement_values(self, pixel_data, image_mask, dimensions):
+        if dimensions == 3:
+            raise NotImplementedError("Power spectrum calculation for volumes is not implemented")
+
+        if image_mask is not None:
+            pixel_data = numpy.array(pixel_data)  # make a copy
+            masked_pixels = pixel_data[image_mask]
+            pixel_count = numpy.product(masked_pixels.shape)
+            if pixel_count > 0:
+                pixel_data[~image_mask] = numpy.mean(masked_pixels)
+            else:
+                pixel_data[~image_mask] = 0
+
+        radii, magnitude, power = centrosome.radial_power_spectrum.rps(pixel_data)
+        if sum(magnitude) > 0 and len(numpy.unique(pixel_data)) > 1:
+            valid = magnitude > 0
+            radii = radii[valid].reshape((-1, 1))
+            power = power[valid].reshape((-1, 1))
+            if radii.shape[0] > 1:
+                idx = numpy.isfinite(numpy.log(power))
+                powerslope = scipy.linalg.basic.lstsq(
+                    numpy.hstack(
+                        (
+                            numpy.log(radii)[idx][:, numpy.newaxis],
+                            numpy.ones(radii.shape)[idx][:, numpy.newaxis],
+                        )
+                    ),
+                    numpy.log(power)[idx][:, numpy.newaxis],
+                )[0][0]
+            else:
+                powerslope = 0
+        else:
+            powerslope = 0
+        return powerslope
 
     def calculate_power_spectrum(self, image_group, workspace):
         result = []
+        measurement_dict = {}
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
+            dimensions = image.dimensions
+            image_mask = image.mask if image.has_mask else None
+            pixel_data = image.pixel_data
             if image.dimensions == 3:
                 # TODO: calculate "radial power spectrum" for volumes.
                 continue
+            
+            #
+            # Compute the power spectrum
+            #
+            powerslope = self.get_power_spectrum_measurement_values(pixel_data, image_mask, dimensions)
 
-            pixel_data = image.pixel_data
-
-            if image.has_mask:
-                pixel_data = numpy.array(pixel_data)  # make a copy
-                masked_pixels = pixel_data[image.mask]
-                pixel_count = numpy.product(masked_pixels.shape)
-                if pixel_count > 0:
-                    pixel_data[~image.mask] = numpy.mean(masked_pixels)
-                else:
-                    pixel_data[~image.mask] = 0
-
-            radii, magnitude, power = centrosome.radial_power_spectrum.rps(pixel_data)
-            if sum(magnitude) > 0 and len(numpy.unique(pixel_data)) > 1:
-                valid = magnitude > 0
-                radii = radii[valid].reshape((-1, 1))
-                power = power[valid].reshape((-1, 1))
-                if radii.shape[0] > 1:
-                    idx = numpy.isfinite(numpy.log(power))
-                    powerslope = scipy.linalg.basic.lstsq(
-                        numpy.hstack(
-                            (
-                                numpy.log(radii)[idx][:, numpy.newaxis],
-                                numpy.ones(radii.shape)[idx][:, numpy.newaxis],
-                            )
-                        ),
-                        numpy.log(power)[idx][:, numpy.newaxis],
-                    )[0][0]
-                else:
-                    powerslope = 0
-            else:
-                powerslope = 0
-
+            measurement_dict[image_name] = powerslope
+            
+        for image_name in self.images_to_process(image_group, workspace):
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            if image.dimensions == 3:
+                # This is not implemented for volumes
+                continue
             workspace.add_measurement(
                 "Image",
                 "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name),
-                powerslope,
+                measurement_dict[image_name],
             )
             result += [
                 [
                     "{} {}".format(image_name, Feature.POWER_SPECTRUM_SLOPE.value),
-                    "{:.1f}".format(float(powerslope)),
+                    "{:.1f}".format(float(measurement_dict[image_name])),
                 ]
             ]
         return result

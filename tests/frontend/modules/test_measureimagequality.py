@@ -17,6 +17,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.measureimagequality import Feature, C_IMAGE_QUALITY, Aggregate, INTENSITY_FEATURES, SATURATION_FEATURES, MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES, STD_THRESH_ALL_IMAGES 
 
 IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -522,9 +523,9 @@ def test_experiment_threshold():
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.measureimagequality.AGG_STD,
+            Aggregate.MEAN.value,
+            Aggregate.MEDIAN.value,
+            Aggregate.STD.value,
         )
     ]
 
@@ -578,9 +579,9 @@ def test_experiment_threshold_cycle_skipping():
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.measureimagequality.AGG_STD,
+            Aggregate.MEAN.value,
+            Aggregate.MEDIAN.value,
+            Aggregate.STD.value,
         )
     ]
 
@@ -937,20 +938,20 @@ def test_volumetric_measurements():
     names = [
         "_".join(
             [
-                cellprofiler.modules.measureimagequality.C_IMAGE_QUALITY,
+                C_IMAGE_QUALITY,
                 feature,
                 IMAGES_NAME,
             ]
         )
         for feature in [
-            cellprofiler.modules.measureimagequality.F_TOTAL_VOLUME,
-            cellprofiler.modules.measureimagequality.F_TOTAL_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MEAN_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MEDIAN_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_STD_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MAD_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MAX_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MIN_INTENSITY,
+            Feature.TOTAL_VOLUME.value,
+            Feature.TOTAL_INTENSITY.value,
+            Feature.MEAN_INTENSITY.value,
+            Feature.MEDIAN_INTENSITY.value,
+            Feature.STD_INTENSITY.value,
+            Feature.MAD_INTENSITY.value,
+            Feature.MAX_INTENSITY.value,
+            Feature.MIN_INTENSITY.value,
         ]
     ]
     values = [

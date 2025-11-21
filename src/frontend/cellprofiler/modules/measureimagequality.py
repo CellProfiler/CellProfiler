@@ -180,47 +180,12 @@ from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer, Float
 
 from cellprofiler.modules.threshold import O_THREE_CLASS, O_TWO_CLASS
+from cellprofiler_library.opts.measureimagequality import C_IMAGE_QUALITY, Feature, Aggregate, INTENSITY_FEATURES, SATURATION_FEATURES, MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES, STD_THRESH_ALL_IMAGES
 
 """Image selection"""
 O_ALL_LOADED = "All loaded images"  # Use all loaded images
 O_SELECT = "Select..."  # Select the images you want from a list, all treated the same
 
-# Measurement names
-"""Root module measurement name"""
-C_IMAGE_QUALITY = "ImageQuality"
-F_FOCUS_SCORE = "FocusScore"
-F_LOCAL_FOCUS_SCORE = "LocalFocusScore"
-F_CORRELATION = "Correlation"
-F_POWER_SPECTRUM_SLOPE = "PowerLogLogSlope"
-F_TOTAL_AREA = "TotalArea"
-F_TOTAL_VOLUME = "TotalVolume"
-F_TOTAL_INTENSITY = "TotalIntensity"
-F_MEAN_INTENSITY = "MeanIntensity"
-F_MEDIAN_INTENSITY = "MedianIntensity"
-F_STD_INTENSITY = "StdIntensity"
-F_MAD_INTENSITY = "MADIntensity"
-F_MAX_INTENSITY = "MaxIntensity"
-F_MIN_INTENSITY = "MinIntensity"
-INTENSITY_FEATURES = [
-    F_TOTAL_INTENSITY,
-    F_MEAN_INTENSITY,
-    F_MEDIAN_INTENSITY,
-    F_STD_INTENSITY,
-    F_MAD_INTENSITY,
-    F_MAX_INTENSITY,
-    F_MIN_INTENSITY,
-]
-F_PERCENT_MAXIMAL = "PercentMaximal"
-F_PERCENT_MINIMAL = "PercentMinimal"
-SATURATION_FEATURES = [F_PERCENT_MAXIMAL, F_PERCENT_MINIMAL]
-F_THRESHOLD = "Threshold"
-MEAN_THRESH_ALL_IMAGES = "MeanThresh_AllImages"
-MEDIAN_THRESH_ALL_IMAGES = "MedianThresh_AllImages"
-STD_THRESH_ALL_IMAGES = "StdThresh_AllImages"
-
-AGG_MEAN = "Mean"
-AGG_MEDIAN = "Median"
-AGG_STD = "Std"
 
 SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
@@ -358,8 +323,8 @@ no objects, the *{F_PERCENT_MINIMAL}* value will increase.
 """.format(
                     **{
                         "YES": "Yes",
-                        "F_PERCENT_MAXIMAL": F_PERCENT_MAXIMAL,
-                        "F_PERCENT_MINIMAL": F_PERCENT_MINIMAL,
+                        "F_PERCENT_MAXIMAL": Feature.PERCENT_MAXIMAL.value,
+                        "F_PERCENT_MINIMAL": Feature.PERCENT_MINIMAL.value,
                     }
                 ),
             ),
@@ -482,8 +447,8 @@ interest (e.g., the object diameter). You can measure these metrics for
 multiple window sizes by selecting additional scales for each image.
 """.format(
                     **{
-                        "F_LOCAL_FOCUS_SCORE": F_LOCAL_FOCUS_SCORE,
-                        "F_CORRELATION": F_CORRELATION,
+                        "F_LOCAL_FOCUS_SCORE": Feature.LOCAL_FOCUS_SCORE.value,
+                        "F_CORRELATION": Feature.CORRELATION.value,
                     }
                 ),
             ),
@@ -818,7 +783,7 @@ to the foreground pixels or the background pixels.
                         (
                             "Image",
                             "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
+                                C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name
                             ),
                             COLTYPE_FLOAT,
                         )
@@ -829,7 +794,7 @@ to the foreground pixels or the background pixels.
                         (
                             "Image",
                             "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name
+                                C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name
                             ),
                             COLTYPE_FLOAT,
                         )
@@ -842,7 +807,7 @@ to the foreground pixels or the background pixels.
                                 "Image",
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
-                                    F_LOCAL_FOCUS_SCORE,
+                                    Feature.LOCAL_FOCUS_SCORE.value,
                                     image_name,
                                     scale_group.scale.value,
                                 ),
@@ -856,7 +821,7 @@ to the foreground pixels or the background pixels.
                                 "Image",
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
-                                    F_CORRELATION,
+                                    Feature.CORRELATION.value,
                                     image_name,
                                     scale_group.scale.value,
                                 ),
@@ -869,7 +834,7 @@ to the foreground pixels or the background pixels.
             if image_group.check_intensity.value:
                 for image_name in selected_images:
                     area_measurement = [
-                        F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA
+                        Feature.TOTAL_VOLUME.value if pipeline.volumetric() else Feature.TOTAL_AREA.value
                     ]
                     for feature in area_measurement + INTENSITY_FEATURES:
                         measurement_name = image_name
@@ -945,13 +910,13 @@ to the foreground pixels or the background pixels.
                 result += [cellprofiler_core.constants.image.C_SCALING]
             if self.any_blur():
                 result += [
-                    F_FOCUS_SCORE,
-                    F_LOCAL_FOCUS_SCORE,
-                    F_POWER_SPECTRUM_SLOPE,
-                    F_CORRELATION,
+                    Feature.FOCUS_SCORE.value,
+                    Feature.LOCAL_FOCUS_SCORE.value,
+                    Feature.POWER_SPECTRUM_SLOPE.value,
+                    Feature.CORRELATION.value,
                 ]
             if self.any_intensity():
-                result += [F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA]
+                result += [Feature.TOTAL_VOLUME.value if pipeline.volumetric() else Feature.TOTAL_AREA.value]
                 result += INTENSITY_FEATURES
             if self.any_saturation():
                 result += SATURATION_FEATURES
@@ -964,7 +929,7 @@ to the foreground pixels or the background pixels.
                         else image_group.threshold_groups
                     )
                     thresholds += [
-                        F_THRESHOLD + threshold_group.threshold_algorithm
+                        Feature.THRESHOLD.value + threshold_group.threshold_algorithm
                         for threshold_group in all_threshold_groups
                         if image_group.calculate_threshold.value
                     ]
@@ -984,10 +949,10 @@ to the foreground pixels or the background pixels.
         if object_name != "Image" or category != C_IMAGE_QUALITY:
             return []
         if measurement in (
-            F_FOCUS_SCORE,
-            F_LOCAL_FOCUS_SCORE,
-            F_POWER_SPECTRUM_SLOPE,
-            F_CORRELATION,
+            Feature.FOCUS_SCORE.value,
+            Feature.LOCAL_FOCUS_SCORE.value,
+            Feature.POWER_SPECTRUM_SLOPE.value,
+            Feature.CORRELATION.value,
         ):
             result = []
             for image_group in self.image_groups:
@@ -1002,14 +967,14 @@ to the foreground pixels or the background pixels.
                     result += self.images_to_process(image_group, None, pipeline)
             return result
 
-        if measurement in INTENSITY_FEATURES + [F_TOTAL_AREA, F_TOTAL_VOLUME]:
+        if measurement in INTENSITY_FEATURES + [Feature.TOTAL_AREA.value, Feature.TOTAL_VOLUME.value]:
             result = []
             for image_group in self.image_groups:
                 if image_group.check_intensity.value:
                     result += self.images_to_process(image_group, None, pipeline)
             return result
 
-        if measurement.startswith(F_THRESHOLD):
+        if measurement.startswith(Feature.THRESHOLD.value):
             result = []
             for image_group in self.image_groups:
                 all_threshold_groups = (
@@ -1021,7 +986,7 @@ to the foreground pixels or the background pixels.
                     if (
                         image_group.calculate_threshold.value
                         and measurement
-                        == F_THRESHOLD + threshold_group.threshold_algorithm
+                        == Feature.THRESHOLD.value + threshold_group.threshold_algorithm
                     ):
                         result += self.images_to_process(image_group, None, pipeline)
             return result
@@ -1031,7 +996,7 @@ to the foreground pixels or the background pixels.
     ):
         """Get the scales (window_sizes) for the given measurement"""
         if object_name == "Image" and category == C_IMAGE_QUALITY:
-            if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
+            if measurement in (Feature.LOCAL_FOCUS_SCORE.value, Feature.CORRELATION.value):
                 result = []
                 for image_group in self.image_groups:
                     for scale_group in image_group.scale_groups:
@@ -1040,7 +1005,7 @@ to the foreground pixels or the background pixels.
                         ):
                             result += [scale_group.scale.value]
                 return result
-            if measurement.startswith(F_THRESHOLD):
+            if measurement.startswith(Feature.THRESHOLD.value):
                 result = []
                 for image_group in self.image_groups:
                     all_threshold_groups = (
@@ -1054,7 +1019,7 @@ to the foreground pixels or the background pixels.
                         if (
                             (
                                 measurement
-                                == F_THRESHOLD + threshold_group.threshold_algorithm
+                                == Feature.THRESHOLD.value + threshold_group.threshold_algorithm
                             )
                             and threshold_group.threshold_scale is not None
                         )
@@ -1205,7 +1170,7 @@ to the foreground pixels or the background pixels.
             # Add the measurements
             #
             focus_score_name = "{}_{}_{}".format(
-                C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
+                C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name
             )
             workspace.add_measurement("Image", focus_score_name, focus_score)
             result += [["{} focus score @{:d}".format(image_name, scale), focus_score]]
@@ -1213,7 +1178,7 @@ to the foreground pixels or the background pixels.
             for idx, scale_group in enumerate(image_group.scale_groups):
                 scale = scale_group.scale.value
                 local_focus_score_name = "{}_{}_{}_{:d}".format(
-                    C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE, image_name, scale
+                    C_IMAGE_QUALITY, Feature.LOCAL_FOCUS_SCORE.value, image_name, scale
                 )
                 workspace.add_measurement(
                     "Image", local_focus_score_name, local_focus_score[idx],
@@ -1253,13 +1218,13 @@ to the foreground pixels or the background pixels.
                 workspace.add_measurement(
                     "Image",
                     "{}_{}_{}_{:d}".format(
-                        C_IMAGE_QUALITY, F_CORRELATION, image_name, scale
+                        C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale
                     ),
                     float(value),
                 )
                 result += [
                     [
-                        "{} {} @{:d}".format(image_name, F_CORRELATION, scale),
+                        "{} {} @{:d}".format(image_name, Feature.CORRELATION.value, scale),
                         "{:.2f}".format(float(value)),
                     ]
                 ]
@@ -1288,10 +1253,10 @@ to the foreground pixels or the background pixels.
                     100.0 * float(number_pixels_minimal) / float(pixel_count)
                 )
             percent_maximal_name = "{}_{}_{}".format(
-                C_IMAGE_QUALITY, F_PERCENT_MAXIMAL, image_name
+                C_IMAGE_QUALITY, Feature.PERCENT_MAXIMAL.value, image_name
             )
             percent_minimal_name = "{}_{}_{}".format(
-                C_IMAGE_QUALITY, F_PERCENT_MINIMAL, image_name
+                C_IMAGE_QUALITY, Feature.PERCENT_MINIMAL.value, image_name
             )
             workspace.add_measurement(
                 "Image", percent_maximal_name, percent_maximal,
@@ -1321,7 +1286,7 @@ to the foreground pixels or the background pixels.
 
         volumetric = workspace.pipeline.volumetric()
         area_text, area_measurement = (
-            ("Volume", F_TOTAL_VOLUME) if volumetric else ("Area", F_TOTAL_AREA)
+            ("Volume", Feature.TOTAL_VOLUME.value) if volumetric else ("Area", Feature.TOTAL_AREA.value)
         )
 
         pixel_count = numpy.product(pixels.shape)
@@ -1347,25 +1312,25 @@ to the foreground pixels or the background pixels.
             "_".join((C_IMAGE_QUALITY, area_measurement, image_name)), pixel_count
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_TOTAL_INTENSITY, image_name)), pixel_sum
+            "_".join((C_IMAGE_QUALITY, Feature.TOTAL_INTENSITY.value, image_name)), pixel_sum
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_MEAN_INTENSITY, image_name)), pixel_mean
+            "_".join((C_IMAGE_QUALITY, Feature.MEAN_INTENSITY.value, image_name)), pixel_mean
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_MEDIAN_INTENSITY, image_name)), pixel_median
+            "_".join((C_IMAGE_QUALITY, Feature.MEDIAN_INTENSITY.value, image_name)), pixel_median
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_STD_INTENSITY, image_name)), pixel_std
+            "_".join((C_IMAGE_QUALITY, Feature.STD_INTENSITY.value, image_name)), pixel_std
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_MAD_INTENSITY, image_name)), pixel_mad
+            "_".join((C_IMAGE_QUALITY, Feature.MAD_INTENSITY.value, image_name)), pixel_mad
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_MAX_INTENSITY, image_name)), pixel_max
+            "_".join((C_IMAGE_QUALITY, Feature.MAX_INTENSITY.value, image_name)), pixel_max
         )
         m.add_image_measurement(
-            "_".join((C_IMAGE_QUALITY, F_MIN_INTENSITY, image_name)), pixel_min
+            "_".join((C_IMAGE_QUALITY, Feature.MIN_INTENSITY.value, image_name)), pixel_min
         )
 
         result = [
@@ -1426,12 +1391,12 @@ to the foreground pixels or the background pixels.
 
             workspace.add_measurement(
                 "Image",
-                "{}_{}_{}".format(C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name),
+                "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name),
                 powerslope,
             )
             result += [
                 [
-                    "{} {}".format(image_name, F_POWER_SPECTRUM_SLOPE),
+                    "{} {}".format(image_name, Feature.POWER_SPECTRUM_SLOPE.value),
                     "{:.1f}".format(float(powerslope)),
                 ]
             ]
@@ -1523,11 +1488,11 @@ to the foreground pixels or the background pixels.
 
                     values = values[numpy.isfinite(values)]
 
-                    for feature in (F_THRESHOLD,):
+                    for feature in (Feature.THRESHOLD.value,):
                         for fn, agg in (
-                            (numpy.mean, AGG_MEAN),
-                            (numpy.median, AGG_MEDIAN),
-                            (numpy.std, AGG_STD),
+                            (numpy.mean, Aggregate.MEAN.value),
+                            (numpy.median, Aggregate.MEDIAN.value),
+                            (numpy.std, Aggregate.STD.value),
                         ):
                             feature_name = threshold_group.threshold_feature_name(
                                 image_name, agg=agg
@@ -1812,9 +1777,9 @@ class ImageQualitySettingsGroup(SettingsGroup):
         """The feature name of the threshold measurement generated"""
         scale = self.threshold_scale
         if agg is None:
-            hdr = F_THRESHOLD
+            hdr = Feature.THRESHOLD.value
         else:
-            hdr = F_THRESHOLD + agg
+            hdr = Feature.THRESHOLD.value + agg
         if scale is None:
             return "{}_{}{}_{}".format(
                 C_IMAGE_QUALITY, hdr, self.threshold_algorithm, image_name

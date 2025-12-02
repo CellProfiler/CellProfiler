@@ -27,7 +27,7 @@ def correct_illumination_apply(
     else:
         raise ValueError(
             "Unhandled option for divide or subtract: %s"
-            % image.divide_or_subtract.value
+            % method_divide_or_subtract.value
         )
     #
     # Optionally, clip high and low values

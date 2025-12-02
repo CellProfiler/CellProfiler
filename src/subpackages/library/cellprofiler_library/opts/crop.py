@@ -38,6 +38,4 @@ class Rectangle(str, Enum):
     LEFT = "left"
     TOP = "top"
     RIGHT = "right"
-    BOTTOM = "bottom"  
-
-    
+    BOTTOM = "bottom"

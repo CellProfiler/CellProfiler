@@ -642,8 +642,8 @@ def clip_high(output_pixels: Image2D) -> Image2D:
 ################################################################################
 
 def get_ellipse_cropping(
-        orig_image_pixels:  Image2D, 
-        ellipse_center:     Tuple[float, float] , 
+        orig_image_pixels:  Image2D,
+        ellipse_center:     Tuple[float, float],
         ellipse_radius:     Tuple[float, float]
     ) -> Image2DMask:
     x_center, y_center = ellipse_center
@@ -690,7 +690,7 @@ def get_rectangle_cropping(
         cropping[:top, :] = False
         cropping[bottom:, :] = False
     return cropping
-    
+
 
 def crop_image(
         image:          Union[Image2D, Image2DMask],
@@ -794,7 +794,7 @@ def get_cropped_image_mask(
             image_mask = mask
     else:
         raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
-    
+
     return image_mask
 
 
@@ -814,7 +814,7 @@ def get_cropped_image_pixels(
 
 
 def apply_crop_keep_rows_and_columns(
-    orig_image_pixels:  Image2D, 
+    orig_image_pixels:  Image2D,
     final_cropping:     Image2DMask,
 ) -> Image2D:
     cropped_pixel_data = orig_image_pixels.copy()
@@ -828,7 +828,7 @@ def apply_crop_remove_rows_and_columns(
         mask:               Optional[Image2DMask],
         removal_method: RemovalMethod = RemovalMethod.EDGES,
 ) -> Image2D:
-    if mask is None: 
+    if mask is None:
         mask = get_cropped_mask(final_cropping, mask, removal_method)
     # Apply first level of cropping to get the region of interest that matches the original image
     cropped_pixel_data = crop_image(orig_image_pixels, final_cropping, removal_method==RemovalMethod.ALL)
@@ -837,7 +837,7 @@ def apply_crop_remove_rows_and_columns(
 
 
 def erase_pixels(
-        cropped_pixel_data: Image2D, 
+        cropped_pixel_data: Image2D,
         crop:               Image2DMask
         ) -> Image2D:
     #

@@ -44,6 +44,7 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.patches
 import numpy
+from cellprofiler_core.constants.measurement import GROUP_INDEX
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_primary_outline_color
@@ -367,7 +368,7 @@ objects:
 
     def run(self, workspace):
         first_image_set = (
-            workspace.measurements.get_current_image_measurement("Group_Index") == 1
+            workspace.measurements.get_current_image_measurement(GROUP_INDEX) == 1
         )
         image_set_list = workspace.image_set_list
         cache_dict = self.get_dictionary(image_set_list)
@@ -418,13 +419,12 @@ objects:
                 Ellipse.XRADIUS: self.ellipse_x_radius.value,
                 Ellipse.YRADIUS: self.ellipse_y_radius.value,
             }
-        
-            cropping = get_ellipse_cropping(
-                orig_image.pixel_data, 
-                (self.ellipse_center.x, self.ellipse_center.y), 
-                (self.ellipse_x_radius.value, self.ellipse_y_radius.value)
-                )
 
+            cropping = get_ellipse_cropping(
+                orig_image.pixel_data,
+                (self.ellipse_center.x, self.ellipse_center.y),
+                (self.ellipse_x_radius.value, self.ellipse_y_radius.value)
+            )
 
         elif self.shape.value == Shape.RECTANGLE:
             h_min = self.horizontal_limits.min if not self.horizontal_limits.unbounded_min else None
@@ -435,12 +435,11 @@ objects:
             cropping = get_rectangle_cropping(orig_image.pixel_data, (h_min, h_max, v_min, v_max), validate_boundaries=True)
         else:
             raise NotImplementedError(f"Cropping shape {self.shape.value} or crop method {self.crop_method} not supported.")
-        
+
         assert(cropping is not None)
         assert(cropping.dtype == bool)
-        
+
         cropped_pixel_data, mask, image_mask = crop(orig_image.pixel_data, cropping, mask, orig_image.mask, self.remove_rows_and_columns.value)
-            
 
         if self.shape.value == Shape.OBJECTS:
             # Special handling for objects - masked objects instead of

@@ -268,7 +268,7 @@ somewhat empirical.
                     orig_image.pixel_data.shape,
                     illum_function_pixel_data.shape,
                 )
-            )   
+            )
         #
         # Apply the illumination function
         #

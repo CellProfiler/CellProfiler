@@ -9,19 +9,6 @@ from typing import Any, Optional, Tuple, Callable, Union, List
 from ..types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ObjectSegmentation, Image2D
 from ..opts import threshold as Threshold
 
-def __must_be_grayscale(imag_pixels: ImageAny) -> ImageGrayscale:
-    pd = imag_pixels
-    pd = pd.transpose(-1, *list(range(pd.ndim - 1)))
-    if (
-        pd.shape[-1] >= 3
-        and numpy.all(pd[0] == pd[1])
-        and numpy.all(pd[0] == pd[2])
-    ):
-        if imag_pixels.dtype.kind == "b":
-            return imag_pixels.astype(numpy.float64)
-        return imag_pixels[:, :, 0]
-    raise ValueError("Image must be grayscale, but it was color")
-
 def rgb_to_greyscale(image):
     if image.shape[-1] == 4:
         output = skimage.color.rgba2rgb(image)
@@ -637,7 +624,7 @@ def image_to_objects(
 def apply_divide(image_pixels: Image2D, illum_function_pixel_data: Image2D) -> Image2D:
     return image_pixels / illum_function_pixel_data
 
-def apply_subtract(image_pixels:Image2D, illum_function_pixel_data: Image2D) -> Image2D:
+def apply_subtract(image_pixels: Image2D, illum_function_pixel_data: Image2D) -> Image2D:
     output_image = image_pixels - illum_function_pixel_data
     output_image[output_image < 0] = 0
     return output_image

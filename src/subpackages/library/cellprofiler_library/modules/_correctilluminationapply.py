@@ -35,6 +35,6 @@ def correct_illumination_apply(
     if truncate_low:
         output_pixels = clip_low(output_pixels)
     if truncate_high:
-        output_pixels = clip_high(output_pixels) 
-    
+        output_pixels = clip_high(output_pixels)
+
     return output_pixels

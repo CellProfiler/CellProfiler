@@ -1329,8 +1329,8 @@ def get_costes_thresholded_pixels_and_mask(
     }
     im1_costes_thr_val, im2_costes_thr_val = costes_function[costes_method](im1_costes_pixels, im2_costes_pixels, scale)
     # Costes' thershold for entire image is applied to each object
-    im1_costes_thr_mask = im1_pixels > im1_costes_thr_val
-    im2_costes_thr_mask = im2_pixels > im2_costes_thr_val
+    im1_costes_thr_mask = im1_pixels >= im1_costes_thr_val
+    im2_costes_thr_mask = im2_pixels >= im2_costes_thr_val
     combined_thresh_c = im1_costes_thr_mask & im2_costes_thr_mask
     im1_costes_thr_common_pixels = im1_pixels[combined_thresh_c]
     im2_costes_thr_common_pixels = im2_pixels[combined_thresh_c]

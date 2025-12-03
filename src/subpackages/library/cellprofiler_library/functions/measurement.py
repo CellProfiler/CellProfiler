@@ -11,7 +11,7 @@ import centrosome.fastemd
 
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Tuple, Dict, Callable
+from typing import Tuple, Optional, Dict, Callable
 from scipy.linalg import lstsq
 from numpy.typing import NDArray
 

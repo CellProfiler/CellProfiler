@@ -832,7 +832,7 @@ def test_circle():
         numpy.ones(labels.shape),
         labels,
         wants_workspace=True,
-        wants_zernikes=True,
+        wants_zernikes=IntensityZernike.MAGNITUDES,
         zernike_degree=2,
     )
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)

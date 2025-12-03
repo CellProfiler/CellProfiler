@@ -12,7 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
-from cellprofiler_library.opts.measurecolocalization import MeasurementType, MeasurementFormat, Target, CostesMethod
+from cellprofiler_library.opts.measurecolocalization import MeasurementFormat, Target, CostesMethod
 
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"

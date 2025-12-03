@@ -893,7 +893,6 @@ You can set a different threshold for each image selected in the module.
             original_image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             
             # Call the relevant funcitons to get the thresholded masks
-            t_val = self.get_image_threshold_value(image_name)
             output_image = Image(self.get_thresholded_mask(image_name, workspace, object_name), parent_image=original_image)
 
             # Save the mask to the image set

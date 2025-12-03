@@ -1,10 +1,7 @@
-import centrosome.cpmorphology
 import centrosome.zernike
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import matplotlib.cm
 import numpy
 import numpy.ma
-import scipy.ndimage
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -25,7 +22,6 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler_core.setting.text import Integer, ImageName
 from cellprofiler_core.utilities.core.object import crop_labels_and_image
-from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
     CenterChoice,
     IntensityZernike,
@@ -33,7 +29,6 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     FullFeature,
     MeasurementFeature,
     OverflowFeature,
-    MeasurementAlias,
     C_ALL,
     Z_ALL,
     M_CATEGORY,
@@ -44,15 +39,10 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     FF_GENERIC
 )
 from cellprofiler_library.modules._measureobjectintensitydistribution import (
-    get_radial_index,
-    get_bin_measurements,
-    get_radial_cv,
-    get_normalized_distance_centers_and_good_mask,
-    calculate_object_intensiry_zernikes,
+    calculate_object_intensity_zernikes,
     get_object_intensity_distribution_measurements
 )
 import cellprofiler.gui.help.content
-from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, count_from_ijv, indices_from_ijv
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
     "MeasureObjectIntensityDistribution_Magnitude_Phase.png"
 )
@@ -868,11 +858,11 @@ be selected in a later **SaveImages** or other module.
 
         name_data_mask_list = [(i_name, i_data, i_mask) for (i_name, i_data, i_mask) in zip(image_names_list, image_pixel_data_list, image_mask_list)]
         
-        measurements_dict = calculate_object_intensiry_zernikes(
+        measurements_dict = calculate_object_intensity_zernikes(
             objects_names_and_label_sets,
             self.zernike_degree.value,
             name_data_mask_list,
-            self.wants_zernikes
+            self.wants_zernikes.value
         )
         
         for object_name in measurements_dict:

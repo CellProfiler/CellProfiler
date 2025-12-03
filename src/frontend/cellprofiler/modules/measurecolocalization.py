@@ -79,11 +79,6 @@ References
 """
 
 import numpy
-import scipy.ndimage
-import scipy.stats
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.linalg import lstsq
-
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary, ValidationError
@@ -100,9 +95,8 @@ from cellprofiler_core.utilities.core.object import size_similarly
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.image import Image
 from cellprofiler_library.functions.image_processing import apply_threshold_to_objects
-from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts
 from cellprofiler_library.functions.image_processing import apply_threshold, get_global_threshold
-import cellprofiler_library.opts.threshold as Threshold 
+import cellprofiler_library.opts.threshold as Threshold
 from cellprofiler_library.opts.measurecolocalization import MeasurementType, MeasurementFormat, Target, CostesMethod
 from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects
 

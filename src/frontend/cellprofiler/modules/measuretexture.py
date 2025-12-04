@@ -155,7 +155,6 @@ References
 )
 
 import numpy
-import skimage.util
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -524,52 +523,6 @@ measured and will result in a undefined value in the output file.
             col_labels=workspace.display_data.col_labels,
             title=helptext,
         )
-    # def measure_object_texture(
-    #         self, 
-    #         object_name, 
-    #         labels,
-    #         image_name, 
-    #         pixel_data,
-    #         mask, 
-    #         gray_levels, 
-    #         unique_labels, # objects.indices
-    #         scale, 
-    #         volumetric,
-    #     ):
-    #     statistics = []
-    #     n_directions = 13 if volumetric else 4
-    #     if mask is not None:
-    #         pixel_data[~mask] = 0
-    #     # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-    #     pixel_data = skimage.util.img_as_ubyte(pixel_data)
-    #     if gray_levels != 256:
-    #         pixel_data = skimage.exposure.rescale_intensity(
-    #             pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-    #         ).astype(numpy.uint8)
-    #     props = skimage.measure.regionprops(labels, pixel_data)
-    #     features = numpy.empty((n_directions, 13, max(unique_labels)))
-
-    #     for prop in props:
-    #         label_data = prop["intensity_image"]
-    #         try:
-    #             features[:, :, prop.label-1] = mahotas.features.haralick(
-    #                 label_data, distance=scale, ignore_zeros=True
-    #             )
-    #         except ValueError:
-    #             features[:, :, prop.label-1] = numpy.nan
-
-    #     for direction, direction_features in enumerate(features):
-    #         for feature_name, feature in zip(F_HARALICK, direction_features):
-
-    #             statistics.append({
-    #                 "image": image_name,
-    #                 "feature": feature_name.value,
-    #                 "obj": object_name,
-    #                 "result": feature,
-    #                 "scale": "{:d}_{:02d}".format(scale, direction),
-    #                 "gray_levels": "{:d}".format(gray_levels),
-    #             })
-    #     return statistics
 
     def run_one(self, image_name, object_name, scale, workspace):
         statistics = []
@@ -634,27 +587,7 @@ measured and will result in a undefined value in the output file.
             statistics += self.record_measurement(**i, workspace=workspace)
 
         return statistics
-    # def measure_image_texture(self, pixel_data, gray_levels, scale, image_name):
-    #     if gray_levels != 256:
-    #         pixel_data = skimage.exposure.rescale_intensity(
-    #             pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-    #         ).astype(numpy.uint8)
-
-    #     # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-    #     features = mahotas.features.haralick(pixel_data, distance=scale)
-    #     statistics = []
-    #     for direction, direction_features in enumerate(features):
-    #         object_name = "{:d}_{:02d}".format(scale, direction)
-
-    #         for feature_name, feature in zip(F_HARALICK, direction_features):
-    #             statistics.append({
-    #                 "feature_name": feature_name.value,
-    #                 "image_name": image_name,
-    #                 "result": feature,
-    #                 "scale": object_name,
-    #                 "gray_levels": "{:d}".format(gray_levels),
-    #             })
-    #     return statistics
+    
 
     def run_image(self, image_name, scale, workspace):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)

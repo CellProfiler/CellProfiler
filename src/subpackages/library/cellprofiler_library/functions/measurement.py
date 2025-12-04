@@ -4,6 +4,9 @@ import scipy
 import scipy.ndimage
 import scipy.sparse
 import skimage
+import mahotas.features
+import skimage.exposure
+import skimage.measure
 import centrosome
 import centrosome.cpmorphology
 import centrosome.filter
@@ -41,6 +44,9 @@ from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABEL
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import Measurement as NeighborsMeasurement
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
+from cellprofiler_library.opts.measureobjectintensitydistribution import CenterChoice, IntensityZernike, FullFeature
+from cellprofiler_library.opts.measureobjectintensitydistribution import M_CATEGORY as ObjectIntensityDistribution_M_CATEGORY
+from cellprofiler_library.opts.measuretexture import F_HARALICK
 
 ###############################################################################
 # MeasureImageOverlap
@@ -3720,3 +3726,86 @@ def compute_zernike_measurements(
     phases = numpy.column_stack(phases_list)
     
     return magnitudes, phases, zernike_indexes
+
+
+###############################################################################
+# MeasureTexture
+###############################################################################
+
+
+def get_image_texture_measurements(
+        pixel_data: ImageGrayscale, 
+        gray_levels: int, 
+        scale: int, 
+        image_name: str
+    ) -> List[
+        Dict[str, Union[str, numpy.float_]]
+    ]:
+    pixel_data = skimage.util.img_as_ubyte(pixel_data)
+    if gray_levels != 256:
+        pixel_data = skimage.exposure.rescale_intensity(
+            pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+        ).astype(numpy.uint8)
+
+    # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+    features = mahotas.features.haralick(pixel_data, distance=scale)
+    statistics = []
+    for direction, direction_features in enumerate(features):
+        object_name = "{:d}_{:02d}".format(scale, direction)
+
+        for feature_name, feature in zip(F_HARALICK, direction_features):
+            statistics.append({
+                "feature_name": feature_name.value,
+                "image_name": image_name,
+                "result": feature,
+                "scale": object_name,
+                "gray_levels": "{:d}".format(gray_levels),
+            })
+    return statistics
+
+
+def get_object_texture_measurements(
+        object_name: str, 
+        labels: ObjectSegmentation,
+        image_name: str,
+        pixel_data: ImageGrayscale,
+        mask: Optional[ImageGrayscaleMask],
+        gray_levels: int, 
+        unique_labels: NDArray[ObjectLabel], # objects.indices
+        scale: int, 
+        volumetric: bool,
+    ):
+    statistics = []
+    n_directions = 13 if volumetric else 4
+    if mask is not None:
+        pixel_data[~mask] = 0
+    # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+    pixel_data = skimage.util.img_as_ubyte(pixel_data)
+    if gray_levels != 256:
+        pixel_data = skimage.exposure.rescale_intensity(
+            pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+        ).astype(numpy.uint8)
+    props = skimage.measure.regionprops(labels, pixel_data)
+    features = numpy.empty((n_directions, 13, max(unique_labels)))
+
+    for prop in props:
+        label_data = prop["intensity_image"]
+        try:
+            features[:, :, prop.label-1] = mahotas.features.haralick(
+                label_data, distance=scale, ignore_zeros=True
+            )
+        except ValueError:
+            features[:, :, prop.label-1] = numpy.nan
+
+    for direction, direction_features in enumerate(features):
+        for feature_name, feature in zip(F_HARALICK, direction_features):
+
+            statistics.append({
+                "image": image_name,
+                "feature": feature_name.value,
+                "obj": object_name,
+                "result": feature,
+                "scale": "{:d}_{:02d}".format(scale, direction),
+                "gray_levels": "{:d}".format(gray_levels),
+            })
+    return statistics

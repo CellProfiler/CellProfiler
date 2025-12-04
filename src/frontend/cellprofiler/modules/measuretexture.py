@@ -175,16 +175,7 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.utilities.core.object import size_similarly
-
-TEXTURE = "Texture"
-
-F_HARALICK = """AngularSecondMoment Contrast Correlation Variance
-InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
-DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
-
-IO_IMAGES = "Images"
-IO_OBJECTS = "Objects"
-IO_BOTH = "Both"
+from cellprofiler_library.opts.measuretexture import HaralickFeatures, MeasurementTarget, TEXTURE, F_HARALICK
 
 
 class MeasureTexture(Module):
@@ -259,8 +250,8 @@ class MeasureTexture(Module):
 
         self.images_or_objects = Choice(
             "Measure whole images or objects?",
-            [IO_IMAGES, IO_OBJECTS, IO_BOTH],
-            value=IO_BOTH,
+            [MeasurementTarget.IMAGES.value, MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value],
+            value=MeasurementTarget.BOTH.value,
             doc="""\
 This setting determines whether the module computes image-wide
 measurements, per-object measurements or both.
@@ -271,7 +262,7 @@ measurements, per-object measurements or both.
    on a per-object basis only.
 -  *{IO_BOTH}:* Select to make both image and object measurements.
 """.format(
-                **{"IO_IMAGES": IO_IMAGES, "IO_OBJECTS": IO_OBJECTS, "IO_BOTH": IO_BOTH}
+                **{"IO_IMAGES": MeasurementTarget.IMAGES.value, "IO_OBJECTS": MeasurementTarget.OBJECTS.value, "IO_BOTH": MeasurementTarget.BOTH.value}
             ),
         )
 
@@ -320,10 +311,10 @@ measurements, per-object measurements or both.
         return visible_settings
 
     def wants_image_measurements(self):
-        return self.images_or_objects in (IO_IMAGES, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.IMAGES.value, MeasurementTarget.BOTH.value)
 
     def wants_object_measurements(self):
-        return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value)
 
     def add_scale(self, removable=True):
         """
@@ -409,7 +400,7 @@ measured and will result in a undefined value in the output file.
         return []
 
     def get_features(self):
-        return F_HARALICK
+        return [i.value for i in F_HARALICK]
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
@@ -556,7 +547,7 @@ measured and will result in a undefined value in the output file.
                 for feature_name in F_HARALICK:
                     statistics += self.record_measurement(
                         image=image_name,
-                        feature=feature_name,
+                        feature=feature_name.value,
                         obj=object_name,
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
@@ -607,7 +598,7 @@ measured and will result in a undefined value in the output file.
             for feature_name, feature in zip(F_HARALICK, direction_features):
                 statistics += self.record_measurement(
                     image=image_name,
-                    feature=feature_name,
+                    feature=feature_name.value,
                     obj=object_name,
                     result=feature,
                     scale="{:d}_{:02d}".format(scale, direction),
@@ -637,7 +628,7 @@ measured and will result in a undefined value in the output file.
 
             for feature_name, feature in zip(F_HARALICK, direction_features):
                 statistics += self.record_image_measurement(
-                    feature_name=feature_name,
+                    feature_name=feature_name.value,
                     image_name=image_name,
                     result=feature,
                     scale=object_name,
@@ -740,7 +731,7 @@ measured and will result in a undefined value in the output file.
             #
             # Added image / objects choice
             #
-            setting_values = setting_values + [IO_BOTH]
+            setting_values = setting_values + [MeasurementTarget.BOTH.value]
 
             variable_revision_number = 4
 

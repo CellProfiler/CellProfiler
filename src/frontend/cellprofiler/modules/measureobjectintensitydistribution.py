@@ -1,11 +1,7 @@
-import centrosome.cpmorphology
-import centrosome.propagate
 import centrosome.zernike
 import matplotlib.cm
 import numpy
 import numpy.ma
-import scipy.ndimage
-import scipy.sparse
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -25,13 +21,28 @@ from cellprofiler_core.setting.subscriber import (
     ImageSubscriber,
 )
 from cellprofiler_core.setting.text import Integer, ImageName
-from cellprofiler_core.utilities.core.object import (
-    crop_labels_and_image,
-    size_similarly,
+from cellprofiler_core.utilities.core.object import crop_labels_and_image
+from cellprofiler_library.opts.measureobjectintensitydistribution import (
+    CenterChoice,
+    IntensityZernike,
+    Feature, 
+    FullFeature,
+    MeasurementFeature,
+    OverflowFeature,
+    C_ALL,
+    Z_ALL,
+    M_CATEGORY,
+    F_ALL,
+    MEASUREMENT_CHOICES, 
+    MEASUREMENT_ALIASES,
+    FF_SCALE,
+    FF_GENERIC
 )
-
+from cellprofiler_library.modules._measureobjectintensitydistribution import (
+    calculate_object_intensity_zernikes,
+    get_object_intensity_distribution_measurements
+)
 import cellprofiler.gui.help.content
-
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
     "MeasureObjectIntensityDistribution_Magnitude_Phase.png"
 )
@@ -104,40 +115,6 @@ Measurements made by this module
     }
 )
 
-C_SELF = "These objects"
-C_CENTERS_OF_OTHER_V2 = "Other objects"
-C_CENTERS_OF_OTHER = "Centers of other objects"
-C_EDGES_OF_OTHER = "Edges of other objects"
-C_ALL = [C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER]
-
-Z_NONE = "None"
-Z_MAGNITUDES = "Magnitudes only"
-Z_MAGNITUDES_AND_PHASE = "Magnitudes and phase"
-Z_ALL = [Z_NONE, Z_MAGNITUDES, Z_MAGNITUDES_AND_PHASE]
-
-M_CATEGORY = "RadialDistribution"
-F_FRAC_AT_D = "FracAtD"
-F_MEAN_FRAC = "MeanFrac"
-F_RADIAL_CV = "RadialCV"
-F_ALL = [F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV]
-
-FF_SCALE = "%dof%d"
-FF_OVERFLOW = "Overflow"
-FF_GENERIC = "_%s_" + FF_SCALE
-FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
-FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
-FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
-
-FF_ZERNIKE_MAGNITUDE = "ZernikeMagnitude"
-FF_ZERNIKE_PHASE = "ZernikePhase"
-
-MF_FRAC_AT_D = "_".join((M_CATEGORY, FF_FRAC_AT_D))
-MF_MEAN_FRAC = "_".join((M_CATEGORY, FF_MEAN_FRAC))
-MF_RADIAL_CV = "_".join((M_CATEGORY, FF_RADIAL_CV))
-OF_FRAC_AT_D = "_".join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
-OF_MEAN_FRAC = "_".join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
-OF_RADIAL_CV = "_".join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
-
 """# of settings aside from groups"""
 SETTINGS_STATIC_COUNT = 3
 """# of settings in image group"""
@@ -155,18 +132,6 @@ SETTINGS_HEATMAP_GROUP_COUNT = 7
 """Offset of center choice in object group"""
 SETTINGS_CENTER_CHOICE_OFFSET = 1
 
-A_FRAC_AT_D = "Fraction at Distance"
-A_MEAN_FRAC = "Mean Fraction"
-A_RADIAL_CV = "Radial CV"
-MEASUREMENT_CHOICES = [A_FRAC_AT_D, A_MEAN_FRAC, A_RADIAL_CV]
-
-MEASUREMENT_ALIASES = {
-    A_FRAC_AT_D: MF_FRAC_AT_D,
-    A_MEAN_FRAC: MF_MEAN_FRAC,
-    A_RADIAL_CV: MF_RADIAL_CV,
-}
-
-
 class MeasureObjectIntensityDistribution(Module):
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
@@ -180,17 +145,11 @@ class MeasureObjectIntensityDistribution(Module):
         )
 
         self.objects = []
-
         self.bin_counts = []
-
         self.heatmaps = []
-
         self.object_count = HiddenCount(self.objects)
-
         self.bin_counts_count = HiddenCount(self.bin_counts)
-
         self.heatmap_count = HiddenCount(self.heatmaps)
-
         self.wants_zernikes = Choice(
             "Calculate intensity Zernikes?",
             Z_ALL,
@@ -209,9 +168,9 @@ useful information for classifying phenotypes.
 .. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
 """.format(
                 **{
-                    "Z_NONE": Z_NONE,
-                    "Z_MAGNITUDES": Z_MAGNITUDES,
-                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                    "Z_NONE": IntensityZernike.NONE.value,
+                    "Z_MAGNITUDES": IntensityZernike.MAGNITUDES.value,
+                    "Z_MAGNITUDES_AND_PHASE": IntensityZernike.MAGNITUDES_AND_PHASE.value,
                     "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
                 }
             ),
@@ -231,8 +190,8 @@ moment, so higher values are increasingly expensive to calculate.
 """.format(
                 **{
                     "wants_zernikes": self.wants_zernikes.text,
-                    "Z_MAGNITUDES": Z_MAGNITUDES,
-                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                    "Z_MAGNITUDES": IntensityZernike.MAGNITUDES.value,
+                    "Z_MAGNITUDES_AND_PHASE": IntensityZernike.MAGNITUDES_AND_PHASE.value,
                 }
             ),
         )
@@ -306,9 +265,9 @@ previously identified Nuclei objects as the centers
 .. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
 """.format(
                     **{
-                        "C_SELF": C_SELF,
-                        "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
-                        "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER,
+                        "C_SELF": CenterChoice.SELF.value,
+                        "C_CENTERS_OF_OTHER": CenterChoice.CENTERS_OF_OTHER.value,
+                        "C_EDGES_OF_OTHER": CenterChoice.EDGES_OF_OTHER.value,
                         "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers,
                     }
                 ),
@@ -327,7 +286,7 @@ Select the object to use as the center, or select *None* to use the
 input object centers (which is the same as selecting *{C_SELF}* for the
 object centers).
 """.format(
-                    **{"C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER, "C_SELF": C_SELF}
+                    **{"C_CENTERS_OF_OTHER": CenterChoice.CENTERS_OF_OTHER.value, "C_SELF": CenterChoice.SELF.value}
                 ),
             ),
         )
@@ -575,7 +534,7 @@ be selected in a later **SaveImages** or other module.
     def visible_settings(self):
         result = [self.wants_zernikes]
 
-        if self.wants_zernikes != Z_NONE:
+        if self.wants_zernikes != IntensityZernike.NONE.value:
             result.append(self.zernike_degree)
 
         result += [self.images_list, self.spacer_1]
@@ -583,7 +542,7 @@ be selected in a later **SaveImages** or other module.
         for settings in self.objects:
             temp = settings.visible_settings()
 
-            if settings.center_choice.value == C_SELF:
+            if settings.center_choice.value == CenterChoice.SELF.value:
                 temp.remove(settings.center_object_name)
 
             result += temp
@@ -668,14 +627,14 @@ be selected in a later **SaveImages** or other module.
                         image,
                         o.object_name.value,
                         o.center_object_name.value
-                        if o.center_choice != C_SELF
+                        if o.center_choice != CenterChoice.SELF.value
                         else None,
-                        o.center_choice.value,
+                        o.center_choice,
                         bin_count_settings,
                         d,
                     )
 
-        if self.wants_zernikes != Z_NONE:
+        if self.wants_zernikes != IntensityZernike.NONE.value:
             self.calculate_zernikes(workspace)
 
         if self.show_window:
@@ -793,9 +752,26 @@ be selected in a later **SaveImages** or other module.
                         vmax=numpy.max(heatmap_img),
                         sharexy=sharexy,
                     )
-
                 idx += 1
+                 
+    
+    def add_measuerments_no_objects(self, bin_count, image_name, measurements, object_name, wants_scaled):
+        for bin_index in range(1, bin_count + 1):
+            for feature in (Feature.FRAC_AT_D.value, Feature.MEAN_FRAC.value, Feature.RADIAL_CV.value):
+                feature_name = (feature + FF_GENERIC) % (image_name, bin_index, bin_count)
 
+                measurements.add_measurement(
+                    object_name,
+                    "_".join([M_CATEGORY, feature_name]),
+                    numpy.zeros(0),
+                )
+
+                if not wants_scaled:
+                    measurement_name = "_".join([M_CATEGORY, feature, image_name, FullFeature.OVERFLOW.value])
+                    measurements.add_measurement(object_name, measurement_name, numpy.zeros(0))
+
+        return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
+    
     def do_measurements(
         self,
         workspace,
@@ -804,7 +780,7 @@ be selected in a later **SaveImages** or other module.
         center_object_name,
         center_choice,
         bin_count_settings,
-        dd,
+        heatmap_dict,
     ):
         """Perform the radial measurements on the image set
 
@@ -822,23 +798,16 @@ be selected in a later **SaveImages** or other module.
         returns one statistics tuple per ring.
         """
         bin_count = bin_count_settings.bin_count.value
-
         wants_scaled = bin_count_settings.wants_scaled.value
-
         maximum_radius = bin_count_settings.maximum_radius.value
-
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
         objects = workspace.object_set.get_objects(object_name)
-
         labels, pixel_data = crop_labels_and_image(objects.segmented, image.pixel_data)
-
         nobjects = numpy.max(objects.segmented)
-
         measurements = workspace.measurements
 
+        #TODO: Can this heatmap stuff be moved to library?
         heatmaps = {}
-
         for heatmap in self.heatmaps:
             if (
                 heatmap.object_name.get_objects_name() == object_name
@@ -846,431 +815,60 @@ be selected in a later **SaveImages** or other module.
                 and heatmap.get_number_of_bins() == bin_count
             ):
 
-                dd[id(heatmap)] = heatmaps[
+                heatmap_dict[id(heatmap)] = heatmaps[
                     MEASUREMENT_ALIASES[heatmap.measurement.value]
                 ] = numpy.zeros(labels.shape)
 
         if nobjects == 0:
-            for bin_index in range(1, bin_count + 1):
-                for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
-                    feature_name = (feature + FF_GENERIC) % (
-                        image_name,
-                        bin_index,
-                        bin_count,
-                    )
+            return self.add_measuerments_no_objects(bin_count, image_name, measurements, object_name, wants_scaled)
+        
+        center_object_segmented = workspace.object_set.get_objects(center_object_name).segmented if center_object_name is not None else None
 
-                    measurements.add_measurement(
-                        object_name,
-                        "_".join([M_CATEGORY, feature_name]),
-                        numpy.zeros(0),
-                    )
-
-                    if not wants_scaled:
-                        measurement_name = "_".join(
-                            [M_CATEGORY, feature, image_name, FF_OVERFLOW]
-                        )
-
-                        measurements.add_measurement(
-                            object_name, measurement_name, numpy.zeros(0)
-                        )
-
-            return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
-
-        name = (
-            object_name
-            if center_object_name is None
-            else "{}_{}".format(object_name, center_object_name)
+        statistics, measurement_list  = get_object_intensity_distribution_measurements(
+            object_name,
+            center_object_name,
+            heatmap_dict,
+            labels,
+            center_object_segmented,
+            center_choice,
+            wants_scaled,
+            maximum_radius,
+            bin_count,
+            pixel_data,
+            nobjects,
+            image_name,
+            heatmaps,
+            objects.indices
         )
-
-        if name in dd:
-            normalized_distance, i_center, j_center, good_mask = dd[name]
-        else:
-            d_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
-
-            if center_object_name is not None:
-                #
-                # Use the center of the centering objects to assign a center
-                # to each labeled pixel using propagation
-                #
-                center_objects = workspace.object_set.get_objects(center_object_name)
-
-                center_labels, cmask = size_similarly(labels, center_objects.segmented)
-
-                pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                    scipy.ndimage.sum(
-                        numpy.ones(center_labels.shape),
-                        center_labels,
-                        numpy.arange(
-                            1, numpy.max(center_labels) + 1, dtype=numpy.int32
-                        ),
-                    )
-                )
-
-                good = pixel_counts > 0
-
-                i, j = (
-                    centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
-                ).astype(int)
-
-                ig = i[good]
-
-                jg = j[good]
-
-                lg = numpy.arange(1, len(i) + 1)[good]
-
-                if center_choice == C_CENTERS_OF_OTHER:
-                    #
-                    # Reduce the propagation labels to the centers of
-                    # the centering objects
-                    #
-                    center_labels = numpy.zeros(center_labels.shape, int)
-
-                    center_labels[ig, jg] = lg
-
-                cl, d_from_center = centrosome.propagate.propagate(
-                    numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
-                )
-
-                #
-                # Erase the centers that fall outside of labels
-                #
-                cl[labels == 0] = 0
-
-                #
-                # If objects are hollow or crescent-shaped, there may be
-                # objects without center labels. As a backup, find the
-                # center that is the closest to the center of mass.
-                #
-                missing_mask = (labels != 0) & (cl == 0)
-
-                missing_labels = numpy.unique(labels[missing_mask])
-
-                if len(missing_labels):
-                    all_centers = centrosome.cpmorphology.centers_of_labels(labels)
-
-                    missing_i_centers, missing_j_centers = all_centers[
-                        :, missing_labels - 1
-                    ]
-
-                    di = missing_i_centers[:, numpy.newaxis] - ig[numpy.newaxis, :]
-
-                    dj = missing_j_centers[:, numpy.newaxis] - jg[numpy.newaxis, :]
-
-                    missing_best = lg[numpy.argsort(di * di + dj * dj)[:, 0]]
-
-                    best = numpy.zeros(numpy.max(labels) + 1, int)
-
-                    best[missing_labels] = missing_best
-
-                    cl[missing_mask] = best[labels[missing_mask]]
-
-                    #
-                    # Now compute the crow-flies distance to the centers
-                    # of these pixels from whatever center was assigned to
-                    # the object.
-                    #
-                    iii, jjj = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-
-                    di = iii[missing_mask] - i[cl[missing_mask] - 1]
-
-                    dj = jjj[missing_mask] - j[cl[missing_mask] - 1]
-
-                    d_from_center[missing_mask] = numpy.sqrt(di * di + dj * dj)
-            else:
-                # Find the point in each object farthest away from the edge.
-                # This does better than the centroid:
-                # * The center is within the object
-                # * The center tends to be an interesting point, like the
-                #   center of the nucleus or the center of one or the other
-                #   of two touching cells.
-                #
-                i, j = centrosome.cpmorphology.maximum_position_of_labels(
-                    d_to_edge, labels, objects.indices
-                )
-
-                center_labels = numpy.zeros(labels.shape, int)
-
-                center_labels[i, j] = labels[i, j]
-
-                #
-                # Use the coloring trick here to process touching objects
-                # in separate operations
-                #
-                colors = centrosome.cpmorphology.color_labels(labels)
-
-                ncolors = numpy.max(colors)
-
-                d_from_center = numpy.zeros(labels.shape)
-
-                cl = numpy.zeros(labels.shape, int)
-
-                for color in range(1, ncolors + 1):
-                    mask = colors == color
-                    l, d = centrosome.propagate.propagate(
-                        numpy.zeros(center_labels.shape), center_labels, mask, 1
-                    )
-
-                    d_from_center[mask] = d[mask]
-
-                    cl[mask] = l[mask]
-
-            good_mask = cl > 0
-
-            if center_choice == C_EDGES_OF_OTHER:
-                # Exclude pixels within the centering objects
-                # when performing calculations from the centers
-                good_mask = good_mask & (center_labels == 0)
-
-            i_center = numpy.zeros(cl.shape)
-
-            i_center[good_mask] = i[cl[good_mask] - 1]
-
-            j_center = numpy.zeros(cl.shape)
-
-            j_center[good_mask] = j[cl[good_mask] - 1]
-
-            normalized_distance = numpy.zeros(labels.shape)
-
-            if wants_scaled:
-                total_distance = d_from_center + d_to_edge
-
-                normalized_distance[good_mask] = d_from_center[good_mask] / (
-                    total_distance[good_mask] + 0.001
-                )
-            else:
-                normalized_distance[good_mask] = (
-                    d_from_center[good_mask] / maximum_radius
-                )
-
-            dd[name] = [normalized_distance, i_center, j_center, good_mask]
-
-        ngood_pixels = numpy.sum(good_mask)
-
-        good_labels = labels[good_mask]
-
-        bin_indexes = (normalized_distance * bin_count).astype(int)
-
-        bin_indexes[bin_indexes > bin_count] = bin_count
-
-        labels_and_bins = (good_labels - 1, bin_indexes[good_mask])
-
-        histogram = scipy.sparse.coo_matrix(
-            (pixel_data[good_mask], labels_and_bins), (nobjects, bin_count + 1)
-        ).toarray()
-
-        sum_by_object = numpy.sum(histogram, 1)
-
-        sum_by_object_per_bin = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
-
-        fraction_at_distance = histogram / sum_by_object_per_bin
-
-        number_at_distance = scipy.sparse.coo_matrix(
-            (numpy.ones(ngood_pixels), labels_and_bins), (nobjects, bin_count + 1)
-        ).toarray()
-
-        object_mask = number_at_distance > 0
-
-        sum_by_object = numpy.sum(number_at_distance, 1)
-
-        sum_by_object_per_bin = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
-
-        fraction_at_bin = number_at_distance / sum_by_object_per_bin
-
-        mean_pixel_fraction = fraction_at_distance / (
-            fraction_at_bin + numpy.finfo(float).eps
-        )
-
-        masked_fraction_at_distance = numpy.ma.masked_array(
-            fraction_at_distance, ~object_mask
-        )
-
-        masked_mean_pixel_fraction = numpy.ma.masked_array(
-            mean_pixel_fraction, ~object_mask
-        )
-
-        # Anisotropy calculation.  Split each cell into eight wedges, then
-        # compute coefficient of variation of the wedges' mean intensities
-        # in each ring.
-        #
-        # Compute each pixel's delta from the center object's centroid
-        i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-
-        imask = i[good_mask] > i_center[good_mask]
-
-        jmask = j[good_mask] > j_center[good_mask]
-
-        absmask = abs(i[good_mask] - i_center[good_mask]) > abs(
-            j[good_mask] - j_center[good_mask]
-        )
-
-        radial_index = (
-            imask.astype(int) + jmask.astype(int) * 2 + absmask.astype(int) * 4
-        )
-
-        statistics = []
-
-        for bin in range(bin_count + (0 if wants_scaled else 1)):
-            bin_mask = good_mask & (bin_indexes == bin)
-
-            bin_pixels = numpy.sum(bin_mask)
-
-            bin_labels = labels[bin_mask]
-
-            bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
-
-            labels_and_radii = (bin_labels - 1, bin_radial_index)
-
-            radial_values = scipy.sparse.coo_matrix(
-                (pixel_data[bin_mask], labels_and_radii), (nobjects, 8)
-            ).toarray()
-
-            pixel_count = scipy.sparse.coo_matrix(
-                (numpy.ones(bin_pixels), labels_and_radii), (nobjects, 8)
-            ).toarray()
-
-            mask = pixel_count == 0
-
-            radial_means = numpy.ma.masked_array(radial_values / pixel_count, mask)
-
-            radial_cv = numpy.std(radial_means, 1) / numpy.mean(radial_means, 1)
-
-            radial_cv[numpy.sum(~mask, 1) == 0] = 0
-
-            for measurement, feature, overflow_feature in (
-                (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
-                (mean_pixel_fraction[:, bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
-                (numpy.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV),
-            ):
-                if bin == bin_count:
-                    measurement_name = overflow_feature % image_name
-                else:
-                    measurement_name = feature % (image_name, bin + 1, bin_count)
-
-                measurements.add_measurement(object_name, measurement_name, measurement)
-
-                if feature in heatmaps:
-                    heatmaps[feature][bin_mask] = measurement[bin_labels - 1]
-
-            radial_cv.mask = numpy.sum(~mask, 1) == 0
-
-            bin_name = str(bin + 1) if bin < bin_count else "Overflow"
-
-            statistics += [
-                (
-                    image_name,
-                    object_name,
-                    bin_name,
-                    str(bin_count),
-                    numpy.round(numpy.mean(masked_fraction_at_distance[:, bin]), 4),
-                    numpy.round(numpy.mean(masked_mean_pixel_fraction[:, bin]), 4),
-                    numpy.round(numpy.mean(radial_cv), 4),
-                )
-            ]
-
+        for measurement in measurement_list:
+            measurements.add_measurement(*measurement)
         return statistics
 
     def calculate_zernikes(self, workspace):
-        zernike_indexes = centrosome.zernike.get_zernike_indexes(
-            self.zernike_degree.value + 1
-        )
-
         meas = workspace.measurements
 
-        for o in self.objects:
-            object_name = o.object_name.value
+        #TODO: is it expensive to populate the lists below?
+        objects_names_list = [o.object_name.value for o in self.objects]
+        objects_labels_list = [workspace.object_set.get_objects(o).get_labels() for o in objects_names_list]
+        objects_names_and_label_sets = [(o_name, o_labelset) for (o_name, o_labelset) in zip(objects_names_list, objects_labels_list)]
 
-            objects = workspace.object_set.get_objects(object_name)
+        image_names_list = [i for i in self.images_list.value]
+        images_list = [workspace.image_set.get_image(i) for i in image_names_list]
+        image_pixel_data_list = [i.pixel_data for i in images_list]
+        image_mask_list = [i.mask for i in images_list]
 
-            #
-            # First, get a table of centers and radii of minimum enclosing
-            # circles per object
-            #
-            ij = numpy.zeros((objects.count + 1, 2))
-
-            r = numpy.zeros(objects.count + 1)
-
-            for labels, indexes in objects.get_labels():
-                ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
-                    labels, indexes
-                )
-
-                ij[indexes] = ij_
-
-                r[indexes] = r_
-
-            #
-            # Then compute x and y, the position of each labeled pixel
-            # within a unit circle around the object
-            #
-            ijv = objects.ijv
-
-            l = ijv[:, 2]
-
-            yx = (ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
-
-            z = centrosome.zernike.construct_zernike_polynomials(
-                yx[:, 1], yx[:, 0], zernike_indexes
-            )
-
-            for image_name in self.images_list.value:
-                image = workspace.image_set.get_image(
-                    image_name, must_be_grayscale=True
-                )
-
-                pixels = image.pixel_data
-
-                mask = (ijv[:, 0] < pixels.shape[0]) & (ijv[:, 1] < pixels.shape[1])
-
-                mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]
-
-                yx_ = yx[mask, :]
-
-                l_ = l[mask]
-
-                z_ = z[mask, :]
-
-                if len(l_) == 0:
-                    for i, (n, m) in enumerate(zernike_indexes):
-                        ftr = self.get_zernike_magnitude_name(image_name, n, m)
-
-                        meas[object_name, ftr] = numpy.zeros(0)
-
-                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
-                            ftr = self.get_zernike_phase_name(image_name, n, m)
-
-                            meas[object_name, ftr] = numpy.zeros(0)
-
-                    continue
-
-                areas = scipy.ndimage.sum(
-                    numpy.ones(l_.shape, int), labels=l_, index=objects.indices
-                )
-
-                for i, (n, m) in enumerate(zernike_indexes):
-                    vr = scipy.ndimage.sum(
-                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
-                        labels=l_,
-                        index=objects.indices,
-                    )
-
-                    vi = scipy.ndimage.sum(
-                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
-                        labels=l_,
-                        index=objects.indices,
-                    )
-
-                    magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
-
-                    ftr = self.get_zernike_magnitude_name(image_name, n, m)
-
-                    meas[object_name, ftr] = magnitude
-
-                    if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
-                        phase = numpy.arctan2(vr, vi)
-
-                        ftr = self.get_zernike_phase_name(image_name, n, m)
-
-                        meas[object_name, ftr] = phase
+        name_data_mask_list = [(i_name, i_data, i_mask) for (i_name, i_data, i_mask) in zip(image_names_list, image_pixel_data_list, image_mask_list)]
+        
+        measurements_dict = calculate_object_intensity_zernikes(
+            objects_names_and_label_sets,
+            self.zernike_degree.value,
+            name_data_mask_list,
+            self.wants_zernikes.value
+        )
+        
+        for object_name in measurements_dict:
+            for feature in measurements_dict[object_name]:
+                meas[object_name, feature] = measurements_dict[object_name][feature]
 
     def get_zernike_magnitude_name(self, image_name, n, m):
         """The feature name of the magnitude of a Zernike moment
@@ -1279,7 +877,7 @@ be selected in a later **SaveImages** or other module.
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         """
-        return "_".join((M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
+        return "_".join((M_CATEGORY, FullFeature.ZERNIKE_MAGNITUDE.value, image_name, str(n), str(m)))
 
     def get_zernike_phase_name(self, image_name, n, m):
         """The feature name of the phase of a Zernike moment
@@ -1288,7 +886,7 @@ be selected in a later **SaveImages** or other module.
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         """
-        return "_".join((M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
+        return "_".join((M_CATEGORY, FullFeature.ZERNIKE_PHASE.value, image_name, str(n), str(m)))
 
     def get_measurement_columns(self, pipeline):
         columns = []
@@ -1303,9 +901,9 @@ be selected in a later **SaveImages** or other module.
                     wants_scaling = bin_count_obj.wants_scaled.value
 
                     for feature, ofeature in (
-                        (MF_FRAC_AT_D, OF_FRAC_AT_D),
-                        (MF_MEAN_FRAC, OF_MEAN_FRAC),
-                        (MF_RADIAL_CV, OF_RADIAL_CV),
+                        (MeasurementFeature.FRAC_AT_D.value, OverflowFeature.FRAC_AT_D.value),
+                        (MeasurementFeature.MEAN_FRAC.value, OverflowFeature.MEAN_FRAC.value),
+                        (MeasurementFeature.RADIAL_CV.value, OverflowFeature.RADIAL_CV.value),
                     ):
                         for bin in range(1, bin_count + 1):
                             columns.append(
@@ -1321,10 +919,10 @@ be selected in a later **SaveImages** or other module.
                                 (object_name, ofeature % image_name, COLTYPE_FLOAT,)
                             )
 
-                    if self.wants_zernikes != Z_NONE:
+                    if self.wants_zernikes != IntensityZernike.NONE.value:
                         name_fns = [self.get_zernike_magnitude_name]
 
-                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                        if self.wants_zernikes == IntensityZernike.MAGNITUDES_AND_PHASE.value:
                             name_fns.append(self.get_zernike_phase_name)
 
                         max_n = self.zernike_degree.value
@@ -1347,13 +945,13 @@ be selected in a later **SaveImages** or other module.
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
-            if self.wants_zernikes == Z_NONE:
+            if self.wants_zernikes == IntensityZernike.NONE.value:
                 return F_ALL
 
-            if self.wants_zernikes == Z_MAGNITUDES:
-                return F_ALL + [FF_ZERNIKE_MAGNITUDE]
+            if self.wants_zernikes == IntensityZernike.MAGNITUDES.value:
+                return F_ALL + [FullFeature.ZERNIKE_MAGNITUDE.value]
 
-            return F_ALL + [FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE]
+            return F_ALL + [FullFeature.ZERNIKE_MAGNITUDE.value, FullFeature.ZERNIKE_PHASE.value]
 
         return []
 
@@ -1368,7 +966,7 @@ be selected in a later **SaveImages** or other module.
         if image_name in self.get_measurement_images(
             pipeline, object_name, category, feature
         ):
-            if feature in (FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE):
+            if feature in (FullFeature.ZERNIKE_MAGNITUDE.value, FullFeature.ZERNIKE_PHASE.value):
                 n_max = self.zernike_degree.value
 
                 result = [
@@ -1385,7 +983,7 @@ be selected in a later **SaveImages** or other module.
                 if any(
                     [not bin_count.wants_scaled.value for bin_count in self.bin_counts]
                 ):
-                    result += [FF_OVERFLOW]
+                    result += [FullFeature.OVERFLOW.value]
 
             return result
 
@@ -1426,8 +1024,8 @@ be selected in a later **SaveImages** or other module.
                     + SETTINGS_CENTER_CHOICE_OFFSET
                 )
 
-                if setting_values[offset] == C_CENTERS_OF_OTHER_V2:
-                    setting_values[offset] = C_CENTERS_OF_OTHER
+                if setting_values[offset] == "Other objects":
+                    setting_values[offset] = CenterChoice.CENTERS_OF_OTHER.value
 
             variable_revision_number = 3
 
@@ -1443,7 +1041,7 @@ be selected in a later **SaveImages** or other module.
             #
             # Added zernikes
             #
-            setting_values = setting_values[:4] + [Z_NONE, "9"] + setting_values[4:]
+            setting_values = setting_values[:4] + ["None", "9"] + setting_values[4:]
 
             variable_revision_number = 5
 

@@ -154,11 +154,7 @@ References
     }
 )
 
-import mahotas.features
 import numpy
-import skimage.exposure
-import skimage.measure
-import skimage.util
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -175,17 +171,8 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.utilities.core.object import size_similarly
-
-TEXTURE = "Texture"
-
-F_HARALICK = """AngularSecondMoment Contrast Correlation Variance
-InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
-DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
-
-IO_IMAGES = "Images"
-IO_OBJECTS = "Objects"
-IO_BOTH = "Both"
-
+from cellprofiler_library.opts.measuretexture import MeasurementTarget, TEXTURE, F_HARALICK
+from cellprofiler_library.modules._measuretexture import measure_image_texture, measure_object_texture
 
 class MeasureTexture(Module):
     module_name = "MeasureTexture"
@@ -259,8 +246,8 @@ class MeasureTexture(Module):
 
         self.images_or_objects = Choice(
             "Measure whole images or objects?",
-            [IO_IMAGES, IO_OBJECTS, IO_BOTH],
-            value=IO_BOTH,
+            [MeasurementTarget.IMAGES.value, MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value],
+            value=MeasurementTarget.BOTH.value,
             doc="""\
 This setting determines whether the module computes image-wide
 measurements, per-object measurements or both.
@@ -271,7 +258,7 @@ measurements, per-object measurements or both.
    on a per-object basis only.
 -  *{IO_BOTH}:* Select to make both image and object measurements.
 """.format(
-                **{"IO_IMAGES": IO_IMAGES, "IO_OBJECTS": IO_OBJECTS, "IO_BOTH": IO_BOTH}
+                **{"IO_IMAGES": MeasurementTarget.IMAGES.value, "IO_OBJECTS": MeasurementTarget.OBJECTS.value, "IO_BOTH": MeasurementTarget.BOTH.value}
             ),
         )
 
@@ -320,10 +307,10 @@ measurements, per-object measurements or both.
         return visible_settings
 
     def wants_image_measurements(self):
-        return self.images_or_objects in (IO_IMAGES, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.IMAGES.value, MeasurementTarget.BOTH.value)
 
     def wants_object_measurements(self):
-        return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value)
 
     def add_scale(self, removable=True):
         """
@@ -409,7 +396,7 @@ measured and will result in a undefined value in the output file.
         return []
 
     def get_features(self):
-        return F_HARALICK
+        return [i.value for i in F_HARALICK]
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
@@ -556,7 +543,7 @@ measured and will result in a undefined value in the output file.
                 for feature_name in F_HARALICK:
                     statistics += self.record_measurement(
                         image=image_name,
-                        feature=feature_name,
+                        feature=feature_name.value,
                         obj=object_name,
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
@@ -566,7 +553,7 @@ measured and will result in a undefined value in the output file.
 
             return statistics
 
-        # IMG-961: Ensure image and objects have the same shape.
+        # # IMG-961: Ensure image and objects have the same shape.
         try:
             mask = (
                 image.mask
@@ -584,67 +571,34 @@ measured and will result in a undefined value in the output file.
                 else:
                     mask = m1
 
-        pixel_data[~mask] = 0
-        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(pixel_data)
-        if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(
-                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-            ).astype(numpy.uint8)
-        props = skimage.measure.regionprops(labels, pixel_data)
-        features = numpy.empty((n_directions, 13, max(unique_labels)))
-
-        for prop in props:
-            label_data = prop["intensity_image"]
-            try:
-                features[:, :, prop.label-1] = mahotas.features.haralick(
-                    label_data, distance=scale, ignore_zeros=True
-                )
-            except ValueError:
-                features[:, :, prop.label-1] = numpy.nan
-
-        for direction, direction_features in enumerate(features):
-            for feature_name, feature in zip(F_HARALICK, direction_features):
-                statistics += self.record_measurement(
-                    image=image_name,
-                    feature=feature_name,
-                    obj=object_name,
-                    result=feature,
-                    scale="{:d}_{:02d}".format(scale, direction),
-                    workspace=workspace,
-                    gray_levels="{:d}".format(gray_levels),
-                )
+        _statistics = measure_object_texture(
+            object_name, 
+            labels,
+            image_name, 
+            pixel_data,
+            mask if image.has_mask else None,
+            gray_levels, 
+            unique_labels, 
+            scale, 
+            objects.volumetric,
+        )
+        statistics = []
+        for i in _statistics:
+            statistics += self.record_measurement(**i, workspace=workspace)
 
         return statistics
+    
 
     def run_image(self, image_name, scale, workspace):
-        statistics = []
-
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         gray_levels = int(self.gray_levels.value)
-        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
-        if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(
-                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-            ).astype(numpy.uint8)
+        pixel_data = image.pixel_data
 
-        features = mahotas.features.haralick(pixel_data, distance=scale)
-
-        for direction, direction_features in enumerate(features):
-            object_name = "{:d}_{:02d}".format(scale, direction)
-
-            for feature_name, feature in zip(F_HARALICK, direction_features):
-                statistics += self.record_image_measurement(
-                    feature_name=feature_name,
-                    image_name=image_name,
-                    result=feature,
-                    scale=object_name,
-                    workspace=workspace,
-                    gray_levels="{:d}".format(gray_levels),
-                )
-
+        _statistics = measure_image_texture(pixel_data, gray_levels, scale, image_name)
+        statistics = []
+        for i in _statistics:
+            statistics += self.record_image_measurement(**i, workspace=workspace)
         return statistics
 
     def record_measurement(
@@ -740,7 +694,7 @@ measured and will result in a undefined value in the output file.
             #
             # Added image / objects choice
             #
-            setting_values = setting_values + [IO_BOTH]
+            setting_values = setting_values + [MeasurementTarget.BOTH.value]
 
             variable_revision_number = 4
 

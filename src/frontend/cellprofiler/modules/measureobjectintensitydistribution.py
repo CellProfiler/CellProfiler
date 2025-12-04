@@ -806,6 +806,7 @@ be selected in a later **SaveImages** or other module.
         nobjects = numpy.max(objects.segmented)
         measurements = workspace.measurements
 
+        #TODO: Can this heatmap stuff be moved to library?
         heatmaps = {}
         for heatmap in self.heatmaps:
             if (

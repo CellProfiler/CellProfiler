@@ -4053,13 +4053,13 @@ def calculate_zernikes_for_image(
         objects_indices: NDArray[ObjectLabel],
         zernike_opts: IntensityZernike,
         zernike_indexes: NDArray[numpy.int_],
-        l: NDArray[ObjectLabel], 
-        yx: NDArray[numpy.float_], 
-        z: NDArray[numpy.complex_], 
+        l: Optional[NDArray[ObjectLabel]], 
+        yx: Optional[NDArray[numpy.float_]], 
+        z: Optional[NDArray[numpy.complex_]], 
         objects_labels: Optional[ObjectLabelSet] = None, 
     ) -> Dict[str, NDArray[numpy.float_]]:
     if l is None or yx is None or z is None:
-        assert objects_labels is not None
+        assert objects_labels is not None, "Either (l, yx, or z), or objects_labels must be provided"
         l, yx, z = get_positions_within_unit_circle(objects_labels, zernike_indexes)
     measurements_dict_for_image = {}
     pixels = image_pixel_data

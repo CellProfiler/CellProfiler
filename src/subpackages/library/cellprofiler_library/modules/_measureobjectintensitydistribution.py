@@ -2,7 +2,7 @@ import numpy
 import centrosome.zernike
 from pydantic import Field, validate_call, ConfigDict
 from numpy.typing import NDArray
-from typing import Optional, Tuple, Dict, List, Union, Any
+from typing import Optional, Tuple, Dict, List, Union, Any, Annotated
 from cellprofiler_library.types import ObjectSegmentation, ObjectLabelSet, Image2DGrayscale, Image2DGrayscaleMask, ObjectLabel, ObjectSegmentationIJV
 from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, indices_from_ijv
 from cellprofiler_library.opts.measureobjectintensitydistribution import CenterChoice, IntensityZernike, MeasurementFeature, OverflowFeature
@@ -10,10 +10,10 @@ from cellprofiler_library.functions.measurement import get_normalized_distance_c
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def calculate_object_intensity_zernikes(
-        objects_names_and_label_sets: List[Tuple[str, ObjectLabelSet]], 
-        zernike_degree: int,
-        image_name_data_mask_list: List[Tuple[str, Image2DGrayscale, Image2DGrayscaleMask]], 
-        zernike_opts: IntensityZernike
+        objects_names_and_label_sets:   Annotated[List[Tuple[str, ObjectLabelSet]], Field(description="List of Object name and label set tuples to perform measurements on")],
+        zernike_degree:                 Annotated[int,Field(description="The degree of the Zernike polynomial to use")],
+        image_name_data_mask_list:      Annotated[List[Tuple[str, Image2DGrayscale, Image2DGrayscaleMask]],Field(description="List of image name, image data, and image mask tuples")],
+        zernike_opts:                   Annotated[IntensityZernike, Field(description="Zernike options either NONE, MAGNITUDES, or MAGNITUDES_AND_PHASE")]
     ):
     measurements_dict = {}
     zernike_indexes = centrosome.zernike.get_zernike_indexes(
@@ -44,21 +44,21 @@ def calculate_object_intensity_zernikes(
 HeatMapDictType = Dict[Union[int, str], Union[NDArray[numpy.float64], Any]]
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_object_intensity_distribution_measurements(
-        object_name: str, 
-        center_object_name: Optional[str], 
+        object_name:                Annotated[str, Field(description="Name given to the object in measurements")], 
+        center_object_name:         Annotated[Optional[str], Field(description="Name of the object used for centering")],
         heatmap_dict, # cannot use HeatMapDictType because pydantic is creating a copy of the dict when an annotation is specified
-        labels: ObjectSegmentation, # these are obtained after `cropping similarly` to the image
-        center_object_segmented: Optional[ObjectSegmentation], 
-        center_choice: CenterChoice,
-        wants_scaled: bool, 
-        maximum_radius: int, # default 100, minimum 1
-        bin_count: int, # default 4, minval 2
-        pixel_data: Image2DGrayscale,
-        nobjects: int,
-        image_name: str,
+        labels:                     Annotated[ObjectSegmentation, Field(description="Segmentations of objects used in intensity distribution measurements")], # these are obtained after `cropping similarly` to the image
+        center_object_segmented:    Annotated[Optional[ObjectSegmentation], Field(description="Segmentation of the object used for centering")], 
+        center_choice:              Annotated[CenterChoice, Field(description="How to choose the center of the object")],
+        wants_scaled:               Annotated[bool, Field(description="Whether to scale the distribution by the number of pixels")], 
+        maximum_radius:             Annotated[int, Field(description="Maximum radius of the distribution", ge=1)], # default 100, minimum 1
+        bin_count:                  Annotated[int, Field(description="Number of bins in the distribution", ge=2)], # default 4, minval 2
+        pixel_data:                 Annotated[Image2DGrayscale, Field(description="Pixel data of the image")],
+        nobjects:                   Annotated[int, Field(description="Number of objects in the image")],
+        image_name:                 Annotated[str, Field(description="Name of the image")],
         heatmaps,
-        objects_indices: Optional[NDArray[ObjectLabel]]
-    ):
+        objects_indices:            Annotated[Optional[NDArray[ObjectLabel]], Field(description="Indices of objects in the image")]
+    ) -> Tuple[List[Tuple[str, str, str, str, float, float, float]], List[List[Union[str, numpy.float_]]]]:
     name = (
         object_name
         if center_object_name is None

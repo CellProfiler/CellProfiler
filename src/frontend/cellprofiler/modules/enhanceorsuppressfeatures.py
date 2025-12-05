@@ -30,23 +30,7 @@ from cellprofiler_core.setting.text import Integer
 
 from cellprofiler.modules import _help
 from cellprofiler_library.modules._enhanceorsuppressfeatures import enhance_or_suppress_features
-
-ENHANCE = "Enhance"
-SUPPRESS = "Suppress"
-
-E_SPECKLES = "Speckles"
-E_NEURITES = "Neurites"
-E_DARK_HOLES = "Dark holes"
-E_CIRCLES = "Circles"
-E_TEXTURE = "Texture"
-E_DIC = "DIC"
-
-S_FAST = "Fast"
-S_SLOW = "Slow"
-
-N_GRADIENT = "Line structures"
-N_TUBENESS = "Tubeness"
-
+from cellprofiler_library.opts.enhanceorsuppressfeatures import OperationMethod, EnhanceMethod, SpeckleAccuracy, NeuriteMethod
 
 class EnhanceOrSuppressFeatures(ImageProcessing):
     module_name = "EnhanceOrSuppressFeatures"
@@ -58,7 +42,7 @@ class EnhanceOrSuppressFeatures(ImageProcessing):
 
         self.method = Choice(
             "Select the operation",
-            [ENHANCE, SUPPRESS],
+            [OperationMethod.ENHANCE.value, OperationMethod.SUPPRESS.value],
             doc="""\
 Select whether you want to enhance or suppress the features you
 designate.
@@ -67,13 +51,13 @@ designate.
    of the features of interest.
 -  *{SUPPRESS}:* Produce an image with the features largely removed.
 """.format(
-                **{"ENHANCE": ENHANCE, "SUPPRESS": SUPPRESS}
+                **{"ENHANCE": OperationMethod.ENHANCE.value, "SUPPRESS": OperationMethod.SUPPRESS.value}
             ),
         )
 
         self.enhance_method = Choice(
             "Feature type",
-            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
+            [EnhanceMethod.SPECKLES.value, EnhanceMethod.NEURITES.value, EnhanceMethod.DARK_HOLES.value, EnhanceMethod.CIRCLES.value, EnhanceMethod.TEXTURE.value, EnhanceMethod.DIC.value],
             doc="""\
 *(Used only if "{ENHANCE}" is selected)*
 
@@ -123,15 +107,15 @@ This module can enhance several kinds of image features:
 
 """.format(
                 **{
-                    "E_CIRCLES": E_CIRCLES,
-                    "E_DARK_HOLES": E_DARK_HOLES,
-                    "E_DIC": E_DIC,
-                    "N_GRADIENT": N_GRADIENT,
-                    "E_NEURITES": E_NEURITES,
-                    "E_SPECKLES": E_SPECKLES,
-                    "E_TEXTURE": E_TEXTURE,
-                    "ENHANCE": ENHANCE,
-                    "N_TUBENESS": N_TUBENESS,
+                    "E_CIRCLES": EnhanceMethod.CIRCLES.value,
+                    "E_DARK_HOLES": EnhanceMethod.DARK_HOLES.value,
+                    "E_DIC": EnhanceMethod.DIC.value,
+                    "N_GRADIENT": NeuriteMethod.GRADIENT.value,
+                    "E_NEURITES": EnhanceMethod.NEURITES.value,
+                    "E_SPECKLES": EnhanceMethod.SPECKLES.value,
+                    "E_TEXTURE": EnhanceMethod.TEXTURE.value,
+                    "ENHANCE": OperationMethod.ENHANCE.value,
+                    "N_TUBENESS": NeuriteMethod.TUBENESS.value,
                 }
             ),
         )
@@ -151,9 +135,9 @@ used to calculate an appropriate filter size.
 {HELP_ON_MEASURING_DISTANCES}
 """.format(
                 **{
-                    "E_CIRCLES": E_CIRCLES,
-                    "E_NEURITES": E_NEURITES,
-                    "E_SPECKLES": E_SPECKLES,
+                    "E_CIRCLES": EnhanceMethod.CIRCLES.value,
+                    "E_NEURITES": EnhanceMethod.NEURITES.value,
+                    "E_SPECKLES": EnhanceMethod.SPECKLES.value,
                     "HELP_ON_MEASURING_DISTANCES": _help.HELP_ON_MEASURING_DISTANCES,
                 }
             ),
@@ -169,7 +153,7 @@ used to calculate an appropriate filter size.
 The range of hole sizes to be enhanced. The algorithm will identify only
 holes whose diameters fall between these two values.
 """.format(
-                **{"E_DARK_HOLES": E_DARK_HOLES}
+                **{"E_DARK_HOLES": EnhanceMethod.DARK_HOLES.value}
             ),
         )
 
@@ -201,10 +185,10 @@ this is not recommended.
 .. |image0| image:: {PROTIP_AVOID_ICON}
 """.format(
                 **{
-                    "E_DIC": E_DIC,
-                    "E_NEURITES": E_NEURITES,
-                    "E_TEXTURE": E_TEXTURE,
-                    "N_TUBENESS": N_TUBENESS,
+                    "E_DIC": EnhanceMethod.DIC.value,
+                    "E_NEURITES": EnhanceMethod.NEURITES.value,
+                    "E_TEXTURE": EnhanceMethod.TEXTURE.value,
+                    "N_TUBENESS": NeuriteMethod.TUBENESS.value,
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                 }
             ),
@@ -223,7 +207,7 @@ run diagonally from lower left to upper right and the highlights appear
 above the shadows, the shear angle is 45°. If the shadows appear on top,
 the shear angle is 180° + 45° = 225°.
 """.format(
-                **{"E_DIC": E_DIC}
+                **{"E_DIC": EnhanceMethod.DIC.value}
             ),
         )
 
@@ -244,13 +228,13 @@ value, on the order of 1 - 1/diameter of your objects if the intensities
 decrease toward the middle. Set the decay to a small value if there
 appears to be a bias in the integration direction.
 """.format(
-                **{"E_DIC": E_DIC}
+                **{"E_DIC": EnhanceMethod.DIC.value}
             ),
         )
 
         self.neurite_choice = Choice(
             "Enhancement method",
-            [N_TUBENESS, N_GRADIENT],
+            [NeuriteMethod.TUBENESS.value, NeuriteMethod.GRADIENT.value],
             doc="""\
 *(Used only for the "{E_NEURITES}" method)*
 
@@ -276,16 +260,16 @@ Two methods can be used to enhance neurites:
 .. _ImageJ Tubeness plugin: http://www.longair.net/edinburgh/imagej/tubeness/
 """.format(
                 **{
-                    "E_NEURITES": E_NEURITES,
-                    "N_GRADIENT": N_GRADIENT,
-                    "N_TUBENESS": N_TUBENESS,
+                    "E_NEURITES": EnhanceMethod.NEURITES.value,
+                    "N_GRADIENT": NeuriteMethod.GRADIENT.value,
+                    "N_TUBENESS": NeuriteMethod.TUBENESS.value,
                 }
             ),
         )
 
         self.speckle_accuracy = Choice(
             "Speed and accuracy",
-            choices=[S_FAST, S_SLOW],
+            choices=[SpeckleAccuracy.FAST.value, SpeckleAccuracy.SLOW.value],
             doc="""\
 *(Used only for the "{E_SPECKLES}" method)*
 
@@ -295,7 +279,7 @@ Two methods can be used to enhance neurites:
    (greater than 10 pixels) and need not be exactly circular.
 -  *{S_SLOW}:* Use for speckles of small radius.
 """.format(
-                **{"E_SPECKLES": E_SPECKLES, "S_FAST": S_FAST, "S_SLOW": S_SLOW}
+                **{"E_SPECKLES": EnhanceMethod.SPECKLES.value, "S_FAST": SpeckleAccuracy.FAST.value, "S_SLOW": SpeckleAccuracy.SLOW.value}
             ),
         )
 
@@ -309,7 +293,7 @@ Two methods can be used to enhance neurites:
 whole intensity range of the image (0-1). This can make 
 the output easier to display.
 """.format(
-                **{"E_NEURITES": E_NEURITES}
+                **{"E_NEURITES": EnhanceMethod.NEURITES.value}
             ),
         )
 
@@ -331,23 +315,23 @@ the output easier to display.
     def visible_settings(self):
         __settings__ = super(EnhanceOrSuppressFeatures, self).visible_settings()
         __settings__ += [self.method]
-        if self.method == ENHANCE:
+        if self.method == OperationMethod.ENHANCE.value:
             __settings__ += [self.enhance_method]
             self.object_size.min_value = 2
-            if self.enhance_method == E_DARK_HOLES:
+            if self.enhance_method == EnhanceMethod.DARK_HOLES.value:
                 __settings__ += [self.hole_size]
-            elif self.enhance_method == E_TEXTURE:
+            elif self.enhance_method == EnhanceMethod.TEXTURE.value:
                 __settings__ += [self.smoothing]
-            elif self.enhance_method == E_DIC:
+            elif self.enhance_method == EnhanceMethod.DIC.value:
                 __settings__ += [self.smoothing, self.angle, self.decay]
-            elif self.enhance_method == E_NEURITES:
+            elif self.enhance_method == EnhanceMethod.NEURITES.value:
                 __settings__ += [self.neurite_choice]
-                if self.neurite_choice == N_GRADIENT:
+                if self.neurite_choice == NeuriteMethod.GRADIENT.value:
                     __settings__ += [self.object_size]
                 else:
                     __settings__ += [self.smoothing]
                 __settings__ += [self.wants_rescale]
-            elif self.enhance_method == E_SPECKLES:
+            elif self.enhance_method == EnhanceMethod.SPECKLES.value:
                 __settings__ += [self.object_size, self.speckle_accuracy]
                 self.object_size.min_value = 3
             else:
@@ -408,7 +392,7 @@ the output easier to display.
             #
             # V1 -> V2, added enhance method and hole size
             #
-            setting_values = setting_values + [E_SPECKLES, "1,10"]
+            setting_values = setting_values + [EnhanceMethod.SPECKLES.value, "1,10"]
             variable_revision_number = 2
         if variable_revision_number == 2:
             #
@@ -417,7 +401,7 @@ the output easier to display.
             setting_values = setting_values + ["2.0", "0", ".95"]
             variable_revision_number = 3
         if variable_revision_number == 3:
-            setting_values = setting_values + [N_GRADIENT]
+            setting_values = setting_values + [NeuriteMethod.GRADIENT.value]
             variable_revision_number = 4
         if variable_revision_number == 4:
             setting_values = setting_values + ["Slow / circular"]

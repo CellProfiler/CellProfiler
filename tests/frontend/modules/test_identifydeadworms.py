@@ -260,7 +260,7 @@ def test_find_adjacent_by_distance_empty():
     assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
-        numpy.zeros(0), numpy.zeros(0), numpy.zeros(0)
+        numpy.zeros(0), numpy.zeros(0), numpy.zeros(0), module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value
     )
     assert len(first) == 0
     assert len(second) == 0
@@ -271,7 +271,7 @@ def test_find_adjacent_by_distance_one():
     assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
     first, second = module.find_adjacent_by_distance(
-        numpy.zeros(1), numpy.zeros(1), numpy.zeros(1)
+        numpy.zeros(1), numpy.zeros(1), numpy.zeros(1), module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value
     )
     assert len(first) == 1
     assert first[0] == 0
@@ -295,7 +295,7 @@ def test_find_adjacent_by_distance_easy():
     # Break into two groups: 0-4 (5x5) and 5-9 (5x5)
     j[5:] += 10
     a = numpy.zeros(10)
-    first, second = module.find_adjacent_by_distance(i, j, a)
+    first, second = module.find_adjacent_by_distance(i, j, a, module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value)
     order = numpy.lexsort((second, first))
     first = first[order]
     second = second[order]
@@ -347,7 +347,7 @@ def test_find_adjacent_by_distance_hard():
         #
         unscramble = numpy.zeros(13, int)
         unscramble[scramble] = numpy.arange(13)
-        first, second = module.find_adjacent_by_distance(i, j, a)
+        first, second = module.find_adjacent_by_distance(i, j, a, module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value)
         assert len(first) == 9 + 16 + 25 + 1
         assert len(second) == 9 + 16 + 25 + 1
         for f, s in zip(first, second):

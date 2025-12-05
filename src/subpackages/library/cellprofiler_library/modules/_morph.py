@@ -1,8 +1,8 @@
 import logging
-from typing import Annotated, Optional, Union, List, Dict, Any, TypeVar
+from typing import Annotated, Optional, List, Dict, Any
 from pydantic import validate_call, Field, ConfigDict
 
-from ..opts.morph import MorphFunction, RepeatMethod
+from ..opts.morph import MorphFunction
 from ..functions.image_processing import (
     apply_branchpoints,
     apply_bridge, 
@@ -24,7 +24,7 @@ from ..functions.image_processing import (
     apply_vbreak,
     MorphImageT
 )
-from ..types import ImageGrayscale, ImageGrayscaleMask
+from ..types import ImageGrayscaleMask
 
 LOGGER = logging.getLogger(__name__)
 

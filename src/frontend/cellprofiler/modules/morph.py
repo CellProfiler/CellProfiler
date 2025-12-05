@@ -254,10 +254,7 @@ tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 
 import logging
 
-import centrosome.cpmorphology
-import centrosome.filter
 import numpy
-import scipy.ndimage
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary

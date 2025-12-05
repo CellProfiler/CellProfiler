@@ -78,7 +78,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import LabelName, Integer, Float
 from centrosome.cpmorphology import all_connected_components
-from centrosome.cpmorphology import fixup_scipy_ndimage_result
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
@@ -228,7 +228,7 @@ degrees.
         if not self.wants_automatic_distance:
             result += [self.space_distance, self.angular_distance]
         return result
-
+    
     def run(self, workspace):
         """Run the algorithm on one image set"""
         #
@@ -240,102 +240,32 @@ degrees.
         if image.has_mask:
             mask = mask & image.mask
         angle_count = self.angle_count.value
+
         #
         # We collect the i,j and angle of pairs of points that
         # are 3-d adjacent after erosion.
         #
-        # i - the i coordinate of each point found after erosion
-        # j - the j coordinate of each point found after erosion
-        # a - the angle of the structuring element for each point found
-        #
-        i = numpy.zeros(0, int)
-        j = numpy.zeros(0, int)
-        a = numpy.zeros(0, int)
+        i_center, j_center, angular_orientation = self.get_3d_adjacent_after_erosion(mask, angle_count)
 
-        ig, jg = numpy.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
-        this_idx = 0
-        for angle_number in range(angle_count):
-            angle = float(angle_number) * numpy.pi / float(angle_count)
-            strel = self.get_diamond(angle)
-            erosion = binary_erosion(mask, strel)
-            #
-            # Accumulate the count, i, j and angle for all foreground points
-            # in the erosion
-            #
-            this_count = numpy.sum(erosion)
-            i = numpy.hstack((i, ig[erosion]))
-            j = numpy.hstack((j, jg[erosion]))
-            a = numpy.hstack((a, numpy.ones(this_count, float) * angle))
         #
         # Find connections based on distances, not adjacency
         #
-        first, second = self.find_adjacent_by_distance(i, j, a)
+        first, second = self.find_adjacent_by_distance(
+            i_center, 
+            j_center, 
+            angular_orientation, 
+            self.wants_automatic_distance.value, 
+            self.worm_width.value, 
+            self.worm_length.value, 
+            self.angle_count.value,
+            self.space_distance.value,
+            self.angular_distance.value
+            )
+            
         #
         # Do all connected components.
         #
-        if len(first) > 0:
-            ij_labels = all_connected_components(first, second) + 1
-            nlabels = numpy.max(ij_labels)
-            label_indexes = numpy.arange(1, nlabels + 1)
-            #
-            # Compute the measurements
-            #
-            center_x = fixup_scipy_ndimage_result(
-                mean_of_labels(j, ij_labels, label_indexes)
-            )
-            center_y = fixup_scipy_ndimage_result(
-                mean_of_labels(i, ij_labels, label_indexes)
-            )
-            #
-            # The angles are wierdly complicated because of the wrap-around.
-            # You can imagine some horrible cases, like a circular patch of
-            # "worm" in which all angles are represented or a gentle "U"
-            # curve.
-            #
-            # For now, I'm going to use the following heuristic:
-            #
-            # Compute two different "angles". The angles of one go
-            # from 0 to 180 and the angles of the other go from -90 to 90.
-            # Take the variance of these from the mean and
-            # choose the representation with the lowest variance.
-            #
-            # An alternative would be to compute the variance at each possible
-            # dividing point. Another alternative would be to actually trace through
-            # the connected components - both overkill for such an inconsequential
-            # measurement I hope.
-            #
-            angles = fixup_scipy_ndimage_result(
-                mean_of_labels(a, ij_labels, label_indexes)
-            )
-            vangles = fixup_scipy_ndimage_result(
-                mean_of_labels(
-                    (a - angles[ij_labels - 1]) ** 2, ij_labels, label_indexes
-                )
-            )
-            aa = a.copy()
-            aa[a > numpy.pi / 2] -= numpy.pi
-            aangles = fixup_scipy_ndimage_result(
-                mean_of_labels(aa, ij_labels, label_indexes)
-            )
-            vaangles = fixup_scipy_ndimage_result(
-                mean_of_labels(
-                    (aa - aangles[ij_labels - 1]) ** 2, ij_labels, label_indexes
-                )
-            )
-            aangles[aangles < 0] += numpy.pi
-            angles[vaangles < vangles] = aangles[vaangles < vangles]
-            #
-            # Squish the labels to 2-d. The labels for overlaps are arbitrary.
-            #
-            labels = numpy.zeros(mask.shape, int)
-            labels[i, j] = ij_labels
-        else:
-            center_x = numpy.zeros(0, int)
-            center_y = numpy.zeros(0, int)
-            angles = numpy.zeros(0)
-            nlabels = 0
-            label_indexes = numpy.zeros(0, int)
-            labels = numpy.zeros(mask.shape, int)
+        center_x, center_y, angles, nlabels, label_indexes, labels = self.process_all_connected_components(first, second, i_center, j_center, angular_orientation, mask)
 
         m = workspace.measurements
         assert isinstance(m, Measurements)
@@ -363,6 +293,103 @@ degrees.
             workspace.display_data.mask = mask
             workspace.display_data.labels = labels
             workspace.display_data.count = nlabels
+
+
+
+    def get_3d_adjacent_after_erosion(
+            self, 
+            mask, #: Annotated[Image2DBinary, Field(description="Input binary image")]
+            angle_count # Annotated[int, Field(description="Number of different angles at which the template will betried"), ge=1] = 32
+        ):
+        #
+        # We collect the i,j and angle of pairs of points that
+        # are 3-d adjacent after erosion.
+        #
+        # i - the i coordinate of each point found after erosion
+        # j - the j coordinate of each point found after erosion
+        # a - the angle of the structuring element for each point found
+        #
+        i = numpy.zeros(0, int)
+        j = numpy.zeros(0, int)
+        a = numpy.zeros(0, int)
+
+        ig, jg = numpy.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
+        for angle_number in range(angle_count):
+            angle = float(angle_number) * numpy.pi / float(angle_count)
+            strel = self.get_diamond(angle)
+            erosion = binary_erosion(mask, strel)
+            #
+            # Accumulate the count, i, j and angle for all foreground points
+            # in the erosion
+            #
+            this_count = numpy.sum(erosion)
+            i = numpy.hstack((i, ig[erosion]))
+            j = numpy.hstack((j, jg[erosion]))
+            a = numpy.hstack((a, numpy.ones(this_count, float) * angle))
+    
+        return i, j, a
+    
+    def process_all_connected_components(self, first, second, i_center, j_center, angular_orientation, mask):
+        #
+        # Do all connected components.
+        #
+        if len(first) > 0:
+            ij_labels = all_connected_components(first, second) + 1
+            nlabels = numpy.max(ij_labels)
+            label_indexes = numpy.arange(1, nlabels + 1)
+            #
+            # Compute the measurements
+            #
+            center_x = fix(mean_of_labels(j_center, ij_labels, label_indexes))
+            center_y = fix(mean_of_labels(i_center, ij_labels, label_indexes))
+            #
+            # The angles are wierdly complicated because of the wrap-around.
+            # You can imagine some horrible cases, like a circular patch of
+            # "worm" in which all angles are represented or a gentle "U"
+            # curve.
+            #
+            # For now, I'm going to use the following heuristic:
+            #
+            # Compute two different "angles". The angles of one go
+            # from 0 to 180 and the angles of the other go from -90 to 90.
+            # Take the variance of these from the mean and
+            # choose the representation with the lowest variance.
+            #
+            # An alternative would be to compute the variance at each possible
+            # dividing point. Another alternative would be to actually trace through
+            # the connected components - both overkill for such an inconsequential
+            # measurement I hope.
+            #
+            angles = fix(mean_of_labels(angular_orientation, ij_labels, label_indexes))
+            angular_orientation_variance = (angular_orientation - angles[ij_labels - 1]) ** 2
+
+            vangles = fix(mean_of_labels(angular_orientation_variance, ij_labels, label_indexes))
+            
+            aa = angular_orientation.copy()
+            aa[angular_orientation > numpy.pi / 2] -= numpy.pi
+            
+            aangles = fix(mean_of_labels(aa, ij_labels, label_indexes))
+            aangular_orientation_variance = (aa - aangles[ij_labels - 1]) ** 2
+            
+            vaangles = fix(mean_of_labels(aangular_orientation_variance, ij_labels, label_indexes))
+            
+            aangles[aangles < 0] += numpy.pi
+            angles[vaangles < vangles] = aangles[vaangles < vangles]
+            #
+            # Squish the labels to 2-d. The labels for overlaps are arbitrary.
+            #
+            labels = numpy.zeros(mask.shape, int)
+            labels[i_center, j_center] = ij_labels
+        else:
+            center_x = numpy.zeros(0, int)
+            center_y = numpy.zeros(0, int)
+            angles = numpy.zeros(0)
+            nlabels = 0
+            label_indexes = numpy.zeros(0, int)
+            labels = numpy.zeros(mask.shape, int)
+
+        return center_x, center_y, angles, nlabels, label_indexes, labels
+
 
     def display(self, workspace, figure):
         """Show an informative display"""
@@ -541,8 +568,19 @@ degrees.
         j1, j2 = IdentifyDeadWorms.get_slices(oj)
         match = img1[i1, j1] & img2[i2, j2]
         return numbering1[i1, j1][match], numbering2[i2, j2][match]
-
-    def find_adjacent_by_distance(self, i, j, a):
+    
+    def find_adjacent_by_distance(
+            self, 
+            i_center, 
+            j_center, 
+            angular_orientation,
+            wants_automatic_distance = True,
+            worm_width = None, # Optional[int] default 100 min 1 description="This is the width (the short axis), measured in pixels, of the diamond used as a template when matching against the worm. It should be less than the width of a worm."
+            worm_length = None, # Optional[int] default 10 min 1 description="This is the length (the long axis), measured in pixels, of the diamond used as a template when matching against the worm. It should be less than the length of a worm"
+            angle_count = None, # Optinal[int] default 32 min 1 description="This is the number of different angles at which the template will be tried. For instance, if there are 12 angles, the template will be rotated by 0°, 15°, 30°, 45° … 165°"
+            space_distance = None, # Optional[float] default 5 min 1 description="Used only if not automatically calculating distance parameters Enter the distance for calculating the worm centers, in units of pixels. The worm centers must be at least many pixels apart for the centers to be considered two separate worms."
+            angular_distance = None, # Optional[float] default 30 min 1 description="Used only if automatically calculating distance parameters IdentifyDeadWorms calculates the worm centers at different angles. Two worm centers are considered to represent different worms if their angular distance is larger than this number. The number is measured in degrees."
+        ):
         """Return pairs of worm centers that are deemed adjacent by distance
 
         i - i-centers of worms
@@ -552,29 +590,31 @@ degrees.
         Returns two vectors giving the indices of the first and second
         centers that are connected.
         """
-        if len(i) < 2:
-            return numpy.zeros(len(i), int), numpy.zeros(len(i), int)
-        if self.wants_automatic_distance:
-            space_distance = self.worm_width.value
+        if len(i_center) < 2:
+            return numpy.zeros(len(i_center), int), numpy.zeros(len(i_center), int)
+        if wants_automatic_distance:
+            assert worm_width is not None and worm_length is not None, "worm_width and worm_length must be provided if wants_automatic_distance is True"
+            space_distance = worm_width
             angle_distance = numpy.arctan2(
-                self.worm_width.value, self.worm_length.value
+                worm_width, worm_length
             )
-            angle_distance += numpy.pi / self.angle_count.value
+            angle_distance += numpy.pi / angle_count
         else:
-            space_distance = self.space_distance.value
-            angle_distance = self.angular_distance.value * numpy.pi / 180
+            assert space_distance is not None and angular_distance is not None, "space_distance and angular_distance must be provided if wants_automatic_distance is False"
+            space_distance = space_distance
+            angle_distance = angular_distance * numpy.pi / 180
         #
         # Sort by i and break the sorted vector into chunks where
         # consecutive locations are separated by more than space_distance
         #
-        order = numpy.lexsort((a, j, i))
-        i = i[order]
-        j = j[order]
-        a = a[order]
-        breakpoint = numpy.hstack(([False], i[1:] - i[:-1] > space_distance))
+        order = numpy.lexsort((angular_orientation, j_center, i_center))
+        i_center = i_center[order]
+        j_center = j_center[order]
+        angular_orientation = angular_orientation[order]
+        breakpoint = numpy.hstack(([False], i_center[1:] - i_center[:-1] > space_distance))
         if numpy.all(~breakpoint):
             # No easy win - cross all with all
-            first, second = numpy.mgrid[0 : len(i), 0 : len(i)]
+            first, second = numpy.mgrid[0 : len(i_center), 0 : len(i_center)]
         else:
             # The segment that each belongs to
             segment_number = numpy.cumsum(breakpoint)
@@ -603,12 +643,12 @@ degrees.
                 numpy.arange(len(first)) - first_start_idx[first] + segment_start[first]
             )
         mask = (
-            numpy.abs((i[first] - i[second]) ** 2 + (j[first] - j[second]) ** 2)
+            numpy.abs((i_center[first] - i_center[second]) ** 2 + (j_center[first] - j_center[second]) ** 2)
             <= space_distance ** 2
         ) & (
-            (numpy.abs(a[first] - a[second]) <= angle_distance)
-            | (a[first] + numpy.pi - a[second] <= angle_distance)
-            | (a[second] + numpy.pi - a[first] <= angle_distance)
+            (numpy.abs(angular_orientation[first] - angular_orientation[second]) <= angle_distance)
+            | (angular_orientation[first] + numpy.pi - angular_orientation[second] <= angle_distance)
+            | (angular_orientation[second] + numpy.pi - angular_orientation[first] <= angle_distance)
         )
         return order[first[mask]], order[second[mask]]
 

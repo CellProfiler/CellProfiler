@@ -14,6 +14,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod
 
 
 def test_load_v2():
@@ -29,23 +30,23 @@ def test_load_v2():
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
     ops = [
-        cellprofiler.modules.morph.F_BRANCHPOINTS,
-        cellprofiler.modules.morph.F_BRIDGE,
-        cellprofiler.modules.morph.F_CLEAN,
-        cellprofiler.modules.morph.F_CONVEX_HULL,
-        cellprofiler.modules.morph.F_DIAG,
-        cellprofiler.modules.morph.F_DISTANCE,
-        cellprofiler.modules.morph.F_ENDPOINTS,
-        cellprofiler.modules.morph.F_FILL,
-        cellprofiler.modules.morph.F_HBREAK,
-        cellprofiler.modules.morph.F_MAJORITY,
-        cellprofiler.modules.morph.F_REMOVE,
-        cellprofiler.modules.morph.F_SHRINK,
-        cellprofiler.modules.morph.F_SKELPE,
-        cellprofiler.modules.morph.F_SPUR,
-        cellprofiler.modules.morph.F_THICKEN,
-        cellprofiler.modules.morph.F_THIN,
-        cellprofiler.modules.morph.F_VBREAK,
+        MorphFunction.BRANCHPOINTS.value,
+        MorphFunction.BRIDGE.value,
+        MorphFunction.CLEAN.value,
+        MorphFunction.CONVEX_HULL.value,
+        MorphFunction.DIAG.value,
+        MorphFunction.DISTANCE.value,
+        MorphFunction.ENDPOINTS.value,
+        MorphFunction.FILL.value,
+        MorphFunction.HBREAK.value,
+        MorphFunction.MAJORITY.value,
+        MorphFunction.REMOVE.value,
+        MorphFunction.SHRINK.value,
+        MorphFunction.SKELPE.value,
+        MorphFunction.SPUR.value,
+        MorphFunction.THICKEN.value,
+        MorphFunction.THIN.value,
+        MorphFunction.VBREAK.value,
     ]
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
@@ -83,11 +84,11 @@ def execute(image, function, mask=None, custom_repeats=None, scale=None, module=
     module.image_name.value = INPUT_IMAGE_NAME
     module.output_image_name.value = OUTPUT_IMAGE_NAME
     if custom_repeats is None:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_ONCE
+        module.functions[0].repeats_choice.value = RepeatMethod.ONCE.value
     elif custom_repeats == -1:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_FOREVER
+        module.functions[0].repeats_choice.value = RepeatMethod.FOREVER.value
     else:
-        module.functions[0].repeats_choice.value = cellprofiler.modules.morph.R_CUSTOM
+        module.functions[0].repeats_choice.value = RepeatMethod.CUSTOM.value
         module.functions[0].custom_repeats.value = custom_repeats
     if scale is not None:
         module.functions[0].scale.value = scale
@@ -128,59 +129,59 @@ def binary_tteesstt(
 
 
 def test_binary_branchpoints():
-    binary_tteesstt("branchpoints", centrosome.cpmorphology.branchpoints)
+    binary_tteesstt(MorphFunction.BRANCHPOINTS.value, centrosome.cpmorphology.branchpoints)
 
 
 def test_binary_bridge():
-    binary_tteesstt("bridge", centrosome.cpmorphology.bridge)
+    binary_tteesstt(MorphFunction.BRIDGE.value, centrosome.cpmorphology.bridge)
 
 
 def test_binary_clean():
-    binary_tteesstt("clean", centrosome.cpmorphology.clean)
+    binary_tteesstt(MorphFunction.CLEAN.value, centrosome.cpmorphology.clean)
 
 
 def test_binary_diag():
-    binary_tteesstt("diag", centrosome.cpmorphology.diag)
+    binary_tteesstt(MorphFunction.DIAG.value, centrosome.cpmorphology.diag)
 
 
 def test_binary_endpoints():
-    binary_tteesstt("endpoints", centrosome.cpmorphology.endpoints)
+    binary_tteesstt(MorphFunction.ENDPOINTS.value, centrosome.cpmorphology.endpoints)
 
 
 def test_binary_fill():
-    binary_tteesstt("fill", centrosome.cpmorphology.fill)
+    binary_tteesstt(MorphFunction.FILL.value, centrosome.cpmorphology.fill)
 
 
 def test_binary_hbreak():
-    binary_tteesstt("hbreak", centrosome.cpmorphology.hbreak)
+    binary_tteesstt(MorphFunction.HBREAK.value, centrosome.cpmorphology.hbreak)
 
 
 def test_binary_majority():
-    binary_tteesstt("majority", centrosome.cpmorphology.majority)
+    binary_tteesstt(MorphFunction.MAJORITY.value, centrosome.cpmorphology.majority)
 
 
 def test_binary_remove():
-    binary_tteesstt("remove", centrosome.cpmorphology.remove)
+    binary_tteesstt(MorphFunction.REMOVE.value, centrosome.cpmorphology.remove)
 
 
 def test_binary_shrink():
-    binary_tteesstt("shrink", lambda x: centrosome.cpmorphology.binary_shrink(x, 1))
+    binary_tteesstt(MorphFunction.SHRINK.value, lambda x: centrosome.cpmorphology.binary_shrink(x, 1))
 
 
 def test_binary_spur():
-    binary_tteesstt("spur", centrosome.cpmorphology.spur)
+    binary_tteesstt(MorphFunction.SPUR.value, centrosome.cpmorphology.spur)
 
 
 def test_binary_thicken():
-    binary_tteesstt("thicken", centrosome.cpmorphology.thicken)
+    binary_tteesstt(MorphFunction.THICKEN.value, centrosome.cpmorphology.thicken)
 
 
 def test_binary_thin():
-    binary_tteesstt("thin", centrosome.cpmorphology.thin)
+    binary_tteesstt(MorphFunction.THIN.value, centrosome.cpmorphology.thin)
 
 
 def test_binary_vbreak():
-    binary_tteesstt("vbreak", centrosome.cpmorphology.vbreak)
+    binary_tteesstt(MorphFunction.VBREAK.value, centrosome.cpmorphology.vbreak)
 
 
 def test_binary_distance():
@@ -191,7 +192,7 @@ def test_binary_distance():
         else:
             return y / numpy.max(y)
 
-    binary_tteesstt("distance", distance, True)
+    binary_tteesstt(MorphFunction.DISTANCE.value, distance, True)
 
 
 def test_binary_convex_hull():

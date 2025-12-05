@@ -267,54 +267,9 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer
 
 from cellprofiler_library.modules._morph import apply_morphological_operations
-from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod
+from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod, F_ALL, R_ALL
 
 LOGGER = logging.getLogger(__name__)
-
-# Use enum values for backward compatibility
-F_BRANCHPOINTS = MorphFunction.BRANCHPOINTS
-F_BRIDGE = MorphFunction.BRIDGE
-F_CLEAN = MorphFunction.CLEAN
-F_CONVEX_HULL = MorphFunction.CONVEX_HULL
-F_DIAG = MorphFunction.DIAG
-F_DISTANCE = MorphFunction.DISTANCE
-F_ENDPOINTS = MorphFunction.ENDPOINTS
-F_FILL = MorphFunction.FILL
-F_HBREAK = MorphFunction.HBREAK
-F_MAJORITY = MorphFunction.MAJORITY
-F_OPENLINES = MorphFunction.OPENLINES
-F_REMOVE = MorphFunction.REMOVE
-F_SHRINK = MorphFunction.SHRINK
-F_SKELPE = MorphFunction.SKELPE
-F_SPUR = MorphFunction.SPUR
-F_THICKEN = MorphFunction.THICKEN
-F_THIN = MorphFunction.THIN
-F_VBREAK = MorphFunction.VBREAK
-F_ALL = [
-    F_BRANCHPOINTS,
-    F_BRIDGE,
-    F_CLEAN,
-    F_CONVEX_HULL,
-    F_DIAG,
-    F_DISTANCE,
-    F_ENDPOINTS,
-    F_FILL,
-    F_HBREAK,
-    F_MAJORITY,
-    F_OPENLINES,
-    F_REMOVE,
-    F_SHRINK,
-    F_SKELPE,
-    F_SPUR,
-    F_THICKEN,
-    F_THIN,
-    F_VBREAK,
-]
-
-R_ONCE = RepeatMethod.ONCE
-R_FOREVER = RepeatMethod.FOREVER
-R_CUSTOM = RepeatMethod.CUSTOM
-R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
@@ -387,11 +342,17 @@ Enter the number of times to repeat the operation."""
 This setting controls the number of times that the same operation is
 applied successively to the image.
 
--  *%(R_ONCE)s:* Perform the operation once on the image.
--  *%(R_FOREVER)s:* Perform the operation on the image until successive
+-  *{R_ONCE}:* Perform the operation once on the image.
+-  *{R_FOREVER}:* Perform the operation on the image until successive
    iterations yield the same image.
--  *%(R_CUSTOM)s:* Perform the operation a custom number of times."""
-                % globals(),
+-  *{R_CUSTOM}:* Perform the operation a custom number of times.
+""".format(
+    **{
+        "R_ONCE": RepeatMethod.ONCE.value, 
+        "R_FOREVER": RepeatMethod.FOREVER.value, 
+        "R_CUSTOM": RepeatMethod.CUSTOM.value
+      }
+),
             ),
         )
 
@@ -406,7 +367,7 @@ applied successively to the image.
                 "Rescale values from 0 to 1?",
                 True,
                 doc="""\
-*(Used only for the "%(F_DISTANCE)s" operation).*
+*(Used only for the "{F_DISTANCE}" operation).*
 
 Select "*Yes*" to rescale the transformed values to lie between 0 and
 1. This is the option to use if the distance transformed image is to be
@@ -415,8 +376,8 @@ assumes a 0-1 scaling.
 
 Select "*No*" to leave the values in absolute pixel units. This useful
 in cases where the actual pixel distances are to be used downstream as
-input for a measurement module."""
-                % globals(),
+input for a measurement module.
+""".format(**{"F_DISTANCE": MorphFunction.DISTANCE.value}),
             ),
         )
 
@@ -454,15 +415,15 @@ input for a measurement module."""
             if function.can_remove:
                 result.append(function.divider)
             result.append(function.function)
-            if function.function == F_DISTANCE:
+            if function.function == MorphFunction.DISTANCE.value:
                 result.append(function.rescale_values)
-            elif function.function == F_OPENLINES:
+            elif function.function == MorphFunction.OPENLINES.value:
                 function.custom_repeats.text = "Line length"
                 function.custom_repeats.doc = (
                     """Only keep lines that have this many pixels or more."""
                 )
                 result.append(function.custom_repeats)
-            elif function.repeats_choice != R_CUSTOM:
+            elif function.repeats_choice != RepeatMethod.CUSTOM.value:
                 result.append(function.repeats_choice)
             else:
                 result.append(function.repeats_choice)
@@ -602,11 +563,11 @@ class MorphSettingsGroup(SettingsGroup):
     @property
     def repeat_count(self):
         """"""  # of times to repeat'''
-        if self.repeats_choice.value == R_ONCE:
+        if self.repeats_choice.value == RepeatMethod.ONCE.value:
             return 1
-        elif self.repeats_choice.value == R_FOREVER:
+        elif self.repeats_choice.value == RepeatMethod.FOREVER.value:
             return 10000
-        elif self.repeats_choice.value == R_CUSTOM:
+        elif self.repeats_choice.value == RepeatMethod.CUSTOM.value:
             return self.custom_repeats.value
         else:
             raise ValueError(

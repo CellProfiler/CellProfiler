@@ -1,4 +1,3 @@
-from tkinter import Image
 import numpy
 import skimage.color
 import skimage.morphology
@@ -18,6 +17,7 @@ from cellprofiler_library.opts.structuring_elements import StructuringElementSha
 from ..opts.morph import RepeatMethod
 
 T = TypeVar("T", bound=ImageAny)
+MorphImageT = TypeVar("Union[ImageGrayscale, ImageGrayscaleMask]", bound=Union[ImageGrayscale, ImageGrayscaleMask])
 
 def rgb_to_greyscale(image):
     if image.shape[-1] == 4:
@@ -1138,9 +1138,9 @@ def suppress(
 
 
 def apply_branchpoints(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
-        ) -> ImageGrayscale:
+        ) -> MorphImageT:
     """Apply branchpoints morphological operation.
     
     Removes all pixels except those that are the branchpoints of a skeleton.
@@ -1149,10 +1149,10 @@ def apply_branchpoints(
     return centrosome.cpmorphology.branchpoints(pixel_data, mask)
 
 def apply_bridge(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
-        ) -> ImageGrayscale:
+        ) -> MorphImageT:
     """Apply bridge morphological operation.
     
     Sets a pixel to 1 if it has two non-zero neighbors that are on
@@ -1161,7 +1161,7 @@ def apply_bridge(
     return centrosome.cpmorphology.bridge(pixel_data, mask, count)
 
 def apply_clean(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1172,7 +1172,7 @@ def apply_clean(
     return centrosome.cpmorphology.clean(pixel_data, mask, count)
 
 def apply_convex_hull(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         ) -> ImageGrayscale:
     """Apply convex hull morphological operation.
@@ -1185,7 +1185,7 @@ def apply_convex_hull(
         return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
 
 def apply_diag(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1197,7 +1197,7 @@ def apply_diag(
     return centrosome.cpmorphology.diag(pixel_data, mask, count)
 
 def apply_distance(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         rescale_values: bool,
         ) -> ImageGrayscale:
     """Apply distance transform morphological operation.
@@ -1210,7 +1210,7 @@ def apply_distance(
     return image
 
 def apply_endpoints(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         ) -> ImageGrayscale:
     """Apply endpoints morphological operation.
@@ -1220,7 +1220,7 @@ def apply_endpoints(
     return centrosome.cpmorphology.endpoints(pixel_data, mask)
 
 def apply_fill(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1231,7 +1231,7 @@ def apply_fill(
     return centrosome.cpmorphology.fill(pixel_data, mask, count)
 
 def apply_hbreak(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1242,7 +1242,7 @@ def apply_hbreak(
     return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
 
 def apply_majority(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1253,7 +1253,7 @@ def apply_majority(
     return centrosome.cpmorphology.majority(pixel_data, mask, count)
 
 def apply_openlines(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         linelength: int,
         ) -> ImageGrayscale:
@@ -1265,7 +1265,7 @@ def apply_openlines(
     return centrosome.cpmorphology.openlines(pixel_data, linelength=linelength, mask=mask)
 
 def apply_remove(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1276,7 +1276,7 @@ def apply_remove(
     return centrosome.cpmorphology.remove(pixel_data, mask, count)
 
 def apply_shrink(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         count: int,
         ) -> ImageGrayscale:
     """Apply shrink morphological operation.
@@ -1287,7 +1287,7 @@ def apply_shrink(
     return centrosome.cpmorphology.binary_shrink(pixel_data, count)
 
 def apply_skelpe(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         ) -> ImageGrayscale:
     """Apply skelpe morphological operation.
@@ -1303,7 +1303,7 @@ def apply_skelpe(
     )
 
 def apply_spur(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1314,7 +1314,7 @@ def apply_spur(
     return centrosome.cpmorphology.spur(pixel_data, mask, count)
 
 def apply_thicken(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1326,7 +1326,7 @@ def apply_thicken(
     return centrosome.cpmorphology.thicken(pixel_data, mask, count)
 
 def apply_thin(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         count: int,
         ) -> ImageGrayscale:
@@ -1337,7 +1337,7 @@ def apply_thin(
     return centrosome.cpmorphology.thin(pixel_data, mask, count)
 
 def apply_vbreak(
-        pixel_data: Union[ImageGrayscale, ImageGrayscaleMask],
+        pixel_data: MorphImageT,
         mask: Optional[ImageGrayscaleMask],
         ) -> ImageGrayscale:
     """Apply vbreak morphological operation.

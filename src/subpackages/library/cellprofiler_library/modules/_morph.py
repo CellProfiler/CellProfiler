@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated, Optional, Union, List, Dict, Any
+from typing import Annotated, Optional, Union, List, Dict, Any, TypeVar
 from pydantic import validate_call, Field, ConfigDict
 
 from ..opts.morph import MorphFunction, RepeatMethod
@@ -22,20 +22,20 @@ from ..functions.image_processing import (
     apply_thicken,
     apply_thin,
     apply_vbreak,
+    MorphImageT
 )
 from ..types import ImageGrayscale, ImageGrayscaleMask
 
 LOGGER = logging.getLogger(__name__)
 
-
 def morph_operation(
-        pixel_data:     Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
+        pixel_data:     Annotated[MorphImageT, Field(description="Image array supporting binary, integer, or float types")],
         mask:           Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")],
         function_name:  Annotated[MorphFunction, Field(description="Morphological operation to perform")],
         repeat_count:   Annotated[int, Field(description="Number of times to repeat the operation", ge=1)],
         custom_repeats: Annotated[int, Field(description="Custom repeat value for specific operations", ge=1)],
         rescale_values: Annotated[bool, Field(description="Whether to rescale distance values from 0 to 1")],
-        ) -> ImageGrayscale:
+        ) -> MorphImageT:
     """Apply a morphological operation to the image, routing to appropriate function from functions layer."""
     count = repeat_count
 
@@ -115,10 +115,10 @@ def morph_operation(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_morphological_operations(
-        pixel_data:         Annotated[Union[ImageGrayscale, ImageGrayscaleMask], Field(description="Image array supporting binary, integer, or float types")],
+        pixel_data:         Annotated[MorphImageT, Field(description="Image array supporting binary, integer, or float types")],
         mask:               Annotated[Optional[ImageGrayscaleMask], Field(description="Optional boolean mask array")] = None,
         operations_list:    Annotated[List[Dict[str, Any]], Field(description="List of morphological operations to apply sequentially")] = [],
-        ) -> ImageGrayscale:
+        ) -> MorphImageT:
     """Apply a sequence of morphological operations to the image.
     
     Args:

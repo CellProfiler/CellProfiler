@@ -12,8 +12,9 @@ from cellprofiler_library.types import ImageAny, StructuringElement
 from cellprofiler_library.functions.image_processing import morphology_dilation, get_structuring_element
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
-StructuringElementSizeType = Annotated[int, Field(description="Size of structuring element", gt=0)]
-StructuringElementParameters = Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], StructuringElementSizeType]
+StructuringElementSize = Annotated[int, Field(description="Size of structuring element", gt=0)]
+StructuringElementParameters = Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], StructuringElementSize]
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def dilate_image(
     image: Annotated[ImageAny, Field(description="Input image to perform dilation on")],

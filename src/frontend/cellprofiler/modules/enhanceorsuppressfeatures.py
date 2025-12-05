@@ -20,13 +20,6 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.filter
-import numpy
-import scipy.ndimage
-import skimage.exposure
-import skimage.filters
-import skimage.morphology
-import skimage.transform
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import Binary

@@ -6,17 +6,20 @@ DilateObjects module for the CellProfiler library.
 This module contains the core algorithms for object dilation operations.
 """
 
-from pydantic import validate_call, ConfigDict
-from typing import Union, Tuple
+from pydantic import validate_call, ConfigDict, Field
+from typing import Union, Tuple, Annotated
 from cellprofiler_library.types import StructuringElement, ObjectSegmentation
 from cellprofiler_library.functions.object_processing import dilate_objects_with_structuring_element
 from cellprofiler_library.functions.image_processing import get_structuring_element
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 
+StructuringElementSize = Annotated[int, Field(description="Size of structuring element", gt=0)]
+StructuringElementParameters = Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], StructuringElementSize]
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def dilate_objects(
-    labels: ObjectSegmentation,
-    structuring_element: Union[StructuringElement, Tuple[Union[StructuringElementShape2D, StructuringElementShape3D], int]]
+    labels: Annotated[ObjectSegmentation, Field(description="Input object segmentations")],
+    structuring_element: Annotated[Union[StructuringElement, StructuringElementParameters], Field(description="Structuring element for dilation operation as either an NDArray or a tuple of (StructuringElement[N]D, size)")],
 ) -> ObjectSegmentation:
     """Dilate objects based on the structuring element provided.
     

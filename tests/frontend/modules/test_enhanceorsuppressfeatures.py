@@ -20,6 +20,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 
 import tests.frontend
+from cellprofiler_library.opts.enhanceorsuppressfeatures import OperationMethod, EnhanceMethod, NeuriteMethod, SpeckleAccuracy
 
 
 @pytest.fixture(scope="function")
@@ -59,9 +60,9 @@ def workspace(image, module):
 def test_enhance_zero(image, module, workspace):
     image.pixel_data = numpy.zeros((10, 10))
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Speckles"
+    module.enhance_method.value = EnhanceMethod.SPECKLES.value
 
     module.run(workspace)
 
@@ -75,7 +76,7 @@ def test_enhance_zero(image, module, workspace):
 def test_suppress_zero(image, module, workspace):
     image.pixel_data = numpy.zeros((10, 10))
 
-    module.method.value = "Suppress"
+    module.method.value = OperationMethod.SUPPRESS.value
 
     module.object_size.value = 10
 
@@ -88,7 +89,7 @@ def test_suppress_zero(image, module, workspace):
     assert numpy.all(actual == 0)
 
 
-@pytest.fixture(params=["Slow", "Fast"], scope="function")
+@pytest.fixture(params=[SpeckleAccuracy.SLOW.value, SpeckleAccuracy.FAST.value], scope="function")
 def accuracy(request):
     return request.param
 
@@ -110,9 +111,9 @@ def test_enhance(accuracy, image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Speckles"
+    module.enhance_method.value = EnhanceMethod.SPECKLES.value
 
     module.speckle_accuracy.value = accuracy
 
@@ -146,9 +147,9 @@ def test_enhance_volume(accuracy, image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Speckles"
+    module.enhance_method.value = EnhanceMethod.SPECKLES.value
 
     module.speckle_accuracy.value = accuracy
 
@@ -184,9 +185,9 @@ def test_enhance_masked(accuracy, image, module, workspace):
 
     image.mask = mask
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Speckles"
+    module.enhance_method.value = EnhanceMethod.SPECKLES.value
 
     module.speckle_accuracy.value = accuracy
 
@@ -224,9 +225,9 @@ def test_enhance_masked_volume(accuracy, image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Speckles"
+    module.enhance_method.value = EnhanceMethod.SPECKLES.value
 
     module.speckle_accuracy.value = accuracy
 
@@ -258,7 +259,7 @@ def test_suppress(image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Suppress"
+    module.method.value = OperationMethod.SUPPRESS.value
 
     module.object_size.value = 14
 
@@ -290,7 +291,7 @@ def test_suppress_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Suppress"
+    module.method.value = OperationMethod.SUPPRESS.value
 
     module.object_size.value = 14
 
@@ -324,7 +325,7 @@ def test_suppress_masked(image, module, workspace):
 
     image.mask = mask
 
-    module.method.value = "Suppress"
+    module.method.value = OperationMethod.SUPPRESS.value
 
     module.object_size.value = 14
 
@@ -360,7 +361,7 @@ def test_suppress_masked_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Suppress"
+    module.method.value = OperationMethod.SUPPRESS.value
 
     module.object_size.value = 14
 
@@ -384,11 +385,11 @@ def test_enhance_neurites_gradient(image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Line structures"
+    module.neurite_choice.value = NeuriteMethod.GRADIENT.value
 
     module.object_size.value = 8
 
@@ -418,11 +419,11 @@ def test_enhance_neurites_gradient_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Line structures"
+    module.neurite_choice.value = NeuriteMethod.GRADIENT.value
 
     module.object_size.value = 8
 
@@ -446,11 +447,11 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Tubeness"
+    module.neurite_choice.value = NeuriteMethod.TUBENESS.value
 
     module.smoothing.value = 1.0
 
@@ -482,11 +483,11 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Tubeness"
+    module.neurite_choice.value = NeuriteMethod.TUBENESS.value
 
     module.smoothing.value = 1.0
 
@@ -520,11 +521,11 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Tubeness"
+    module.neurite_choice.value = NeuriteMethod.TUBENESS.value
 
     module.smoothing.value = 1.0
 
@@ -561,11 +562,11 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Neurites"
+    module.enhance_method.value = EnhanceMethod.NEURITES.value
 
-    module.neurite_choice.value = "Tubeness"
+    module.neurite_choice.value = NeuriteMethod.TUBENESS.value
 
     module.smoothing.value = 1.0
 
@@ -600,9 +601,9 @@ def test_enhance_circles(image, module, workspace):
 
     image.pixel_data = circle
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Circles"
+    module.enhance_method.value = EnhanceMethod.CIRCLES.value
 
     module.object_size.value = 12
 
@@ -634,9 +635,9 @@ def test_enhance_circles_masked(image, module, workspace):
 
     image.mask = mask
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Circles"
+    module.enhance_method.value = EnhanceMethod.CIRCLES.value
 
     module.object_size.value = 12
 
@@ -660,9 +661,9 @@ def test_enhance_circles_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Circles"
+    module.enhance_method.value = EnhanceMethod.CIRCLES.value
 
     module.object_size.value = 12
 
@@ -701,10 +702,10 @@ def test_enhance_circles_masked_volume(image, module, workspace):
 
     image.dimensions = 3
 
-    module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    module.method.value = OperationMethod.ENHANCE.value
 
     module.enhance_method.value = (
-        cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
+        EnhanceMethod.CIRCLES.value
     )
 
     module.object_size.value = 12
@@ -738,9 +739,9 @@ def test_enhance_texture(image, module, workspace):
 
     sigma = 2.1
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Texture"
+    module.enhance_method.value = EnhanceMethod.TEXTURE.value
 
     module.smoothing.value = sigma
 
@@ -778,9 +779,9 @@ def test_enhance_texture_masked(image, module, workspace):
 
     sigma = 2.1
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Texture"
+    module.enhance_method.value = EnhanceMethod.TEXTURE.value
 
     module.smoothing.value = sigma
 
@@ -823,9 +824,9 @@ def test_enhance_texture_volume(image, module, workspace):
 
     sigma = 2.1
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Texture"
+    module.enhance_method.value = EnhanceMethod.TEXTURE.value
 
     module.smoothing.value = sigma
 
@@ -865,9 +866,9 @@ def test_enhance_texture_masked_volume(image, module, workspace):
 
     sigma = 2.1
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "Texture"
+    module.enhance_method.value = EnhanceMethod.TEXTURE.value
 
     module.smoothing.value = sigma
 
@@ -906,9 +907,9 @@ def test_enhance_dic(image, module, workspace):
 
     image.pixel_data = data
 
-    module.method.value = "Enhance"
+    module.method.value = OperationMethod.ENHANCE.value
 
-    module.enhance_method.value = "DIC"
+    module.enhance_method.value = EnhanceMethod.DIC.value
 
     module.angle.value = 90
 
@@ -979,45 +980,45 @@ def test_load_v2():
             (
                 "Initial",
                 "EnhancedSpeckles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                OperationMethod.ENHANCE.value,
                 11,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES,
+                EnhanceMethod.SPECKLES.value,
                 1,
                 10,
             ),
             (
                 "EnhancedSpeckles",
                 "EnhancedNeurites",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                OperationMethod.ENHANCE.value,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES,
+                EnhanceMethod.NEURITES.value,
                 1,
                 10,
             ),
             (
                 "EnhancedNeurites",
                 "EnhancedDarkHoles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                OperationMethod.ENHANCE.value,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_DARK_HOLES,
+                EnhanceMethod.DARK_HOLES.value,
                 4,
                 11,
             ),
             (
                 "EnhancedDarkHoles",
                 "EnhancedCircles",
-                cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE,
+                OperationMethod.ENHANCE.value,
                 9,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                EnhanceMethod.CIRCLES.value,
                 4,
                 11,
             ),
             (
                 "EnhancedCircles",
                 "Suppressed",
-                cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS,
+                OperationMethod.SUPPRESS.value,
                 13,
-                cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES,
+                EnhanceMethod.CIRCLES.value,
                 4,
                 11,
             ),
@@ -1058,10 +1059,10 @@ def test_load_v3():
     )
     assert module.x_name == "DNA"
     assert module.y_name == "EnhancedTexture"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == OperationMethod.ENHANCE.value
     assert (
         module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+        == EnhanceMethod.TEXTURE.value
     )
     assert module.smoothing == 3.5
     assert module.object_size == 10
@@ -1070,14 +1071,14 @@ def test_load_v3():
     assert module.angle == 45
     assert module.decay == 0.9
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        module.speckle_accuracy == SpeckleAccuracy.SLOW.value
     )
 
     module = pipeline.modules()[1]
     assert isinstance(
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
-    assert module.enhance_method == cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
+    assert module.enhance_method == EnhanceMethod.DIC.value
 
 
 def test_load_v4():
@@ -1101,10 +1102,10 @@ def test_load_v4():
     )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == OperationMethod.ENHANCE.value
     assert (
         module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+        == EnhanceMethod.NEURITES.value
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1114,7 +1115,7 @@ def test_load_v4():
     assert module.decay == 0.95
     assert (
         module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+        == NeuriteMethod.TUBENESS.value
     )
 
     module = pipeline.modules()[1]
@@ -1123,7 +1124,7 @@ def test_load_v4():
     )
     assert (
         module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+        == NeuriteMethod.GRADIENT.value
     )
 
 
@@ -1148,10 +1149,10 @@ def test_load_v5():
     )
     assert module.x_name == "Dendrite"
     assert module.y_name == "EnhancedDendrite"
-    assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+    assert module.method == OperationMethod.ENHANCE.value
     assert (
         module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+        == EnhanceMethod.NEURITES.value
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1161,11 +1162,11 @@ def test_load_v5():
     assert module.decay == 0.95
     assert (
         module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+        == NeuriteMethod.TUBENESS.value
     )
     assert (
         module.speckle_accuracy.value
-        == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        == SpeckleAccuracy.SLOW.value
     )
 
     module = pipeline.modules()[1]
@@ -1173,5 +1174,5 @@ def test_load_v5():
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+        module.speckle_accuracy == SpeckleAccuracy.FAST.value
     )

@@ -499,76 +499,6 @@ degrees.
         strel = binary_fill_holes(strel)
         return strel
 
-    @staticmethod
-    def find_adjacent(img1, offset1, count1, img2, offset2, count2, first, second):
-        """Find adjacent pairs of points between two masks
-
-        img1, img2 - binary images to be 8-connected
-        offset1 - number the foreground points in img1 starting at this offset
-        count1 - number of foreground points in img1
-        offset2 - number the foreground points in img2 starting at this offset
-        count2 - number of foreground points in img2
-        first, second - prior collection of points
-
-        returns augmented collection of points
-        """
-        numbering1 = numpy.zeros(img1.shape, int)
-        numbering1[img1] = numpy.arange(count1) + offset1
-        numbering2 = numpy.zeros(img1.shape, int)
-        numbering2[img2] = numpy.arange(count2) + offset2
-
-        f = numpy.zeros(0, int)
-        s = numpy.zeros(0, int)
-        #
-        # Do all 9
-        #
-        for oi in (-1, 0, 1):
-            for oj in (-1, 0, 1):
-                f1, s1 = IdentifyDeadWorms.find_adjacent_one(
-                    img1, numbering1, img2, numbering2, oi, oj
-                )
-                f = numpy.hstack((f, f1))
-                s = numpy.hstack((s, s1))
-        return numpy.hstack((first, f)), numpy.hstack((second, s))
-
-    @staticmethod
-    def find_adjacent_same(img, offset, count, first, second):
-        """Find adjacent pairs of points in the same mask
-        img - binary image to be 8-connected
-        offset - where to start numbering
-        count - number of foreground points in image
-        first, second - prior collection of points
-
-        returns augmented collection of points
-        """
-        numbering = numpy.zeros(img.shape, int)
-        numbering[img] = numpy.arange(count) + offset
-        f = numpy.zeros(0, int)
-        s = numpy.zeros(0, int)
-        for oi in (0, 1):
-            for oj in (0, 1):
-                f1, s1 = IdentifyDeadWorms.find_adjacent_one(
-                    img, numbering, img, numbering, oi, oj
-                )
-                f = numpy.hstack((f, f1))
-                s = numpy.hstack((s, s1))
-        return numpy.hstack((first, f)), numpy.hstack((second, s))
-
-    @staticmethod
-    def find_adjacent_one(img1, numbering1, img2, numbering2, oi, oj):
-        """Find correlated pairs of foreground points at given offsets
-
-        img1, img2 - binary images to be correlated
-        numbering1, numbering2 - indexes to be returned for pairs
-        oi, oj - offset for second image
-
-        returns two vectors: index in first and index in second
-        """
-        i1, i2 = IdentifyDeadWorms.get_slices(oi)
-        j1, j2 = IdentifyDeadWorms.get_slices(oj)
-        match = img1[i1, j1] & img2[i2, j2]
-        return numbering1[i1, j1][match], numbering2[i2, j2][match]
-    
     def find_adjacent_by_distance(
             self, 
             i_center, 
@@ -651,25 +581,6 @@ degrees.
             | (angular_orientation[second] + numpy.pi - angular_orientation[first] <= angle_distance)
         )
         return order[first[mask]], order[second[mask]]
-
-    @staticmethod
-    def get_slices(offset):
-        """Get slices to use for a pair of arrays, given an offset
-
-        offset - offset to be applied to the second array
-
-        An offset imposes border conditions on an array, for instance,
-        an offset of 1 means that the first array has a slice of :-1
-        and the second has a slice of 1:. Return the slice to use
-        for the first and second arrays.
-        """
-        if offset > 0:
-            s0, s1 = slice(0, -offset), slice(offset, numpy.iinfo(int).max)
-        elif offset < 0:
-            s1, s0 = IdentifyDeadWorms.get_slices(-offset)
-        else:
-            s0 = s1 = slice(0, numpy.iinfo(int).max)
-        return s0, s1
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""

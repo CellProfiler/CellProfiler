@@ -63,16 +63,17 @@ from ..setting.do_something import DoSomething, RemoveSettingButton
 from ..setting.subscriber import ImageSubscriber
 from ..setting.text import ImageName
 
-M_MUTUAL_INFORMATION = "Mutual Information"
-M_CROSS_CORRELATION = "Normalized Cross Correlation"
-M_ALL = (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION)
+from cellprofiler_library.opts.align import AlignmentMethod, CropMode, AdditionalAlignmentChoice, MEASUREMENT_FORMAT, M_ALL, C_ALIGN
+# AlignmentMehod.MUTUAL_INFORMAtTION.value = "Mutual Information"
+# AlignmentMethod.CROSS_CORRELATION.value = "Normalized Cross Correlation"
+# M_ALL = (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value)
 
-A_SIMILARLY = "Similarly"
-A_SEPARATELY = "Separately"
+# AdditionalAlignmentChoice.SIMILARLY.value = "Similarly"
+# AdditionalAlignmentChoice.SEPARATELY.value = "Separately"
 
-C_SAME_SIZE = "Keep size"
-C_CROP = "Crop to aligned region"
-C_PAD = "Pad images"
+# CropMode.SAME_SIZE.value = "Keep size"
+# CropMode.CROP.value = "Crop to aligned region"
+# CropMode.PAD.value = "Pad images"
 
 C_ALIGN = "Align"
 
@@ -143,13 +144,17 @@ Two options for the alignment method are available:
    relevant features in the images to be aligned all have varying
    degrees of brightness.
 
-"""
-                % globals(),
+""".format(
+    **{
+        "M_MUTUAL_INFORMATION": AlignmentMethod.MUTUAL_INFORMATION.value,
+        "M_CROSS_CORRELATION": AlignmentMethod.CROSS_CORRELATION.value,
+    }
+)
         )
 
         self.crop_mode = Choice(
             "Crop mode",
-            [C_CROP, C_PAD, C_SAME_SIZE],
+            [CropMode.CROP.value, CropMode.PAD.value, CropMode.SAME_SIZE.value],
             doc="""\
 The crop mode determines how the output images are either cropped or
 padded after alignment. The alignment phase calculates the areas in each
@@ -180,8 +185,13 @@ excluded from analysis. There are three choices for cropping:
    reference image could be loaded for all image sets in a group to
    align the entire group’s images similarly, then the aligned images
    could be combined in a module such as **MakeProjection**.
-   """
-                % globals(),
+   """.format(
+       **{
+           "C_CROP": CropMode.CROP.value,
+           "C_PAD": CropMode.PAD.value,
+           "C_SAME_SIZE": CropMode.SAME_SIZE.value,
+       }
+   ),
         )
 
 
@@ -216,7 +226,7 @@ excluded from analysis. There are three choices for cropping:
             "align_choice",
             Choice(
                 "Select how the alignment is to be applied",
-                [A_SIMILARLY, A_SEPARATELY],
+                [AdditionalAlignmentChoice.SIMILARLY.value, AdditionalAlignmentChoice.SEPARATELY.value],
                 doc="""\
 An additional image can either be aligned similarly to the second one or
 a separate alignment to the first image can be calculated:
@@ -226,8 +236,12 @@ a separate alignment to the first image can be calculated:
 -  *%(A_SEPARATELY)s:* A new set of alignment measurements are
    calculated for this additional image using the alignment method
    specified with respect to the first input image.
-"""
-                    % globals(),
+""".format(
+    **{
+        "A_SIMILARLY": AdditionalAlignmentChoice.SIMILARLY.value,
+        "A_SEPARATELY": AdditionalAlignmentChoice.SEPARATELY.value,
+    }
+),
             ),
         )
 
@@ -296,7 +310,7 @@ a separate alignment to the first image can be calculated:
             names.append(
                 (additional.input_image_name.value, additional.output_image_name.value)
             )
-            if additional.align_choice == A_SIMILARLY:
+            if additional.align_choice == AdditionalAlignmentChoice.SIMILARLY.value:
                 a_off_x, a_off_y = off_x, off_y
             else:
                 a_off_x, a_off_y = self.align(
@@ -406,7 +420,7 @@ a separate alignment to the first image can be calculated:
         image1_pixels = image1.pixel_data.astype(float)
         image2 = workspace.image_set.get_image(input2_name)
         image2_pixels = image2.pixel_data.astype(float)
-        if self.alignment_method == M_CROSS_CORRELATION:
+        if self.alignment_method == AlignmentMethod.CROSS_CORRELATION.value:
             return self.align_cross_correlation(image1_pixels, image2_pixels)
         else:
             image1_mask = image1.mask
@@ -657,7 +671,7 @@ a separate alignment to the first image can be calculated:
         """
         offsets = np.array(offsets)
         shapes = np.array(shapes)
-        if self.crop_mode == C_CROP:
+        if self.crop_mode == CropMode.CROP.value:
             # modify the offsets so that all are negative
             max_offset = np.max(offsets, 0)
             offsets = offsets - max_offset[np.newaxis, :]
@@ -671,7 +685,7 @@ a separate alignment to the first image can be calculated:
             shape = np.min(shapes, 0)
             shapes = np.tile(shape, len(shapes))
             shapes.shape = offsets.shape
-        elif self.crop_mode == C_PAD:
+        elif self.crop_mode == CropMode.PAD.value:
             #
             # modify the offsets so that they are all positive
             #
@@ -731,7 +745,7 @@ a separate alignment to the first image can be calculated:
             # wants_cropping changed to crop_mode
             setting_values = (
                     setting_values[:1]
-                    + [C_CROP if setting_values[1] == "Yes" else C_SAME_SIZE]
+                    + [CropMode.CROP.value if setting_values[1] == "Yes" else CropMode.SAME_SIZE.value]
                     + setting_values[2:]
             )
             variable_revision_number = 3

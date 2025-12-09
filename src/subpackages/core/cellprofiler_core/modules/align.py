@@ -306,7 +306,7 @@ a separate alignment to the first image can be calculated:
         shapes = [
             workspace.image_set.get_image(x).pixel_data.shape[:2] for x, _ in names
         ]
-        offsets, shapes = adjust_offsets(offsets, shapes, self.crop_mode)
+        offsets, shapes = adjust_offsets(offsets, shapes, self.crop_mode    .value)
 
         #
         # Align and write the measurements
@@ -405,7 +405,7 @@ a separate alignment to the first image can be calculated:
         image2_pixels = image2.pixel_data.astype(float)
         image1_mask = image1.mask
         image2_mask = image2.mask
-        return align_images(image1_pixels, image2_pixels, image1_mask, image2_mask, self.alignment_method)
+        return align_images(image1_pixels, image2_pixels, image1_mask, image2_mask, self.alignment_method.value)
 
 
     @staticmethod

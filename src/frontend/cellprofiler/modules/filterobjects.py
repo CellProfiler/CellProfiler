@@ -723,22 +723,66 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                         self.rules_file_name
                     )              
 
+
+    def get_object_labels_and_counts(self, workspace, object_name):
+        """Return the labels and counts for the given object"""
+        src_objects = workspace.get_objects(object_name)
+        src_labels = src_objects.segmented
+        src_count = src_objects.count
+        return src_labels, src_count
+    
     def run(self, workspace):
         """Filter objects for this image set, display results"""
-        src_objects = workspace.get_objects(self.x_name.value)
+        src_name = self.x_name.value
+        src_objects = workspace.get_objects(src_name)
+
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
+
         elif self.mode == MODE_MEASUREMENTS:
-            if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
-                indexes = self.keep_one(workspace, src_objects)
-            if self.filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
-                indexes = self.keep_per_object(workspace, src_objects)
-            if self.filter_choice == FI_LIMITS:
-                indexes = self.keep_within_limits(workspace, src_objects)
+            filter_choice = self.filter_choice.value
+            if filter_choice in (FI_MINIMAL, FI_MAXIMAL):
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                indexes = self.keep_one(values, filter_choice)
+
+            elif filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
+                per_object_assignment = self.per_object_assignment.value
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                src_labels, _ = self.get_object_labels_and_counts(workspace, src_name)
+                enclosing_labels, enclosing_count = self.get_object_labels_and_counts(workspace, self.enclosing_object_name.value)
+                indexes = self.keep_per_object(src_labels, enclosing_labels, enclosing_count, per_object_assignment, filter_choice, values)
+
+            elif filter_choice == FI_LIMITS:
+                limit_groups = []
+                MIN_LIM = "min_limit"
+                MAX_LIM = "max_limit"
+                VALUES = "values"
+                for group in self.measurements:
+                    measurement = group.measurement.value
+                    values = workspace.measurements.get_current_measurement(src_name, measurement)
+                    group_config = {
+                        VALUES: values,
+                        MIN_LIM: group.min_limit.value if group.wants_minimum.value else None,
+                        MAX_LIM: group.max_limit.value if group.wants_maximum.value else None,
+                    }
+                    limit_groups.append(group_config)
+
+                indexes = self.keep_within_limits(limit_groups)
+            else:
+                raise ValueError(f"Unknown filter choice: {filter_choice} for mode {self.mode.value}")
+
+
         elif self.mode == MODE_BORDER:
-            indexes = self.discard_border_objects(src_objects)
+            labels = src_objects.segmented
+            parent_image = src_objects.parent_image if src_objects.has_parent_image else None
+            parent_image_mask = src_objects.parent_image.mask if parent_image and parent_image.has_mask else None
+            indexes = self.discard_border_objects(labels, parent_image_mask)
+
         elif self.mode == MODE_CLASSIFIERS:
             indexes = self.keep_by_class(workspace, src_objects)
+
         else:
             raise ValueError("Unknown filter choice: %s" % self.mode.value)
 
@@ -752,6 +796,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
         #
         # Loop over both the primary and additional objects
+        # Note: Parent of first_set is always None
         #
         object_list = [(self.x_name.value, self.y_name.value, None)] + [
             (x.object_name.value, x.target_name.value, x.keep_unassociated_objects.value) for x in self.additional_objects
@@ -760,48 +805,24 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         first_set = True
         for src_name, target_name, keep_unassociated_objects in object_list:
             src_objects = workspace.get_objects(src_name)
-            target_labels = src_objects.segmented.copy()
 
+            #
             # Parent relation is used if it exists (use RelateObjects module)
+            # Get parent object from measurements
+            #
             parent_relation_exists = len([i for i in m.get_measurement_columns() if i[0] == src_name and i[1] == f'Parent_{self.x_name.value}']) > 0
-            #
-            # Reindex the labels of the old source image
-            #
-            if first_set or not parent_relation_exists:
-                target_labels[target_labels > max_label] = 0
-                target_labels = label_indexes[target_labels]
-            else:
-                #
-                # Get parent object from measurements
-                #
-                parent_objects = m.get_measurement(src_name, f"Parent_{self.x_name.value}")
-                
-                # Initialize target labels to keep all child objects
-                target_label_numbers = numpy.arange(1, target_labels.max() + 1)
-                
-                orphan_children = target_label_numbers[parent_objects == 0]
+            parent_objects = m.get_measurement(src_name, f"Parent_{self.x_name.value}") if parent_relation_exists else None
 
-                # label == 0 indicates parent object has to be removed
-                objects_to_remove = numpy.arange(max_label+1)[label_indexes == 0][1:] # ignore the first zero as it is the background
-                
-                # object is removed by setting its new label to zero
-                target_label_numbers = target_label_numbers*~numpy.isin(parent_objects, objects_to_remove)
-
-                new_child_object_count = sum(target_label_numbers != 0)
-
-                # orphan children get new labels. Labels are always continuous and start at 1
-                target_label_numbers[target_label_numbers != 0] = numpy.arange(1, new_child_object_count + 1)
-                
-                # Add zero for background label
-                target_label_numbers = numpy.pad(target_label_numbers, (1, 0))
-                
-                # Overwrite orphan children new labels with 0 to remove unassociated objects
-                if not keep_unassociated_objects:
-                    target_label_numbers[orphan_children] = 0
-
-                # Numpy fancy indexing to relabel
-                target_labels = target_label_numbers[target_labels]
-
+            target_objects_segmented, target_objects_unedited_segmented, target_objects_small_removed_segmented = self.get_filtered_object(
+                src_objects.segmented, 
+                src_objects.unedited_segmented, 
+                src_objects.small_removed_segmented, 
+                indexes, 
+                label_indexes,
+                max_label,
+                parent_objects,
+                keep_unassociated_objects
+            )
             
             #
             # Make a new set of objects - retain the old set's unedited
@@ -809,16 +830,10 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             # from the old to the new.
             #
             target_objects = cellprofiler_core.object.Objects()
-            target_objects.segmented = target_labels
-            target_objects.unedited_segmented = src_objects.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = src_objects.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
+            target_objects.segmented = target_objects_segmented
+            target_objects.unedited_segmented = target_objects_unedited_segmented
+            target_objects.small_removed_segmented = target_objects_small_removed_segmented
+
             if src_objects.has_parent_image:
                 target_objects.parent_image = src_objects.parent_image
             workspace.object_set.add_objects(target_objects, target_name)
@@ -867,6 +882,78 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             self.add_measurements(workspace, self.x_name.value, self.removed_objects_name.value)
             if self.show_window:
                 workspace.display_data.removed_objects_segmented = removed_objects.segmented
+
+
+    def get_filtered_object(
+            self, 
+            src_objects_segmented, 
+            src_objects_unedited_segmented, #TODO #5083: make this optional
+            src_objects_small_removed_segmented, #TODO #5083: make this optional
+            indexes, 
+            label_indexes,
+            max_label,
+            parent_objects,
+            keep_unassociated_objects
+        ):
+        
+        if label_indexes is None:   
+            new_object_count = len(indexes)
+            label_indexes = numpy.zeros((max_label + 1,), int)
+            label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+        
+        #
+        # Reindex the labels of the old source image
+        #
+        target_labels = self.reindex_labels(src_objects_segmented, max_label, label_indexes, parent_objects, keep_unassociated_objects)
+        #
+        # Make a new set of objects - retain the old set's unedited
+        # segmentation for the new and generally try to copy stuff
+        # from the old to the new.
+        #
+        target_objects_segmented = target_labels
+        target_objects_unedited_segmented = src_objects_unedited_segmented
+        #
+        # Remove the filtered objects from the small_removed_segmented
+        # if present. "small_removed_segmented" should really be
+        # "filtered_removed_segmented".
+        #
+        small_removed = src_objects_small_removed_segmented.copy()
+        small_removed[(target_labels == 0) & (src_objects_segmented != 0)] = 0
+        target_objects_small_removed_segmented = small_removed
+        return target_objects_segmented, target_objects_unedited_segmented, target_objects_small_removed_segmented
+
+    def reindex_labels(self, src_objects_segmented, max_label, label_indexes, parent_objects, keep_unassociated_objects):        
+        target_labels = src_objects_segmented.copy()
+        if parent_objects is None:
+            target_labels[target_labels > max_label] = 0
+            target_labels = label_indexes[target_labels]
+        else:
+            # Initialize target labels to keep all child objects
+            target_label_numbers = numpy.arange(1, target_labels.max() + 1)
+            
+            orphan_children = target_label_numbers[parent_objects == 0]
+
+            # label == 0 indicates parent object has to be removed
+            objects_to_remove = numpy.arange(max_label+1)[label_indexes == 0][1:] # ignore the first zero as it is the background
+            
+            # object is removed by setting its new label to zero
+            target_label_numbers = target_label_numbers*~numpy.isin(parent_objects, objects_to_remove)
+
+            new_child_object_count = sum(target_label_numbers != 0)
+
+            # orphan children get new labels. Labels are always continuous and start at 1
+            target_label_numbers[target_label_numbers != 0] = numpy.arange(1, new_child_object_count + 1)
+            
+            # Add zero for background label
+            target_label_numbers = numpy.pad(target_label_numbers, (1, 0))
+            
+            # Overwrite orphan children new labels with 0 to remove unassociated objects
+            if not keep_unassociated_objects:
+                target_label_numbers[orphan_children] = 0
+
+            # Numpy fancy indexing to relabel
+            target_labels = target_label_numbers[target_labels]
+        return target_labels
 
     def display(self, workspace, figure):
         """Display what was filtered"""
@@ -918,40 +1005,31 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             )
 
 
-    def keep_one(self, workspace, src_objects):
+    def keep_one(self, values, filter_choice):
         """Return an array containing the single object to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         """
-        measurement = self.measurements[0].measurement.value
-        src_name = self.x_name.value
-        values = workspace.measurements.get_current_measurement(src_name, measurement)
         if len(values) == 0:
             return numpy.array([], int)
         best_idx = (
             numpy.argmax(values)
-            if self.filter_choice == FI_MAXIMAL
+            if filter_choice == FI_MAXIMAL
             else numpy.argmin(values)
         ) + 1
         return numpy.array([best_idx], int)
 
-    def keep_per_object(self, workspace, src_objects):
+    def keep_per_object(self, src_labels, enclosing_labels, enclosing_max, per_object_assignment, filter_choice, values):
         """Return an array containing the best object per enclosing object
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         """
-        measurement = self.measurements[0].measurement.value
-        src_name = self.x_name.value
-        enclosing_name = self.enclosing_object_name.value
-        src_objects = workspace.get_objects(src_name)
-        enclosing_objects = workspace.get_objects(enclosing_name)
-        enclosing_labels = enclosing_objects.segmented
-        enclosing_max = enclosing_objects.count
         if enclosing_max == 0:
             return numpy.array([], int)
         enclosing_range = numpy.arange(1, enclosing_max + 1)
+
         #
         # Make a vector of the value of the measurement per label index.
         # We can then label each pixel in the image with the measurement
@@ -959,11 +1037,8 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         # For unlabeled pixels, put the minimum value if looking for the
         # maximum value and vice-versa
         #
-        values = workspace.measurements.get_current_measurement(src_name, measurement)
-        wants_max = self.filter_choice == FI_MAXIMAL_PER_OBJECT
-        src_labels = src_objects.segmented
-        src_count = src_objects.count
-        if self.per_object_assignment == PO_PARENT_WITH_MOST_OVERLAP:
+        wants_max = filter_choice == FI_MAXIMAL_PER_OBJECT
+        if per_object_assignment == PO_PARENT_WITH_MOST_OVERLAP:
             #
             # Find the number of overlapping pixels in enclosing
             # and source objects
@@ -1057,61 +1132,50 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             indexes.sort()
             return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
 
-    def keep_within_limits(self, workspace, src_objects):
+    def keep_within_limits(self, limit_groups):
         """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
         """
-        src_name = self.x_name.value
         hits = None
-        m = workspace.measurements
-        for group in self.measurements:
-            measurement = group.measurement.value
-            values = m.get_current_measurement(src_name, measurement)
+        MIN_LIM = "min_limit"
+        MAX_LIM = "max_limit"
+        VALUES = "values"
+        for group in limit_groups:
+            values = group[VALUES]
+
             if hits is None:
                 hits = numpy.ones(len(values), bool)
             elif len(hits) < len(values):
                 temp = numpy.ones(len(values), bool)
                 temp[~hits] = False
                 hits = temp
-            low_limit = group.min_limit.value
-            high_limit = group.max_limit.value
-            if group.wants_minimum.value:
+            low_limit = group[MIN_LIM]
+            high_limit = group[MAX_LIM]
+            if low_limit is not None:
                 hits[values < low_limit] = False
-            if group.wants_maximum.value:
+            if high_limit is not None:
                 hits[values > high_limit] = False
+        assert hits is not None
         indexes = numpy.argwhere(hits)[:, 0]
         indexes = indexes + 1
         return indexes
 
-    def discard_border_objects(self, src_objects):
+    def discard_border_objects(self, labels, parent_image_mask):
         """Return an array containing the indices of objects to keep
-
-        workspace - workspace passed into Run
-        src_objects - the Objects instance to be filtered
         """
-        labels = src_objects.segmented
 
-        if src_objects.has_parent_image and src_objects.parent_image.has_mask:
-
-            mask = src_objects.parent_image.mask
-
+        if parent_image_mask is not None:
+            mask = parent_image_mask
             interior_pixels = scipy.ndimage.binary_erosion(mask)
 
         else:
-
             interior_pixels = scipy.ndimage.binary_erosion(numpy.ones_like(labels))
 
         border_pixels = numpy.logical_not(interior_pixels)
-
         border_labels = set(labels[border_pixels])
-
-        if (
-            border_labels == {0}
-            and src_objects.has_parent_image
-            and src_objects.parent_image.has_mask
-        ):
+        if (border_labels == {0} and parent_image_mask):
             # The assumption here is that, if nothing touches the border,
             # the mask is a large, elliptical mask that tells you where the
             # well is. That's the way the old Matlab code works and it's duplicated here
@@ -1120,12 +1184,9 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             # The erosion turns all pixels touching an edge to zero. The not of this
             # is the border + formerly masked-out pixels.
 
-            mask = src_objects.parent_image.mask
-
+            mask = parent_image_mask
             interior_pixels = scipy.ndimage.binary_erosion(mask)
-
             border_pixels = numpy.logical_not(interior_pixels)
-
             border_labels = set(labels[border_pixels])
 
         return list(set(labels.ravel()).difference(border_labels))

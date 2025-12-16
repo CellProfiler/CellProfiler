@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import List, Tuple, Annotated, Optional, Dict, Union
 from pydantic import validate_call, ConfigDict, BeforeValidator, Field
 from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
-from cellprofiler_library.opts.measurecolocalization import MeasurementFormat, MeasurementType
+from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel, ObjectSegmentation, ImageAny, ImageAnyMask
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.functions.image_processing import crop_image_similarly
@@ -193,21 +193,21 @@ def run_image_pair_images(
     #
     # Add the measurements
     #
-    corr_measurement = MeasurementFormat.CORRELATION_FORMAT % (im1_name, im2_name)
-    slope_measurement = MeasurementFormat.SLOPE_FORMAT % (im1_name, im2_name)
-    overlap_measurement = MeasurementFormat.OVERLAP_FORMAT % (im1_name, im2_name)
+    corr_measurement = TemplateMeasurementFormat.CORRELATION_FORMAT % (im1_name, im2_name)
+    slope_measurement = TemplateMeasurementFormat.SLOPE_FORMAT % (im1_name, im2_name)
+    overlap_measurement = TemplateMeasurementFormat.OVERLAP_FORMAT % (im1_name, im2_name)
 
-    k_measurement_1 = MeasurementFormat.K_FORMAT % (im1_name, im2_name)
-    k_measurement_2 = MeasurementFormat.K_FORMAT % (im2_name, im1_name)
+    k_measurement_1 = TemplateMeasurementFormat.K_FORMAT % (im1_name, im2_name)
+    k_measurement_2 = TemplateMeasurementFormat.K_FORMAT % (im2_name, im1_name)
     
-    manders_measurement_1 = MeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)
-    manders_measurement_2 = MeasurementFormat.MANDERS_FORMAT % (im2_name, im1_name)
+    manders_measurement_1 = TemplateMeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)
+    manders_measurement_2 = TemplateMeasurementFormat.MANDERS_FORMAT % (im2_name, im1_name)
 
-    rwc_measurement_1 = MeasurementFormat.RWC_FORMAT % (im1_name, im2_name)
-    rwc_measurement_2 = MeasurementFormat.RWC_FORMAT % (im2_name, im1_name)
+    rwc_measurement_1 = TemplateMeasurementFormat.RWC_FORMAT % (im1_name, im2_name)
+    rwc_measurement_2 = TemplateMeasurementFormat.RWC_FORMAT % (im2_name, im1_name)
 
-    costes_measurement_1 = MeasurementFormat.COSTES_FORMAT % (im1_name, im2_name)
-    costes_measurement_2 = MeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
+    costes_measurement_1 = TemplateMeasurementFormat.COSTES_FORMAT % (im1_name, im2_name)
+    costes_measurement_2 = TemplateMeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
     
     if MeasurementType.CORRELATION in measurement_types:
         measurements[corr_measurement] = corr
@@ -351,31 +351,31 @@ def run_image_pair_objects(
         measurement = "Correlation_Correlation_%s_%s" % (im1_name, im2_name)
         measurements[measurement] = corr
     if MeasurementType.MANDERS in measurement_types:
-        manders_measurement_1 = MeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)
-        manders_measurement_2 = MeasurementFormat.MANDERS_FORMAT % (im2_name, im1_name)
+        manders_measurement_1 = TemplateMeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)
+        manders_measurement_2 = TemplateMeasurementFormat.MANDERS_FORMAT % (im2_name, im1_name)
         
         measurements[manders_measurement_1] = M1
         measurements[manders_measurement_2] = M2
     
     if MeasurementType.RWC in measurement_types:
-        rwc_measurement_1 = MeasurementFormat.RWC_FORMAT % (im1_name, im2_name)
-        rwc_measurement_2 = MeasurementFormat.RWC_FORMAT % (im2_name, im1_name)
+        rwc_measurement_1 = TemplateMeasurementFormat.RWC_FORMAT % (im1_name, im2_name)
+        rwc_measurement_2 = TemplateMeasurementFormat.RWC_FORMAT % (im2_name, im1_name)
 
         measurements[rwc_measurement_1] = RWC1
         measurements[rwc_measurement_2] = RWC2
     
     if MeasurementType.OVERLAP in measurement_types:
-        overlap_measurement = MeasurementFormat.OVERLAP_FORMAT % (im1_name, im2_name)
-        k_measurement_1 = MeasurementFormat.K_FORMAT % (im1_name, im2_name)
-        k_measurement_2 = MeasurementFormat.K_FORMAT % (im2_name, im1_name)
+        overlap_measurement = TemplateMeasurementFormat.OVERLAP_FORMAT % (im1_name, im2_name)
+        k_measurement_1 = TemplateMeasurementFormat.K_FORMAT % (im1_name, im2_name)
+        k_measurement_2 = TemplateMeasurementFormat.K_FORMAT % (im2_name, im1_name)
         
         measurements[overlap_measurement] = overlap
         measurements[k_measurement_1] = K1
         measurements[k_measurement_2] = K2
     
     if MeasurementType.COSTES in measurement_types:
-        costes_measurement_1 = MeasurementFormat.COSTES_FORMAT % (im1_name, im2_name)
-        costes_measurement_2 = MeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
+        costes_measurement_1 = TemplateMeasurementFormat.COSTES_FORMAT % (im1_name, im2_name)
+        costes_measurement_2 = TemplateMeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
         
         measurements[costes_measurement_1] = C1
         measurements[costes_measurement_2] = C2

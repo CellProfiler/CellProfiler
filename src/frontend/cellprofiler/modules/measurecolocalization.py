@@ -97,7 +97,7 @@ from cellprofiler_core.image import Image
 from cellprofiler_library.functions.image_processing import apply_threshold_to_objects
 from cellprofiler_library.functions.image_processing import apply_threshold, get_global_threshold
 import cellprofiler_library.opts.threshold as Threshold
-from cellprofiler_library.opts.measurecolocalization import MeasurementType, MeasurementFormat, Target, CostesMethod
+from cellprofiler_library.opts.measurecolocalization import MeasurementType, TemplateMeasurementFormat, Target, CostesMethod
 from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects, crop_image_pair_similarly, crop_image_pair_and_object_similarly
 
 # The number of settings per threshold
@@ -928,12 +928,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            MeasurementFormat.CORRELATION_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.CORRELATION_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.SLOPE_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.SLOPE_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -941,17 +941,17 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            MeasurementFormat.OVERLAP_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.OVERLAP_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.K_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.K_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.K_FORMAT.value % (second_image, first_image),
+                            TemplateMeasurementFormat.K_FORMAT % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -959,12 +959,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            MeasurementFormat.MANDERS_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.MANDERS_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.MANDERS_FORMAT.value % (second_image, first_image),
+                            TemplateMeasurementFormat.MANDERS_FORMAT % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -973,12 +973,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            MeasurementFormat.RWC_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.RWC_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.RWC_FORMAT.value % (second_image, first_image),
+                            TemplateMeasurementFormat.RWC_FORMAT % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -986,12 +986,12 @@ You can set a different threshold for each image selected in the module.
                     columns += [
                         (
                             "Image",
-                            MeasurementFormat.COSTES_FORMAT.value % (first_image, second_image),
+                            TemplateMeasurementFormat.COSTES_FORMAT % (first_image, second_image),
                             COLTYPE_FLOAT,
                         ),
                         (
                             "Image",
-                            MeasurementFormat.COSTES_FORMAT.value % (second_image, first_image),
+                            TemplateMeasurementFormat.COSTES_FORMAT % (second_image, first_image),
                             COLTYPE_FLOAT,
                         ),
                     ]
@@ -1003,7 +1003,7 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                MeasurementFormat.CORRELATION_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.CORRELATION_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             )
                         ]
@@ -1011,17 +1011,17 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                MeasurementFormat.OVERLAP_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.OVERLAP_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                MeasurementFormat.K_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.K_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                MeasurementFormat.K_FORMAT.value % (second_image, first_image),
+                                TemplateMeasurementFormat.K_FORMAT % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1029,12 +1029,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                MeasurementFormat.MANDERS_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.MANDERS_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                MeasurementFormat.MANDERS_FORMAT.value % (second_image, first_image),
+                                TemplateMeasurementFormat.MANDERS_FORMAT % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1042,12 +1042,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                MeasurementFormat.RWC_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.RWC_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                MeasurementFormat.RWC_FORMAT.value % (second_image, first_image),
+                                TemplateMeasurementFormat.RWC_FORMAT % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]
@@ -1055,12 +1055,12 @@ You can set a different threshold for each image selected in the module.
                         columns += [
                             (
                                 object_name,
-                                MeasurementFormat.COSTES_FORMAT.value % (first_image, second_image),
+                                TemplateMeasurementFormat.COSTES_FORMAT % (first_image, second_image),
                                 COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
-                                MeasurementFormat.COSTES_FORMAT.value % (second_image, first_image),
+                                TemplateMeasurementFormat.COSTES_FORMAT % (second_image, first_image),
                                 COLTYPE_FLOAT,
                             ),
                         ]

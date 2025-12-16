@@ -14,7 +14,7 @@ class CorrelationMethod(str, Enum):
     LINEAR = "Linear"
     BISECTION = "Bisection"
 
-class MeasurementFormat(str, Enum):
+class TemplateMeasurementFormat(str):
     CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
     SLOPE_FORMAT = "Correlation_Slope_%s_%s"
     OVERLAP_FORMAT = "Correlation_Overlap_%s_%s"

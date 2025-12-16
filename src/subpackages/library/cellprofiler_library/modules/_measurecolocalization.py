@@ -4,9 +4,107 @@ from typing import List, Tuple, Annotated, Optional, Dict, Union
 from pydantic import validate_call, ConfigDict, BeforeValidator, Field
 from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
 from cellprofiler_library.opts.measurecolocalization import MeasurementFormat, MeasurementType
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel, ObjectSegmentation, ImageAny, ImageAnyMask
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
+from cellprofiler_library.functions.image_processing import crop_image_similarly
+from cellprofiler_library.functions.object_processing import size_similarly, object_crop_image_similarly
 
+def crop_image_pair_similarly(
+        im1_pixel_data:     Annotated[ImageGrayscale, Field(description="First image pixel data")],
+        im2_pixel_data:     Annotated[ImageGrayscale, Field(description="Second image pixel data")],
+        im1_mask:           Annotated[ImageGrayscaleMask, Field(description="First image mask")],
+        im2_mask:           Annotated[ImageGrayscaleMask, Field(description="Second image mask")],
+        im1_crop_mask:      Annotated[Optional[ImageGrayscaleMask], Field(description="Mask used to obtain the first image")]=None,
+        im2_crop_mask:      Annotated[Optional[ImageGrayscaleMask], Field(description="Mask used to obtain the second image")]=None,
+    ) -> Tuple[ImageGrayscale, ImageGrayscale, ImageGrayscaleMask]:
+    
+    im1_pixel_count = np.prod(im1_pixel_data.shape)
+    im2_pixel_count = np.prod(im2_pixel_data.shape)
+
+    if im1_pixel_count < im2_pixel_count:
+        # im2_pixel_data = im1.crop_image_similarly(im2.pixel_data)
+        im2_pixel_data = crop_image_similarly(im1_pixel_data, im2_pixel_data, im1_crop_mask)
+        im2_mask = crop_image_similarly(im1_pixel_data, im2_mask, im1_crop_mask)
+    elif im2_pixel_count < im1_pixel_count:
+        im1_pixel_data = crop_image_similarly(im2_pixel_data, im1_pixel_data, im2_crop_mask)
+        im1_mask = crop_image_similarly(im2_pixel_data, im1_mask, im2_crop_mask)
+    mask = (
+        im1_mask
+        & im2_mask
+        & (~np.isnan(im1_pixel_data))
+        & (~np.isnan(im2_pixel_data))
+    )
+    return im1_pixel_data, im2_pixel_data, mask
+
+def crop_image_pair_and_object_similarly(
+        im1_pixel_data:     Annotated[ImageGrayscale, Field(description="First image pixel data")],
+        im2_pixel_data:     Annotated[ImageGrayscale, Field(description="Second image pixel data")],
+        obj_segmented:      Annotated[ObjectSegmentation, Field(description="Object segmentations")],
+        im1_mask:           Annotated[ImageGrayscaleMask, Field(description="First image mask")],
+        im2_mask:           Annotated[ImageGrayscaleMask, Field(description="Second image mask")],
+        obj_parent_image:   Annotated[Optional[ImageAny], Field(description="Object parent image")],
+        obj_parent_crop_mask: Annotated[Optional[ImageAnyMask], Field(description="Object parent image crop mask")]=None,
+        im1_crop_mask:      Annotated[Optional[ImageGrayscaleMask], Field(description="Mask used to obtain the first image")]=None,
+        im2_crop_mask:      Annotated[Optional[ImageGrayscaleMask], Field(description="Mask used to obtain the second image")]=None,
+) -> Tuple[
+    NDArray[Pixel],
+    NDArray[Pixel],
+    ObjectSegmentation,
+    ImageGrayscaleMask,
+    NDArray[Pixel],
+    NDArray[Pixel]
+]:
+    try:
+        im1_pixels = object_crop_image_similarly(obj_segmented, im1_pixel_data, obj_parent_image, obj_parent_crop_mask) # first check image shape and segmented shape, if new, crop image similarly wiht parent_image. To do that, verify parent image shape and the image shape, if neq, use parent image crop mask as well as the parent image shape 
+        _im1_mask = object_crop_image_similarly(obj_segmented, im1_mask, obj_parent_image, obj_parent_crop_mask)
+    except ValueError:
+        im1_pixels, m1 = size_similarly(obj_segmented, im1_pixel_data)
+        _im1_mask, m1 = size_similarly(obj_segmented, im1_mask)
+        _im1_mask[~m1] = False
+    try:
+        im2_pixels = object_crop_image_similarly(obj_segmented, im2_pixel_data, obj_parent_image, obj_parent_crop_mask)
+        _im2_mask = object_crop_image_similarly(obj_segmented, im2_mask, obj_parent_image, obj_parent_crop_mask)
+    except ValueError:
+        im2_pixels, m1 = size_similarly(obj_segmented, im2_pixel_data)
+        _im2_mask, m1 = size_similarly(obj_segmented, im2_mask)
+        _im2_mask[~m1] = False
+    mask = (obj_segmented > 0) & _im1_mask & _im2_mask
+    im1_pixels = im1_pixels[mask]
+    im2_pixels = im2_pixels[mask]
+    obj_segmented = obj_segmented[mask]
+    #
+    # Code below is used for the Costes' automated thresholding
+    #
+    # im1_mask = im1_mask
+    im1_pixel_count = np.product(im1_pixel_data.shape)
+    im2_pixel_data = im2_pixel_data
+    # im2_mask = im2_mask
+    im2_pixel_count = np.product(im2_pixel_data.shape)
+    #
+    # Crop the larger image similarly to the smaller one
+    #
+    if im1_pixel_count < im2_pixel_count:
+        im2_pixel_data = crop_image_similarly(im1_pixel_data, im2_pixel_data, im1_crop_mask)
+        im2_mask = crop_image_similarly(im1_pixel_data, im2_mask, im1_crop_mask)
+    elif im2_pixel_count < im1_pixel_count:
+        im1_pixel_data = crop_image_similarly(im2_pixel_data, im1_pixel_data, im2_crop_mask)
+        im1_mask = crop_image_similarly(im2_pixel_data, im1_mask, im2_crop_mask)
+    mask = (
+        im1_mask
+        & im2_mask
+        & (~np.isnan(im1_pixel_data))
+        & (~np.isnan(im2_pixel_data))
+    )
+    #
+    # fi and si are used to obtain the costes threshold values for their respective images
+    #
+    im1_costes_pixels = None
+    im2_costes_pixels = None
+    if mask is not None and np.any(mask):
+        im1_costes_pixels = im1_pixel_data[mask]
+        im2_costes_pixels = im2_pixel_data[mask]
+
+    return im1_pixels, im2_pixels, obj_segmented, mask, im1_costes_pixels, im2_costes_pixels
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def run_image_pair_images(
@@ -132,7 +230,7 @@ def run_image_pair_images(
     return measurements, summary
 
 
-def get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
+def __get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
     summary: List[Tuple[str, str, str, str, str]] = []
     summary += [
         (*col_order_list, f"Mean {measurement_name}", "%.3f" % np.mean(measurement_array)),
@@ -202,8 +300,8 @@ def run_image_pair_objects(
 
         if MeasurementType.CORRELATION in measurement_types:
             corr = measure_correlation_and_slope_from_objects(im1_pixels, im2_pixels, labels, lrange)
-            col_order_1 = [im1_name, im2_name, object_name]
-            summary += get_object_result_array(col_order_1, "Correlation coeff", corr)
+            col_order_1 = (im1_name, im2_name, object_name)
+            summary += __get_object_result_array(col_order_1, "Correlation coeff", corr)
 
         if set(measurement_types).intersection({MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP}) != set():
             # Get channel-specific thresholds from thresholds array
@@ -217,19 +315,19 @@ def run_image_pair_objects(
 
             if MeasurementType.MANDERS in measurement_types:
                 M1, M2 = measure_manders_coefficient_from_objects(im1_pixels, im2_pixels, im1_thr_sum, im2_thr_sum, thr_mask_intersection,labels, lrange)
-                summary += get_object_result_array([im1_name, im2_name, object_name], "Manders coeff", M1)
-                summary += get_object_result_array([im2_name, im1_name, object_name], "Manders coeff", M2)
+                summary += __get_object_result_array((im1_name, im2_name, object_name), "Manders coeff", M1)
+                summary += __get_object_result_array((im2_name, im1_name, object_name), "Manders coeff", M2)
 
 
             if MeasurementType.RWC in measurement_types:
                 RWC1, RWC2 = measure_rwc_coefficient_from_objects(im1_pixels, im2_pixels, im1_thr_sum, im2_thr_sum, thr_mask_intersection,labels, lrange)
-                summary += get_object_result_array([im1_name, im2_name, object_name], "RWC coeff", RWC1)
-                summary += get_object_result_array([im2_name, im1_name, object_name], "RWC coeff", RWC2)
+                summary += __get_object_result_array((im1_name, im2_name, object_name), "RWC coeff", RWC1)
+                summary += __get_object_result_array((im2_name, im1_name, object_name), "RWC coeff", RWC2)
 
 
             if MeasurementType.OVERLAP in measurement_types:
                 overlap, K1, K2 = measure_overlap_coefficient_from_objects(im1_pixels, im2_pixels, thr_mask_intersection,labels, lrange)
-                summary += get_object_result_array([im1_name, im2_name, object_name], "Overlap coeff", overlap)
+                summary += __get_object_result_array((im1_name, im2_name, object_name), "Overlap coeff", overlap)
 
 
         if MeasurementType.COSTES in measurement_types:
@@ -244,8 +342,8 @@ def run_image_pair_objects(
                 im2_scale = im2_scale, 
                 costes_method = costes_method,
             )
-            summary += get_object_result_array([im1_name, im2_name, object_name], "Manders coeff (Costes)", C1)
-            summary += get_object_result_array([im2_name, im1_name, object_name], "Manders coeff (Costes)", C2)
+            summary += __get_object_result_array((im1_name, im2_name, object_name), "Manders coeff (Costes)", C1)
+            summary += __get_object_result_array((im2_name, im1_name, object_name), "Manders coeff (Costes)", C2)
 
 
     measurements: Dict[str, NDArray[np.float64]] = {}
@@ -283,7 +381,7 @@ def run_image_pair_objects(
         measurements[costes_measurement_2] = C2
 
     if n_objects == 0:
-        col_order_1 = [im1_name, im2_name, object_name]
+        col_order_1 = (im1_name, im2_name, object_name)
         summary +=  [
             (*col_order_1, "Mean correlation", "-"),
             (*col_order_1, "Median correlation", "-"),

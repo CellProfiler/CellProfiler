@@ -12,7 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
-from cellprofiler_library.opts.measurecolocalization import MeasurementFormat, Target, CostesMethod
+from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, Target, CostesMethod
 
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"
@@ -200,21 +200,21 @@ def test_load_v6():
 
 
 all_object_measurement_formats = [
-    MeasurementFormat.CORRELATION_FORMAT.value,
-    MeasurementFormat.COSTES_FORMAT.value,
-    MeasurementFormat.K_FORMAT.value,
-    MeasurementFormat.MANDERS_FORMAT.value,
-    MeasurementFormat.OVERLAP_FORMAT.value,
-    MeasurementFormat.RWC_FORMAT.value,
+    TemplateMeasurementFormat.CORRELATION_FORMAT,
+    TemplateMeasurementFormat.COSTES_FORMAT,
+    TemplateMeasurementFormat.K_FORMAT,
+    TemplateMeasurementFormat.MANDERS_FORMAT,
+    TemplateMeasurementFormat.OVERLAP_FORMAT,
+    TemplateMeasurementFormat.RWC_FORMAT,
 ]
 all_image_measurement_formats = all_object_measurement_formats + [
-    MeasurementFormat.SLOPE_FORMAT.value
+    TemplateMeasurementFormat.SLOPE_FORMAT
 ]
 asymmetrical_measurement_formats = [
-    MeasurementFormat.COSTES_FORMAT.value,
-    MeasurementFormat.K_FORMAT.value,
-    MeasurementFormat.MANDERS_FORMAT.value,
-    MeasurementFormat.RWC_FORMAT.value,
+    TemplateMeasurementFormat.COSTES_FORMAT,
+    TemplateMeasurementFormat.K_FORMAT,
+    TemplateMeasurementFormat.MANDERS_FORMAT,
+    TemplateMeasurementFormat.RWC_FORMAT,
 ]
 
 
@@ -714,7 +714,7 @@ def test_last_object_masked():
         )
         module.run(workspace)
         m = workspace.measurements
-        feature = MeasurementFormat.CORRELATION_FORMAT.value % (
+        feature = TemplateMeasurementFormat.CORRELATION_FORMAT % (
             IMAGE1_NAME,
             IMAGE2_NAME,
         )
@@ -747,7 +747,7 @@ def test_zero_valued_intensity():
 
     m = workspace.measurements
 
-    feature = MeasurementFormat.CORRELATION_FORMAT.value % (
+    feature = TemplateMeasurementFormat.CORRELATION_FORMAT % (
         IMAGE1_NAME,
         IMAGE2_NAME,
     )
@@ -780,7 +780,7 @@ def test_non_overlapping_object_intensity():
 
     m = workspace.measurements
 
-    feature = MeasurementFormat.OVERLAP_FORMAT.value % (
+    feature = TemplateMeasurementFormat.OVERLAP_FORMAT % (
         IMAGE1_NAME,
         IMAGE2_NAME,
     )

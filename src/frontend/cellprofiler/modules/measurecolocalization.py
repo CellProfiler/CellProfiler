@@ -98,7 +98,7 @@ from cellprofiler_library.functions.image_processing import apply_threshold_to_o
 from cellprofiler_library.functions.image_processing import apply_threshold, get_global_threshold
 import cellprofiler_library.opts.threshold as Threshold
 from cellprofiler_library.opts.measurecolocalization import MeasurementType, MeasurementFormat, Target, CostesMethod
-from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects
+from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects, crop_image_pair_similarly, crop_image_pair_and_object_similarly
 
 # The number of settings per threshold
 THRESHOLD_SETTING_COUNT = 2
@@ -575,27 +575,7 @@ You can set a different threshold for each image selected in the module.
     def prepare_images(self, workspace, first_image_name, second_image_name):
         im1 = workspace.image_set.get_image(first_image_name, must_be_grayscale=True)
         im2 = workspace.image_set.get_image(second_image_name, must_be_grayscale=True)
-        
-        im1_pixel_count = numpy.prod(im1.pixel_data.shape)
-        im2_pixel_count = numpy.prod(im2.pixel_data.shape)
-        
-        im1_mask = im1.mask
-        im2_mask = im2.mask
-        
-        im1_pixel_data = im1.pixel_data
-        im2_pixel_data = im2.pixel_data
-        if im1_pixel_count < im2_pixel_count:
-            im2_pixel_data = im1.crop_image_similarly(im2.pixel_data)
-            im2_mask = im1.crop_image_similarly(im2.mask)
-        elif im2_pixel_count < im1_pixel_count:
-            im1_pixel_data = im2.crop_image_similarly(im1.pixel_data)
-            im1_mask = im2.crop_image_similarly(im1.mask)
-        mask = (
-            im1_mask
-            & im2_mask
-            & (~numpy.isnan(im1_pixel_data))
-            & (~numpy.isnan(im2_pixel_data))
-        )
+        im1_pixel_data, im2_pixel_data, mask = crop_image_pair_similarly(im1.pixel_data, im2.pixel_data, im1.mask, im2.mask, im1.crop_mask, im2.crop_mask)
         im1_thr_percentage = self.get_image_threshold_value(first_image_name)
         im2_thr_percentage = self.get_image_threshold_value(second_image_name)
         return im1_pixel_data, im2_pixel_data, mask, im1_thr_percentage, im2_thr_percentage
@@ -606,56 +586,89 @@ You can set a different threshold for each image selected in the module.
         objects = workspace.object_set.get_objects(object_name)
         labels = objects.segmented
         object_count = objects.count
-        try:
-            im1_pixels = objects.crop_image_similarly(im1.pixel_data)
-            im1_mask = objects.crop_image_similarly(im1.mask)
-        except ValueError:
-            im1_pixels, m1 = size_similarly(labels, im1.pixel_data)
-            im1_mask, m1 = size_similarly(labels, im1.mask)
-            im1_mask[~m1] = False
-        try:
-            im2_pixels = objects.crop_image_similarly(im2.pixel_data)
-            im2_mask = objects.crop_image_similarly(im2.mask)
-        except ValueError:
-            im2_pixels, m1 = size_similarly(labels, im2.pixel_data)
-            im2_mask, m1 = size_similarly(labels, im2.mask)
-            im2_mask[~m1] = False
-        mask = (labels > 0) & im1_mask & im2_mask
-        im1_pixels = im1_pixels[mask]
-        im2_pixels = im2_pixels[mask]
-        labels = labels[mask]
-        im1_pixel_data = im1.pixel_data
-        #
-        # Code below is used for the Costes' automated thresholding
-        #
-        im1_mask = im1.mask
-        im1_pixel_count = numpy.prod(im1.pixel_data.shape)
-        im2_pixel_data = im2.pixel_data
-        im2_mask = im2.mask
-        im2_pixel_count = numpy.prod(im2.pixel_data.shape)
-        #
-        # Crop the larger image similarly to the smaller one
-        #
-        if im1_pixel_count < im2_pixel_count:
-            im2_pixel_data = im1.crop_image_similarly(im2_pixel_data)
-            im2_mask = im1.crop_image_similarly(im2_mask)
-        elif im2_pixel_count < im1_pixel_count:
-            im1_pixel_data = im2.crop_image_similarly(im1_pixel_data)
-            im1_mask = im2.crop_image_similarly(im1_mask)
-        mask = (
-            im1_mask
-            & im2_mask
-            & (~numpy.isnan(im1_pixel_data))
-            & (~numpy.isnan(im2_pixel_data))
+
+
+
+
+
+
+
+
+
+        # try:
+        #     im1_pixels = objects.crop_image_similarly(im1.pixel_data)
+        #     im1_mask = objects.crop_image_similarly(im1.mask)
+        # except ValueError:
+        #     im1_pixels, m1 = size_similarly(labels, im1.pixel_data)
+        #     im1_mask, m1 = size_similarly(labels, im1.mask)
+        #     im1_mask[~m1] = False
+        # try:
+        #     im2_pixels = objects.crop_image_similarly(im2.pixel_data)
+        #     im2_mask = objects.crop_image_similarly(im2.mask)
+        # except ValueError:
+        #     im2_pixels, m1 = size_similarly(labels, im2.pixel_data)
+        #     im2_mask, m1 = size_similarly(labels, im2.mask)
+        #     im2_mask[~m1] = False
+        # mask = (labels > 0) & im1_mask & im2_mask
+        # im1_pixels = im1_pixels[mask]
+        # im2_pixels = im2_pixels[mask]
+        # labels = labels[mask]
+        # im1_pixel_data = im1.pixel_data
+        # #
+        # # Code below is used for the Costes' automated thresholding
+        # #
+        # im1_mask = im1.mask
+        # im1_pixel_count = numpy.prod(im1.pixel_data.shape)
+        # im2_pixel_data = im2.pixel_data
+        # im2_mask = im2.mask
+        # im2_pixel_count = numpy.prod(im2.pixel_data.shape)
+        # #
+        # # Crop the larger image similarly to the smaller one
+        # #
+        # if im1_pixel_count < im2_pixel_count:
+        #     im2_pixel_data = im1.crop_image_similarly(im2_pixel_data)
+        #     im2_mask = im1.crop_image_similarly(im2_mask)
+        # elif im2_pixel_count < im1_pixel_count:
+        #     im1_pixel_data = im2.crop_image_similarly(im1_pixel_data)
+        #     im1_mask = im2.crop_image_similarly(im1_mask)
+        # mask = (
+        #     im1_mask
+        #     & im2_mask
+        #     & (~numpy.isnan(im1_pixel_data))
+        #     & (~numpy.isnan(im2_pixel_data))
+        # )
+        # #
+        # # fi and si are used to obtain the costes threshold values for their respective images
+        # #
+        # im1_costes_pixels = None
+        # im2_costes_pixels = None
+        # if mask is not None and numpy.any(mask):
+        #     im1_costes_pixels = im1_pixel_data[mask]
+        #     im2_costes_pixels = im2_pixel_data[mask]
+
+
+
+
+
+        obj_parent_crop_mask = objects.parent_image.crop_mask if (objects.parent_image is not None and objects.parent_image.has_crop_mask) else None
+        (
+            im1_pixels, 
+            im2_pixels, 
+            labels, 
+            mask, 
+            im1_costes_pixels, 
+            im2_costes_pixels
+        ) = crop_image_pair_and_object_similarly(
+            im1.pixel_data, 
+            im2.pixel_data, 
+            objects.segmented, 
+            im1.mask, 
+            im2.mask, 
+            objects.parent_image.pixel_data if objects.parent_image is not None else None, 
+            obj_parent_crop_mask, 
+            im1.crop_mask, 
+            im2.crop_mask
         )
-        #
-        # fi and si are used to obtain the costes threshold values for their respective images
-        #
-        im1_costes_pixels = None
-        im2_costes_pixels = None
-        if mask is not None and numpy.any(mask):
-            im1_costes_pixels = im1_pixel_data[mask]
-            im2_costes_pixels = im2_pixel_data[mask]
         im1_thr_percentage = self.get_image_threshold_value(first_image_name)
         im2_thr_percentage = self.get_image_threshold_value(second_image_name)
         return im1_costes_pixels, im2_costes_pixels, labels, object_count, mask, im1_pixels, im2_pixels, im1_thr_percentage, im2_thr_percentage

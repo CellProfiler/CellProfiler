@@ -24,7 +24,17 @@ from centrosome.filter import median_filter as _median_filter
 from centrosome.filter import circular_average_filter as _circular_average_filter
 from centrosome.smooth import fit_polynomial as _fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask as _smooth_with_function_and_mask
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, Image2DGrayscaleMask, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
+from cellprofiler_library.types import (
+    ImageGrayscale, 
+    ImageGrayscaleMask, 
+    Image2DColor, 
+    Image2DGrayscale, Image2DGrayscaleMask, 
+    ImageAny, ImageAnyMask, 
+    ObjectSegmentation, 
+    Image2D, 
+    Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, 
+    ImageAnyMask
+)
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.overlayoutlines import BrightnessMode
@@ -964,10 +974,10 @@ def get_rectangle_cropping(
 
 
 def crop_image(
-        image:          Union[Image2D, Image2DMask],
-        crop_mask:      Image2DMask,
+        image:          Union[ImageAny, ImageAnyMask],
+        crop_mask:      ImageAnyMask,
         crop_internal:  Optional[bool]=False
-    ) -> Union[Image2D, Image2DMask]:
+    ) -> Union[ImageAny, ImageAnyMask]:
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
     i_cumsum = numpy.cumsum(i_histogram != 0)
@@ -2103,7 +2113,11 @@ def smoothing_smooth_to_average(pixel_data: Image2D, mask: Optional[Image2DMask]
 # MeasureColocalization
 ################################################################################
 
-def crop_image_similarly(this_image, other_image, this_crop_mask):
+def crop_image_similarly(
+        this_image: ImageAny, 
+        other_image: ImageAny,
+        this_crop_mask: Optional[ImageAny] = None,
+    ):
     """Crop a 2-d or 3-d image (other_image) using this image's crop mask
     crop mask is the binary image used to crop the parent image to the
     dimensions of the child (this) image. The crop_mask is the same size as
@@ -2123,7 +2137,7 @@ def crop_image_similarly(this_image, other_image, this_crop_mask):
             "Image to be cropped is smaller: %s vs %s"
             % (repr(other_image.shape), repr(this_image.shape))
         )
-    if not this_crop_mask:
+    if this_crop_mask is None:
         raise RuntimeError(
             "Images are of different size and no crop mask available.\n"
             "Use the Crop and Align modules to match images of different sizes."

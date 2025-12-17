@@ -19,6 +19,7 @@ Image Types can be classified into:
 Single channel/multi-channel: "single" or "multi"
 Data type: uint8, uint16, float32, float64, bool
 Tiled or single: "tiled" or "single"
+CellProfiler expects z to be the first axis and c to be the last. Refer to reader implementations for details.
 """
 def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, dtype: type, shape_override: Optional[Iterable[int]] = None):
     def validate(input_image: npt.NDArray[Any]):
@@ -27,8 +28,8 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
                 raise CellProfilerInputValidationError(f"Expected an array of shape {shape_override}, got {input_image.shape}") 
         else:
             if is_3d:
-                if input_image.ndim < 3 or input_image.ndim > 4: # not 3D or 3D multi-channel
-                    raise CellProfilerInputValidationError(f"Expected a 3D or 4D array ([c], z, y, x), got {input_image.ndim}D")
+                if input_image.ndim < 3 or input_image.ndim > 4: # not 3D or not 3D multi-channel
+                    raise CellProfilerInputValidationError(f"Expected a 3D or 4D array (z, y, x, [c]), got {input_image.ndim}D")
                 if input_image.ndim == 3 and input_image.shape[0] <= 1: # Only one z channel
                     raise CellProfilerInputValidationError(f"Expected a 3D array with at least 2 z channels, got {input_image.shape[1]}")
                 if input_image.ndim == 4:
@@ -43,7 +44,7 @@ def create_type_validator(is_3d: bool, is_multi_channel: bool, is_tiled: bool, d
             else: # 2d image. 
                 if is_multi_channel: # color
                     if input_image.ndim != 3:
-                        raise CellProfilerInputValidationError(f"Expected a 3D array (cyx),got {input_image.ndim}D")
+                        raise CellProfilerInputValidationError(f"Expected a 3D array (yxc),got {input_image.ndim}D")
                 else: # grayscale
                     if input_image.ndim != 2:
                         raise CellProfilerInputValidationError(f"Expected a 2D array (yx),got {input_image.ndim}D")

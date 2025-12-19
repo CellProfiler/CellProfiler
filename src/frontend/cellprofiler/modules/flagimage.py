@@ -58,7 +58,7 @@ from cellprofiler_core.setting.multichoice import MultiChoice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Text, Filename, Directory, Float
 
-from cellprofiler.utilities.rules import Rules
+from cellprofiler.utilities.rules import Rules, Rule
 
 LOGGER = logging.getLogger(__name__)
 
@@ -538,7 +538,7 @@ image is not flagged.
                             measurement_setting.rules_file_name,
                         )
                     for r in rules.rules:
-                        if self.rules.Rule.return_fuzzy_measurement_name(
+                        if Rule.return_fuzzy_measurement_name(
                             pipeline.get_measurement_columns(self),
                             "Image",
                             r.feature,
@@ -827,7 +827,7 @@ image is not flagged.
             image_features = workspace.measurements.get_feature_names(IMAGE)
             measurement_columns = workspace.measurements.get_measurement_columns()
             for feature_name in self.get_classifier_features(ms):
-                feature_name = self.rules.Rule.return_fuzzy_measurement_name(measurement_columns,IMAGE,feature_name,False,ms.allow_fuzzy)
+                feature_name = Rule.return_fuzzy_measurement_name(measurement_columns,IMAGE,feature_name,False,ms.allow_fuzzy)
                 features.append(feature_name)
 
             feature_vector = numpy.array(

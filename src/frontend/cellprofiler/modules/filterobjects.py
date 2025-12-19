@@ -990,7 +990,20 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             rules_class = int(self.rules_class.value) - 1
         else:
             rules_class = self.get_bin_labels().index(self.rules_class.value)
-        scores = rules.score(workspace.measurements)
+        measurement_value_list = []
+        for rule in rules.rules:
+            values = workspace.measurements.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    workspace.measurements.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    self.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        scores = rules.score(measurement_value_list)
         if len(scores) > 0:
             is_not_nan = numpy.any(~numpy.isnan(scores), 1)
             best_class = numpy.argmax(scores[is_not_nan], 1).flatten()

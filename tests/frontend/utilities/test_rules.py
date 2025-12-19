@@ -63,7 +63,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]]), False, 1
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 0)
         self.assertEqual(score.shape[1], 2)
 
@@ -76,7 +90,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)
@@ -97,7 +125,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], -2.0)
@@ -118,7 +160,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertTrue(score[0, 0], -2)
@@ -133,7 +189,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), True, 0.7
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)
@@ -145,7 +215,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
             )
         ]
         with pytest.raises(AssertionError):
-            score = rules.score(m)
+            measurement_value_list = []
+            assert m is not None, "measurements must be provided if measurement_value_list is None"
+            for rule in rules.rules:
+                values = m.get_current_measurement(
+                    rule.object_name, 
+                    rule.return_fuzzy_measurement_name(
+                        m.get_measurement_columns(),
+                        rule.object_name,
+                        rule.feature,
+                        False,
+                        rule.allow_fuzzy
+                        )
+                )
+                measurement_value_list.append(values)
+            score = rules.score(measurement_value_list)
 
 
     def test_03_01_score_two_rules(self):
@@ -161,7 +245,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]]), False, 1
             ),
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0 - 2.3)
@@ -182,7 +280,21 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        score = rules.score(m)
+        measurement_value_list = []
+        assert m is not None, "measurements must be provided if measurement_value_list is None"
+        for rule in rules.rules:
+            values = m.get_current_measurement(
+                rule.object_name, 
+                rule.return_fuzzy_measurement_name(
+                    m.get_measurement_columns(),
+                    rule.object_name,
+                    rule.feature,
+                    False,
+                    rule.allow_fuzzy
+                    )
+            )
+            measurement_value_list.append(values)
+        score = rules.score(measurement_value_list)
         self.assertEqual(score.shape[0], 2)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)

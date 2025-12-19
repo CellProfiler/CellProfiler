@@ -797,7 +797,20 @@ image is not flagged.
                     display_value = "%.3f - %.3f" % (min_value, max_value)
         elif ms.source_choice == S_RULES:
             rules = self.get_rules(ms)
-            scores = rules.score(workspace.measurements)
+            measurement_value_list = []
+            for rule in rules.rules:
+                values = workspace.measurements.get_current_measurement(
+                    rule.object_name, 
+                    rule.return_fuzzy_measurement_name(
+                        workspace.measurements.get_measurement_columns(),
+                        rule.object_name,
+                        rule.feature,
+                        False,
+                        rule.allow_fuzzy
+                        )
+                )
+                measurement_value_list.append(values)
+            scores = rules.score(measurement_value_list)
             rules_classes = numpy.array(
                 [int(x) - 1 for x in ms.rules_class.get_selections()]
             )

@@ -102,7 +102,7 @@ import os
 import numpy
 import cellprofiler.gui.help
 import cellprofiler_core.object
-from cellprofiler.utilities.rules import Rules
+from cellprofiler.utilities.rules import Rules, Rule
 
 LOGGER = logging.getLogger(__name__)
 
@@ -650,7 +650,7 @@ value will be retained.""".format(
                 )
                 raise ValidationError(str(instance), self.rules_file_name)
             for r in rules.rules:
-                if self.rules.Rule.return_fuzzy_measurement_name(
+                if Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(self),
                     r.object_name,
                     r.feature,
@@ -687,7 +687,7 @@ value will be retained.""".format(
             features = self.get_classifier_features()
 
             for feature in features:
-                fuzzy_feature = self.rules.Rule.return_fuzzy_measurement_name(
+                fuzzy_feature = Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(),
                     feature[:feature.index('_')],
                     feature[feature.index('_'):],
@@ -1017,7 +1017,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             [
                 workspace.measurements[
                     object_name, 
-                    self.rules.Rule.return_fuzzy_measurement_name(
+                    Rule.return_fuzzy_measurement_name(
                         workspace.measurements.get_measurement_columns(),
                         object_name,
                         feature_name,

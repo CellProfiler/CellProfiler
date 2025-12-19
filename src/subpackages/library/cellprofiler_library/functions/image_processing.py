@@ -1769,21 +1769,21 @@ def fill_holes(image: ImageAny, diameter: float) -> ImageAny:
 
 def imagemath_apply_on_image(
         output_pixel_data: ImageAny, 
-        pd: ImageAny, 
-        comparitor: ImageAny, 
-        op: Callable[[ImageAny, ImageAny], ImageAny], 
+        pd: ImageAny,
+        comparator: ImageAny,
+        op: Callable[[ImageAny, ImageAny], ImageAny],
         opval: Operator,
         ) -> ImageAny:
     assert isinstance(output_pixel_data, numpy.ndarray), "output_pixel_data must be a numpy array" # Pylance needs to understand this is a numpy array
     if not isscalar(pd) and output_pixel_data.ndim != pd.ndim:
         if output_pixel_data.ndim == 2:
             output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
-            if opval == Operator.EQUALS and not isscalar(comparitor):
-                comparitor = comparitor[:, :, numpy.newaxis]
+            if opval == Operator.EQUALS and not isscalar(comparator):
+                comparator = comparator[:, :, numpy.newaxis]
         if pd.ndim == 2:
             pd = pd[:, :, numpy.newaxis]
     if opval == Operator.EQUALS:
-        output_pixel_data = output_pixel_data & (comparitor == pd)
+        output_pixel_data = output_pixel_data & (comparator == pd)
     else:
         output_pixel_data = op(output_pixel_data, pd)
     return output_pixel_data
@@ -1818,7 +1818,7 @@ def imagemath_apply_binary_operation(
         output_pixel_data[pd] = False
         return output_pixel_data
 
-    comparitor = operands[0] # fix pylance error
+    comparator = operands[0] # fix pylance error
     use_logical = use_logical_operation(operands)
     op_fn_dispatch: Dict[Operator, Callable[[ImageAny, ImageAny], ImageAny]] = {
         Operator.ADD: numpy.add,
@@ -1847,7 +1847,7 @@ def imagemath_apply_binary_operation(
     #
     if opval == Operator.EQUALS:
         output_pixel_data = numpy.ones(operands[0].shape, bool)
-        comparitor = operands[0]
+        comparator = operands[0]
     elif opval == Operator.SUBTRACT and use_logical:
         output_pixel_data = operands[0].copy()
 
@@ -1860,7 +1860,7 @@ def imagemath_apply_binary_operation(
     # Apply the operation to each image in the list
     #
     for pd, mask in zip(operands[1:], masks[1:]):
-        output_pixel_data = imagemath_apply_on_image(output_pixel_data, pd, comparitor, op, opval)
+        output_pixel_data = imagemath_apply_on_image(output_pixel_data, pd, comparator, op, opval)
         if not ignore_mask:
             if output_mask is None:
                 output_mask = mask

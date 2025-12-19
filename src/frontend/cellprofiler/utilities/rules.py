@@ -38,7 +38,7 @@ class Rule(object):
         self.allow_fuzzy = allow_fuzzy
         self.fuzzy_value = fuzzy_value
 
-    def score(self, measurements):
+    def score(self, values):
         """Score a rule
 
         measurements - a measurements structure
@@ -49,16 +49,6 @@ class Rule(object):
         for the given feature in the current image set and N is the
         number of categories as indicated by the weights.
         """
-        values = measurements.get_current_measurement(
-            self.object_name, 
-            self.return_fuzzy_measurement_name(
-                measurements.get_measurement_columns(),
-                self.object_name,
-                self.feature,
-                False,
-                self.allow_fuzzy
-                )
-        )
         if values is None:
             values = numpy.array([numpy.NaN])
         elif numpy.isscalar(values):
@@ -82,13 +72,13 @@ class Rule(object):
         return score
 
     @staticmethod
-    def return_fuzzy_measurement_name(measurements,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
+    def return_fuzzy_measurement_name(measurement_column_names,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
         def standard_ratio(query, candidate, **kwargs):
             s = kwargs["SequenceMatcher"]
             s.set_seq1(candidate)
             return s.ratio()
 
-        measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
+        measurement_list = [f"{col[0]}_{col[1]}" for col in measurement_column_names]
         if allow_fuzzy:
             cutoff = fuzzy_value
         else:
@@ -195,13 +185,14 @@ characters in a column name" setting. """
             if needs_close:
                 fd.close()
 
-    def score(self, measurements):
+    def score(self, measurement_value_list):
         """Score the measurements according to the rules list"""
         if len(self.rules) == 0:
             raise ValueError("No rules to apply")
-        score = self.rules[0].score(measurements)
-        for rule in self.rules[1:]:
-            partial_score = rule.score(measurements)
+
+        score = self.rules[0].score(measurement_value_list[0])
+        for i, rule in enumerate(self.rules[1:], start=1):
+            partial_score = rule.score(measurement_value_list[i])
             if partial_score.shape[0] > score.shape[0]:
                 temp = score
                 score = partial_score

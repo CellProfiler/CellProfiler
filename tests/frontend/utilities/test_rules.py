@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import cellprofiler_core.measurement
-import cellprofiler.utilities.rules as R
+from cellprofiler.utilities.rules import Rule, Rules
 
 OBJECT_NAME = "MyObject"
 M_FEATURES = ["Measurement%d" % i for i in range(1, 11)]
@@ -39,7 +39,7 @@ IF (Nuclei_AreaShape_MinorAxisLength > 6.4944899999999999, [0.5755128363506562, 
 IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.50557978238660795, -0.50557978238660795], [-0.35606081901385256, 0.35606081901385256])
 """
         fd = StringIO(data)
-        rules = R.Rules()
+        rules = Rules()
         rules.parse(fd)
         self.assertEqual(len(rules.rules), 20)
         for rule in rules.rules:
@@ -57,9 +57,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_02_00_no_measurements(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]]), False, 1
             )
         ]
@@ -70,9 +70,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_02_01_score_one_positive(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             )
         ]
@@ -85,9 +85,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_02_02_score_one_negative(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME,
                 M_FEATURES[0],
                 ">",
@@ -106,9 +106,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_02_03_score_one_nan(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([np.NaN], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME,
                 M_FEATURES[0],
                 ">",
@@ -127,9 +127,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_02_04_score_one_positive_fuzzy(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), True, 0.7
             )
         ]
@@ -138,9 +138,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)
         self.assertAlmostEqual(score[0, 1], -0.5)
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             )
         ]
@@ -152,12 +152,12 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         m.add_measurement(OBJECT_NAME, M_FEATURES[1], np.array([-1.5], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             ),
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]]), False, 1
             ),
         ]
@@ -170,9 +170,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
     def test_03_02_score_two_objects(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5, 2.5], float))
-        rules = R.Rules()
+        rules = Rules()
         rules.rules += [
-            R.Rules.Rule(
+            Rule(
                 OBJECT_NAME,
                 M_FEATURES[0],
                 "<",

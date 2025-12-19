@@ -5,25 +5,23 @@ from difflib import SequenceMatcher
 from rapidfuzz import process
 import re
 
+import numpy
+
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 
-#from cellprofiler_core.setting.text import Float
-FUZZY_FLOAT = 0.7 #We may eventually want to parametrize this with a setting, but let's not for now
-
-
-import numpy
+FUZZY_FLOAT = 0.7 # We may eventually want to parametrize this with a setting, but let's not for now
 
 class Rule(object):
     """Represents a single rule"""
 
-    def __init__(self, object_name, feature, comparitor, threshold, weights, allow_fuzzy, fuzzy_value):
+    def __init__(self, object_name, feature, comparator, threshold, weights, allow_fuzzy, fuzzy_value):
         """Create a rule
 
         object_name - the name of the object in the measurements
         feature - the name of the measurement (for instance,
                     "AreaShape_Area")
-        comparitor - the comparison to be performed (for instance, ">")
+        comparator - the comparison to be performed (for instance, ">")
         threshold - the positive / negative threshold for the comparison
         weights - a 2xN matrix of weights where weights[0,:] are the
                     scores for the rule being true and
@@ -31,34 +29,21 @@ class Rule(object):
                     and there are N categories.
         """
         self.object_name = object_name
-        self.comparitor = comparitor
+        self.comparator = comparator
         self.threshold = threshold
         self.feature = feature
         self.weights = weights
         self.allow_fuzzy = allow_fuzzy
         self.fuzzy_value = fuzzy_value
 
-    def score(self, measurements):
+    def score(self, values):
         """Score a rule
 
-        measurements - a measurements structure
-                        (cellprofiler_core.measurements.Measurements). Look
-                        up this rule's measurement in the structure to
-                        get the testing value.
+        values - a list of current measurements gathered from this rule's object_name
         Returns a MxN matrix where M is the number of measurements taken
         for the given feature in the current image set and N is the
         number of categories as indicated by the weights.
         """
-        values = measurements.get_current_measurement(
-            self.object_name, 
-            self.return_fuzzy_measurement_name(
-                measurements.get_measurement_columns(),
-                self.object_name,
-                self.feature,
-                False,
-                self.allow_fuzzy
-                )
-        )
         if values is None:
             values = numpy.array([numpy.NaN])
         elif numpy.isscalar(values):
@@ -67,28 +52,28 @@ class Rule(object):
         if len(values) == 0:
             return score
         mask = ~(numpy.isnan(values) | numpy.isinf(values))
-        if self.comparitor == "<":
+        if self.comparator == "<":
             hits = values[mask] < self.threshold
-        elif self.comparitor == "<=":
+        elif self.comparator == "<=":
             hits = values[mask] <= self.threshold
-        elif self.comparitor == ">":
+        elif self.comparator == ">":
             hits = values[mask] > self.threshold
-        elif self.comparitor == ">=":
+        elif self.comparator == ">=":
             hits = values[mask] >= self.threshold
         else:
-            raise NotImplementedError('Unknown comparitor, "%s".' % self.comparitor)
+            raise NotImplementedError('Unknown comparator, "%s".' % self.comparator)
         score[mask, :] = self.weights[1 - hits.astype(int), :]
         score[~mask, :] = self.weights[numpy.newaxis, 1]
         return score
 
     @staticmethod
-    def return_fuzzy_measurement_name(measurements,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
+    def return_fuzzy_measurement_name(measurement_column_names,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
         def standard_ratio(query, candidate, **kwargs):
             s = kwargs["SequenceMatcher"]
             s.set_seq1(candidate)
             return s.ratio()
 
-        measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
+        measurement_list = [f"{col[0]}_{col[1]}" for col in measurement_column_names]
         if allow_fuzzy:
             cutoff = fuzzy_value
         else:
@@ -156,7 +141,7 @@ characters in a column name" setting. """
         line_pattern = (
             "^IF\\s+\\((?P<object_name>[^_]+)"
             "_(?P<feature>\\S+)"
-            "\\s*(?P<comparitor>[><]=?)"
+            "\\s*(?P<comparator>[><]=?)"
             "\\s*(?P<threshold>[^,]+)"
             ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
             ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$"
@@ -182,7 +167,7 @@ characters in a column name" setting. """
                     rule = Rule(
                         d["object_name"],
                         d["feature"],
-                        d["comparitor"],
+                        d["comparator"],
                         float(d["threshold"]),
                         weights,
                         self.allow_fuzzy,
@@ -195,13 +180,14 @@ characters in a column name" setting. """
             if needs_close:
                 fd.close()
 
-    def score(self, measurements):
+    def score(self, measurement_value_list):
         """Score the measurements according to the rules list"""
         if len(self.rules) == 0:
             raise ValueError("No rules to apply")
-        score = self.rules[0].score(measurements)
-        for rule in self.rules[1:]:
-            partial_score = rule.score(measurements)
+
+        score = self.rules[0].score(measurement_value_list[0])
+        for i, rule in enumerate(self.rules[1:], start=1):
+            partial_score = rule.score(measurement_value_list[i])
             if partial_score.shape[0] > score.shape[0]:
                 temp = score
                 score = partial_score
@@ -227,5 +213,3 @@ characters in a column name" setting. """
             weights = numpy.vstack((pos, neg))
             rule = Rule(object_name, feature, ">", th, weights, self.allow_fuzzy,self.fuzzy_value)
             self.rules.append(rule)
-
-            

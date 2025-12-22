@@ -21,11 +21,6 @@ class MorphFunction(str, Enum):
     THICKEN = "thicken"
     THIN = "thin"
     VBREAK = "vbreak"
-class RepeatMethod(str, Enum):
-    """Options for how many times to repeat morphological operations."""
-    ONCE = "Once"
-    FOREVER = "Forever"
-    CUSTOM = "Custom"
 
 F_ALL = [
     MorphFunction.BRANCHPOINTS.value,
@@ -46,10 +41,4 @@ F_ALL = [
     MorphFunction.THICKEN.value,
     MorphFunction.THIN.value,
     MorphFunction.VBREAK.value,
-]
-
-R_ALL = [
-    RepeatMethod.ONCE.value, 
-    RepeatMethod.FOREVER.value, 
-    RepeatMethod.CUSTOM.value
 ]

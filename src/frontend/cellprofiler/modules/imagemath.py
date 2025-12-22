@@ -32,7 +32,6 @@ See also **Threshold**, **RescaleIntensity**,
 """
 
 import numpy
-import skimage.util
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import (
@@ -46,32 +45,11 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, ImageName
+from cellprofiler_library.opts.imagemath import Operator, Operand, BINARY_OUTPUT_OPS
+from cellprofiler_library.modules._imagemath import image_math
 
-O_ADD = "Add"
-O_SUBTRACT = "Subtract"
-O_DIFFERENCE = "Absolute Difference"
-O_MULTIPLY = "Multiply"
-O_DIVIDE = "Divide"
-O_AVERAGE = "Average"
-O_MINIMUM = "Minimum"
-O_MAXIMUM = "Maximum"
-O_STDEV = "Standard Deviation"
-O_INVERT = "Invert"
-O_COMPLEMENT = "Complement"
-O_LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
-O_LOG_TRANSFORM = "Log transform (base 2)"
-O_NONE = "None"
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
 O_COMBINE = "Combine"
-O_OR = "Or"
-O_AND = "And"
-O_NOT = "Not"
-O_EQUALS = "Equals"
-
-BINARY_OUTPUT_OPS = [O_AND, O_OR, O_NOT, O_EQUALS]
-
-IM_IMAGE = "Image"
-IM_MEASUREMENT = "Measurement"
 
 # The number of settings per image
 IMAGE_SETTING_COUNT_1 = 2
@@ -98,81 +76,100 @@ class ImageMath(ImageProcessing):
         self.operation = Choice(
             "Operation",
             [
-                O_ADD,
-                O_SUBTRACT,
-                O_DIFFERENCE,
-                O_MULTIPLY,
-                O_DIVIDE,
-                O_AVERAGE,
-                O_MINIMUM,
-                O_MAXIMUM,
-                O_STDEV,
-                O_INVERT,
-                O_LOG_TRANSFORM,
-                O_LOG_TRANSFORM_LEGACY,
-                O_AND,
-                O_OR,
-                O_NOT,
-                O_EQUALS,
-                O_NONE,
+                Operator.ADD.value,
+                Operator.SUBTRACT.value,
+                Operator.DIFFERENCE.value,
+                Operator.MULTIPLY.value,
+                Operator.DIVIDE.value,
+                Operator.AVERAGE.value,
+                Operator.MINIMUM.value,
+                Operator.MAXIMUM.value,
+                Operator.STDEV.value,
+                Operator.INVERT.value,
+                Operator.LOG_TRANSFORM.value,
+                Operator.LOG_TRANSFORM_LEGACY.value,
+                Operator.AND.value,
+                Operator.OR.value,
+                Operator.NOT.value,
+                Operator.EQUALS.value,
+                Operator.NONE.value,
             ],
             doc="""\
 Select the operation to perform. Note that if more than two images are
 chosen, then operations will be performed sequentially from first to
 last, e.g., for “Divide”, (Image1 / Image2) / Image3
 
--  *%(O_ADD)s:* Adds the first image to the second, and so on.
--  *%(O_SUBTRACT)s:* Subtracts the second image from the first.
--  *%(O_DIFFERENCE)s:* The absolute value of the difference between the
+-  *{O_ADD}:* Adds the first image to the second, and so on.
+-  *{O_SUBTRACT}:* Subtracts the second image from the first.
+-  *{O_DIFFERENCE}:* The absolute value of the difference between the
    first and second images.
--  *%(O_MULTIPLY)s:* Multiplies the first image by the second.
--  *%(O_DIVIDE)s:* Divides the first image by the second.
--  *%(O_AVERAGE)s:* Calculates the mean intensity of the images loaded
+-  *{O_MULTIPLY}:* Multiplies the first image by the second.
+-  *{O_DIVIDE}:* Divides the first image by the second.
+-  *{O_AVERAGE}:* Calculates the mean intensity of the images loaded
    in the module. This is equivalent to the Add option divided by the
    number of images loaded by this module. If you would like to average
    all of the images in an entire pipeline, i.e., across cycles, you
    should instead use the **CorrectIlluminationCalculate** module and
    choose the *All* (vs. *Each*) option.
--  *%(O_MINIMUM)s:* Returns the element-wise minimum value at each
+-  *{O_MINIMUM}:* Returns the element-wise minimum value at each
    pixel location.
--  *%(O_MAXIMUM)s:* Returns the element-wise maximum value at each
+-  *{O_MAXIMUM}:* Returns the element-wise maximum value at each
    pixel location.
--  *%(O_STDEV)s:* Returns the element-wise standard deviation value at each
+-  *{O_STDEV}:* Returns the element-wise standard deviation value at each
    pixel location.   
--  *%(O_INVERT)s:* Subtracts the image intensities from 1. This makes
+-  *{O_INVERT}:* Subtracts the image intensities from 1. This makes
    the darkest color the brightest and vice-versa. Note that if a
    mask has been applied to the image, the mask will also be inverted.
--  *%(O_LOG_TRANSFORM)s:* Log transforms each pixel’s intensity. The
+-  *{O_LOG_TRANSFORM}:* Log transforms each pixel’s intensity. The
    actual function is log\ :sub:`2`\ (image + 1), transforming values
    from 0 to 1 into values from 0 to 1.
--  *%(O_LOG_TRANSFORM_LEGACY)s:* Log\ :sub:`2` transform for backwards
+-  *{O_LOG_TRANSFORM_LEGACY}:* Log\ :sub:`2` transform for backwards
    compatibility.
--  *%(O_NONE)s:* This option is useful if you simply want to select some
+-  *{O_NONE}:* This option is useful if you simply want to select some
    of the later options in the module, such as adding, multiplying, or
    exponentiating your image by a constant.
 
 The following are operations that produce binary images. In a binary
 image, the foreground has a truth value of “true” (ones) and the background has
-a truth value of “false” (zeros). The operations, *%(O_OR)s, %(O_AND)s and
-%(O_NOT)s* will convert the input images to binary by changing all zero
+a truth value of “false” (zeros). The operations, *{O_OR}, {O_AND} and
+{O_NOT}* will convert the input images to binary by changing all zero
 values to background (false) and all other values to foreground (true).
 
--  *%(O_AND)s:* a pixel in the output image is in the foreground only
+-  *{O_AND}:* a pixel in the output image is in the foreground only
    if all corresponding pixels in the input images are also in the
    foreground.
--  *%(O_OR)s:* a pixel in the output image is in the foreground if a
+-  *{O_OR}:* a pixel in the output image is in the foreground if a
    corresponding pixel in any of the input images is also in the
    foreground.
--  *%(O_NOT)s:* the foreground of the input image becomes the
+-  *{O_NOT}:* the foreground of the input image becomes the
    background of the output image and vice-versa.
--  *%(O_EQUALS)s:* a pixel in the output image is in the foreground if
+-  *{O_EQUALS}:* a pixel in the output image is in the foreground if
    the corresponding pixels in the input images have the same value.
 
-Note that *%(O_INVERT)s*, *%(O_LOG_TRANSFORM)s*,
-*%(O_LOG_TRANSFORM_LEGACY)s* and *%(O_NONE)s* operate on only a
+Note that *{O_INVERT}*, *{O_LOG_TRANSFORM}*,
+*{O_LOG_TRANSFORM_LEGACY}* and *{O_NONE}* operate on only a
 single image.
-"""
-            % globals(),
+""".format(
+    **{
+        "O_ADD": Operator.ADD.value,
+        "O_SUBTRACT": Operator.SUBTRACT.value,
+        "O_DIFFERENCE": Operator.DIFFERENCE.value,
+        "O_MULTIPLY": Operator.MULTIPLY.value,
+        "O_DIVIDE": Operator.DIVIDE.value,
+        "O_AVERAGE": Operator.AVERAGE.value,
+        "O_MINIMUM": Operator.MINIMUM.value,
+        "O_MAXIMUM": Operator.MAXIMUM.value,
+        "O_STDEV": Operator.STDEV.value,
+        "O_INVERT": Operator.INVERT.value,
+        "O_LOG_TRANSFORM": Operator.LOG_TRANSFORM.value,
+        "O_LOG_TRANSFORM_LEGACY": Operator.LOG_TRANSFORM_LEGACY.value,
+        "O_AND": Operator.AND.value,
+        "O_OR": Operator.OR.value,
+        "O_NOT": Operator.NOT.value,
+        "O_EQUALS": Operator.EQUALS.value,
+        "O_NONE": Operator.NONE.value,
+    }
+),
         )
         self.divider_top = Divider(line=False)
 
@@ -262,17 +259,21 @@ Enter a name for the resulting image.""",
             "image_or_measurement",
             Choice(
                 "Image or measurement?",
-                [IM_IMAGE, IM_MEASUREMENT],
+                [Operand.IMAGE.value, Operand.MEASUREMENT.value],
                 doc="""\
 You can perform math operations using two images or you can use a
 measurement for one of the operands. For instance, to divide the
-intensity of one image by another, choose *%(IM_IMAGE)s* for both and
+intensity of one image by another, choose *{IM_IMAGE}* for both and
 pick the respective images. To divide the intensity of an image by its
 median intensity, use **MeasureImageIntensity** prior to this module to
-calculate the median intensity, then select *%(IM_MEASUREMENT)s* and
+calculate the median intensity, then select *{IM_MEASUREMENT}* and
 use the median intensity measurement as the denominator.
-"""
-                % globals(),
+""".format(
+    **{
+        "IM_IMAGE": Operand.IMAGE.value,
+        "IM_MEASUREMENT": Operand.MEASUREMENT.value,
+    }
+)
             ),
         )
 
@@ -368,11 +369,11 @@ is applied before other operations.""",
     def operand_count(self):
         """# of operands, taking the operation into consideration"""
         if self.operation.value in (
-            O_INVERT,
-            O_LOG_TRANSFORM,
-            O_LOG_TRANSFORM_LEGACY,
-            O_NONE,
-            O_NOT,
+            Operator.INVERT,
+            Operator.LOG_TRANSFORM,
+            Operator.LOG_TRANSFORM_LEGACY,
+            Operator.NONE,
+            Operator.NOT,
         ):
             return 1
         return len(self.images)
@@ -387,7 +388,7 @@ is applied before other operations.""",
                 result += [image.image_name]
             else:
                 result += [image.image_or_measurement]
-                if image.image_or_measurement == IM_IMAGE:
+                if image.image_or_measurement.value == Operand.IMAGE:
                     result += [image.image_name]
                 else:
                     result += [image.measurement]
@@ -451,36 +452,36 @@ is applied before other operations.""",
         image_names = [
             image.image_name.value
             for image in self.images
-            if image.image_or_measurement == IM_IMAGE
+            if image.image_or_measurement.value == Operand.IMAGE
         ]
         image_factors = [image.factor.value for image in self.images]
-        wants_image = [image.image_or_measurement == IM_IMAGE for image in self.images]
+        wants_image = [image.image_or_measurement.value == Operand.IMAGE for image in self.images]
 
         if self.operation.value in [
-            O_INVERT,
-            O_LOG_TRANSFORM,
-            O_LOG_TRANSFORM_LEGACY,
-            O_NOT,
-            O_NONE,
+            Operator.INVERT,
+            Operator.LOG_TRANSFORM,
+            Operator.LOG_TRANSFORM_LEGACY,
+            Operator.NOT,
+            Operator.NONE,
         ]:
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
 
         images = [workspace.image_set.get_image(x) for x in image_names]
-        pixel_data = [image.pixel_data for image in images]
+        image_operands = [image.pixel_data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
 
         # Crop all of the images similarly
-        smallest = numpy.argmin([numpy.product(pd.shape) for pd in pixel_data])
+        smallest = numpy.argmin([numpy.product(pd.shape) for pd in image_operands])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
-            pixel_data[i] = smallest_image.crop_image_similarly(pixel_data[i])
+            image_operands[i] = smallest_image.crop_image_similarly(image_operands[i])
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
 
         # weave in the measurements
-        idx = 0
+        operands = image_operands
         measurements = workspace.measurements
         for i in range(self.operand_count):
             if not wants_image[i]:
@@ -488,135 +489,32 @@ is applied before other operations.""",
                     self.images[i].measurement.value
                 )
                 value = numpy.NaN if value is None else float(value)
-                pixel_data.insert(i, value)
+                operands.insert(i, value)
                 masks.insert(i, True)
-
+                
         # Multiply images by their factors
         for i, image_factor in enumerate(image_factors):
             if image_factor != 1 and self.operation not in BINARY_OUTPUT_OPS:
-                pixel_data[i] = pixel_data[i] * image_factors[i]
+                operands[i] = operands[i] * image_factors[i]
 
-        output_pixel_data = pixel_data[0]
+        output_pixel_data = operands[0]
         output_mask = masks[0]
 
-        opval = self.operation.value
-        if opval in [
-            O_ADD,
-            O_SUBTRACT,
-            O_DIFFERENCE,
-            O_MULTIPLY,
-            O_DIVIDE,
-            O_AVERAGE,
-            O_MAXIMUM,
-            O_MINIMUM,
-            O_AND,
-            O_OR,
-            O_EQUALS,
-        ]:
-            # Binary operations
-            if opval in (O_ADD, O_AVERAGE):
-                op = numpy.add
-            elif opval == O_SUBTRACT:
-                if self.use_logical_operation(pixel_data):
-                    output_pixel_data = pixel_data[0].copy()
-                else:
-                    op = numpy.subtract
-            elif opval == O_DIFFERENCE:
-                if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_xor
-                else:
-
-                    def op(x, y):
-                        return numpy.abs(numpy.subtract(x, y))
-
-            elif opval == O_MULTIPLY:
-                if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_and
-                else:
-                    op = numpy.multiply
-            elif opval == O_MINIMUM:
-                op = numpy.minimum
-            elif opval == O_MAXIMUM:
-                op = numpy.maximum
-            elif opval == O_AND:
-                op = numpy.logical_and
-            elif opval == O_OR:
-                op = numpy.logical_or
-            elif opval == O_EQUALS:
-                output_pixel_data = numpy.ones(pixel_data[0].shape, bool)
-                comparitor = pixel_data[0]
-            else:
-                op = numpy.divide
-            for pd, mask in zip(pixel_data[1:], masks[1:]):
-                if not numpy.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
-                    if output_pixel_data.ndim == 2:
-                        output_pixel_data = output_pixel_data[:, :, numpy.newaxis]
-                        if opval == O_EQUALS and not numpy.isscalar(comparitor):
-                            comparitor = comparitor[:, :, numpy.newaxis]
-                    if pd.ndim == 2:
-                        pd = pd[:, :, numpy.newaxis]
-                if opval == O_EQUALS:
-                    output_pixel_data = output_pixel_data & (comparitor == pd)
-                elif opval == O_SUBTRACT and self.use_logical_operation(pixel_data):
-                    output_pixel_data[pd] = False
-                else:
-                    output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask:
-                    continue
-                else:
-                    if output_mask is None:
-                        output_mask = mask
-                    elif mask is not None:
-                        output_mask = output_mask & mask
-            if opval == O_AVERAGE:
-                if not self.use_logical_operation(pixel_data):
-                    output_pixel_data /= sum(image_factors)
-        elif opval == O_STDEV:
-            pixel_array = numpy.array(pixel_data)
-            output_pixel_data = numpy.std(pixel_array,axis=0)
-            if not self.ignore_mask:
-                mask_array = numpy.array(masks)
-                output_mask = mask_array.all(axis=0) 
-        elif opval == O_INVERT:
-            output_pixel_data = skimage.util.invert(output_pixel_data)
-        elif opval == O_NOT:
-            output_pixel_data = numpy.logical_not(output_pixel_data)
-        elif opval == O_LOG_TRANSFORM:
-            output_pixel_data = numpy.log2(output_pixel_data + 1)
-        elif opval == O_LOG_TRANSFORM_LEGACY:
-            output_pixel_data = numpy.log2(output_pixel_data)
-        elif opval == O_NONE:
-            output_pixel_data = output_pixel_data.copy()
-        else:
-            raise NotImplementedError(
-                "The operation %s has not been implemented" % opval
-            )
-
-        # Check to see if there was a measurement & image w/o mask. If so
-        # set mask to none
-        if numpy.isscalar(output_mask):
-            output_mask = None
-        if opval not in BINARY_OUTPUT_OPS:
-            #
-            # Post-processing: exponent, multiply, add
-            #
-            if self.exponent.value != 1:
-                output_pixel_data **= self.exponent.value
-            if self.after_factor.value != 1:
-                output_pixel_data *= self.after_factor.value
-            if self.addend.value != 0:
-                output_pixel_data += self.addend.value
-
-            #
-            # truncate values
-            #
-            if self.truncate_low.value:
-                output_pixel_data[output_pixel_data < 0] = 0
-            if self.truncate_high.value:
-                output_pixel_data[output_pixel_data > 1] = 1
-            if self.replace_nan.value:
-                output_pixel_data[numpy.isnan(output_pixel_data)] = 0
-
+        output_pixel_data, output_mask = image_math(
+            opval=self.operation.value,
+            operands=operands,
+            masks=masks,
+            output_pixel_data=output_pixel_data,
+            output_mask=output_mask,
+            ignore_mask=self.ignore_mask.value,
+            image_factors=image_factors,
+            exponent=self.exponent.value,
+            after_factor=self.after_factor.value,
+            addend=self.addend.value,
+            truncate_low=self.truncate_low.value,
+            truncate_high=self.truncate_high.value,
+            replace_nan=self.replace_nan.value,
+        )
         #
         # add the output image to the workspace
         #
@@ -630,7 +528,7 @@ is applied before other operations.""",
         if not self.ignore_mask:
             if type(output_mask) == numpy.ndarray:
                 output_pixel_data = output_pixel_data * output_mask
-
+        output_pixel_data, output_mask
         output_image = Image(
             output_pixel_data,
             mask=output_mask,
@@ -688,7 +586,7 @@ is applied before other operations.""",
         """Guarantee that at least one operand is an image"""
         for i in range(self.operand_count):
             op = self.images[i]
-            if op.image_or_measurement == IM_IMAGE:
+            if op.image_or_measurement.value == Operand.IMAGE:
                 return
         raise ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
@@ -702,7 +600,7 @@ is applied before other operations.""",
                 FIXED_SETTING_COUNT_1, len(setting_values), IMAGE_SETTING_COUNT_1
             ):
                 new_setting_values += [
-                    IM_IMAGE,
+                    Operand.IMAGE,
                     setting_values[i],
                     setting_values[i + 1],
                     "",
@@ -717,8 +615,8 @@ is applied before other operations.""",
             variable_revision_number = 3
         if variable_revision_number == 3:
             # Log transform -> legacy log transform
-            if setting_values[0] == O_LOG_TRANSFORM:
-                setting_values = [O_LOG_TRANSFORM_LEGACY] + setting_values[1:]
+            if setting_values[0] == Operator.LOG_TRANSFORM:
+                setting_values = [Operator.LOG_TRANSFORM_LEGACY] + setting_values[1:]
             variable_revision_number = 4
         if variable_revision_number == 4:
             # Add NaN handling

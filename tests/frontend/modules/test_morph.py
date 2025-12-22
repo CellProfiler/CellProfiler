@@ -14,8 +14,8 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
-from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod
-
+from cellprofiler_library.opts.morph import MorphFunction
+from cellprofiler.modules.morph import RepeatMethod
 
 def test_load_v2():
     file = tests.frontend.modules.get_test_resources_directory("morph/v2.pipeline")

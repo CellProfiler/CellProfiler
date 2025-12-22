@@ -255,6 +255,7 @@ tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 import logging
 
 import numpy
+from enum import Enum
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
@@ -267,7 +268,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer
 
 from cellprofiler_library.modules._morph import apply_morphological_operations
-from cellprofiler_library.opts.morph import MorphFunction, RepeatMethod, F_ALL, R_ALL
+from cellprofiler_library.opts.morph import MorphFunction, F_ALL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -276,6 +277,17 @@ FUNCTION_SETTING_COUNT_V2 = 4
 FUNCTION_SETTING_COUNT_V3 = 11
 FUNCTION_SETTING_COUNT = 4
 
+class RepeatMethod(str, Enum):
+    """Options for how many times to repeat morphological operations."""
+    ONCE = "Once"
+    FOREVER = "Forever"
+    CUSTOM = "Custom"
+
+R_ALL = [
+    RepeatMethod.ONCE.value, 
+    RepeatMethod.FOREVER.value, 
+    RepeatMethod.CUSTOM.value
+]
 
 class Morph(Module):
     module_name = "Morph"

@@ -5,7 +5,7 @@ OverlayOutlines
 **OverlayOutlines** places outlines of objects over a desired image.
 
 This module places outlines of objects on any desired image (grayscale, color, or blank).
-The resulting image can be saved using the **SaveImages** module.
+The resulting image can be saved using the **SaveImages** module. Overlaying multiple objects will overwrite previous outlines.
 
 |
 
@@ -167,7 +167,7 @@ maximal brightness already occurring in the image.
             Color(
                 "Select outline color",
                 default_color,
-                doc="Objects will be outlined in this color.",
+                doc="Objects will be outlined in this color. If overlaying multiple objects, the previous outlines will be overwritten.",
             ),
         )
 

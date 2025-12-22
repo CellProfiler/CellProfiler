@@ -4,7 +4,7 @@ from typing import Annotated, Optional, Tuple, Dict, Callable
 from numpy.typing import NDArray
 from cellprofiler_library.functions.image_processing import flip_image_both, flip_image_left_to_right, flip_image_top_to_bottom, rotate_image_angle, rotate_image_coordinates
 from cellprofiler_library.types import Image2D, Image2DMask
-from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateMethod, RotationCycle, RotationCoordinateAlignmnet
+from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateMethod, RotationCoordinateAlignmnet
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def flip_and_rotate(

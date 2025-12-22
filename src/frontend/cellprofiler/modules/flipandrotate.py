@@ -20,6 +20,7 @@ Measurements made by this module
 
 import numpy
 import scipy.ndimage
+from enum import Enum
 from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -28,34 +29,15 @@ from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
+from cellprofiler_library.modules._flipandrotate import flip_and_rotate, flip_image, rotate_image
+from cellprofiler_library.opts.flipandrotate import RotateMethod, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, C_ALL
 
-FLIP_NONE = "Do not flip"
-FLIP_LEFT_TO_RIGHT = "Left to right"
-FLIP_TOP_TO_BOTTOM = "Top to bottom"
-FLIP_BOTH = "Left to right and top to bottom"
-FLIP_ALL = [FLIP_NONE, FLIP_LEFT_TO_RIGHT, FLIP_TOP_TO_BOTTOM, FLIP_BOTH]
 
-ROTATE_NONE = "Do not rotate"
-ROTATE_ANGLE = "Enter angle"
-ROTATE_COORDINATES = "Enter coordinates"
-ROTATE_MOUSE = "Use mouse"
-ROTATE_ALL = [ROTATE_NONE, ROTATE_ANGLE, ROTATE_COORDINATES, ROTATE_MOUSE]
+class RotationCycle(str, Enum):
+    INDIVIDUALLY = "Individually"
+    ONCE = "Only Once"
 
-IO_INDIVIDUALLY = "Individually"
-IO_ONCE = "Only Once"
-IO_ALL = [IO_INDIVIDUALLY, IO_ONCE]
-
-C_HORIZONTALLY = "horizontally"
-C_VERTICALLY = "vertically"
-C_ALL = [C_HORIZONTALLY, C_VERTICALLY]
-
-D_ANGLE = "angle"
-
-"""Rotation measurement category"""
-M_ROTATION_CATEGORY = "Rotation"
-"""Rotation measurement format (+ image name)"""
-M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
-
+IO_ALL = [RotationCycle.INDIVIDUALLY, RotationCycle.ONCE]
 
 class FlipAndRotate(Module):
     category = "Image Processing"
@@ -86,20 +68,26 @@ Select how the image is to be flipped.""",
             "Select method to rotate image",
             ROTATE_ALL,
             doc="""\
--  *%(ROTATE_NONE)s:* Leave the image unrotated. This should be used if
+-  *{ROTATE_NONE}:* Leave the image unrotated. This should be used if
    you want to flip the image only.
--  *%(ROTATE_ANGLE)s:* Provide the numerical angle by which the image
+-  *{ROTATE_ANGLE}:* Provide the numerical angle by which the image
    should be rotated.
--  *%(ROTATE_COORDINATES)s:* Provide the X,Y pixel locations of two
+-  *{ROTATE_COORDINATES}:* Provide the X,Y pixel locations of two
    points in the image that should be aligned horizontally or
    vertically.
--  *%(ROTATE_MOUSE)s:* CellProfiler will pause so you can select the
+-  *{ROTATE_MOUSE}:* CellProfiler will pause so you can select the
    rotation interactively. When prompted during the analysis run, grab
    the image by clicking the left mouse button, rotate the image by
    dragging with the mouse, then release the mouse button. Press the
    *Done* button on the image after rotating the image appropriately.
-"""
-            % globals(),
+""".format(
+    **{
+        "ROTATE_NONE": RotateMethod.NONE.value,
+        "ROTATE_ANGLE": RotateMethod.ANGLE.value,
+        "ROTATE_COORDINATES": RotateMethod.COORDINATES.value,
+        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
+    }
+),
         )
 
         self.wants_crop = Binary(
@@ -122,14 +110,19 @@ the original, which may affect downstream modules.
             "Calculate rotation",
             IO_ALL,
             doc="""\
-*(Used only when using “%(ROTATE_MOUSE)s” to rotate images)*
+*(Used only when using “{ROTATE_MOUSE}” to rotate images)*
 
 Select the cycle(s) at which the calculation is requested and
 calculated.
--  *%(IO_INDIVIDUALLY)s:* Determine the amount of rotation for each image individually, e.g., for each cycle.
--  *%(IO_ONCE)s:* Define the rotation only once (on the first image), then apply it to all images.
-"""
-            % globals(),
+-  *{IO_INDIVIDUALLY}:* Determine the amount of rotation for each image individually, e.g., for each cycle.
+-  *{IO_ONCE}:* Define the rotation only once (on the first image), then apply it to all images.
+""".format(
+    **{
+        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
+        "IO_INDIVIDUALLY": RotationCycle.INDIVIDUALLY.value,
+        "IO_ONCE": RotationCycle.ONCE.value,
+    }
+),
         )
 
         self.first_pixel = Coordinates(
@@ -142,7 +135,7 @@ After rotation, if the specified points are aligned horizontally, this point on 
 left of the other point. If the specified points are aligned vertically, this point of the image will be positioned
 above the other point.
 """.format(
-                **{"ROTATE_COORDINATES": ROTATE_COORDINATES}
+                **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
             ),
         )
 
@@ -156,7 +149,7 @@ After rotation, if the specified points are aligned horizontally, this point on 
 right of the other point. If the specified points are aligned vertically, this point of the image will be positioned
 below the other point.
 """.format(
-                **{"ROTATE_COORDINATES": ROTATE_COORDINATES}
+                **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
             ),
         )
 
@@ -164,23 +157,25 @@ below the other point.
             "Select how the specified points should be aligned",
             C_ALL,
             doc="""\
-*(Used only when using “%(ROTATE_COORDINATES)s” to rotate images)*
+*(Used only when using “{ROTATE_COORDINATES}” to rotate images)*
 
 Specify whether you would like the coordinate points that you entered to
-be horizontally or vertically aligned after the rotation is complete."""
-            % globals(),
+be horizontally or vertically aligned after the rotation is complete.""".format(
+    **{"ROTATE_COORDINATES": RotateMethod.COORDINATES.value}
+),
         )
 
         self.angle = Float(
             "Enter angle of rotation",
             0,
             doc="""\
-*(Used only when using “%(ROTATE_ANGLE)s” to rotate images)*
+*(Used only when using “{ROTATE_ANGLE}” to rotate images)*
 
 Enter the angle you would like to rotate the image. This setting is in
 degrees, with positive angles corresponding to counterclockwise and
-negative as clockwise."""
-            % globals(),
+negative as clockwise.""".format(
+    **{"ROTATE_ANGLE": RotateMethod.ANGLE.value}
+),
         )
 
     def settings(self):
@@ -204,18 +199,18 @@ negative as clockwise."""
             self.flip_choice,
             self.rotate_choice,
         ]
-        if self.rotate_choice == ROTATE_NONE:
+        if self.rotate_choice == RotateMethod.NONE:
             pass
-        elif self.rotate_choice == ROTATE_ANGLE:
+        elif self.rotate_choice == RotateMethod.ANGLE:
             result += [self.wants_crop, self.angle]
-        elif self.rotate_choice == ROTATE_COORDINATES:
+        elif self.rotate_choice == RotateMethod.COORDINATES:
             result += [
                 self.wants_crop,
                 self.first_pixel,
                 self.second_pixel,
                 self.horiz_or_vert,
             ]
-        elif self.rotate_choice == ROTATE_MOUSE:
+        elif self.rotate_choice == RotateMethod.MOUSE:
             result += [self.wants_crop, self.how_often]
         else:
             raise NotImplementedError(
@@ -225,7 +220,7 @@ negative as clockwise."""
 
     def prepare_group(self, workspace, grouping, image_numbers):
         """Initialize the angle if appropriate"""
-        if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
+        if self.rotate_choice == RotateMethod.MOUSE and self.how_often == RotationCycle.ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
     def run(self, workspace):
@@ -234,115 +229,53 @@ negative as clockwise."""
         pixel_data = image.pixel_data.copy()
         mask = image.mask
 
-        if self.flip_choice != FLIP_NONE:
-            if self.flip_choice == FLIP_LEFT_TO_RIGHT:
-                i, j = numpy.mgrid[
-                    0 : pixel_data.shape[0], pixel_data.shape[1] - 1 : -1 : -1
-                ]
-            elif self.flip_choice == FLIP_TOP_TO_BOTTOM:
-                i, j = numpy.mgrid[
-                    pixel_data.shape[0] - 1 : -1 : -1, 0 : pixel_data.shape[1]
-                ]
-            elif self.flip_choice == FLIP_BOTH:
-                i, j = numpy.mgrid[
-                    pixel_data.shape[0] - 1 : -1 : -1, pixel_data.shape[1] - 1 : -1 : -1
-                ]
-            else:
-                raise NotImplementedError(
-                    "Unknown flipping operation: %s" % self.flip_choice.value
-                )
-            mask = mask[i, j]
-            if pixel_data.ndim == 2:
-                pixel_data = pixel_data[i, j]
-            else:
-                pixel_data = pixel_data[i, j, :]
 
-        if self.rotate_choice != ROTATE_NONE:
-            if self.rotate_choice == ROTATE_ANGLE:
-                angle = self.angle.value
-            elif self.rotate_choice == ROTATE_COORDINATES:
-                xdiff = self.second_pixel.x - self.first_pixel.x
-                ydiff = self.second_pixel.y - self.first_pixel.y
-                if self.horiz_or_vert == C_VERTICALLY:
-                    angle = -numpy.arctan2(ydiff, xdiff) * 180.0 / numpy.pi
-                elif self.horiz_or_vert == C_HORIZONTALLY:
-                    angle = numpy.arctan2(xdiff, ydiff) * 180.0 / numpy.pi
-                else:
-                    raise NotImplementedError(
-                        "Unknown axis: %s" % self.horiz_or_vert.value
-                    )
-            elif self.rotate_choice == ROTATE_MOUSE:
-                d = self.get_dictionary()
-                if (
-                    self.how_often == IO_ONCE
-                    and D_ANGLE in d
-                    and d[D_ANGLE] is not None
-                ):
-                    angle = d[D_ANGLE]
-                else:
-                    angle = workspace.interaction_request(
-                        self, pixel_data, workspace.measurements.image_set_number
-                    )
-                if self.how_often == IO_ONCE:
-                    d[D_ANGLE] = angle
+        ######
+        rotate_angle = self.angle.value
+        state_dict_for_mouse_mode = self.get_dictionary()
+        mouse_mode_cycle = self.how_often.value
+        
+        if self.rotate_choice == RotateMethod.MOUSE:
+            # perform flip and rotate separately
+            pixel_data, mask = flip_image(pixel_data, mask, self.flip_choice.value)
+            # state_dict_for_mouse_mode = self.get_dictionary()
+            assert state_dict_for_mouse_mode is not None, "state_dict_for_mouse_mode must be provided for rotate_choice == RotateMethod.MOUSE"
+            assert mouse_mode_cycle is not None, "mouse_mode_cycle must be provided for rotate_choice == RotateMethod.MOUSE"
+            if (
+                mouse_mode_cycle == RotationCycle.ONCE
+                and D_ANGLE in state_dict_for_mouse_mode
+                and state_dict_for_mouse_mode[D_ANGLE] is not None
+            ):
+                angle = state_dict_for_mouse_mode[D_ANGLE]
             else:
-                raise NotImplementedError(
-                    "Unknown rotation method: %s" % self.rotate_choice.value
-                )
-            rangle = angle * numpy.pi / 180.0
-            mask = scipy.ndimage.rotate(mask.astype(float), angle, reshape=True) > 0.50
-            crop = (
-                scipy.ndimage.rotate(
-                    numpy.ones(pixel_data.shape[:2]), angle, reshape=True
-                )
-                > 0.50
+                angle = workspace.interaction_request(
+                self, pixel_data, workspace.measurements.image_set_number
             )
-            mask = mask & crop
-            pixel_data = scipy.ndimage.rotate(pixel_data, angle, reshape=True)
-            if self.wants_crop.value:
-                #
-                # We want to find the largest rectangle that fits inside
-                # the crop. The cumulative sum in the i and j direction gives
-                # the length of the rectangle in each direction and
-                # multiplying them gives you the area.
-                #
-                # The left and right halves are symmetric, so we compute
-                # on just two of the quadrants.
-                #
-                half = (numpy.array(crop.shape) / 2).astype(int)
-                #
-                # Operate on the lower right
-                #
-                quartercrop = crop[half[0] :, half[1] :]
-                ci = numpy.cumsum(quartercrop, 0)
-                cj = numpy.cumsum(quartercrop, 1)
-                carea_d = ci * cj
-                carea_d[quartercrop == 0] = 0
-                #
-                # Operate on the upper right by flipping I
-                #
-                quartercrop = crop[crop.shape[0] - half[0] - 1 :: -1, half[1] :]
-                ci = numpy.cumsum(quartercrop, 0)
-                cj = numpy.cumsum(quartercrop, 1)
-                carea_u = ci * cj
-                carea_u[quartercrop == 0] = 0
-                carea = carea_d + carea_u
-                max_carea = numpy.max(carea)
-                max_area = numpy.argwhere(carea == max_carea)[0] + half
-                min_i = max(crop.shape[0] - max_area[0] - 1, 0)
-                max_i = max_area[0] + 1
-                min_j = max(crop.shape[1] - max_area[1] - 1, 0)
-                max_j = max_area[1] + 1
-                ii = numpy.index_exp[min_i:max_i, min_j:max_j]
-                crop = numpy.zeros(pixel_data.shape, bool)
-                crop[ii] = True
-                mask = mask[ii]
-                pixel_data = pixel_data[ii]
-            else:
-                crop = None
+            if mouse_mode_cycle == RotationCycle.ONCE:
+                state_dict_for_mouse_mode[D_ANGLE] = angle
+            pixel_data, mask, crop, angle = rotate_image(
+                pixel_data,
+                mask,
+                RotateMethod.ANGLE,
+                angle,
+                None,
+                None,
+                None,
+                wants_crop=self.wants_crop.value,
+            )
+
         else:
-            crop = None
-            angle = 0
+            pixel_data, mask, crop, angle = flip_and_rotate(
+                pixel_data, 
+                mask, 
+                self.flip_choice.value, 
+                self.rotate_choice.value, 
+                rotate_angle, 
+                (self.first_pixel.x, self.first_pixel.y),
+                (self.second_pixel.x, self.second_pixel.y), 
+                self.horiz_or_vert,
+                wants_crop=self.wants_crop.value,
+            )
         output_image = Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
@@ -567,13 +500,13 @@ negative as clockwise."""
         if variable_revision_number == 1:
             # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
             if setting_values[3] == "Mouse":
-                setting_values[3] = ROTATE_MOUSE
+                setting_values[3] = RotateMethod.MOUSE
             elif setting_values[3] == "None":
-                setting_values[3] = ROTATE_NONE
+                setting_values[3] = RotateMethod.NONE
             elif setting_values[3] == "Coordinates":
-                setting_values[3] = ROTATE_COORDINATES
+                setting_values[3] = RotateMethod.COORDINATES
             elif setting_values[3] == "Angle":
-                setting_values[3] = ROTATE_ANGLE
+                setting_values[3] = RotateMethod.ANGLE
             variable_revision_number = 2
         return setting_values, variable_revision_number
 

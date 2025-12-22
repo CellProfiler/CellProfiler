@@ -18,7 +18,7 @@ import math
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, Image2DGrayscaleMask, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
 from cellprofiler_library.opts.overlayoutlines import BrightnessMode
@@ -27,6 +27,7 @@ from cellprofiler_library.opts.structuring_elements import StructuringElementSha
 from cellprofiler_library.opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
 from cellprofiler_library.opts.imagemath import Operator
 from cellprofiler_library.opts.flipandrotate import RotationCoordinateAlignmnet
+from cellprofiler_library.opts.enhanceedges import EdgeDirection
 invert = cast(Callable[[ImageAny], ImageAny], _invert)
 isscalar = cast(Callable[[Optional[ImageAny]], bool], _isscalar)
 
@@ -49,30 +50,42 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
-def enhance_edges_sobel(image, mask=None, direction="all"):
-    if direction.casefold() == "all":
+def enhance_edges_sobel(
+        image: Image2DGrayscale, 
+        mask: Optional[Image2DGrayscaleMask]=None, 
+        direction: EdgeDirection=EdgeDirection.ALL
+        ):
+    if direction == EdgeDirection.ALL:
         output_pixels = centrosome.filter.sobel(image, mask)
-    elif direction.casefold() == "horizontal":
+    elif direction == EdgeDirection.HORIZONTAL:
         output_pixels = centrosome.filter.hsobel(image, mask)
-    elif direction.casefold() == "vertical":
+    elif direction == EdgeDirection.VERTICAL:
         output_pixels = centrosome.filter.vsobel(image, mask)
     else:
         raise NotImplementedError(f"Unimplemented direction for Sobel: {direction}")
     return output_pixels
 
 
-def enhance_edges_log(image, mask=None, sigma=2.0):
+def enhance_edges_log(
+        image: Image2DGrayscale, 
+        mask: Optional[Image2DGrayscaleMask]=None, 
+        sigma: float=2.0
+        ) -> Image2DGrayscale:
     size = int(sigma * 4) + 1
     output_pixels = centrosome.filter.laplacian_of_gaussian(image, mask, size, sigma)
     return output_pixels
 
 
-def enhance_edges_prewitt(image, mask=None, direction="all"):
-    if direction.casefold() == "all":
+def enhance_edges_prewitt(
+        image: Image2DGrayscale, 
+        mask: Optional[Image2DGrayscaleMask]=None, 
+        direction: EdgeDirection=EdgeDirection.ALL
+        ) -> Image2DGrayscale:
+    if direction == EdgeDirection.ALL:
         output_pixels = centrosome.filter.prewitt(image, mask)
-    elif direction.casefold() == "horizontal":
+    elif direction == EdgeDirection.HORIZONTAL:
         output_pixels = centrosome.filter.hprewitt(image, mask)
-    elif direction.casefold() == "vertical":
+    elif direction == EdgeDirection.VERTICAL:
         output_pixels = centrosome.filter.vprewitt(image, mask)
     else:
         raise NotImplementedError(f"Unimplemented direction for Prewitt: {direction}")
@@ -80,15 +93,15 @@ def enhance_edges_prewitt(image, mask=None, direction="all"):
 
 
 def enhance_edges_canny(
-    image,
-    mask=None,
-    auto_threshold=True,
-    auto_low_threshold=True,
-    sigma=1.0,
-    low_threshold=0.1,
-    manual_threshold=0.2,
-    threshold_adjustment_factor=1.0,
-):
+    image: Image2DGrayscale,
+    mask: Optional[Image2DGrayscaleMask] = None,
+    auto_threshold: bool = True,
+    auto_low_threshold: bool = True,
+    sigma: float = 1.0,
+    low_threshold: float = 0.1,
+    manual_threshold: float = 0.2,
+    threshold_adjustment_factor: float = 1.0,
+    ) -> Image2DGrayscale:
 
     if auto_threshold or auto_low_threshold:
         sobel_image = centrosome.filter.sobel(image)

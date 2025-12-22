@@ -20,7 +20,7 @@ Measurements made by this module
 
 import numpy
 import scipy.ndimage
-
+from enum import Enum
 from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -30,7 +30,14 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
 from cellprofiler_library.modules._flipandrotate import flip_and_rotate, flip_image, rotate_image
-from cellprofiler_library.opts.flipandrotate import RotateMethod, RotationCycle, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, IO_ALL, C_ALL
+from cellprofiler_library.opts.flipandrotate import RotateMethod, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, C_ALL
+
+
+class RotationCycle(str, Enum):
+    INDIVIDUALLY = "Individually"
+    ONCE = "Only Once"
+
+IO_ALL = [RotationCycle.INDIVIDUALLY, RotationCycle.ONCE]
 
 class FlipAndRotate(Module):
     category = "Image Processing"

@@ -15,7 +15,7 @@ import scipy
 import scipy.interpolate
 import matplotlib
 import math
-from typing import Annotated, Any, Optional, Tuple, Callable, Union, Sequence, List, cast, Dict, TypeVar
+from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
 from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask

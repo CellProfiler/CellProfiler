@@ -1,5 +1,3 @@
-import numpy as np
-from numpy.typing import NDArray
 from pydantic import validate_call, ConfigDict, Field
 from typing import Annotated, List
 from cellprofiler_library.functions.measurement import get_granularity_measurements, ObjectRecord

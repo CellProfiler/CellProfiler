@@ -42,7 +42,6 @@ from cellprofiler_core.setting.text import Float, Integer
 from cellprofiler.modules import _help
 from cellprofiler_library.modules import threshold
 import cellprofiler_library.opts.threshold as ThresholdOpts
-from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -788,9 +787,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(
@@ -817,6 +816,7 @@ staining.
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
 
+
     def convert_setting(self, gui_setting_str):
         """
         Convert GUI setting strings to something cellprofiler
@@ -826,39 +826,39 @@ staining.
         converted_str = gui_setting_str
         for replacement in rep_list:
             converted_str = converted_str.replace(*replacement)
-        return converted_str.lower()
+        return converted_str
 
     def get_threshold(self, input_image, workspace, automatic=False):
         """
         Get manual, measurement or other thresholds
         """
-        # Handle manual and measurement thresholds, which are not supported
+        # Handle manual and measurement thresholds, which are not supported 
         # by cellprofiler_library
         if self.threshold_operation == ThresholdOpts.Method.MANUAL:
-            final_threshold = float(self.manual_threshold.value) 
-            orig_threshold = float(self.manual_threshold.value)
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
+            # Thresholds added to class so they are accessible in tests
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=self.manual_threshold.value,
+                    threshold_correction_factor=1, # No correction applied
+                    threshold_min=None, # Manual has no min/max fitlering
+                    threshold_max=None,
+                    volumetric=input_image.volumetric, 
             )
         elif self.threshold_operation == ThresholdOpts.Method.MEASUREMENT:
-            orig_threshold = float(
+            predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
                     self.thresholding_measurement.value
                 )
             )
-            final_threshold = orig_threshold
-            final_threshold *= float(self.threshold_correction_factor.value)
-            final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=predefined_threshold,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    smoothing=self.threshold_smoothing_scale.value,
             )
         else:
             # Convert threshold method for CellProfiler Library
@@ -874,7 +874,7 @@ staining.
                     threshold_method = ThresholdOpts.Method(self.local_operation.value)
             else:
                 raise NotImplementedError(f"Threshold scope {self.threshold_scope.value} is not supported.")
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     threshold_scope=self.threshold_scope.value,
@@ -892,10 +892,25 @@ staining.
                     variance_method=self.variance_method.value,
                     number_of_deviations=self.number_of_deviations.value,
                     volumetric=input_image.volumetric,  
-                    automatic=automatic
             )
-        
-        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
+
+        return self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma
+
+
+
+
+
+
+    def convert_setting(self, gui_setting_str):
+        """
+        Convert GUI setting strings to something cellprofiler
+        library compatible. That is, remove spaces and hyphens.
+        """
+        rep_list = ((" ", "_"), ("-", "_"))
+        converted_str = gui_setting_str
+        for replacement in rep_list:
+            converted_str = converted_str.replace(*replacement)
+        return converted_str.lower()
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

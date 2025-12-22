@@ -15,8 +15,8 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.object import size_similarly
-from centrosome.outline import outline
+from cellprofiler_library.functions.object_processing import size_similarly
+from cellprofiler_library.modules import identifytertiaryobjects
 
 from cellprofiler.modules import _help
 
@@ -261,50 +261,14 @@ but the results will be zero or not-a-number (NaN).
                 tertiary_image = primary_objects.parent_image
                 if tertiary_image is not None:
                     tertiary_image, _ = size_similarly(secondary_labels, tertiary_image)
-        # If size/shape differences were too extreme, raise an error.
-        if primary_labels.shape != secondary_labels.shape:
-            raise ValueError(
-                "This module requires that the object sets have matching widths and matching heights.\n"
-                "The %s and %s objects do not (%s vs %s).\n"
-                "If they are paired correctly you may want to use the ResizeObjects module "
-                "to make them the same size."
-                % (
-                    self.secondary_objects_name,
-                    self.primary_objects_name,
-                    secondary_labels.shape,
-                    primary_labels.shape,
-                )
-            )
 
-        #
-        # Find the outlines of the primary image and use this to shrink the
-        # primary image by one. This guarantees that there is something left
-        # of the secondary image after subtraction
-        #
-        primary_outline = outline(primary_labels)
-        tertiary_labels = secondary_labels.copy()
-        if self.shrink_primary:
-            primary_mask = numpy.logical_or(primary_labels == 0, primary_outline)
-        else:
-            primary_mask = primary_labels == 0
-        tertiary_labels[primary_mask == False] = 0
-        #
-        # Check if a label was deleted as a result of the subtraction
-        #
-        secondary_unique_labels, secondary_unique_indices = numpy.unique(secondary_labels, return_index=True)
-        tertiary_unique_labels = numpy.unique(tertiary_labels)
-        missing_labels = numpy.setdiff1d(secondary_unique_labels, tertiary_unique_labels)
-        for missing_label in missing_labels:
-            # If a label was deleted, manually add a pixel to the tertiary_labels.
-            # This workaround ensures that ghost objects do not get created by identifytertiaryobjects.
-            
-            # first non-zero (top-left) coodrinate of the secondary object is used to add a pixel to the tertiary_labels
-            first_row, first_col = numpy.unravel_index(secondary_unique_indices[missing_label], secondary_labels.shape)
-            tertiary_labels[first_row, first_col] = missing_label
-        #
-        # Get the outlines of the tertiary image
-        #
-        tertiary_outlines = outline(tertiary_labels) != 0
+        tertiary_labels, tertiary_outlines = identifytertiaryobjects(
+            primary_labels=primary_labels,
+            secondary_labels=secondary_labels,
+            shrink_primary=self.shrink_primary.value,
+            return_cp_output=True
+        )
+
         #
         # Make the tertiary objects container
         #

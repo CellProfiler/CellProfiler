@@ -8,7 +8,6 @@ from cellprofiler_core.setting.subscriber import (
     LabelListSubscriber,
 )
 from cellprofiler_core.setting.text import Float, Integer
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 from cellprofiler.gui.help.content import image_resource
 from cellprofiler_library.modules._measuregranularity import measure_granularity, ObjectRecord

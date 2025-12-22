@@ -1,7 +1,5 @@
-from typing import Annotated, Optional, Tuple, List, Union
+from typing import Annotated, Optional, Tuple, List
 from pydantic import Field, validate_call, ConfigDict
-from numpy.typing import NDArray
-import numpy as np
 
 from ..types import ImageAny, ObjectLabelSet, ImageColor
 from ..opts.overlayoutlines import BrightnessMode, LineMode

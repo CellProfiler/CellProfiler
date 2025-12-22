@@ -26,7 +26,7 @@ from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 from cellprofiler_library.opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
 from cellprofiler_library.opts.imagemath import Operator
-from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateMethod, RotationCycle, RotationCoordinateAlignmnet, D_ANGLE
+from cellprofiler_library.opts.flipandrotate import RotationCoordinateAlignmnet
 invert = cast(Callable[[ImageAny], ImageAny], _invert)
 isscalar = cast(Callable[[Optional[ImageAny]], bool], _isscalar)
 

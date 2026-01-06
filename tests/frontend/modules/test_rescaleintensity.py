@@ -15,6 +15,7 @@ import cellprofiler.modules.rescaleintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.rescaleintensity import RescaleMethod
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
@@ -74,7 +75,7 @@ def workspace(image, module):
 def test_stretch(image, module, workspace):
     data = image.pixel_data
 
-    module.rescale_method.value = "Stretch each image to use the full intensity range"
+    module.rescale_method.value = RescaleMethod.STRETCH.value
 
     module.run(workspace)
 
@@ -96,7 +97,7 @@ def test_stretch_masked(image, mask, module, workspace):
 
     image.mask = mask
 
-    module.rescale_method.value = "Stretch each image to use the full intensity range"
+    module.rescale_method.value = RescaleMethod.STRETCH.value
 
     module.run(workspace)
 
@@ -117,7 +118,7 @@ def test_manual_input_range(image, module, workspace):
     data = image.pixel_data
 
     module.rescale_method.value = (
-        "Choose specific values to be reset to the full intensity range"
+        RescaleMethod.MANUAL_INPUT_RANGE.value
     )
 
     module.wants_automatic_low.value = "Custom"
@@ -144,7 +145,7 @@ def test_manual_input_range(image, module, workspace):
 def test_manual_io_range(image, module, workspace):
     data = image.pixel_data
 
-    module.rescale_method.value = "Choose specific values to be reset to a custom range"
+    module.rescale_method.value = RescaleMethod.MANUAL_IO_RANGE.value
 
     module.wants_automatic_low.value = "Custom"
 
@@ -170,7 +171,7 @@ def test_manual_io_range(image, module, workspace):
 
 
 def test_divide_by_image_minimum_zero(module, workspace):
-    module.rescale_method.value = "Divide by the image's minimum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value
 
     with pytest.raises(ZeroDivisionError):
         module.run(workspace)
@@ -183,7 +184,7 @@ def test_divide_by_image_minimum(image, module, workspace):
 
     image.pixel_data = data
 
-    module.rescale_method.value = "Divide by the image's minimum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value
 
     module.run(workspace)
 
@@ -201,7 +202,7 @@ def test_divide_by_image_minimum_masked(image, mask, module, workspace):
 
     image.mask = mask
 
-    module.rescale_method.value = "Divide by the image's minimum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value
 
     module.run(workspace)
 
@@ -219,7 +220,7 @@ def test_divide_by_image_maximum_zero(image, module, workspace):
 
     image.pixel_data = data
 
-    module.rescale_method.value = "Divide by the image's maximum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value
 
     with pytest.raises(ZeroDivisionError):
         module.run(workspace)
@@ -228,7 +229,7 @@ def test_divide_by_image_maximum_zero(image, module, workspace):
 def test_divide_by_image_maximum(image, module, workspace):
     data = image.pixel_data
 
-    module.rescale_method.value = "Divide by the image's maximum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value
 
     module.run(workspace)
 
@@ -246,7 +247,7 @@ def test_divide_by_image_maximum_masked(image, mask, module, workspace):
 
     image.mask = mask
 
-    module.rescale_method.value = "Divide by the image's maximum"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value
 
     module.run(workspace)
 
@@ -262,7 +263,7 @@ def test_divide_by_image_maximum_masked(image, mask, module, workspace):
 def test_divide_by_value(image, module, workspace):
     data = image.pixel_data
 
-    module.rescale_method.value = "Divide each image by the same value"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_VALUE.value
 
     module.divisor_value.value = 50.0
 
@@ -278,7 +279,7 @@ def test_divide_by_value(image, module, workspace):
 
 
 def test_divide_by_measurement_zero(module, workspace):
-    module.rescale_method.value = "Divide each image by a previously calculated value"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_MEASUREMENT.value
 
     module.divisor_measurement.value = "foo"
 
@@ -293,7 +294,7 @@ def test_divide_by_measurement_zero(module, workspace):
 def test_divide_by_measurement(image, module, workspace):
     data = image.pixel_data
 
-    module.rescale_method.value = "Divide each image by a previously calculated value"
+    module.rescale_method.value = RescaleMethod.DIVIDE_BY_MEASUREMENT.value
 
     module.divisor_measurement.value = "foo"
 
@@ -325,7 +326,7 @@ def test_scale_by_image_maximum_zero(image, module, workspace):
 
     workspace.image_set.add("match", match_image)
 
-    module.rescale_method.value = "Match the image's maximum to another image's maximum"
+    module.rescale_method.value = RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value
 
     module.matching_image_name.value = "match"
 
@@ -349,7 +350,7 @@ def test_scale_by_image_maximum(image, module, workspace):
 
     workspace.image_set.add("match", match_image)
 
-    module.rescale_method.value = "Match the image's maximum to another image's maximum"
+    module.rescale_method.value = RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value
 
     module.matching_image_name.value = "match"
 
@@ -377,7 +378,7 @@ def test_scale_by_image_maximum_masked(image, mask, module, workspace):
 
     image.mask = mask
 
-    module.rescale_method.value = "Match the image's maximum to another image's maximum"
+    module.rescale_method.value = RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value
 
     module.matching_image_name.value = "match"
 

@@ -22,11 +22,6 @@ M_ALL = [
     RescaleMethod.SCALE_BY_IMAGE_MAXIMUM,
 ]
 
-# R_SCALE = "Scale similarly to others"
-# R_MASK = "Mask pixels"
-# R_SET_TO_ZERO = "Set to zero"
-# R_SET_TO_CUSTOM = "Set to custom value"
-# R_SET_TO_ONE = "Set to one"
 class MinimumIntensityMethod(str, Enum):
     CUSTOM_VALUE = "Custom"
     ALL_IMAGES = "Minimum of all images"
@@ -40,12 +35,3 @@ class MaximumIntensityMethod(str, Enum):
     EACH_IMAGE = "Maximum for each image"
 
 HIGH_ALL = [MaximumIntensityMethod.CUSTOM_VALUE, MaximumIntensityMethod.EACH_IMAGE, MaximumIntensityMethod.ALL_IMAGES]
-# LOW_ALL_IMAGES = "Minimum of all images"
-# LOW_EACH_IMAGE = "Minimum for each image"
-# CUSTOM_VALUE = "Custom"
-# LOW_ALL = [CUSTOM_VALUE, LOW_EACH_IMAGE, LOW_ALL_IMAGES]
-
-# HIGH_ALL_IMAGES = "Maximum of all images"
-# HIGH_EACH_IMAGE = "Maximum for each image"
-
-# HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]

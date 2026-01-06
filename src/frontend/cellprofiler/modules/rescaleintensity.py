@@ -26,7 +26,6 @@ YES          YES          YES
 """
 
 import numpy
-import skimage.exposure
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import Measurement
@@ -35,6 +34,7 @@ from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
+from cellprofiler_library.modules._rescaleintensity import rescale, stretch, manual_input_range, manual_io_range, divide, divide_by_image_minimum, divide_by_image_maximum, divide_by_value, scale_by_image_maximum, get_source_range
 
 # Legacy opts
 # R_SCALE = "Scale similarly to others"
@@ -400,23 +400,46 @@ Select the measurement value to use as the divisor for the final image.
 
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.x_name.value)
-
+        in_pixel_data = input_image.pixel_data
+        in_mask = input_image.mask
+        in_multichannel = input_image.multichannel
         if self.rescale_method == RescaleMethod.STRETCH.value:
-            output_image = self.stretch(input_image)
-        elif self.rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value:
-            output_image = self.manual_input_range(input_image, workspace)
-        elif self.rescale_method == RescaleMethod.MANUAL_IO_RANGE.value:
-            output_image = self.manual_io_range(input_image, workspace)
+            output_image = stretch(in_pixel_data, in_mask, in_multichannel)
+        elif (self.rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value) or (self.rescale_method == RescaleMethod.MANUAL_IO_RANGE.value):
+            shared_dict = self.get_dictionary(workspace.image_set_list)
+            in_mask = None if input_image.has_mask else in_mask # for this methodm mask needs to be None if not present
+            auto_high = self.wants_automatic_high.value
+            auto_low = self.wants_automatic_low.value
+            source_high = self.source_high.value
+            source_low = self.source_low.value
+            source_scale_min = self.source_scale.min
+            source_scale_max = self.source_scale.max
+            if self.rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value:
+                output_image = manual_input_range(
+                    in_pixel_data,
+                    in_mask,
+                    source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict
+                )
+            else:
+                dest_scale_min = self.dest_scale.min
+                dest_scale_max = self.dest_scale.max
+                output_image = manual_io_range(
+                    in_pixel_data,
+                    in_mask,
+                    source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict, dest_scale_min, dest_scale_max
+                    )
         elif self.rescale_method == RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value:
-            output_image = self.divide_by_image_minimum(input_image)
+            output_image = divide_by_image_minimum(in_pixel_data, in_mask)
         elif self.rescale_method == RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value:
-            output_image = self.divide_by_image_maximum(input_image)
+            output_image = divide_by_image_maximum(in_pixel_data, in_mask)
         elif self.rescale_method == RescaleMethod.DIVIDE_BY_VALUE.value:
-            output_image = self.divide_by_value(input_image)
+            output_image = divide_by_value(in_pixel_data, self.divisor_value.value)
         elif self.rescale_method == RescaleMethod.DIVIDE_BY_MEASUREMENT.value:
+            # TODO #5088 update this once measurement format is finalized
             output_image = self.divide_by_measurement(workspace, input_image)
         elif self.rescale_method == RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value:
-            output_image = self.scale_by_image_maximum(workspace, input_image)
+            reference_image = workspace.image_set.get_image(self.matching_image_name.value)
+            output_image = scale_by_image_maximum(in_pixel_data, in_mask, reference_image.pixel_data, reference_image.mask)
 
         rescaled_image = Image(
             output_image,
@@ -460,147 +483,14 @@ Select the measurement value to use as the divisor for the final image.
             y=0,
         )
 
-    def rescale(self, image, in_range, out_range=(0.0, 1.0)):
-        data = 1.0 * image.pixel_data
-
-        rescaled = skimage.exposure.rescale_intensity(
-            data, in_range=in_range, out_range=out_range
-        )
-
-        return rescaled
-
-    def stretch(self, input_image):
-        data = input_image.pixel_data
-        mask = input_image.mask
-
-        if input_image.multichannel:
-            splitaxis = data.ndim - 1
-            singlechannels = numpy.split(data, data.shape[-1], splitaxis)
-            newchannels = []
-            for channel in singlechannels:
-                channel = numpy.squeeze(channel, axis=splitaxis)
-                if (masked_channel := channel[mask]).size == 0:
-                    in_range = (0, 1)
-                else:
-                    in_range = (min(masked_channel), max(masked_channel))
-
-                channelholder = Image(channel, convert=False)
-
-                rescaled = self.rescale(channelholder, in_range)
-                newchannels.append(rescaled)
-            full_rescaled = numpy.stack(newchannels, axis=-1)
-            return full_rescaled
-        if (masked_data := data[mask]).size == 0:
-            in_range = (0, 1)
-        else:
-            in_range = (min(masked_data), max(masked_data))
-        return self.rescale(input_image, in_range)
-
-    def manual_input_range(self, input_image, workspace):
-        in_range = self.get_source_range(input_image, workspace)
-
-        return self.rescale(input_image, in_range)
-
-    def manual_io_range(self, input_image, workspace):
-        in_range = self.get_source_range(input_image, workspace)
-
-        out_range = (self.dest_scale.min, self.dest_scale.max)
-
-        return self.rescale(input_image, in_range, out_range)
-
-    def divide(self, data, value):
-        if value == 0.0:
-            raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
-
-        return data / float(value)
-
-    def divide_by_image_minimum(self, input_image):
-        data = input_image.pixel_data
-
-        if (masked_data := data[input_image.mask]).size == 0:
-            src_min = 0
-        else:
-            src_min = numpy.min(masked_data)
-
-        return self.divide(data, src_min)
-
-    def divide_by_image_maximum(self, input_image):
-        data = input_image.pixel_data
-
-        if (masked_data := data[input_image.mask]).size == 0:
-            src_max = 1
-        else:
-            src_max = numpy.max(masked_data)
-
-        return self.divide(data, src_max)
-
-    def divide_by_value(self, input_image):
-        return self.divide(input_image.pixel_data, self.divisor_value.value)
-
+    # TODO #5088 update this once measurement format is finalized
     def divide_by_measurement(self, workspace, input_image):
+        # TODO #5088 no access to workspace in this function. how to get around?
         m = workspace.measurements
 
         value = m.get_current_image_measurement(self.divisor_measurement.value)
 
-        return self.divide(input_image.pixel_data, value)
-
-    def scale_by_image_maximum(self, workspace, input_image):
-        ###
-        # Scale the image by the maximum of another image
-        #
-        # Find the maximum value within the unmasked region of the input
-        # and reference image. Multiply by the reference maximum, divide
-        # by the input maximum to scale the input image to the same
-        # range as the reference image
-        ###
-        if (masked_input := input_image.pixel_data[input_image.mask]).size == 0:
-            return input_image.pixel_data
-        else:
-            image_max = numpy.max(masked_input)
-
-        if image_max == 0:
-            return input_image.pixel_data
-
-        reference_image = workspace.image_set.get_image(self.matching_image_name.value)
-
-        if (masked_ref := reference_image.pixel_data[reference_image.mask]).size == 0:
-            reference_max = 1
-        else:
-            reference_max = numpy.max(masked_ref)
-
-        return self.divide(input_image.pixel_data * reference_max, image_max)
-
-    def get_source_range(self, input_image, workspace):
-        """Get the source range, accounting for automatically computed values"""
-        if (
-            self.wants_automatic_high == MaximumIntensityMethod.CUSTOM_VALUE.value
-            and self.wants_automatic_low == MinimumIntensityMethod.CUSTOM_VALUE.value
-        ):
-            return self.source_scale.min, self.source_scale.max
-
-        if (
-            self.wants_automatic_low == MinimumIntensityMethod.EACH_IMAGE.value
-            or self.wants_automatic_high == MaximumIntensityMethod.EACH_IMAGE.value
-        ):
-            input_pixels = input_image.pixel_data
-            if input_image.has_mask:
-                input_pixels = input_pixels[input_image.mask]
-                if input_pixels.size == 0:
-                    return 0, 1
-
-        if self.wants_automatic_low == MinimumIntensityMethod.ALL_IMAGES.value:
-            src_min = self.get_automatic_minimum(workspace.image_set_list)
-        elif self.wants_automatic_low == MinimumIntensityMethod.EACH_IMAGE.value:
-            src_min = numpy.min(input_pixels)
-        else:
-            src_min = self.source_low.value
-        if self.wants_automatic_high.value == MaximumIntensityMethod.ALL_IMAGES.value:
-            src_max = self.get_automatic_maximum(workspace.image_set_list)
-        elif self.wants_automatic_high == MaximumIntensityMethod.EACH_IMAGE.value:
-            src_max = numpy.max(input_pixels)
-        else:
-            src_max = self.source_high.value
-        return src_min, src_max
+        return divide(input_image.pixel_data, value)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

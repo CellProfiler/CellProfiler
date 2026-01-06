@@ -57,36 +57,36 @@ class RescaleIntensity(ImageProcessing):
             doc="""\
 There are a number of options for rescaling the input image:
 
--  *%(M_STRETCH)s:* Find the minimum and maximum values within the
+-  *{M_STRETCH}:* Find the minimum and maximum values within the
    unmasked part of the image (or the whole image if there is no mask)
    and rescale every pixel so that the minimum has an intensity of zero
    and the maximum has an intensity of one. If performed on color images
    each channel will be considered separately.
--  *%(M_MANUAL_INPUT_RANGE)s:* Pixels are scaled from an original range
+-  *{M_MANUAL_INPUT_RANGE}:* Pixels are scaled from an original range
    (which you provide) to the range 0 to 1. Options are
    available to handle values outside of the original range.
    To convert 12-bit images saved in 16-bit format to the correct range,
    use the range 0 to 0.0625. The value 0.0625 is equivalent to
    2\ :sup:`12` divided by 2\ :sup:`16`, so it will convert a 16 bit
    image containing only 12 bits of data to the proper range.
--  *%(M_MANUAL_IO_RANGE)s:* Pixels are scaled from their original
+-  *{M_MANUAL_IO_RANGE}:* Pixels are scaled from their original
    range to the new target range. Options are available to handle values
    outside of the original range.
--  *%(M_DIVIDE_BY_IMAGE_MINIMUM)s:* Divide the intensity value of
+-  *{M_DIVIDE_BY_IMAGE_MINIMUM}:* Divide the intensity value of
    each pixel by the image’s minimum intensity value so that all pixel
    intensities are equal to or greater than 1. The rescaled image can
    serve as an illumination correction function in
    **CorrectIlluminationApply**.
--  *%(M_DIVIDE_BY_IMAGE_MAXIMUM)s:* Divide the intensity value of
+-  *{M_DIVIDE_BY_IMAGE_MAXIMUM}:* Divide the intensity value of
    each pixel by the image’s maximum intensity value so that all pixel
    intensities are less than or equal to 1.
--  *%(M_DIVIDE_BY_VALUE)s:* Divide the intensity value of each pixel
+-  *{M_DIVIDE_BY_VALUE}:* Divide the intensity value of each pixel
    by a value that you choose.
--  *%(M_DIVIDE_BY_MEASUREMENT)s:* The intensity value of each pixel
+-  *{M_DIVIDE_BY_MEASUREMENT}:* The intensity value of each pixel
    is divided by some previously calculated measurement. This
    measurement can be the output of some other module or can be a value
    loaded by the **Metadata** module.
--  *%(M_SCALE_BY_IMAGE_MAXIMUM)s:* Scale an image so that its
+-  *{M_SCALE_BY_IMAGE_MAXIMUM}:* Scale an image so that its
    maximum value is the same as the maximum value within the reference
    image.""".format(
        **{
@@ -106,14 +106,14 @@ There are a number of options for rescaling the input image:
             "Method to calculate the minimum intensity",
             LOW_ALL,
             doc="""\
-*(Used only if “%(M_MANUAL_IO_RANGE)s” is selected)*
+*(Used only if “{M_MANUAL_IO_RANGE}” is selected)*
 
 This setting controls how the minimum intensity is determined.
 
--  *%(CUSTOM_VALUE)s:* Enter the minimum intensity manually below.
--  *%(LOW_EACH_IMAGE)s*: use the lowest intensity in this image as the
+-  *{CUSTOM_VALUE}:* Enter the minimum intensity manually below.
+-  *{LOW_EACH_IMAGE}*: use the lowest intensity in this image as the
    minimum intensity for rescaling
--  *%(LOW_ALL_IMAGES)s*: use the lowest intensity from all images in
+-  *{LOW_ALL_IMAGES}*: use the lowest intensity from all images in
    the image group or the experiment if grouping is not being used.
    Note that choosing this option may have undesirable results for a
    large ungrouped experiment split into a number of batches. Each batch
@@ -122,6 +122,7 @@ This setting controls how the minimum intensity is determined.
    network file system.
 """.format(
     **{
+        "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
         "CUSTOM_VALUE": MinimumIntensityMethod.CUSTOM_VALUE.value,
         "LOW_EACH_IMAGE": MinimumIntensityMethod.EACH_IMAGE.value,
         "LOW_ALL_IMAGES": MinimumIntensityMethod.ALL_IMAGES.value,
@@ -133,14 +134,14 @@ This setting controls how the minimum intensity is determined.
             "Method to calculate the maximum intensity",
             HIGH_ALL,
             doc="""\
-*(Used only if “%(M_MANUAL_IO_RANGE)s” is selected)*
+*(Used only if “{M_MANUAL_IO_RANGE}” is selected)*
 
 This setting controls how the maximum intensity is determined.
 
--  *%(CUSTOM_VALUE)s*: Enter the maximum intensity manually below.
--  *%(HIGH_EACH_IMAGE)s*: Use the highest intensity in this image as
+-  *{CUSTOM_VALUE}*: Enter the maximum intensity manually below.
+-  *{HIGH_EACH_IMAGE}*: Use the highest intensity in this image as
    the maximum intensity for rescaling
--  *%(HIGH_ALL_IMAGES)s*: Use the highest intensity from all images in
+-  *{HIGH_ALL_IMAGES}*: Use the highest intensity from all images in
    the image group or the experiment if grouping is not being used.
    Note that choosing this option may have undesirable results for a
    large ungrouped experiment split into a number of batches. Each batch
@@ -149,6 +150,7 @@ This setting controls how the maximum intensity is determined.
    network file system.
 """.format(
     **{
+        "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
         "CUSTOM_VALUE": MaximumIntensityMethod.CUSTOM_VALUE.value,
         "HIGH_EACH_IMAGE": MaximumIntensityMethod.EACH_IMAGE.value,
         "HIGH_ALL_IMAGES": MaximumIntensityMethod.ALL_IMAGES.value,
@@ -241,7 +243,7 @@ output image will be rescaled to the maximum output image intensity.
             "Select image to match in maximum intensity",
             "None",
             doc="""\
-*(Used only if “%(M_SCALE_BY_IMAGE_MAXIMUM)s” is selected)*
+*(Used only if “{M_SCALE_BY_IMAGE_MAXIMUM}” is selected)*
 
 Select the image whose maximum you want the rescaled image to match.
 """.format(
@@ -256,7 +258,7 @@ Select the image whose maximum you want the rescaled image to match.
             1,
             minval=numpy.finfo(float).eps,
             doc="""\
-*(Used only if “%(M_DIVIDE_BY_VALUE)s” is selected)*
+*(Used only if “{M_DIVIDE_BY_VALUE}” is selected)*
 
 Enter the value to use as the divisor for the final image.
 """.format(
@@ -270,7 +272,7 @@ Enter the value to use as the divisor for the final image.
             "Divisor measurement",
             lambda: "Image",
             doc="""\
-*(Used only if “%(M_DIVIDE_BY_MEASUREMENT)s” is selected)*
+*(Used only if “{M_DIVIDE_BY_MEASUREMENT}” is selected)*
 
 Select the measurement value to use as the divisor for the final image.
 """.format(
@@ -407,7 +409,7 @@ Select the measurement value to use as the divisor for the final image.
             output_image = stretch(in_pixel_data, in_mask, in_multichannel)
         elif (self.rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value) or (self.rescale_method == RescaleMethod.MANUAL_IO_RANGE.value):
             shared_dict = self.get_dictionary(workspace.image_set_list)
-            in_mask = None if input_image.has_mask else in_mask # for this methodm mask needs to be None if not present
+            in_mask = None if input_image.has_mask else in_mask # for this method, mask needs to be None if not present
             auto_high = self.wants_automatic_high.value
             auto_low = self.wants_automatic_low.value
             source_high = self.source_high.value

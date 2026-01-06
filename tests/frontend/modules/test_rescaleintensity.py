@@ -26,7 +26,7 @@ MEASUREMENT_NAME = "measurement"
 @pytest.fixture(scope="function")
 def image():
     data = numpy.tile(skimage.data.camera(), (3, 1)).reshape(3, 512, 512)
-
+    # TODO #5088: why does this have to be a uint? For now I've added unions to the types to allow uint8 images
     return cellprofiler_core.image.Image(image=data, dimensions=3, convert=False)
 
 

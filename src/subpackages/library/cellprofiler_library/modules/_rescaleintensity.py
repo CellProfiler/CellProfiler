@@ -1,8 +1,16 @@
 import numpy
 import skimage.exposure
+from typing import Tuple, Optional, Union
+from pydantic import validate_call, ConfigDict
 from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
+from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscale, ImageGrayscaleMask, ImageUInt
 
-def rescale(image_pixel_data, in_range, out_range=(0.0, 1.0)):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def rescale(
+        image_pixel_data: Union[ImageAny, ImageUInt], 
+        in_range: Tuple[float, float],
+        out_range: Tuple[float, float] = (0.0, 1.0)
+    ):
     data = 1.0 * image_pixel_data
 
     rescaled = skimage.exposure.rescale_intensity(
@@ -11,7 +19,12 @@ def rescale(image_pixel_data, in_range, out_range=(0.0, 1.0)):
 
     return rescaled
 
-def stretch(data, mask, multichannel=False):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def stretch(
+        data: Union[Union[ImageAny, ImageUInt], ImageUInt], 
+        mask: ImageAnyMask, 
+        multichannel: bool = False
+    ):
     if multichannel:
         splitaxis = data.ndim - 1
         singlechannels = numpy.split(data, data.shape[-1], splitaxis)
@@ -34,22 +47,60 @@ def stretch(data, mask, multichannel=False):
         in_range = (min(masked_data), max(masked_data))
     return rescale(data, in_range)
 
-def manual_input_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict):    
-    in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict)
-    return rescale(data, in_range)
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def manual_input_range(
+        data: Union[ImageAny, ImageUInt], 
+        mask: ImageAnyMask, 
+        source_high: float, 
+        source_low: float, 
+        source_scale_min: float, 
+        source_scale_max: float, 
+        auto_high: MaximumIntensityMethod, 
+        auto_low: MinimumIntensityMethod, 
+        shared_dict, # do not type annotate as it has a bad interation with Pydantic
+    ):
+    return manual_io_range(
+        data, 
+        mask, 
+        source_high, 
+        source_low, 
+        source_scale_min, 
+        source_scale_max, 
+        auto_high, 
+        auto_low, 
+        shared_dict
+    )
 
-def manual_io_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict, dest_scale_min, dest_scale_max):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def manual_io_range(
+        data: Union[ImageAny, ImageUInt], 
+        mask: ImageAnyMask, 
+        source_high: float, 
+        source_low: float, 
+        source_scale_min: float, 
+        source_scale_max: float, 
+        auto_high: MaximumIntensityMethod, 
+        auto_low: MinimumIntensityMethod, 
+        shared_dict, # do not type annotate as it has a bad interation with Pydantic
+        dest_scale_min: Optional[float]=None, 
+        dest_scale_max: Optional[float]=None
+    ):
     in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict)
-    out_range = (dest_scale_min, dest_scale_max)
-    return rescale(data, in_range, out_range)
+    if dest_scale_min is None and dest_scale_max is None:
+        return rescale(data, in_range)
+    else:
+        out_range = (dest_scale_min, dest_scale_max)
+        return rescale(data, in_range, out_range)
 
-def divide(data, value):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def divide(data: Union[ImageAny, ImageUInt], value):
     if value == 0.0:
         raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
     return data / float(value)
 
-def divide_by_image_minimum(data, mask):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask):
     if (masked_data := data[mask]).size == 0:
         src_min = 0
     else:
@@ -57,7 +108,8 @@ def divide_by_image_minimum(data, mask):
 
     return divide(data, src_min)
 
-def divide_by_image_maximum(data, mask):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def divide_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask):
     if (masked_data := data[mask]).size == 0:
         src_max = 1
     else:
@@ -65,10 +117,12 @@ def divide_by_image_maximum(data, mask):
 
     return divide(data, src_max)
 
-def divide_by_value(data, divisor_value):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def divide_by_value(data: Union[ImageAny, ImageUInt], divisor_value):
     return divide(data, divisor_value)
 
-def scale_by_image_maximum(data, mask, reference_data, reference_mask):
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def scale_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask, reference_data: Union[ImageGrayscale, ImageUInt], reference_mask: ImageGrayscaleMask):
     ###
     # Scale the image by the maximum of another image
     #
@@ -93,17 +147,17 @@ def scale_by_image_maximum(data, mask, reference_data, reference_mask):
 
     return divide(data * reference_max, image_max)
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_source_range(
-        data, 
-        mask, 
-        source_high, 
-        source_low, 
-        source_scale_min, 
-        source_scale_max, 
-        auto_high, 
-        auto_low, 
-        shared_dict
+        data: Union[ImageAny, ImageUInt], 
+        mask: ImageAnyMask, 
+        source_high: float, 
+        source_low: float, 
+        source_scale_min: float, 
+        source_scale_max: float, 
+        auto_high: MaximumIntensityMethod, 
+        auto_low: MinimumIntensityMethod, 
+        shared_dict, # do not type annotate as it has a bad interation with Pydantic
     ):
     """Get the source range, accounting for automatically computed values"""
     input_pixels = None

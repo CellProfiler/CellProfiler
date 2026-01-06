@@ -34,43 +34,14 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
+from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
 
-M_STRETCH = "Stretch each image to use the full intensity range"
-M_MANUAL_INPUT_RANGE = "Choose specific values to be reset to the full intensity range"
-M_MANUAL_IO_RANGE = "Choose specific values to be reset to a custom range"
-M_DIVIDE_BY_IMAGE_MINIMUM = "Divide by the image's minimum"
-M_DIVIDE_BY_IMAGE_MAXIMUM = "Divide by the image's maximum"
-M_DIVIDE_BY_VALUE = "Divide each image by the same value"
-M_DIVIDE_BY_MEASUREMENT = "Divide each image by a previously calculated value"
-M_SCALE_BY_IMAGE_MAXIMUM = "Match the image's maximum to another image's maximum"
-
-M_ALL = [
-    M_STRETCH,
-    M_MANUAL_INPUT_RANGE,
-    M_MANUAL_IO_RANGE,
-    M_DIVIDE_BY_IMAGE_MINIMUM,
-    M_DIVIDE_BY_IMAGE_MAXIMUM,
-    M_DIVIDE_BY_VALUE,
-    M_DIVIDE_BY_MEASUREMENT,
-    M_SCALE_BY_IMAGE_MAXIMUM,
-]
-
-R_SCALE = "Scale similarly to others"
-R_MASK = "Mask pixels"
-R_SET_TO_ZERO = "Set to zero"
-R_SET_TO_CUSTOM = "Set to custom value"
-R_SET_TO_ONE = "Set to one"
-
-LOW_ALL_IMAGES = "Minimum of all images"
-LOW_EACH_IMAGE = "Minimum for each image"
-CUSTOM_VALUE = "Custom"
-LOW_ALL = [CUSTOM_VALUE, LOW_EACH_IMAGE, LOW_ALL_IMAGES]
-
-HIGH_ALL_IMAGES = "Maximum of all images"
-HIGH_EACH_IMAGE = "Maximum for each image"
-
-HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
-
+# Legacy opts
+# R_SCALE = "Scale similarly to others"
+# R_MASK = "Mask pixels"
+# R_SET_TO_ZERO = "Set to zero"
+# R_SET_TO_CUSTOM = "Set to custom value"
+# R_SET_TO_ONE = "Set to one"
 
 class RescaleIntensity(ImageProcessing):
     module_name = "RescaleIntensity"
@@ -117,8 +88,18 @@ There are a number of options for rescaling the input image:
    loaded by the **Metadata** module.
 -  *%(M_SCALE_BY_IMAGE_MAXIMUM)s:* Scale an image so that its
    maximum value is the same as the maximum value within the reference
-   image."""
-            % globals(),
+   image.""".format(
+       **{
+           "M_STRETCH": RescaleMethod.STRETCH.value,
+           "M_MANUAL_INPUT_RANGE": RescaleMethod.MANUAL_INPUT_RANGE.value,
+           "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
+           "M_DIVIDE_BY_IMAGE_MINIMUM": RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value,
+           "M_DIVIDE_BY_IMAGE_MAXIMUM": RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value,
+           "M_DIVIDE_BY_VALUE": RescaleMethod.DIVIDE_BY_VALUE.value,
+           "M_DIVIDE_BY_MEASUREMENT": RescaleMethod.DIVIDE_BY_MEASUREMENT.value,
+           "M_SCALE_BY_IMAGE_MAXIMUM": RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value,
+       }
+   ),
         )
 
         self.wants_automatic_low = Choice(
@@ -139,8 +120,13 @@ This setting controls how the minimum intensity is determined.
    will open all images from the chosen channel at the start of the run.
    This sort of synchronized action may have a severe impact on your
    network file system.
-"""
-            % globals(),
+""".format(
+    **{
+        "CUSTOM_VALUE": MinimumIntensityMethod.CUSTOM_VALUE.value,
+        "LOW_EACH_IMAGE": MinimumIntensityMethod.EACH_IMAGE.value,
+        "LOW_ALL_IMAGES": MinimumIntensityMethod.ALL_IMAGES.value,
+    }
+),
         )
 
         self.wants_automatic_high = Choice(
@@ -161,8 +147,13 @@ This setting controls how the maximum intensity is determined.
    will open all images from the chosen channel at the start of the run.
    This sort of synchronized action may have a severe impact on your
    network file system.
-"""
-            % globals(),
+""".format(
+    **{
+        "CUSTOM_VALUE": MaximumIntensityMethod.CUSTOM_VALUE.value,
+        "HIGH_EACH_IMAGE": MaximumIntensityMethod.EACH_IMAGE.value,
+        "HIGH_ALL_IMAGES": MaximumIntensityMethod.ALL_IMAGES.value,
+    }
+),
         )
 
         self.source_low = Float(
@@ -177,9 +168,9 @@ value in the output image. Pixel intensities less than this value in the input i
 also rescaled to the minimum pixel value in the output image.
 """.format(
                 **{
-                    "CUSTOM_VALUE": CUSTOM_VALUE,
-                    "M_MANUAL_INPUT_RANGE": M_MANUAL_INPUT_RANGE,
-                    "M_MANUAL_IO_RANGE": M_MANUAL_IO_RANGE,
+                    "CUSTOM_VALUE": MinimumIntensityMethod.CUSTOM_VALUE.value,
+                    "M_MANUAL_INPUT_RANGE": RescaleMethod.MANUAL_INPUT_RANGE.value,
+                    "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
                     "RESCALE_METHOD": self.rescale_method.text,
                     "WANTS_AUTOMATIC_LOW": self.wants_automatic_low.text,
                 }
@@ -198,9 +189,9 @@ value in the output image. Pixel intensities less than this value in the input i
 also rescaled to the maximum pixel value in the output image.
 """.format(
                 **{
-                    "CUSTOM_VALUE": CUSTOM_VALUE,
-                    "M_MANUAL_INPUT_RANGE": M_MANUAL_INPUT_RANGE,
-                    "M_MANUAL_IO_RANGE": M_MANUAL_IO_RANGE,
+                    "CUSTOM_VALUE": MaximumIntensityMethod.CUSTOM_VALUE.value,
+                    "M_MANUAL_INPUT_RANGE": RescaleMethod.MANUAL_INPUT_RANGE.value,
+                    "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
                     "RESCALE_METHOD": self.rescale_method.text,
                     "WANTS_AUTOMATIC_HIGH": self.wants_automatic_high.text,
                 }
@@ -219,9 +210,9 @@ pixel intensities. Pixel intensities outside this range will be clipped to the n
 or maximum, respectively.
 """.format(
                 **{
-                    "CUSTOM_VALUE": CUSTOM_VALUE,
-                    "M_MANUAL_INPUT_RANGE": M_MANUAL_INPUT_RANGE,
-                    "M_MANUAL_IO_RANGE": M_MANUAL_IO_RANGE,
+                    "CUSTOM_VALUE": MinimumIntensityMethod.CUSTOM_VALUE.value,
+                    "M_MANUAL_INPUT_RANGE": RescaleMethod.MANUAL_INPUT_RANGE.value,
+                    "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
                     "RESCALE_METHOD": self.rescale_method.text,
                     "WANTS_AUTOMATIC_HIGH": self.wants_automatic_high.text,
                     "WANTS_AUTOMATIC_LOW": self.wants_automatic_low.text,
@@ -240,7 +231,7 @@ image will be rescaled to the minimum output image intensity. The maximum pixel 
 output image will be rescaled to the maximum output image intensity.
 """.format(
                 **{
-                    "M_MANUAL_IO_RANGE": M_MANUAL_IO_RANGE,
+                    "M_MANUAL_IO_RANGE": RescaleMethod.MANUAL_IO_RANGE.value,
                     "RESCALE_METHOD": self.rescale_method.text,
                 }
             ),
@@ -253,8 +244,11 @@ output image will be rescaled to the maximum output image intensity.
 *(Used only if “%(M_SCALE_BY_IMAGE_MAXIMUM)s” is selected)*
 
 Select the image whose maximum you want the rescaled image to match.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_SCALE_BY_IMAGE_MAXIMUM": RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value,
+    }
+),
         )
 
         self.divisor_value = Float(
@@ -265,8 +259,11 @@ Select the image whose maximum you want the rescaled image to match.
 *(Used only if “%(M_DIVIDE_BY_VALUE)s” is selected)*
 
 Enter the value to use as the divisor for the final image.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_DIVIDE_BY_VALUE": RescaleMethod.DIVIDE_BY_VALUE.value,
+    }
+),
         )
 
         self.divisor_measurement = Measurement(
@@ -276,8 +273,11 @@ Enter the value to use as the divisor for the final image.
 *(Used only if “%(M_DIVIDE_BY_MEASUREMENT)s” is selected)*
 
 Select the measurement value to use as the divisor for the final image.
-"""
-            % globals(),
+""".format(
+    **{
+        "M_DIVIDE_BY_MEASUREMENT": RescaleMethod.DIVIDE_BY_MEASUREMENT.value,
+    }
+),
         )
 
     def settings(self):
@@ -300,43 +300,43 @@ Select the measurement value to use as the divisor for the final image.
         __settings__ = super(RescaleIntensity, self).visible_settings()
 
         __settings__ += [self.rescale_method]
-        if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
+        if self.rescale_method in (RescaleMethod.MANUAL_INPUT_RANGE.value, RescaleMethod.MANUAL_IO_RANGE.value):
             __settings__ += [self.wants_automatic_low]
-            if self.wants_automatic_low.value == CUSTOM_VALUE:
-                if self.wants_automatic_high != CUSTOM_VALUE:
+            if self.wants_automatic_low.value == MinimumIntensityMethod.CUSTOM_VALUE.value:
+                if self.wants_automatic_high != MaximumIntensityMethod.CUSTOM_VALUE.value:
                     __settings__ += [self.source_low, self.wants_automatic_high]
                 else:
                     __settings__ += [self.wants_automatic_high, self.source_scale]
             else:
                 __settings__ += [self.wants_automatic_high]
-                if self.wants_automatic_high == CUSTOM_VALUE:
+                if self.wants_automatic_high == MaximumIntensityMethod.CUSTOM_VALUE.value:
                     __settings__ += [self.source_high]
-        if self.rescale_method == M_MANUAL_IO_RANGE:
+        if self.rescale_method == RescaleMethod.MANUAL_IO_RANGE.value:
             __settings__ += [self.dest_scale]
 
-        if self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
+        if self.rescale_method == RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value:
             __settings__ += [self.matching_image_name]
-        elif self.rescale_method == M_DIVIDE_BY_MEASUREMENT:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_MEASUREMENT.value:
             __settings__ += [self.divisor_measurement]
-        elif self.rescale_method == M_DIVIDE_BY_VALUE:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_VALUE.value:
             __settings__ += [self.divisor_value]
         return __settings__
 
     def set_automatic_minimum(self, image_set_list, value):
         d = self.get_dictionary(image_set_list)
-        d[LOW_ALL_IMAGES] = value
+        d[MinimumIntensityMethod.ALL_IMAGES.value] = value
 
     def get_automatic_minimum(self, image_set_list):
         d = self.get_dictionary(image_set_list)
-        return d[LOW_ALL_IMAGES]
+        return d[MinimumIntensityMethod.ALL_IMAGES.value]
 
     def set_automatic_maximum(self, image_set_list, value):
         d = self.get_dictionary(image_set_list)
-        d[HIGH_ALL_IMAGES] = value
+        d[MaximumIntensityMethod.ALL_IMAGES.value] = value
 
     def get_automatic_maximum(self, image_set_list):
         d = self.get_dictionary(image_set_list)
-        return d[HIGH_ALL_IMAGES]
+        return d[MaximumIntensityMethod.ALL_IMAGES.value]
 
     def prepare_group(self, workspace, grouping, image_numbers):
         """Handle initialization per-group
@@ -354,8 +354,8 @@ Select the measurement value to use as the divisor for the final image.
         "wants_automatic_[low,high]".
         """
         if (
-            self.wants_automatic_high != HIGH_ALL_IMAGES
-            and self.wants_automatic_low != LOW_ALL_IMAGES
+            self.wants_automatic_high != MaximumIntensityMethod.ALL_IMAGES.value
+            and self.wants_automatic_low != MinimumIntensityMethod.ALL_IMAGES.value
         ):
             return True
 
@@ -373,49 +373,49 @@ Select the measurement value to use as the divisor for the final image.
             image = image_set.get_image(
                 self.x_name.value, must_be_grayscale=True, cache=False
             )
-            if self.wants_automatic_high == HIGH_ALL_IMAGES:
+            if self.wants_automatic_high == MaximumIntensityMethod.ALL_IMAGES.value:
                 if image.has_mask:
                     vmax = numpy.max(image.pixel_data[image.mask])
                 else:
                     vmax = numpy.max(image.pixel_data)
                     max_value = vmax if max_value is None else max(max_value, vmax)
 
-            if self.wants_automatic_low == LOW_ALL_IMAGES:
+            if self.wants_automatic_low == MinimumIntensityMethod.ALL_IMAGES.value:
                 if image.has_mask:
                     vmin = numpy.min(image.pixel_data[image.mask])
                 else:
                     vmin = numpy.min(image.pixel_data)
                     min_value = vmin if min_value is None else min(min_value, vmin)
 
-        if self.wants_automatic_high == HIGH_ALL_IMAGES:
+        if self.wants_automatic_high == MaximumIntensityMethod.ALL_IMAGES.value:
             self.set_automatic_maximum(workspace.image_set_list, max_value)
-        if self.wants_automatic_low == LOW_ALL_IMAGES:
+        if self.wants_automatic_low == MinimumIntensityMethod.ALL_IMAGES.value:
             self.set_automatic_minimum(workspace.image_set_list, min_value)
 
     def is_aggregation_module(self):
         """We scan through all images in a group in some cases"""
-        return (self.wants_automatic_high == HIGH_ALL_IMAGES) or (
-            self.wants_automatic_low == LOW_ALL_IMAGES
+        return (self.wants_automatic_high == MaximumIntensityMethod.ALL_IMAGES.value) or (
+            self.wants_automatic_low == MinimumIntensityMethod.ALL_IMAGES.value
         )
 
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.x_name.value)
 
-        if self.rescale_method == M_STRETCH:
+        if self.rescale_method == RescaleMethod.STRETCH.value:
             output_image = self.stretch(input_image)
-        elif self.rescale_method == M_MANUAL_INPUT_RANGE:
+        elif self.rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value:
             output_image = self.manual_input_range(input_image, workspace)
-        elif self.rescale_method == M_MANUAL_IO_RANGE:
+        elif self.rescale_method == RescaleMethod.MANUAL_IO_RANGE.value:
             output_image = self.manual_io_range(input_image, workspace)
-        elif self.rescale_method == M_DIVIDE_BY_IMAGE_MINIMUM:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value:
             output_image = self.divide_by_image_minimum(input_image)
-        elif self.rescale_method == M_DIVIDE_BY_IMAGE_MAXIMUM:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_IMAGE_MAXIMUM.value:
             output_image = self.divide_by_image_maximum(input_image)
-        elif self.rescale_method == M_DIVIDE_BY_VALUE:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_VALUE.value:
             output_image = self.divide_by_value(input_image)
-        elif self.rescale_method == M_DIVIDE_BY_MEASUREMENT:
+        elif self.rescale_method == RescaleMethod.DIVIDE_BY_MEASUREMENT.value:
             output_image = self.divide_by_measurement(workspace, input_image)
-        elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
+        elif self.rescale_method == RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value:
             output_image = self.scale_by_image_maximum(workspace, input_image)
 
         rescaled_image = Image(
@@ -573,14 +573,14 @@ Select the measurement value to use as the divisor for the final image.
     def get_source_range(self, input_image, workspace):
         """Get the source range, accounting for automatically computed values"""
         if (
-            self.wants_automatic_high == CUSTOM_VALUE
-            and self.wants_automatic_low == CUSTOM_VALUE
+            self.wants_automatic_high == MaximumIntensityMethod.CUSTOM_VALUE.value
+            and self.wants_automatic_low == MinimumIntensityMethod.CUSTOM_VALUE.value
         ):
             return self.source_scale.min, self.source_scale.max
 
         if (
-            self.wants_automatic_low == LOW_EACH_IMAGE
-            or self.wants_automatic_high == HIGH_EACH_IMAGE
+            self.wants_automatic_low == MinimumIntensityMethod.EACH_IMAGE.value
+            or self.wants_automatic_high == MaximumIntensityMethod.EACH_IMAGE.value
         ):
             input_pixels = input_image.pixel_data
             if input_image.has_mask:
@@ -588,15 +588,15 @@ Select the measurement value to use as the divisor for the final image.
                 if input_pixels.size == 0:
                     return 0, 1
 
-        if self.wants_automatic_low == LOW_ALL_IMAGES:
+        if self.wants_automatic_low == MinimumIntensityMethod.ALL_IMAGES.value:
             src_min = self.get_automatic_minimum(workspace.image_set_list)
-        elif self.wants_automatic_low == LOW_EACH_IMAGE:
+        elif self.wants_automatic_low == MinimumIntensityMethod.EACH_IMAGE.value:
             src_min = numpy.min(input_pixels)
         else:
             src_min = self.source_low.value
-        if self.wants_automatic_high.value == HIGH_ALL_IMAGES:
+        if self.wants_automatic_high.value == MaximumIntensityMethod.ALL_IMAGES.value:
             src_max = self.get_automatic_maximum(workspace.image_set_list)
-        elif self.wants_automatic_high == HIGH_EACH_IMAGE:
+        elif self.wants_automatic_high == MaximumIntensityMethod.EACH_IMAGE.value:
             src_max = numpy.max(input_pixels)
         else:
             src_max = self.source_high.value
@@ -610,11 +610,11 @@ Select the measurement value to use as the divisor for the final image.
             #
             setting_values = list(setting_values)
 
-            for i, automatic in ((3, LOW_EACH_IMAGE), (4, HIGH_EACH_IMAGE)):
+            for i, automatic in ((3, MinimumIntensityMethod.EACH_IMAGE.value), (4, MaximumIntensityMethod.EACH_IMAGE.value)):
                 if setting_values[i] == "Yes":
                     setting_values[i] = automatic
                 else:
-                    setting_values[i] = CUSTOM_VALUE
+                    setting_values[i] = MaximumIntensityMethod.CUSTOM_VALUE.value
 
             variable_revision_number = 2
 

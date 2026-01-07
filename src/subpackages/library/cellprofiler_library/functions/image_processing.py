@@ -2868,7 +2868,7 @@ def rescale(
         image_pixel_data: Union[ImageAny, ImageUInt], 
         in_range: Tuple[float, float],
         out_range: Tuple[float, float] = (0.0, 1.0)
-    ):
+    ) -> Union[ImageAny, ImageUInt]:
     data = 1.0 * image_pixel_data
 
     rescaled = skimage.exposure.rescale_intensity(
@@ -2882,7 +2882,7 @@ def stretch(
         data: Union[Union[ImageAny, ImageUInt], ImageUInt], 
         mask: ImageAnyMask, 
         multichannel: bool = False
-    ):
+    ) -> Union[ImageAny, ImageUInt]:
     if multichannel:
         splitaxis = data.ndim - 1
         singlechannels = numpy.split(data, data.shape[-1], splitaxis)
@@ -2916,7 +2916,7 @@ def manual_input_range(
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
         shared_dict, # do not type annotate as it has a bad interation with Pydantic
-    ):
+    ) -> Union[ImageAny, ImageUInt]:
     return manual_io_range(
         data, 
         mask, 
@@ -2942,7 +2942,7 @@ def manual_io_range(
         shared_dict, # do not type annotate as it has a bad interation with Pydantic
         dest_scale_min: Optional[float]=None, 
         dest_scale_max: Optional[float]=None
-    ):
+    ) -> Union[ImageAny, ImageUInt]:
     in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict)
     if dest_scale_min is None and dest_scale_max is None:
         return rescale(data, in_range)
@@ -2951,14 +2951,14 @@ def manual_io_range(
         return rescale(data, in_range, out_range)
 
 
-def divide(data: Union[ImageAny, ImageUInt], value):
+def divide(data: Union[ImageAny, ImageUInt], value) -> Union[ImageAny, ImageUInt]:
     if value == 0.0:
         raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
     return data / float(value)
 
 
-def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask):
+def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask) -> Union[ImageAny, ImageUInt]:
     if (masked_data := data[mask]).size == 0:
         src_min = 0
     else:
@@ -2967,7 +2967,7 @@ def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask
     return divide(data, src_min)
 
 
-def divide_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask):
+def divide_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask) -> Union[ImageAny, ImageUInt]:
     if (masked_data := data[mask]).size == 0:
         src_max = 1
     else:
@@ -2980,7 +2980,12 @@ def divide_by_value(data: Union[ImageAny, ImageUInt], divisor_value):
     return divide(data, divisor_value)
 
 
-def scale_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask, reference_data: Union[ImageGrayscale, ImageUInt], reference_mask: ImageGrayscaleMask):
+def scale_by_image_maximum(
+        data: Union[ImageAny, ImageUInt], 
+        mask: ImageAnyMask, 
+        reference_data: Union[ImageGrayscale, ImageUInt], 
+        reference_mask: ImageGrayscaleMask
+    ) -> Union[ImageAny, ImageUInt]:
     ###
     # Scale the image by the maximum of another image
     #
@@ -3016,7 +3021,7 @@ def get_source_range(
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
         shared_dict, # do not type annotate as it has a bad interation with Pydantic
-    ):
+    ) -> Tuple[float, float]:
     """Get the source range, accounting for automatically computed values"""
     input_pixels = None
     if (

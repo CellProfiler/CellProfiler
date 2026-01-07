@@ -23,7 +23,7 @@ def rescale_intensity(
         dest_scale_max:         Annotated[Optional[float], Field(description="Intensity range for the output image - maximum")],
         reference_image_pixel_data: Annotated[Optional[Union[ImageGrayscale, ImageUInt]], Field(description="Reference image data - for scale by image maximum")],
         reference_image_mask:   Annotated[Optional[ImageGrayscaleMask], Field(description="Reference image mask - for scale by image maximum")],
-    ):
+    ) -> Union[ImageAny, ImageUInt]:
     if rescale_method == RescaleMethod.STRETCH.value:
         output_image = stretch(in_pixel_data, in_mask, in_multichannel)
     elif (rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value) or (rescale_method == RescaleMethod.MANUAL_IO_RANGE.value):

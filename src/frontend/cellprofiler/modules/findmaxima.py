@@ -1,3 +1,4 @@
+
 """
 FindMaxima
 ==========
@@ -34,6 +35,7 @@ from cellprofiler_core.setting.text import Integer, Float
 from cellprofiler_core.utilities.core.object import overlay_labels
 
 from cellprofiler_library.opts.findmaxima import BackgroundExclusionMode
+from cellprofiler_library.modules._findmaxima import find_maxima
 
 class FindMaxima(ImageProcessing):
     category = "Advanced"
@@ -170,30 +172,18 @@ images.
 
         x_data = x_data_orig.copy()
 
-        th_abs = None
-
-        if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value:
-            th_abs = self.min_intensity.value
-        elif self.exclude_mode.value == BackgroundExclusionMode.MASK.value:
-            mask = images.get_image(self.mask_image.value).pixel_data.astype(bool)
-            x_data[~mask] = 0
-        elif self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value:
-            mask_objects = workspace.object_set.get_objects(self.mask_objects.value)
-            mask = mask_objects.segmented.astype(bool)
-            x_data[~mask] = 0
-        else:
-            raise NotImplementedError("Invalid background method choice")
-
-        maxima_coords = peak_local_max(
-            x_data,
-            min_distance=self.min_distance.value,
-            threshold_abs=th_abs,
+        min_intensity_value = self.min_intensity.value if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value else None
+        target_mask = images.get_image(self.mask_image.value).pixel_data if self.exclude_mode.value == BackgroundExclusionMode.MASK.value else None
+        target_mask = workspace.object_set.get_objects(self.mask_objects.value).segmented if self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value else target_mask
+     
+        y_data = find_maxima(
+            x_data, 
+            self.exclude_mode.value, 
+            self.min_distance.value, 
+            self.label_maxima.value,
+            min_intensity_value, 
+            target_mask,
         )
-        y_data = numpy.zeros(x_data.shape, dtype=bool)
-        y_data[tuple(maxima_coords.T)] = True
-
-        if self.label_maxima:
-            y_data = scipy.ndimage.label(y_data)[0]
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 

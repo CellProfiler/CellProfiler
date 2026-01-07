@@ -33,10 +33,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscribe
 from cellprofiler_core.setting.text import Integer, Float
 from cellprofiler_core.utilities.core.object import overlay_labels
 
-MODE_THRESHOLD = "Threshold"
-MODE_MASK = "Mask"
-MODE_OBJECTS = "Within Objects"
-
+from cellprofiler_library.opts.findmaxima import BackgroundExclusionMode
 
 class FindMaxima(ImageProcessing):
     category = "Advanced"
@@ -57,21 +54,21 @@ class FindMaxima(ImageProcessing):
 
         self.exclude_mode = Choice(
             "Method for excluding background",
-            [MODE_THRESHOLD, MODE_MASK, MODE_OBJECTS],
+            [BackgroundExclusionMode.THRESHOLD.value, BackgroundExclusionMode.MASK.value, BackgroundExclusionMode.OBJECTS.value],
             value="Threshold",
             doc=f"""\
 By default, local maxima will be searched for across the whole image. This means
 that maxima will be found in areas that consist entirely of background. To
 resolve this we have several methods to exclude background.
 
-**{MODE_THRESHOLD}** allows you to specify a minimum pixel intensity to be
+**{BackgroundExclusionMode.THRESHOLD.value}** allows you to specify a minimum pixel intensity to be
 considered as a peak. Setting this to 0 effectively uses no threshold.
 
-**{MODE_MASK}** will restrict peaks to areas which are within a provided mask
+**{BackgroundExclusionMode.MASK.value}** will restrict peaks to areas which are within a provided mask
 image. This mask will typically come from the threshold module or another means
 of finding background.
 
-**{MODE_OBJECTS}** will restrict peaks to areas within an existing set of
+**{BackgroundExclusionMode.OBJECTS.value}** will restrict peaks to areas within an existing set of
 objects.
 """,
         )
@@ -143,11 +140,11 @@ images.
             self.exclude_mode,
         ]
 
-        if self.exclude_mode == MODE_THRESHOLD:
+        if self.exclude_mode == BackgroundExclusionMode.THRESHOLD.value:
             result.append(self.min_intensity)
-        elif self.exclude_mode == MODE_MASK:
+        elif self.exclude_mode == BackgroundExclusionMode.MASK.value:
             result.append(self.mask_image)
-        elif self.exclude_mode == MODE_OBJECTS:
+        elif self.exclude_mode == BackgroundExclusionMode.OBJECTS.value:
             result.append(self.mask_objects)
 
         result.append(self.maxima_size)
@@ -175,12 +172,12 @@ images.
 
         th_abs = None
 
-        if self.exclude_mode.value == MODE_THRESHOLD:
+        if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value:
             th_abs = self.min_intensity.value
-        elif self.exclude_mode.value == MODE_MASK:
+        elif self.exclude_mode.value == BackgroundExclusionMode.MASK.value:
             mask = images.get_image(self.mask_image.value).pixel_data.astype(bool)
             x_data[~mask] = 0
-        elif self.exclude_mode.value == MODE_OBJECTS:
+        elif self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value:
             mask_objects = workspace.object_set.get_objects(self.mask_objects.value)
             mask = mask_objects.segmented.astype(bool)
             x_data[~mask] = 0

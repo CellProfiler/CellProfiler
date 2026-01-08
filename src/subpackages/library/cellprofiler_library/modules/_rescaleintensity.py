@@ -1,13 +1,13 @@
 from typing import Optional, Union, Annotated
 from pydantic import validate_call, ConfigDict, Field
 from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
-from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscale, ImageGrayscaleMask, ImageUInt
+from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscale, ImageGrayscaleMask
 from cellprofiler_library.functions.image_processing import stretch, manual_input_range, manual_io_range, divide_by_image_maximum, divide_by_image_minimum, divide_by_value, scale_by_image_maximum
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def rescale_intensity(
         rescale_method:         Annotated[RescaleMethod, Field(description="Method to rescale the image")],
-        in_pixel_data:          Annotated[Union[ImageAny, ImageUInt], Field(description="Input image data")],
+        in_pixel_data:          Annotated[ImageAny, Field(description="Input image data")],
         in_mask:                Annotated[ImageAnyMask, Field(description="Input image mask")],
         input_image_has_mask:   Annotated[bool, Field(description="Whether the input image has a mask")],
         in_multichannel:        Annotated[bool, Field(description="Whether the input image is multichannel")],
@@ -21,9 +21,9 @@ def rescale_intensity(
         shared_dict, # do not type annotate as it has a bad interation with Pydantic TODO #5088: Discuss
         dest_scale_min:         Annotated[Optional[float], Field(description="Intensity range for the output image - minimum")],
         dest_scale_max:         Annotated[Optional[float], Field(description="Intensity range for the output image - maximum")],
-        reference_image_pixel_data: Annotated[Optional[Union[ImageGrayscale, ImageUInt]], Field(description="Reference image data - for scale by image maximum")],
+        reference_image_pixel_data: Annotated[Optional[ImageAny], Field(description="Reference image data - for scale by image maximum")],
         reference_image_mask:   Annotated[Optional[ImageGrayscaleMask], Field(description="Reference image mask - for scale by image maximum")],
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     if rescale_method == RescaleMethod.STRETCH.value:
         output_image = stretch(in_pixel_data, in_mask, in_multichannel)
     elif (rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value) or (rescale_method == RescaleMethod.MANUAL_IO_RANGE.value):

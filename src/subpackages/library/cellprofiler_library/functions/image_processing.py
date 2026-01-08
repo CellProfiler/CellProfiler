@@ -35,7 +35,6 @@ from cellprofiler_library.types import (
     ObjectSegmentation, 
     Image2D, Image2DMask, 
     StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, Image2DBinary, ObjectLabel, ImageBinary, Pixel,
-    ImageUInt
 )
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
@@ -2880,10 +2879,10 @@ def reshape_image(
 ###############################################################################
 
 def rescale(
-        image_pixel_data: Union[ImageAny, ImageUInt], 
+        image_pixel_data: ImageAny, 
         in_range: Tuple[float, float],
         out_range: Tuple[float, float] = (0.0, 1.0)
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     data = 1.0 * image_pixel_data
 
     rescaled = skimage.exposure.rescale_intensity(
@@ -2894,10 +2893,10 @@ def rescale(
 
 
 def stretch(
-        data: Union[Union[ImageAny, ImageUInt], ImageUInt], 
+        data: ImageAny, 
         mask: ImageAnyMask, 
         multichannel: bool = False
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     if multichannel:
         splitaxis = data.ndim - 1
         singlechannels = numpy.split(data, data.shape[-1], splitaxis)
@@ -2922,7 +2921,7 @@ def stretch(
 
 
 def manual_input_range(
-        data: Union[ImageAny, ImageUInt], 
+        data: ImageAny, 
         mask: Optional[ImageAnyMask], 
         source_high: float, 
         source_low: float, 
@@ -2931,7 +2930,7 @@ def manual_input_range(
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
         shared_dict, # do not type annotate as it has a bad interation with Pydantic
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     return manual_io_range(
         data, 
         mask, 
@@ -2946,7 +2945,7 @@ def manual_input_range(
 
 
 def manual_io_range(
-        data: Union[ImageAny, ImageUInt], 
+        data: ImageAny, 
         mask: Optional[ImageAnyMask], 
         source_high: float, 
         source_low: float, 
@@ -2957,7 +2956,7 @@ def manual_io_range(
         shared_dict, # do not type annotate as it has a bad interation with Pydantic
         dest_scale_min: Optional[float]=None, 
         dest_scale_max: Optional[float]=None
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict)
     if dest_scale_min is None and dest_scale_max is None:
         return rescale(data, in_range)
@@ -2966,14 +2965,14 @@ def manual_io_range(
         return rescale(data, in_range, out_range)
 
 
-def divide(data: Union[ImageAny, ImageUInt], value) -> Union[ImageAny, ImageUInt]:
+def divide(data: ImageAny, value) -> ImageAny:
     if value == 0.0:
         raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
     return data / float(value)
 
 
-def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask) -> Union[ImageAny, ImageUInt]:
+def divide_by_image_minimum(data: ImageAny, mask: ImageAnyMask) -> ImageAny:
     if (masked_data := data[mask]).size == 0:
         src_min = 0
     else:
@@ -2982,7 +2981,7 @@ def divide_by_image_minimum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask
     return divide(data, src_min)
 
 
-def divide_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask) -> Union[ImageAny, ImageUInt]:
+def divide_by_image_maximum(data: ImageAny, mask: ImageAnyMask) -> ImageAny:
     if (masked_data := data[mask]).size == 0:
         src_max = 1
     else:
@@ -2991,16 +2990,16 @@ def divide_by_image_maximum(data: Union[ImageAny, ImageUInt], mask: ImageAnyMask
     return divide(data, src_max)
 
 
-def divide_by_value(data: Union[ImageAny, ImageUInt], divisor_value):
+def divide_by_value(data: ImageAny, divisor_value):
     return divide(data, divisor_value)
 
 
 def scale_by_image_maximum(
-        data: Union[ImageAny, ImageUInt], 
+        data: ImageAny, 
         mask: ImageAnyMask, 
-        reference_data: Union[ImageGrayscale, ImageUInt], 
+        reference_data: ImageAny, 
         reference_mask: ImageGrayscaleMask
-    ) -> Union[ImageAny, ImageUInt]:
+    ) -> ImageAny:
     ###
     # Scale the image by the maximum of another image
     #
@@ -3027,7 +3026,7 @@ def scale_by_image_maximum(
 
 
 def get_source_range(
-        data: Union[ImageAny, ImageUInt], 
+        data: ImageAny, 
         mask: Optional[ImageAnyMask], 
         source_high: float, 
         source_low: float, 

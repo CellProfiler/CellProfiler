@@ -587,69 +587,6 @@ You can set a different threshold for each image selected in the module.
         labels = objects.segmented
         object_count = objects.count
 
-
-
-
-
-
-
-
-
-        # try:
-        #     im1_pixels = objects.crop_image_similarly(im1.pixel_data)
-        #     im1_mask = objects.crop_image_similarly(im1.mask)
-        # except ValueError:
-        #     im1_pixels, m1 = size_similarly(labels, im1.pixel_data)
-        #     im1_mask, m1 = size_similarly(labels, im1.mask)
-        #     im1_mask[~m1] = False
-        # try:
-        #     im2_pixels = objects.crop_image_similarly(im2.pixel_data)
-        #     im2_mask = objects.crop_image_similarly(im2.mask)
-        # except ValueError:
-        #     im2_pixels, m1 = size_similarly(labels, im2.pixel_data)
-        #     im2_mask, m1 = size_similarly(labels, im2.mask)
-        #     im2_mask[~m1] = False
-        # mask = (labels > 0) & im1_mask & im2_mask
-        # im1_pixels = im1_pixels[mask]
-        # im2_pixels = im2_pixels[mask]
-        # labels = labels[mask]
-        # im1_pixel_data = im1.pixel_data
-        # #
-        # # Code below is used for the Costes' automated thresholding
-        # #
-        # im1_mask = im1.mask
-        # im1_pixel_count = numpy.prod(im1.pixel_data.shape)
-        # im2_pixel_data = im2.pixel_data
-        # im2_mask = im2.mask
-        # im2_pixel_count = numpy.prod(im2.pixel_data.shape)
-        # #
-        # # Crop the larger image similarly to the smaller one
-        # #
-        # if im1_pixel_count < im2_pixel_count:
-        #     im2_pixel_data = im1.crop_image_similarly(im2_pixel_data)
-        #     im2_mask = im1.crop_image_similarly(im2_mask)
-        # elif im2_pixel_count < im1_pixel_count:
-        #     im1_pixel_data = im2.crop_image_similarly(im1_pixel_data)
-        #     im1_mask = im2.crop_image_similarly(im1_mask)
-        # mask = (
-        #     im1_mask
-        #     & im2_mask
-        #     & (~numpy.isnan(im1_pixel_data))
-        #     & (~numpy.isnan(im2_pixel_data))
-        # )
-        # #
-        # # fi and si are used to obtain the costes threshold values for their respective images
-        # #
-        # im1_costes_pixels = None
-        # im2_costes_pixels = None
-        # if mask is not None and numpy.any(mask):
-        #     im1_costes_pixels = im1_pixel_data[mask]
-        #     im2_costes_pixels = im2_pixel_data[mask]
-
-
-
-
-
         obj_parent_crop_mask = objects.parent_image.crop_mask if (objects.parent_image is not None and objects.parent_image.has_crop_mask) else None
         (
             im1_pixels, 

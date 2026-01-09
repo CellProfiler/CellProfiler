@@ -3733,14 +3733,11 @@ def compute_zernike_measurements(
 ###############################################################################
 
 
-def get_image_texture_measurements(
-        pixel_data: ImageGrayscale, 
-        gray_levels: int, 
-        scale: int, 
-        image_name: str
-    ) -> List[
-        Dict[str, Union[str, numpy.float_]]
-    ]:
+def measure_haralick_features_image(
+    pixel_data: ImageGrayscale, 
+    gray_levels: int, 
+    scale: int
+) -> NDArray[numpy.float64]:
     pixel_data = skimage.util.img_as_ubyte(pixel_data)
     if gray_levels != 256:
         pixel_data = skimage.exposure.rescale_intensity(
@@ -3748,34 +3745,19 @@ def get_image_texture_measurements(
         ).astype(numpy.uint8)
 
     # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-    features = mahotas.features.haralick(pixel_data, distance=scale)
-    statistics = []
-    for direction, direction_features in enumerate(features):
-        object_name = "{:d}_{:02d}".format(scale, direction)
-
-        for feature_name, feature in zip(F_HARALICK, direction_features):
-            statistics.append({
-                "feature_name": feature_name.value,
-                "image_name": image_name,
-                "result": feature,
-                "scale": object_name,
-                "gray_levels": "{:d}".format(gray_levels),
-            })
-    return statistics
+    # Returns (n_directions, 13)
+    return mahotas.features.haralick(pixel_data, distance=scale)
 
 
-def get_object_texture_measurements(
-        object_name: str, 
-        labels: ObjectSegmentation,
-        image_name: str,
-        pixel_data: ImageGrayscale,
-        mask: Optional[ImageGrayscaleMask],
-        gray_levels: int, 
-        unique_labels: NDArray[ObjectLabel], # objects.indices
-        scale: int, 
-        volumetric: bool,
-    ):
-    statistics = []
+def measure_haralick_features_objects(
+    labels: ObjectSegmentation,
+    pixel_data: ImageGrayscale,
+    mask: Optional[ImageGrayscaleMask],
+    gray_levels: int, 
+    max_label: int,
+    scale: int, 
+    volumetric: bool,
+) -> NDArray[numpy.float64]:
     n_directions = 13 if volumetric else 4
     if mask is not None:
         pixel_data[~mask] = 0
@@ -3786,26 +3768,24 @@ def get_object_texture_measurements(
             pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
         ).astype(numpy.uint8)
     props = skimage.measure.regionprops(labels, pixel_data)
-    features = numpy.empty((n_directions, 13, max(unique_labels)))
+    
+    # Shape: (max_label, n_directions, 13)
+    # We use max_label so that result[i] corresponds to label i+1
+    features = numpy.full((max_label, n_directions, 13), numpy.nan)
 
     for prop in props:
         label_data = prop["intensity_image"]
         try:
-            features[:, :, prop.label-1] = mahotas.features.haralick(
+            # mahotas.features.haralick returns (n_directions, 13)
+            # ignore_zeros=True is important for masked objects
+            res = mahotas.features.haralick(
                 label_data, distance=scale, ignore_zeros=True
             )
+            # If the object is too small or something, mahotas might return something else?
+            # Assuming it returns correct shape if successful.
+            features[prop.label-1, :, :] = res
         except ValueError:
-            features[:, :, prop.label-1] = numpy.nan
+            # Keep as NaN
+            pass
 
-    for direction, direction_features in enumerate(features):
-        for feature_name, feature in zip(F_HARALICK, direction_features):
-
-            statistics.append({
-                "image": image_name,
-                "feature": feature_name.value,
-                "obj": object_name,
-                "result": feature,
-                "scale": "{:d}_{:02d}".format(scale, direction),
-                "gray_levels": "{:d}".format(gray_levels),
-            })
-    return statistics
+    return features

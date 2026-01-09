@@ -540,17 +540,39 @@ measured and will result in a undefined value in the output file.
 
         if len(unique_labels) == 0:
             for direction in range(n_directions):
-                for feature_name in F_HARALICK:
-                    statistics += self.record_measurement(
-                        image=image_name,
-                        feature=feature_name.value,
-                        obj=object_name,
-                        result=numpy.zeros((0,)),
-                        scale="{:d}_{:02d}".format(scale, direction),
-                        workspace=workspace,
-                        gray_levels="{:d}".format(gray_levels),
+                scale_str = "{:d}_{:02d}".format(scale, direction)
+                gray_str = "{:d}".format(gray_levels)
+                for feature_enum in F_HARALICK:
+                    feature_name = feature_enum.value
+                    full_name = "{}_{}_{}_{}_{}".format(
+                        TEXTURE, feature_name, image_name, scale_str, gray_str
+                    )
+                    workspace.add_measurement(
+                        object_name,
+                        full_name,
+                        numpy.zeros((0,))
                     )
 
+                    stats_map = {
+                        "Mean": "mean",
+                        "Median": "median",
+                        "Min": "min",
+                        "Max": "max",
+                        "StDev": "std dev"
+                    }
+                    
+                    for stat_key, display_name in stats_map.items():
+                        stat_full_name = f"{stat_key}_{full_name}"
+                        # Add image measurement for stat (even if 0)
+                        workspace.measurements.add_image_measurement(stat_full_name, 0.0)
+
+                        statistics.append([
+                            image_name,
+                            object_name,
+                            "{} {}".format(display_name, feature_name),
+                            scale_str,
+                            "-"
+                        ])
             return statistics
 
         # # IMG-961: Ensure image and objects have the same shape.
@@ -571,7 +593,7 @@ measured and will result in a undefined value in the output file.
                 else:
                     mask = m1
 
-        _statistics = measure_object_texture(
+        results = measure_object_texture(
             object_name, 
             labels,
             image_name, 
@@ -582,9 +604,43 @@ measured and will result in a undefined value in the output file.
             scale, 
             objects.volumetric,
         )
-        statistics = []
-        for i in _statistics:
-            statistics += self.record_measurement(**i, workspace=workspace)
+        
+        for direction in range(n_directions):
+            scale_str = "{:d}_{:02d}".format(scale, direction)
+            gray_str = "{:d}".format(gray_levels)
+            for feature_enum in F_HARALICK:
+                feature_name = feature_enum.value
+                full_name = "{}_{}_{}_{}_{}".format(
+                    TEXTURE, feature_name, image_name, scale_str, gray_str
+                )
+                
+                vals = results["Object"][object_name].get(full_name, numpy.zeros((0,)))
+                vals[~numpy.isfinite(vals)] = 0
+                workspace.add_measurement(object_name, full_name, vals)
+                
+                stats_map = {
+                    "Mean": "mean",
+                    "Median": "median",
+                    "Min": "min",
+                    "Max": "max",
+                    "StDev": "std dev"
+                }
+
+                for stat_key, display_name in stats_map.items():
+                    stat_full_name = f"{stat_key}_{full_name}"
+                    stat_val = results["Image"].get(stat_full_name, 0.0)
+                    if not numpy.isfinite(stat_val):
+                        stat_val = 0.0
+
+                    workspace.measurements.add_image_measurement(stat_full_name, stat_val)
+
+                    statistics.append([
+                        image_name,
+                        object_name,
+                        "{} {}".format(display_name, feature_name),
+                        scale_str,
+                        "{:.2f}".format(float(stat_val)) if len(vals) > 0 else "-"
+                    ])
 
         return statistics
     
@@ -595,68 +651,35 @@ measured and will result in a undefined value in the output file.
         gray_levels = int(self.gray_levels.value)
         pixel_data = image.pixel_data
 
-        _statistics = measure_image_texture(pixel_data, gray_levels, scale, image_name)
+        results = measure_image_texture(pixel_data, gray_levels, scale, image_name)
         statistics = []
-        for i in _statistics:
-            statistics += self.record_image_measurement(**i, workspace=workspace)
+        
+        n_directions = 13 if pixel_data.ndim == 3 else 4
+        
+        for direction in range(n_directions):
+            scale_str = "{:d}_{:02d}".format(scale, direction)
+            gray_str = "{:d}".format(gray_levels)
+            for feature_enum in F_HARALICK:
+                feature_name = feature_enum.value
+                full_name = "{}_{}_{}_{}_{}".format(
+                    TEXTURE, feature_name, image_name, scale_str, gray_str
+                )
+                
+                val = results["Image"].get(full_name, 0.0)
+                if not numpy.isfinite(val):
+                    val = 0.0
+                
+                workspace.measurements.add_image_measurement(full_name, val)
+                
+                statistics.append([
+                    image_name,
+                    "-",
+                    feature_name,
+                    scale_str,
+                    "{:.2f}".format(float(val))
+                ])
+                
         return statistics
-
-    def record_measurement(
-        self, workspace, image, obj, scale, feature, result, gray_levels
-    ):
-        result[~numpy.isfinite(result)] = 0
-
-        workspace.add_measurement(
-            obj,
-            "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale), gray_levels),
-            result,
-        )
-
-        # TODO: get outta crazee towne
-        functions = [
-            ("min", numpy.min),
-            ("max", numpy.max),
-            ("mean", numpy.mean),
-            ("median", numpy.median),
-            ("std dev", numpy.std),
-        ]
-
-        # TODO: poop emoji
-        statistics = [
-            [
-                image,
-                obj,
-                "{} {}".format(aggregate, feature),
-                scale,
-                "{:.2}".format(fn(result)) if len(result) else "-",
-            ]
-            for aggregate, fn in functions
-        ]
-
-        return statistics
-
-    def record_image_measurement(
-        self, workspace, image_name, scale, feature_name, result, gray_levels
-    ):
-        # TODO: this is very concerning
-        if not numpy.isfinite(result):
-            result = 0
-
-        feature = "{}_{}_{}_{}_{}".format(
-            TEXTURE, feature_name, image_name, str(scale), gray_levels
-        )
-
-        workspace.measurements.add_image_measurement(feature, result)
-
-        statistics = [
-            image_name,
-            "-",
-            feature_name,
-            scale,
-            "{:.2}".format(float(result)),
-        ]
-
-        return [statistics]
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

@@ -4,6 +4,7 @@ import six
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_library.opts.measureimageareaoccupied import MeasurementType, Target
 
 
 import cellprofiler.modules.measureimageareaoccupied
@@ -26,7 +27,7 @@ def make_workspace(labels, parent_image=None):
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
     module.operand_choice.value = (
-        cellprofiler.modules.measureimageareaoccupied.O_OBJECTS
+        Target.OBJECTS
     )
     module.objects_list.value = OBJECTS_NAME
     pipeline.add_module(module)

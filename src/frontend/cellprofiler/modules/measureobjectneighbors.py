@@ -336,21 +336,16 @@ previously discarded objects.""".format(
 
 
         (
-            neighbor_count,
-            first_object_number,
-            second_object_number,
-            first_closest_distance,
-            second_closest_distance,
-            angle,
-            percent_touching,
-            first_objects,
-            second_objects,
+            measurements,
+            (first_objects, second_objects),
             expanded_labels,
         ) = measure_object_neighbors( 
             objects_small_removed_segmented, 
             kept_labels,
             neighbor_small_removed_segmented, 
             neighbor_kept_labels,
+            self.object_name.value,
+            self.neighbors_name.value,
             self.neighbors_are_objects,
             dimensions, 
             self.distance.value,
@@ -366,25 +361,18 @@ previously discarded objects.""".format(
         m = workspace.measurements
         assert isinstance(m, Measurements)
         image_set = workspace.image_set
-        features_and_data = [
-            (Measurement.NUMBER_OF_NEIGHBORS.value, neighbor_count),
-            (Measurement.FIRST_CLOSEST_OBJECT_NUMBER.value, first_object_number),
-            (
-                Measurement.FIRST_CLOSEST_DISTANCE.value,
-                first_closest_distance,
-            ),
-            (Measurement.SECOND_CLOSEST_OBJECT_NUMBER.value, second_object_number),
-            (
-                Measurement.SECOND_CLOSEST_DISTANCE.value,
-                second_closest_distance,
-            ),
-            (Measurement.ANGLE_BETWEEN_NEIGHBORS.value, angle),
-            (Measurement.PERCENT_TOUCHING.value, percent_touching),
-        ]
-        for feature_name, data in features_and_data:
-            m.add_measurement(
-                self.object_name.value, self.get_measurement_name(feature_name), data
-            )
+        
+        # Record Image Measurements
+        if "Image" in measurements:
+             for feature_name, value in measurements["Image"].items():
+                 m.add_image_measurement(feature_name, value)
+        
+        # Record Object Measurements
+        if "Object" in measurements:
+            for object_name, features in measurements["Object"].items():
+                for feature_name, data in features.items():
+                    m.add_measurement(object_name, feature_name, data)
+
         if len(first_objects) > 0:
             m.add_relate_measurement(
                 self.module_num,
@@ -399,6 +387,13 @@ previously discarded objects.""".format(
 
         labels = kept_labels
         neighbor_labels = neighbor_kept_labels
+        
+        # Retrieve data for display
+        neighbor_count_feature = self.get_measurement_name(Measurement.NUMBER_OF_NEIGHBORS.value)
+        neighbor_count = measurements["Object"][self.object_name.value][neighbor_count_feature]
+        
+        percent_touching_feature = self.get_measurement_name(Measurement.PERCENT_TOUCHING.value)
+        percent_touching = measurements["Object"][self.object_name.value][percent_touching_feature]
 
         neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0

@@ -14,7 +14,7 @@ def calculate_object_intensity_zernikes(
         zernike_degree:                 Annotated[int,Field(description="The degree of the Zernike polynomial to use")],
         image_name_data_mask_list:      Annotated[List[Tuple[str, Image2DGrayscale, Image2DGrayscaleMask]],Field(description="List of image name, image data, and image mask tuples")],
         zernike_opts:                   Annotated[IntensityZernike, Field(description="Zernike options either NONE, MAGNITUDES, or MAGNITUDES_AND_PHASE")]
-    ):
+    ) -> Dict[str, Any]:
     measurements_dict = {}
     zernike_indexes = centrosome.zernike.get_zernike_indexes(
             zernike_degree + 1
@@ -39,7 +39,7 @@ def calculate_object_intensity_zernikes(
                 z, 
             )
             measurements_dict[object_name] = measurements_dict_for_image
-    return measurements_dict
+    return {"Object": measurements_dict}
 
 HeatMapDictType = Dict[Union[int, str], Union[NDArray[numpy.float64], Any]]
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -51,14 +51,14 @@ def get_object_intensity_distribution_measurements(
         center_object_segmented:    Annotated[Optional[ObjectSegmentation], Field(description="Segmentation of the object used for centering")], 
         center_choice:              Annotated[CenterChoice, Field(description="How to choose the center of the object")],
         wants_scaled:               Annotated[bool, Field(description="Whether to scale the distribution by the number of pixels")], 
-        maximum_radius:             Annotated[int, Field(description="Maximum radius of the distribution", min=1)], # default 100, minimum 1
-        bin_count:                  Annotated[int, Field(description="Number of bins in the distribution", min=2)], # default 4, minval 2
+        maximum_radius:             Annotated[int, Field(description="Maximum radius of the distribution", ge=1)], # default 100, minimum 1
+        bin_count:                  Annotated[int, Field(description="Number of bins in the distribution", ge=2)], # default 4, minval 2
         pixel_data:                 Annotated[Image2DGrayscale, Field(description="Pixel data of the image")],
         nobjects:                   Annotated[int, Field(description="Number of objects in the image")],
         image_name:                 Annotated[str, Field(description="Name of the image")],
         heatmaps,
         objects_indices:            Annotated[Optional[NDArray[ObjectLabel]], Field(description="Indices of objects in the image")]
-    ) -> Tuple[List[Tuple[str, str, str, str, float, float, float]], List[List[Union[str, numpy.float_]]]]:
+    ) -> Tuple[Dict[str, Any], List[Tuple[str, str, str, str, float, float, float]]]:
     name = (
         object_name
         if center_object_name is None
@@ -89,7 +89,7 @@ def get_object_intensity_distribution_measurements(
     radial_index = get_radial_index(labels, good_mask, i_center, j_center)
 
     statistics = []
-    measurements = []
+    object_measurements = {}
 
     for bin in range(bin_count + (0 if wants_scaled else 1)):
         (
@@ -109,7 +109,9 @@ def get_object_intensity_distribution_measurements(
             else:
                 measurement_name = feature % (image_name, bin + 1, bin_count)
 
-            measurements.append([object_name, measurement_name, measurement])
+            if object_name not in object_measurements:
+                object_measurements[object_name] = {}
+            object_measurements[object_name][measurement_name] = measurement
 
             if feature in heatmaps:
                 heatmaps[feature][bin_mask] = measurement[bin_labels - 1]
@@ -130,4 +132,4 @@ def get_object_intensity_distribution_measurements(
             )
         ]
 
-    return statistics, measurements
+    return {"Object": object_measurements}, statistics

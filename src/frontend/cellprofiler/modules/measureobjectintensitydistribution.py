@@ -824,7 +824,7 @@ be selected in a later **SaveImages** or other module.
         
         center_object_segmented = workspace.object_set.get_objects(center_object_name).segmented if center_object_name is not None else None
 
-        statistics, measurement_list  = get_object_intensity_distribution_measurements(
+        measurements_dict, statistics = get_object_intensity_distribution_measurements(
             object_name,
             center_object_name,
             heatmap_dict,
@@ -840,8 +840,10 @@ be selected in a later **SaveImages** or other module.
             heatmaps,
             objects.indices
         )
-        for measurement in measurement_list:
-            measurements.add_measurement(*measurement)
+        if "Object" in measurements_dict:
+            for obj_name, features in measurements_dict["Object"].items():
+                for feature_name, value in features.items():
+                    measurements.add_measurement(obj_name, feature_name, value)
         return statistics
 
     def calculate_zernikes(self, workspace):
@@ -859,16 +861,18 @@ be selected in a later **SaveImages** or other module.
 
         name_data_mask_list = [(i_name, i_data, i_mask) for (i_name, i_data, i_mask) in zip(image_names_list, image_pixel_data_list, image_mask_list)]
         
-        measurements_dict = calculate_object_intensity_zernikes(
+        measurements_dict_primitive = calculate_object_intensity_zernikes(
             objects_names_and_label_sets,
             self.zernike_degree.value,
             name_data_mask_list,
             self.wants_zernikes.value
         )
         
-        for object_name in measurements_dict:
-            for feature in measurements_dict[object_name]:
-                meas[object_name, feature] = measurements_dict[object_name][feature]
+        if "Object" in measurements_dict_primitive:
+            measurements_dict = measurements_dict_primitive["Object"]
+            for object_name in measurements_dict:
+                for feature in measurements_dict[object_name]:
+                    meas[object_name, feature] = measurements_dict[object_name][feature]
 
     def get_zernike_magnitude_name(self, image_name, n, m):
         """The feature name of the magnitude of a Zernike moment

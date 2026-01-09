@@ -24,7 +24,7 @@ from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
@@ -53,12 +53,15 @@ class ObjectRecord(object):
                 self.current_mean, np.finfo(float).eps
             )
 
-            
+###############################################################################
+# MeasureImageOverlap
+###############################################################################
+
 def measure_image_overlap_statistics(
-    ground_truth_image,
-    test_image,
-    mask=None,
-):
+    ground_truth_image: ImageBinary,
+    test_image: ImageBinary,
+    mask: Optional[ImageBinaryMask]=None,
+) -> Dict[str, numpy.float_]:
     # Check that the inputs are binary
     if not np.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
@@ -174,7 +177,11 @@ def measure_image_overlap_statistics(
     return data
 
 
-def compute_rand_index(test_labels, ground_truth_labels, mask):
+def compute_rand_index(
+        test_labels: ObjectSegmentation, 
+        ground_truth_labels: ObjectSegmentation, 
+        mask: Optional[ImageBinaryMask]=None
+        ) -> Tuple[numpy.float_, numpy.float_]:
     """Calculate the Rand Index
 
     http://en.wikipedia.org/wiki/Rand_index
@@ -276,14 +283,14 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
 
 
 def compute_earth_movers_distance(
-    ground_truth_image,
-    test_image,
-    mask=None,
+    ground_truth_image: ImageBinary,
+    test_image: ImageBinary,
+    mask: Optional[ImageBinary]=None,
     decimation_method: mio.DM = mio.DM.KMEANS,
     max_distance: int = 250,
     max_points: int = 250,
     penalize_missing: bool = False,
-):
+) -> numpy.float_:
     """Compute the earthmovers distance between two sets of objects
 
     src_objects - move pixels from these objects

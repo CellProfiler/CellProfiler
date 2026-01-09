@@ -77,11 +77,8 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import LabelName, Integer, Float
-from centrosome.cpmorphology import all_connected_components
-from centrosome.cpmorphology import fixup_scipy_ndimage_result
-from centrosome.cpmorphology import get_line_pts
-from scipy.ndimage import binary_erosion, binary_fill_holes
-from scipy.ndimage import mean as mean_of_labels
+
+from cellprofiler_library.modules._identifydeadworms import identify_dead_worms
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"
@@ -228,7 +225,7 @@ degrees.
         if not self.wants_automatic_distance:
             result += [self.space_distance, self.angular_distance]
         return result
-
+    
     def run(self, workspace):
         """Run the algorithm on one image set"""
         #
@@ -236,106 +233,21 @@ degrees.
         #
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value, must_be_binary=True)
-        mask = image.pixel_data
-        if image.has_mask:
-            mask = mask & image.mask
+        image_mask = image.mask if image.has_mask else None
         angle_count = self.angle_count.value
         #
-        # We collect the i,j and angle of pairs of points that
-        # are 3-d adjacent after erosion.
+        # Perform the identification
         #
-        # i - the i coordinate of each point found after erosion
-        # j - the j coordinate of each point found after erosion
-        # a - the angle of the structuring element for each point found
-        #
-        i = numpy.zeros(0, int)
-        j = numpy.zeros(0, int)
-        a = numpy.zeros(0, int)
-
-        ig, jg = numpy.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
-        this_idx = 0
-        for angle_number in range(angle_count):
-            angle = float(angle_number) * numpy.pi / float(angle_count)
-            strel = self.get_diamond(angle)
-            erosion = binary_erosion(mask, strel)
-            #
-            # Accumulate the count, i, j and angle for all foreground points
-            # in the erosion
-            #
-            this_count = numpy.sum(erosion)
-            i = numpy.hstack((i, ig[erosion]))
-            j = numpy.hstack((j, jg[erosion]))
-            a = numpy.hstack((a, numpy.ones(this_count, float) * angle))
-        #
-        # Find connections based on distances, not adjacency
-        #
-        first, second = self.find_adjacent_by_distance(i, j, a)
-        #
-        # Do all connected components.
-        #
-        if len(first) > 0:
-            ij_labels = all_connected_components(first, second) + 1
-            nlabels = numpy.max(ij_labels)
-            label_indexes = numpy.arange(1, nlabels + 1)
-            #
-            # Compute the measurements
-            #
-            center_x = fixup_scipy_ndimage_result(
-                mean_of_labels(j, ij_labels, label_indexes)
-            )
-            center_y = fixup_scipy_ndimage_result(
-                mean_of_labels(i, ij_labels, label_indexes)
-            )
-            #
-            # The angles are wierdly complicated because of the wrap-around.
-            # You can imagine some horrible cases, like a circular patch of
-            # "worm" in which all angles are represented or a gentle "U"
-            # curve.
-            #
-            # For now, I'm going to use the following heuristic:
-            #
-            # Compute two different "angles". The angles of one go
-            # from 0 to 180 and the angles of the other go from -90 to 90.
-            # Take the variance of these from the mean and
-            # choose the representation with the lowest variance.
-            #
-            # An alternative would be to compute the variance at each possible
-            # dividing point. Another alternative would be to actually trace through
-            # the connected components - both overkill for such an inconsequential
-            # measurement I hope.
-            #
-            angles = fixup_scipy_ndimage_result(
-                mean_of_labels(a, ij_labels, label_indexes)
-            )
-            vangles = fixup_scipy_ndimage_result(
-                mean_of_labels(
-                    (a - angles[ij_labels - 1]) ** 2, ij_labels, label_indexes
-                )
-            )
-            aa = a.copy()
-            aa[a > numpy.pi / 2] -= numpy.pi
-            aangles = fixup_scipy_ndimage_result(
-                mean_of_labels(aa, ij_labels, label_indexes)
-            )
-            vaangles = fixup_scipy_ndimage_result(
-                mean_of_labels(
-                    (aa - aangles[ij_labels - 1]) ** 2, ij_labels, label_indexes
-                )
-            )
-            aangles[aangles < 0] += numpy.pi
-            angles[vaangles < vangles] = aangles[vaangles < vangles]
-            #
-            # Squish the labels to 2-d. The labels for overlaps are arbitrary.
-            #
-            labels = numpy.zeros(mask.shape, int)
-            labels[i, j] = ij_labels
-        else:
-            center_x = numpy.zeros(0, int)
-            center_y = numpy.zeros(0, int)
-            angles = numpy.zeros(0)
-            nlabels = 0
-            label_indexes = numpy.zeros(0, int)
-            labels = numpy.zeros(mask.shape, int)
+        center_x, center_y, angles, nlabels, label_indexes, labels = identify_dead_worms(
+            image.pixel_data,
+            image_mask,
+            self.wants_automatic_distance.value,
+            self.worm_width.value,
+            self.worm_length.value,
+            self.angle_count.value,
+            self.space_distance.value,
+            self.angular_distance.value
+        )
 
         m = workspace.measurements
         assert isinstance(m, Measurements)
@@ -406,7 +318,7 @@ degrees.
             #
             lcolors = colors * 0.5 + 0.5  # Wash the colors out a little
             for ii in range(count):
-                diamond = self.get_diamond(angles[ii])
+                diamond = self.get_diamond(angles[ii], self.worm_width.value, self.worm_length.value)
                 hshape = ((numpy.array(diamond.shape) - 1) / 2).astype(int)
                 iii = int(i[ii])
                 jjj = int(j[ii])
@@ -431,205 +343,6 @@ degrees.
             normalize=False,
             sharexy=plot00,
         )
-
-    def get_diamond(self, angle):
-        """Get a diamond-shaped structuring element
-
-        angle - angle at which to tilt the diamond
-
-        returns a binary array that can be used as a footprint for
-        the erosion
-        """
-        worm_width = self.worm_width.value
-        worm_length = self.worm_length.value
-        #
-        # The shape:
-        #
-        #                   + x1,y1
-        #
-        # x0,y0 +                          + x2, y2
-        #
-        #                   + x3,y3
-        #
-        x0 = int(numpy.sin(angle) * worm_length / 2)
-        x1 = int(numpy.cos(angle) * worm_width / 2)
-        x2 = -x0
-        x3 = -x1
-        y2 = int(numpy.cos(angle) * worm_length / 2)
-        y1 = int(numpy.sin(angle) * worm_width / 2)
-        y0 = -y2
-        y3 = -y1
-        xmax = numpy.max(numpy.abs([x0, x1, x2, x3]))
-        ymax = numpy.max(numpy.abs([y0, y1, y2, y3]))
-        strel = numpy.zeros((ymax * 2 + 1, xmax * 2 + 1), bool)
-        index, count, i, j = get_line_pts(
-            numpy.array([y0, y1, y2, y3]) + ymax,
-            numpy.array([x0, x1, x2, x3]) + xmax,
-            numpy.array([y1, y2, y3, y0]) + ymax,
-            numpy.array([x1, x2, x3, x0]) + xmax,
-        )
-        strel[i, j] = True
-        strel = binary_fill_holes(strel)
-        return strel
-
-    @staticmethod
-    def find_adjacent(img1, offset1, count1, img2, offset2, count2, first, second):
-        """Find adjacent pairs of points between two masks
-
-        img1, img2 - binary images to be 8-connected
-        offset1 - number the foreground points in img1 starting at this offset
-        count1 - number of foreground points in img1
-        offset2 - number the foreground points in img2 starting at this offset
-        count2 - number of foreground points in img2
-        first, second - prior collection of points
-
-        returns augmented collection of points
-        """
-        numbering1 = numpy.zeros(img1.shape, int)
-        numbering1[img1] = numpy.arange(count1) + offset1
-        numbering2 = numpy.zeros(img1.shape, int)
-        numbering2[img2] = numpy.arange(count2) + offset2
-
-        f = numpy.zeros(0, int)
-        s = numpy.zeros(0, int)
-        #
-        # Do all 9
-        #
-        for oi in (-1, 0, 1):
-            for oj in (-1, 0, 1):
-                f1, s1 = IdentifyDeadWorms.find_adjacent_one(
-                    img1, numbering1, img2, numbering2, oi, oj
-                )
-                f = numpy.hstack((f, f1))
-                s = numpy.hstack((s, s1))
-        return numpy.hstack((first, f)), numpy.hstack((second, s))
-
-    @staticmethod
-    def find_adjacent_same(img, offset, count, first, second):
-        """Find adjacent pairs of points in the same mask
-        img - binary image to be 8-connected
-        offset - where to start numbering
-        count - number of foreground points in image
-        first, second - prior collection of points
-
-        returns augmented collection of points
-        """
-        numbering = numpy.zeros(img.shape, int)
-        numbering[img] = numpy.arange(count) + offset
-        f = numpy.zeros(0, int)
-        s = numpy.zeros(0, int)
-        for oi in (0, 1):
-            for oj in (0, 1):
-                f1, s1 = IdentifyDeadWorms.find_adjacent_one(
-                    img, numbering, img, numbering, oi, oj
-                )
-                f = numpy.hstack((f, f1))
-                s = numpy.hstack((s, s1))
-        return numpy.hstack((first, f)), numpy.hstack((second, s))
-
-    @staticmethod
-    def find_adjacent_one(img1, numbering1, img2, numbering2, oi, oj):
-        """Find correlated pairs of foreground points at given offsets
-
-        img1, img2 - binary images to be correlated
-        numbering1, numbering2 - indexes to be returned for pairs
-        oi, oj - offset for second image
-
-        returns two vectors: index in first and index in second
-        """
-        i1, i2 = IdentifyDeadWorms.get_slices(oi)
-        j1, j2 = IdentifyDeadWorms.get_slices(oj)
-        match = img1[i1, j1] & img2[i2, j2]
-        return numbering1[i1, j1][match], numbering2[i2, j2][match]
-
-    def find_adjacent_by_distance(self, i, j, a):
-        """Return pairs of worm centers that are deemed adjacent by distance
-
-        i - i-centers of worms
-        j - j-centers of worms
-        a - angular orientation of worms
-
-        Returns two vectors giving the indices of the first and second
-        centers that are connected.
-        """
-        if len(i) < 2:
-            return numpy.zeros(len(i), int), numpy.zeros(len(i), int)
-        if self.wants_automatic_distance:
-            space_distance = self.worm_width.value
-            angle_distance = numpy.arctan2(
-                self.worm_width.value, self.worm_length.value
-            )
-            angle_distance += numpy.pi / self.angle_count.value
-        else:
-            space_distance = self.space_distance.value
-            angle_distance = self.angular_distance.value * numpy.pi / 180
-        #
-        # Sort by i and break the sorted vector into chunks where
-        # consecutive locations are separated by more than space_distance
-        #
-        order = numpy.lexsort((a, j, i))
-        i = i[order]
-        j = j[order]
-        a = a[order]
-        breakpoint = numpy.hstack(([False], i[1:] - i[:-1] > space_distance))
-        if numpy.all(~breakpoint):
-            # No easy win - cross all with all
-            first, second = numpy.mgrid[0 : len(i), 0 : len(i)]
-        else:
-            # The segment that each belongs to
-            segment_number = numpy.cumsum(breakpoint)
-            # The number of elements in each segment
-            member_count = numpy.bincount(segment_number)
-            # The index of the first element in the segment
-            member_idx = numpy.hstack(([0], numpy.cumsum(member_count[:-1])))
-            # The index of the first element, for every element in the segment
-            segment_start = member_idx[segment_number]
-            #
-            # Develop the cross-products for each segment. Each segment has
-            # member_count * member_count crosses.
-            #
-            # # of (first,second) pairs in each segment
-            cross_size = member_count ** 2
-            # Index in final array of first element of each segment
-            segment_idx = numpy.cumsum(cross_size)
-            # relative location of first "first"
-            first_start_idx = numpy.cumsum(member_count[segment_number[:-1]])
-            first = numpy.zeros(segment_idx[-1], int)
-            first[first_start_idx] = 1
-            # The "firsts" array
-            first = numpy.cumsum(first)
-            first_start_idx = numpy.hstack(([0], first_start_idx))
-            second = (
-                numpy.arange(len(first)) - first_start_idx[first] + segment_start[first]
-            )
-        mask = (
-            numpy.abs((i[first] - i[second]) ** 2 + (j[first] - j[second]) ** 2)
-            <= space_distance ** 2
-        ) & (
-            (numpy.abs(a[first] - a[second]) <= angle_distance)
-            | (a[first] + numpy.pi - a[second] <= angle_distance)
-            | (a[second] + numpy.pi - a[first] <= angle_distance)
-        )
-        return order[first[mask]], order[second[mask]]
-
-    @staticmethod
-    def get_slices(offset):
-        """Get slices to use for a pair of arrays, given an offset
-
-        offset - offset to be applied to the second array
-
-        An offset imposes border conditions on an array, for instance,
-        an offset of 1 means that the first array has a slice of :-1
-        and the second has a slice of 1:. Return the slice to use
-        for the first and second arrays.
-        """
-        if offset > 0:
-            s0, s1 = slice(0, -offset), slice(offset, numpy.iinfo(int).max)
-        elif offset < 0:
-            s1, s0 = IdentifyDeadWorms.get_slices(-offset)
-        else:
-            s0 = s1 = slice(0, numpy.iinfo(int).max)
-        return s0, s1
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""

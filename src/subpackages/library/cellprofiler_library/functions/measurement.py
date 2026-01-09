@@ -13,7 +13,7 @@ import centrosome.index
 from functools import reduce
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List, Union, Any, Any
+from typing import Tuple, Optional, Dict, Callable, List, Union, Any, Sequence
 from scipy.linalg import lstsq
 from scipy.ndimage import grey_dilation, grey_erosion
 from numpy.typing import NDArray
@@ -443,11 +443,11 @@ def get_weights(
 
 
 def measure_object_size_shape(
-    labels: ObjectSegmentation,
-    desired_properties: List[str],
+    labels,
+    desired_properties,
     calculate_zernikes: bool = True,
     calculate_advanced: bool = True,
-    spacing: Optional[Tuple] = None
+    spacing: Tuple = None
 ):
     label_indices = numpy.unique(labels[labels != 0])
     nobjects = len(label_indices)
@@ -468,7 +468,7 @@ def measure_object_size_shape(
         mean_radius = numpy.zeros(nobjects)
         min_feret_diameter = numpy.zeros(nobjects)
         max_feret_diameter = numpy.zeros(nobjects)
-        zernike_numbers = centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
+        zernike_numbers = centrosome.zernike.get_zernike_indexes(ObjectSizeShapeFeatures.ZERNIKE_N.value + 1)
 
         zf = {}
         for n, m in zernike_numbers:
@@ -655,6 +655,74 @@ def measure_object_size_shape(
         if calculate_advanced:
             features_to_record[ObjectSizeShapeFeatures.F_SOLIDITY.value] = props["solidity"]
     return features_to_record, props["label"], nobjects
+
+
+
+def measure_object_size_shape(
+    labels: ObjectSegmentation,
+    desired_properties: List[str],
+    calculate_zernikes: bool = True,
+    spacing: Optional[Tuple] = None
+) -> Tuple[
+    Dict[str, Any], # props
+    Tuple[NDArray, NDArray], # formfactor, compactness
+    Tuple[NDArray, NDArray, NDArray], # max, mean, median radius
+    Dict[Tuple[int, int], NDArray], # zernike
+    Tuple[NDArray, NDArray] # feret
+]:
+    label_indices = numpy.unique(labels[labels != 0])
+    
+    props = skimage.measure.regionprops_table(labels, properties=desired_properties)
+    
+    formfactor, compactness = get_object_derived_shape_features(props["area"], props["perimeter"])
+    
+    max_r, mean_r, median_r = get_object_radius_features(props["image"])
+    
+    zernike_features = {}
+    if calculate_zernikes:
+        zernike_numbers = centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
+        zernike_features = get_object_zernike_features(labels, label_indices, zernike_numbers)
+        
+    min_feret, max_feret = get_object_feret_features(labels, label_indices)
+    
+    return props, (formfactor, compactness), (max_r, mean_r, median_r), zernike_features, (min_feret, max_feret)
+
+def measure_object_size_shape_3d(
+    labels: NDArray[ObjectLabel],
+    desired_properties: List[str],
+    spacing: Tuple[float, ...]
+) -> Tuple[
+    Dict[str, Any], # props
+    NDArray[np.float64] # surface_areas
+]:
+    props = skimage.measure.regionprops_table(labels, properties=desired_properties)
+    
+    # SurfaceArea
+    surface_areas = numpy.zeros(len(props["label"]))
+    for index, label in enumerate(props["label"]):
+        volume = labels[
+            max(props["bbox-0"][index] - 1, 0) : min(
+                props["bbox-3"][index] + 1, labels.shape[0]
+            ),
+            max(props["bbox-1"][index] - 1, 0) : min(
+                props["bbox-4"][index] + 1, labels.shape[1]
+            ),
+            max(props["bbox-2"][index] - 1, 0) : min(
+                props["bbox-5"][index] + 1, labels.shape[2]
+            ),
+        ]
+        volume = volume == label
+        verts, faces, _normals, _values = skimage.measure.marching_cubes(
+            volume,
+            method="lewiner",
+            spacing=spacing,
+            level=0,
+        )
+        surface_areas[index] = skimage.measure.mesh_surface_area(verts, faces)
+        
+    return props, surface_areas
+
+
 
 
 

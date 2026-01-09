@@ -350,14 +350,13 @@ The file has the following columns:
             intensity_image = workspace.image_set.get_image(self.intensity_image_name.value, must_be_grayscale=True)
 
         (
-            trunk_counts,
-            branch_counts,
-            end_counts,
-            total_distance,
+            measurements,
             edge_graph,
             vertex_graph,
             branchpoint_image
         ) = measure_object_skeleton(
+            seed_objects_name,
+            skeleton_name,
             skeleton, 
             labels, 
             labels_count, 
@@ -372,14 +371,13 @@ The file has the following columns:
         #
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_TRUNKS, skeleton_name))
-        m.add_measurement(seed_objects_name, feature, trunk_counts)
-        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_NON_TRUNK_BRANCHES, skeleton_name))
-        m.add_measurement(seed_objects_name, feature, branch_counts)
-        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.NUMBER_BRANCH_ENDS, skeleton_name))
-        m.add_measurement(seed_objects_name, feature, end_counts)
-        feature = "_".join((C_OBJSKELETON, SkeletonMeasurements.TOTAL_OBJSKELETON_LENGTH, skeleton_name))
-        m[seed_objects_name, feature] = total_distance
+        
+        for object_name, features in measurements["Object"].items():
+            for feature_name, values in features.items():
+                m.add_measurement(object_name, feature_name, values)
+        
+        for feature_name, value in measurements["Image"].items():
+             m.add_image_measurement(feature_name, value)
         #
         # Collect the graph information
         #

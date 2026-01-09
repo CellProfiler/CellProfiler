@@ -16,8 +16,10 @@ def measure_image_skeleton(
     num_branches = numpy.count_nonzero(branch_nodes)
     num_endpoints = numpy.count_nonzero(endpoint_nodes)
     measurements = {
-        SkeletonMeasurements.BRANCHES.value.format(im_name): num_branches,
-        SkeletonMeasurements.ENDPOINTS.value.format(im_name): num_endpoints,
+        "Image": {
+            SkeletonMeasurements.BRANCHES.value.format(im_name): num_branches,
+            SkeletonMeasurements.ENDPOINTS.value.format(im_name): num_endpoints,
+        }
     }
     return branch_nodes, endpoint_nodes, measurements
 

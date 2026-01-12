@@ -348,7 +348,7 @@ def run_image_pair_objects(
 
     measurements: Dict[str, NDArray[np.float64]] = {}
     if MeasurementType.CORRELATION in measurement_types:
-        measurement = "Correlation_Correlation_%s_%s" % (im1_name, im2_name)
+        measurement = TemplateMeasurementFormat.CORRELATION_FORMAT % (im1_name, im2_name)
         measurements[measurement] = corr
     if MeasurementType.MANDERS in measurement_types:
         manders_measurement_1 = TemplateMeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)

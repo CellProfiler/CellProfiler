@@ -180,8 +180,8 @@ def run_image_pair_images(
                 ]
 
             if MeasurementType.COSTES in measurement_types:
-                assert costes_method is not None, "costes_method must be one of {}".format(CostesMethod.__members__.values())
-                assert costes_method in CostesMethod.__members__.values(), "costes_method must be one of {}".format(CostesMethod.__members__.values())
+                assert costes_method is not None, "costes_method must be one of {}".format([e.value for e in CostesMethod])
+                assert costes_method in [e.value for e in CostesMethod], "costes_method must be one of {}".format([e.value for e in CostesMethod])
                 
                 C1, C2 = measure_costes_coefficient(im1_pixels, im2_pixels, im1_scale, im2_scale, costes_method=costes_method)
                 

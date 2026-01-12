@@ -389,25 +389,7 @@ def run_image_pair_objects(
             (*col_order_1, "Max correlation", "-"),
         ]
         
-    #
-    # Calculate aggregate statistics
-    #
-    image_measurements: Dict[str, float] = {}
-    for name, array in measurements.items():
-        if array.size > 0:
-            image_measurements[f"Mean_{name}"] = np.mean(array)
-            image_measurements[f"Median_{name}"] = np.median(array)
-            image_measurements[f"Min_{name}"] = np.min(array)
-            image_measurements[f"Max_{name}"] = np.max(array)
-            image_measurements[f"StDev_{name}"] = np.std(array)
-        else:
-             image_measurements[f"Mean_{name}"] = np.nan
-             image_measurements[f"Median_{name}"] = np.nan
-             image_measurements[f"Min_{name}"] = np.nan
-             image_measurements[f"Max_{name}"] = np.nan
-             image_measurements[f"StDev_{name}"] = np.nan
-
     return {
         "Object": {object_name: measurements},
-        "Image": image_measurements
+        "Image": {}
     }, summary

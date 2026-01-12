@@ -1,7 +1,7 @@
 import math
 import numpy
 
-from cellprofiler_library.functions.image_processing import crop_image
+from cellprofiler_library.functions.image_processing import crop_image, crop_image_similarly
 
 class Image:
     """
@@ -287,31 +287,7 @@ class Image:
 
         image - a np.ndarray to be cropped (of any type)
         """
-        if image.shape[:2] == self.pixel_data.shape[:2]:
-            # Same size - no cropping needed
-            return image
-        if any(
-            [
-                my_size > other_size
-                for my_size, other_size in zip(self.pixel_data.shape, image.shape)
-            ]
-        ):
-            raise ValueError(
-                "Image to be cropped is smaller: %s vs %s"
-                % (repr(image.shape), repr(self.pixel_data.shape))
-            )
-        if not self.has_crop_mask:
-            raise RuntimeError(
-                "Images are of different size and no crop mask available.\n"
-                "Use the Crop and Align modules to match images of different sizes."
-            )
-        cropped_image = crop_image(image, self.crop_mask)
-        if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
-            raise ValueError(
-                "Cropped image is not the same size as the reference image: %s vs %s"
-                % (repr(cropped_image.shape), repr(self.pixel_data.shape))
-            )
-        return cropped_image
+        return crop_image_similarly(self.pixel_data, image, self.crop_mask)
 
     @property
     def file_name(self):

@@ -262,20 +262,6 @@ class MeasureGranularity(Module):
             title="If individual objects were measured, use an Export module to view their results",
         )
 
-    def add_names_to_measurements(self, measurements_arr, image_measurements_arr, statistics, image_name, granular_spectrum_length):
-        _statistics = [image_name] + statistics
-        _measurements_arr = []
-        _image_measurements_arr = []
-        ng = granular_spectrum_length
-        for i in range(1, ng+1):
-            feature = TemplateMeasurementFormat.GRANULARITY % (i, image_name)
-            _image_measurements_arr += [(feature, image_measurements_arr[i-1])]
-            if i < len(measurements_arr):
-                if measurements_arr[i-1]:
-                    for (obj_name, obj_gss) in measurements_arr[i-1]:
-                        _measurements_arr += [(obj_name, feature, obj_gss)]
-                        # _measurements_arr += [(measurements_arr[i-1][j][0], feature, measurements_arr[i-1][j][1])]
-        return _measurements_arr, _image_measurements_arr, _statistics
 
     def run_on_image_setting(self, workspace, image_name):
         im = workspace.image_set.get_image(image_name, must_be_grayscale=True)
@@ -288,10 +274,10 @@ class MeasureGranularity(Module):
             ObjectRecord(objects_name, workspace.object_set.get_objects(objects_name).segmented, im_mask, im_pixel_data) for objects_name in self.objects_list.value
         ]
         granular_spectrum_length = self.granular_spectrum_length.value
-        image_name = image_name
         dimensions = im.dimensions
 
-        measurements_arr, image_measurements_arr, statistics = measure_granularity(
+        measurements, summary = measure_granularity(
+            image_name,
             im_pixel_data, 
             im_mask, 
             subsample_size, 
@@ -301,14 +287,17 @@ class MeasureGranularity(Module):
             granular_spectrum_length, 
             dimensions
         )
-        measurements_arr, image_measurements_arr, statistics = self.add_names_to_measurements(measurements_arr, image_measurements_arr, statistics, image_name, granular_spectrum_length)
+        
+        # Record Image Measurements
+        for feature_name, value in measurements["Image"].items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+        # Record Object Measurements
+        for object_name, features in measurements["Object"].items():
+            for feature_name, values in features.items():
+                workspace.measurements.add_measurement(object_name, feature_name, values)
 
-        for packed_measurements in measurements_arr:
-            workspace.measurements.add_measurement(*packed_measurements)
-        for packed_measurements in image_measurements_arr:
-            workspace.measurements.add_image_measurement(*packed_measurements)
-
-        return statistics
+        return summary
 
     def get_measurement_columns(self, pipeline, return_sources=False):
         result = []

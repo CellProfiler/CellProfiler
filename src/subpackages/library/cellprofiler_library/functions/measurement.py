@@ -1486,3 +1486,4 @@ def get_granularity_measurements(
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr, statistics
 
+            

@@ -652,7 +652,7 @@ You can set a different threshold for each image selected in the module.
                     costes_method = costes_method
                 )
                 statistics += measurements_summary
-                for measurement_name, measurement_value in colocalization_measurements.items():
+                for measurement_name, measurement_value in colocalization_measurements["Image"].items():
                     workspace.measurements.add_image_measurement(measurement_name, measurement_value)
 
             if self.wants_objects():
@@ -705,7 +705,7 @@ You can set a different threshold for each image selected in the module.
 
                     )
                     statistics += measurements_summary
-                    for measurement_name, measurement_value in colocalization_measurements.items():
+                    for measurement_name, measurement_value in colocalization_measurements["Object"][object_name].items():
                         workspace.measurements.add_measurement(object_name, measurement_name, measurement_value)
 
         if self.wants_masks_saved.value:

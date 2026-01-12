@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import List, Tuple, Annotated, Optional, Dict, Union
+from typing import List, Tuple, Annotated, Optional, Dict, Union, Any
 from pydantic import validate_call, ConfigDict, BeforeValidator, Field
 from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
 from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType
@@ -121,14 +121,14 @@ def run_image_pair_images(
     costes_method:      Annotated[Optional[CostesMethod], Field(description="")] = CostesMethod.FAST,
     ) -> Annotated[
         Tuple[
-            Dict[str, np.float64],
+            Dict[str, Dict[str, Union[float, int, str, np.float64]]],
             List[Tuple[str, str, str, str, str]]
         ], Field(description="List of measurement results and a dictionary of measurements with precise values")]:
     """Calculate the correlation between the pixels of two images"""
 
 
     summary: List[Tuple[str, str, str, str, str]] = []
-    measurements: Dict[str, np.float64] = {}
+    measurements: Dict[str, Union[float, int, str, np.float64]] = {}
     corr =      np.float64(np.NaN)
     slope =     np.float64(np.NaN)
     C1 =        np.float64(np.NaN)
@@ -227,7 +227,7 @@ def run_image_pair_images(
         measurements[costes_measurement_1] = C1
         measurements[costes_measurement_2] = C2
 
-    return measurements, summary
+    return {"Image": measurements}, summary
 
 
 def __get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
@@ -259,7 +259,7 @@ def run_image_pair_objects(
     im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
     costes_method:      Annotated[Optional[CostesMethod], Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
     ) -> Tuple[
-        Dict[str, NDArray[np.float64]],
+        Dict[str, Dict[str, Any]],
         List[Tuple[str, str, str, str, str]]
         ]:
     if MeasurementType.COSTES in measurement_types:
@@ -389,4 +389,25 @@ def run_image_pair_objects(
             (*col_order_1, "Max correlation", "-"),
         ]
         
-    return measurements, summary
+    #
+    # Calculate aggregate statistics
+    #
+    image_measurements: Dict[str, float] = {}
+    for name, array in measurements.items():
+        if array.size > 0:
+            image_measurements[f"Mean_{name}"] = np.mean(array)
+            image_measurements[f"Median_{name}"] = np.median(array)
+            image_measurements[f"Min_{name}"] = np.min(array)
+            image_measurements[f"Max_{name}"] = np.max(array)
+            image_measurements[f"StDev_{name}"] = np.std(array)
+        else:
+             image_measurements[f"Mean_{name}"] = np.nan
+             image_measurements[f"Median_{name}"] = np.nan
+             image_measurements[f"Min_{name}"] = np.nan
+             image_measurements[f"Max_{name}"] = np.nan
+             image_measurements[f"StDev_{name}"] = np.nan
+
+    return {
+        "Object": {object_name: measurements},
+        "Image": image_measurements
+    }, summary

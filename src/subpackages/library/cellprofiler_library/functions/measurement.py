@@ -28,33 +28,6 @@ from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, Image
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 
 
-#
-# For each object, build a little record
-#
-class ObjectRecord(object):
-    def __init__(
-            self, 
-            name: str, 
-            segmented: ObjectSegmentation, 
-            im_mask: Optional[ImageGrayscaleMask], 
-            im_pixel_data: Optional[ImageGrayscale]
-            ):
-        self.name = name
-        self.labels = segmented
-        self.nobjects = np.max(self.labels)
-        if self.nobjects != 0:
-            assert im_mask is not None
-            assert im_pixel_data is not None
-            self.range = np.arange(1, np.max(self.labels) + 1)
-            self.labels = self.labels.copy()
-            self.labels[~im_mask] = 0
-            self.current_mean = fix(
-                scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
-            )
-            self.start_mean = np.maximum(
-                self.current_mean, np.finfo(float).eps
-            )
-
             
 def measure_image_overlap_statistics(
     ground_truth_image,
@@ -1412,6 +1385,32 @@ def linear_costes(
 ###############################################################################
 # Measure Granularity
 ###############################################################################
+
+class ObjectRecord(object):
+    def __init__(
+            self, 
+            name: str, 
+            segmented: ObjectSegmentation, 
+            im_mask: Optional[ImageGrayscaleMask], 
+            im_pixel_data: Optional[ImageGrayscale]
+            ):
+        self.name = name
+        self.labels = segmented
+        self.nobjects = np.max(self.labels)
+        if self.nobjects != 0:
+            assert im_mask is not None
+            assert im_pixel_data is not None
+            self.range = np.arange(1, np.max(self.labels) + 1)
+            self.labels = self.labels.copy()
+            self.labels[~im_mask] = 0
+            self.current_mean = fix(
+                scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
+            )
+            self.start_mean = np.maximum(
+                self.current_mean, np.finfo(float).eps
+            )
+
+
 def get_granularity_measurements(
         im_pixel_data: ImageGrayscale,
         pixels: ImageGrayscale, 

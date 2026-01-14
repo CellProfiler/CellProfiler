@@ -217,13 +217,6 @@ def morphology_erosion(image: ImageAny, structuring_element: StructuringElement)
     return y_data
 
 
-def masked_erode(im, mask, footprint):
-    im_mask = numpy.zeros_like(im)
-    im_mask[mask == True] = im[mask == True]
-    im = morphology_erosion(im_mask, footprint)
-    return im
-
-
 ################################################################################
 # DilateImage
 ################################################################################
@@ -256,21 +249,6 @@ def morphology_dilation(image: ImageAny, structuring_element: StructuringElement
     # Apply dilation directly for matching dimensions
     y_data = skimage.morphology.dilation(image, structuring_element)
     return y_data
-
-def masked_dilate(im, mask, footprint):
-    im_mask = numpy.zeros_like(im)
-    im_mask[mask == True] = im[mask == True]
-    im = morphology_dilation(im_mask, footprint)
-    return im
-
-
-def get_morphology_footprint(radius, dimensions):
-    if dimensions == 2:
-        footprint = skimage.morphology.disk(radius, dtype=bool)
-    else:
-        footprint = skimage.morphology.ball(radius, dtype=bool)
-    return footprint
-
 
 def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
@@ -2300,3 +2278,23 @@ def apply_grayscale_tophat_filter(
     pixels -= back_pixels
     pixels[pixels < 0] = 0
     return pixels
+
+def masked_dilate(im, mask, footprint):
+    im_mask = numpy.zeros_like(im)
+    im_mask[mask == True] = im[mask == True]
+    im = morphology_dilation(im_mask, footprint)
+    return im
+
+def masked_erode(im, mask, footprint):
+    im_mask = numpy.zeros_like(im)
+    im_mask[mask == True] = im[mask == True]
+    im = morphology_erosion(im_mask, footprint)
+    return im
+
+def get_morphology_footprint(radius, dimensions):
+    if dimensions == 2:
+        footprint = skimage.morphology.disk(radius, dtype=bool)
+    else:
+        footprint = skimage.morphology.ball(radius, dtype=bool)
+    return footprint
+    

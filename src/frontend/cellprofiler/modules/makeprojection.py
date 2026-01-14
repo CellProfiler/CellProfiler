@@ -193,7 +193,7 @@ slices."""
     def prepare_group(self, workspace, grouping, image_numbers):
         """Reset the aggregate image at the start of group processing"""
         if len(image_numbers) > 0:
-            provider = ImageProvider(
+            provider = ImageProvider.create(
                 self.projection_image_name.value,
                 self.projection_type.value,
                 self.frequency.value,
@@ -266,37 +266,6 @@ slices."""
 class ImageProvider(AbstractImage):
     """Provide the image after averaging but before dilation and smoothing"""
 
-    def __init__(self, name, how_to_accumulate, frequency=6):
-        """Construct using a parent provider that does the real work
-
-        name - name of the image provided
-        """
-        super(ImageProvider, self).__init__()
-        self.__name = name
-        self.frequency = frequency
-        self.__image = None
-        self.__how_to_accumulate = how_to_accumulate
-        self.__image_count = None
-        self.__cached_image = None
-        #
-        # Variance needs image squared as float64, image sum and count
-        #
-        self.__vsquared = None
-        self.__vsum = None
-        #
-        # Power needs a running sum (reuse vsum), a power image of the mask
-        # and a complex-values image
-        #
-        self.__power_image = None
-        self.__power_mask = None
-        self.__stack_number = 0
-        #
-        # Brightfield needs a maximum and minimum image
-        #
-        self.__bright_max = None
-        self.__bright_min = None
-        self.__norm0 = None
-
     D_NAME = "name"
     D_FREQUENCY = "frequency"
     D_IMAGE = "image"
@@ -311,24 +280,49 @@ class ImageProvider(AbstractImage):
     D_BRIGHT_MIN = "brightmin"
     D_NORM0 = "norm0"
 
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        """Construct using a parent provider that does the real work
+
+        name - name of the image provided
+        """
+        super(ImageProvider, self).__init__()
+        self._name = name
+        self.frequency = frequency
+        self._how_to_accumulate = how_to_accumulate
+        self._image_count = None
+        self._cached_image = None
+
+    @staticmethod
+    def create(name, how_to_accumulate, frequency=6):
+        """Factory method to create the appropriate ImageProvider subclass based on the accumulation method."""
+        providers = {
+            P_AVERAGE: AverageProvider,
+            P_MAXIMUM: MaximumProvider,
+            P_MINIMUM: MinimumProvider,
+            P_SUM: SumProvider,
+            P_VARIANCE: VarianceProvider,
+            P_POWER: PowerProvider,
+            P_BRIGHTFIELD: BrightfieldProvider,
+            P_MASK: MaskProvider,
+        }
+
+        provider_class = providers.get(how_to_accumulate)
+        if provider_class:
+            return provider_class(name, how_to_accumulate, frequency)
+
+        raise NotImplementedError(
+            "No such accumulation method: %s" % how_to_accumulate
+        )
+
     def save_state(self, d):
         """Save the provider state to a dictionary
 
         d - store state in this dictionary
         """
-        d[self.D_NAME] = self.__name
+        d[self.D_NAME] = self._name
         d[self.D_FREQUENCY] = self.frequency
-        d[self.D_IMAGE] = self.__image
-        d[self.D_HOW_TO_ACCUMULATE] = self.__how_to_accumulate
-        d[self.D_IMAGE_COUNT] = self.__image_count
-        d[self.D_VSQUARED] = self.__vsquared
-        d[self.D_VSUM] = self.__vsum
-        d[self.D_POWER_IMAGE] = self.__power_image
-        d[self.D_POWER_MASK] = self.__power_mask
-        d[self.D_STACK_NUMBER] = self.__stack_number
-        d[self.D_BRIGHT_MIN] = self.__bright_min
-        d[self.D_BRIGHT_MAX] = self.__bright_max
-        d[self.D_NORM0] = self.__norm0
+        d[self.D_HOW_TO_ACCUMULATE] = self._how_to_accumulate
+        d[self.D_IMAGE_COUNT] = self._image_count
 
     @staticmethod
     def restore_from_state(d):
@@ -341,183 +335,460 @@ class ImageProvider(AbstractImage):
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]
         how_to_accumulate = d[ImageProvider.D_HOW_TO_ACCUMULATE]
-        image_provider = ImageProvider(name, how_to_accumulate, frequency)
-        image_provider.__image = d[ImageProvider.D_IMAGE]
-        image_provider.__image_count = d[ImageProvider.D_IMAGE_COUNT]
-        image_provider.__vsquared = d[ImageProvider.D_VSQUARED]
-        image_provider.__vsum = d[ImageProvider.D_VSUM]
-        image_provider.__power_image = d[ImageProvider.D_POWER_IMAGE]
-        image_provider.__power_mask = d[ImageProvider.D_POWER_MASK]
-        image_provider.__stack_number = d[ImageProvider.D_STACK_NUMBER]
-        image_provider.__bright_min = d[ImageProvider.D_BRIGHT_MIN]
-        image_provider.__bright_max = d[ImageProvider.D_BRIGHT_MAX]
-        image_provider.__norm0 = d[ImageProvider.D_NORM0]
+        image_provider = ImageProvider.create(name, how_to_accumulate, frequency)
+        image_provider.restore(d)
         return image_provider
+
+    def restore(self, d):
+        self._image_count = d[self.D_IMAGE_COUNT]
 
     def reset(self):
         """Reset accumulator at start of groups"""
-        self.__image_count = None
-        self.__image = None
-        self.__cached_image = None
-        self.__vsquared = None
-        self.__vsum = None
-        self.__power_image = None
-        self.__power_mask = None
-        self.__stack_number = 0
-        self.__bright_max = None
-        self.__bright_min = None
+        self._image_count = None
+        self._cached_image = None
 
     @property
     def has_image(self):
-        return self.__image_count is not None
+        return self._image_count is not None
 
     @property
     def count(self):
-        return self.__image_count
+        return self._image_count
 
     def set_image(self, image):
-        self.__cached_image = None
+        self._cached_image = None
         if image.has_mask:
-            self.__image_count = image.mask.astype(int)
+            self._image_count = image.mask.astype(int)
         else:
-            self.__image_count = numpy.ones(image.pixel_data.shape[:2], int)
-
-        if self.__how_to_accumulate == P_VARIANCE:
-            self.__vsum = image.pixel_data.copy()
-            self.__vsum[~image.mask] = 0
-            self.__image_count = image.mask.astype(int)
-            self.__vsquared = self.__vsum.astype(numpy.float64) ** 2.0
-            return
-
-        if self.__how_to_accumulate == P_POWER:
-            self.__vsum = image.pixel_data.copy()
-            self.__vsum[~image.mask] = 0
-            self.__image_count = image.mask.astype(int)
-            #
-            # e**0 = 1, so the first image is always in the real plane
-            #
-            self.__power_mask = self.__image_count.astype(numpy.complex128).copy()
-            self.__power_image = image.pixel_data.astype(numpy.complex128).copy()
-            self.__stack_number = 1
-            return
-        if self.__how_to_accumulate == P_BRIGHTFIELD:
-            self.__bright_max = image.pixel_data.copy()
-            self.__bright_min = image.pixel_data.copy()
-            self.__norm0 = numpy.mean(image.pixel_data)
-            return
-
-        if self.__how_to_accumulate == P_MASK:
-            self.__image = image.mask
-            return
-
-        self.__image = image.pixel_data.copy()
-        if image.has_mask:
-            nan_value = 1 if self.__how_to_accumulate == P_MINIMUM else 0
-            self.__image[~image.mask] = nan_value
+            self._image_count = numpy.ones(image.pixel_data.shape[:2], int)
+        self._set_image_impl(image)
 
     def accumulate_image(self, image):
-        self.__cached_image = None
+        self._cached_image = None
         if image.has_mask:
-            self.__image_count += image.mask.astype(int)
+            self._image_count += image.mask.astype(int)
         else:
-            self.__image_count += 1
-        if self.__how_to_accumulate in [P_AVERAGE, P_SUM]:
-            if image.has_mask:
-                self.__image[image.mask] += image.pixel_data[image.mask]
-            else:
-                self.__image += image.pixel_data
-        elif self.__how_to_accumulate == P_MAXIMUM:
-            if image.has_mask:
-                self.__image[image.mask] = numpy.maximum(
-                    self.__image[image.mask], image.pixel_data[image.mask]
-                )
-            else:
-                self.__image = numpy.maximum(image.pixel_data, self.__image)
-        elif self.__how_to_accumulate == P_MINIMUM:
-            if image.has_mask:
-                self.__image[image.mask] = numpy.minimum(
-                    self.__image[image.mask], image.pixel_data[image.mask]
-                )
-            else:
-                self.__image = numpy.minimum(image.pixel_data, self.__image)
-        elif self.__how_to_accumulate == P_VARIANCE:
-            mask = image.mask
-            self.__vsum[mask] += image.pixel_data[mask]
-            self.__vsquared[mask] += image.pixel_data[mask].astype(numpy.float64) ** 2
-        elif self.__how_to_accumulate == P_POWER:
-            multiplier = numpy.exp(
-                2j * numpy.pi * float(self.__stack_number) / self.frequency
-            )
-            self.__stack_number += 1
-            mask = image.mask
-            self.__vsum[mask] += image.pixel_data[mask]
-            self.__power_image[mask] += multiplier * image.pixel_data[mask]
-            self.__power_mask[mask] += multiplier
-        elif self.__how_to_accumulate == P_BRIGHTFIELD:
-            mask = image.mask
-            norm = numpy.mean(image.pixel_data)
-            pixel_data = image.pixel_data * self.__norm0 / norm
-            max_mask = (self.__bright_max < pixel_data) & mask
-            min_mask = (self.__bright_min > pixel_data) & mask
-            self.__bright_min[min_mask] = pixel_data[min_mask]
-            self.__bright_max[max_mask] = pixel_data[max_mask]
-            self.__bright_min[max_mask] = self.__bright_max[max_mask]
-        elif self.__how_to_accumulate == P_MASK:
-            self.__image = self.__image & image.mask
-        else:
-            raise NotImplementedError(
-                "No such accumulation method: %s" % self.__how_to_accumulate
-            )
+            self._image_count += 1
+        self._accumulate_image_impl(image)
 
     def provide_image(self, image_set):
-        image_count = self.__image_count
-        mask_2d = image_count > 0
-        if self.__how_to_accumulate == P_VARIANCE:
-            ndim_image = self.__vsquared
-        elif self.__how_to_accumulate == P_POWER:
-            ndim_image = self.__power_image
-        elif self.__how_to_accumulate == P_BRIGHTFIELD:
-            ndim_image = self.__bright_max
-        else:
-            ndim_image = self.__image
-        if ndim_image.ndim == 3:
-            image_count = numpy.dstack([image_count] * ndim_image.shape[2])
-        mask = image_count > 0
-        if self.__cached_image is not None:
-            return self.__cached_image
-        if self.__how_to_accumulate == P_AVERAGE:
-            cached_image = self.__image / image_count
-        elif self.__how_to_accumulate == P_VARIANCE:
-            cached_image = numpy.zeros(self.__vsquared.shape, numpy.float32)
-            cached_image[mask] = self.__vsquared[mask] / image_count[mask]
-            cached_image[mask] -= self.__vsum[mask] ** 2 / (image_count[mask] ** 2)
-        elif self.__how_to_accumulate == P_POWER:
-            cached_image = numpy.zeros(image_count.shape, numpy.complex128)
-            cached_image[mask] = self.__power_image[mask]
-            cached_image[mask] -= (
-                self.__vsum[mask] * self.__power_mask[mask] / image_count[mask]
-            )
-            cached_image = (cached_image * numpy.conj(cached_image)).real.astype(
-                numpy.float32
-            )
-        elif self.__how_to_accumulate == P_BRIGHTFIELD:
-            cached_image = numpy.zeros(image_count.shape, numpy.float32)
-            cached_image[mask] = self.__bright_max[mask] - self.__bright_min[mask]
-        elif self.__how_to_accumulate == P_MINIMUM and numpy.any(~mask):
-            cached_image = self.__image.copy()
-            cached_image[~mask] = 0
-        else:
-            cached_image = self.__image
-        cached_image[~mask] = 0
-        if numpy.all(mask) or self.__how_to_accumulate == P_MASK:
-            self.__cached_image = Image(cached_image)
-        else:
-            self.__cached_image = Image(cached_image, mask=mask_2d)
-        return self.__cached_image
+        """Return the final projected image."""
+        raise NotImplementedError
 
     def get_name(self):
-        return self.__name
+        """Return the name of the output image."""
+        return self._name
 
     def release_memory(self):
         """Don't discard the image at end of image set"""
         pass
+
+    def _set_image_impl(self, image):
+        """Abstract method: Initialize the accumulator with the first image."""
+        raise NotImplementedError
+
+    def _wrap_image(self, pixel_data, mask):
+        """Helper to wrap pixel data in an Image object, handling 2D/3D masks."""
+        if numpy.all(mask):
+            return Image(pixel_data)
+
+        if mask.ndim == 3:
+            mask = mask[:, :, 0]
+
+        return Image(pixel_data, mask=mask)
+
+    def _accumulate_image_impl(self, image):
+        """Abstract method: Accumulate a subsequent image into the provider."""
+        raise NotImplementedError
+
+
+class SumProvider(ImageProvider):
+    """Accumulates the sum of pixel intensities."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(SumProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._image = None
+
+    def save_state(self, d):
+        super(SumProvider, self).save_state(d)
+        d[self.D_IMAGE] = self._image
+
+    def restore(self, d):
+        super(SumProvider, self).restore(d)
+        self._image = d[self.D_IMAGE]
+
+    def reset(self):
+        super(SumProvider, self).reset()
+        self._image = None
+
+    def _set_image_impl(self, image):
+        self._image = image.pixel_data.copy()
+        if image.has_mask:
+            self._image[~image.mask] = 0
+
+    def _accumulate_image_impl(self, image):
+        if image.has_mask:
+            self._image[image.mask] += image.pixel_data[image.mask]
+        else:
+            self._image += image.pixel_data
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask = image_count > 0
+
+        if numpy.any(~mask):
+            cached_image = self._image.copy()
+            cached_image[~mask] = 0
+        else:
+            cached_image = self._image
+
+        if numpy.all(mask):
+            self._cached_image = Image(cached_image)
+        else:
+            self._cached_image = Image(cached_image, mask=mask)
+        return self._cached_image
+
+
+class AverageProvider(SumProvider):
+    """Accumulates the sum, then divides by count to get the average."""
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        if self._image.ndim == 3:
+             image_count = numpy.dstack([image_count] * self._image.shape[2])
+        mask = image_count > 0
+
+        cached_image = self._image / image_count
+        if cached_image.ndim == 3 and mask.ndim == 2:
+            cached_image[~mask, :] = 0
+        else:
+            cached_image[~mask] = 0
+
+        self._cached_image = self._wrap_image(cached_image, mask)
+        return self._cached_image
+
+
+class MaximumProvider(ImageProvider):
+    """Keeps the maximum pixel intensity at each position."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(MaximumProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._image = None
+
+    def save_state(self, d):
+        super(MaximumProvider, self).save_state(d)
+        d[self.D_IMAGE] = self._image
+
+    def restore(self, d):
+        super(MaximumProvider, self).restore(d)
+        self._image = d[self.D_IMAGE]
+
+    def reset(self):
+        super(MaximumProvider, self).reset()
+        self._image = None
+
+    def _set_image_impl(self, image):
+        self._image = image.pixel_data.copy()
+        if image.has_mask:
+            self._image[~image.mask] = 0
+
+    def _accumulate_image_impl(self, image):
+        if image.has_mask:
+            self._image[image.mask] = numpy.maximum(
+                self._image[image.mask], image.pixel_data[image.mask]
+            )
+        else:
+            self._image = numpy.maximum(image.pixel_data, self._image)
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask = image_count > 0
+
+        if numpy.any(~mask):
+            cached_image = self._image.copy()
+            cached_image[~mask] = 0
+        else:
+            cached_image = self._image
+
+        self._cached_image = self._wrap_image(cached_image, mask)
+        return self._cached_image
+
+
+class MinimumProvider(ImageProvider):
+    """Keeps the minimum pixel intensity at each position."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(MinimumProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._image = None
+
+    def save_state(self, d):
+        super(MinimumProvider, self).save_state(d)
+        d[self.D_IMAGE] = self._image
+
+    def restore(self, d):
+        super(MinimumProvider, self).restore(d)
+        self._image = d[self.D_IMAGE]
+
+    def reset(self):
+        super(MinimumProvider, self).reset()
+        self._image = None
+
+    def _set_image_impl(self, image):
+        self._image = image.pixel_data.copy()
+        if image.has_mask:
+            self._image[~image.mask] = 1
+
+    def _accumulate_image_impl(self, image):
+        if image.has_mask:
+            self._image[image.mask] = numpy.minimum(
+                self._image[image.mask], image.pixel_data[image.mask]
+            )
+        else:
+            self._image = numpy.minimum(image.pixel_data, self._image)
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask = image_count > 0
+
+        if numpy.any(~mask):
+            cached_image = self._image.copy()
+            cached_image[~mask] = 0
+        else:
+            cached_image = self._image
+
+        self._cached_image = self._wrap_image(cached_image, mask)
+        return self._cached_image
+
+
+class VarianceProvider(ImageProvider):
+    """Calculates pixel variance across the image stack."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(VarianceProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._vsum = None
+        self._vsquared = None
+
+    def save_state(self, d):
+        super(VarianceProvider, self).save_state(d)
+        d[self.D_VSUM] = self._vsum
+        d[self.D_VSQUARED] = self._vsquared
+
+    def restore(self, d):
+        super(VarianceProvider, self).restore(d)
+        self._vsum = d[self.D_VSUM]
+        self._vsquared = d[self.D_VSQUARED]
+
+    def reset(self):
+        super(VarianceProvider, self).reset()
+        self._vsum = None
+        self._vsquared = None
+
+    def _set_image_impl(self, image):
+        self._vsum = image.pixel_data.copy()
+        self._vsum[~image.mask] = 0
+        self._vsquared = self._vsum.astype(numpy.float64) ** 2.0
+
+    def _accumulate_image_impl(self, image):
+        mask = image.mask
+        self._vsum[mask] += image.pixel_data[mask]
+        self._vsquared[mask] += image.pixel_data[mask].astype(numpy.float64) ** 2
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask_2d = image_count > 0
+
+        if self._vsquared.ndim == 3:
+            image_count = numpy.dstack([image_count] * self._vsquared.shape[2])
+            
+        mask = image_count > 0
+
+        cached_image = numpy.zeros(self._vsquared.shape, numpy.float32)
+        cached_image[mask] = self._vsquared[mask] / image_count[mask]
+        cached_image[mask] -= self._vsum[mask] ** 2 / (image_count[mask] ** 2)
+
+        cached_image[~mask] = 0
+
+        self._cached_image = self._wrap_image(cached_image, mask_2d)
+        return self._cached_image
+
+
+class PowerProvider(ImageProvider):
+    """Calculates power at a specific frequency across the stack."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(PowerProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._vsum = None
+        self._power_image = None
+        self._power_mask = None
+        self._stack_number = 0
+
+    def save_state(self, d):
+        super(PowerProvider, self).save_state(d)
+        d[self.D_VSUM] = self._vsum
+        d[self.D_POWER_IMAGE] = self._power_image
+        d[self.D_POWER_MASK] = self._power_mask
+        d[self.D_STACK_NUMBER] = self._stack_number
+
+    def restore(self, d):
+        super(PowerProvider, self).restore(d)
+        self._vsum = d[self.D_VSUM]
+        self._power_image = d[self.D_POWER_IMAGE]
+        self._power_mask = d[self.D_POWER_MASK]
+        self._stack_number = d[self.D_STACK_NUMBER]
+
+    def reset(self):
+        super(PowerProvider, self).reset()
+        self._vsum = None
+        self._power_image = None
+        self._power_mask = None
+        self._stack_number = 0
+
+    def _set_image_impl(self, image):
+        self._vsum = image.pixel_data.copy()
+        self._vsum[~image.mask] = 0
+        self._power_mask = self._image_count.astype(numpy.complex128).copy()
+        self._power_image = image.pixel_data.astype(numpy.complex128).copy()
+        self._stack_number = 1
+
+    def _accumulate_image_impl(self, image):
+        multiplier = numpy.exp(
+            2j * numpy.pi * float(self._stack_number) / self.frequency
+        )
+        self._stack_number += 1
+        mask = image.mask
+        self._vsum[mask] += image.pixel_data[mask]
+        self._power_image[mask] += multiplier * image.pixel_data[mask]
+        self._power_mask[mask] += multiplier
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask_2d = image_count > 0
+
+        if self._power_image.ndim == 3:
+            image_count = numpy.dstack([image_count] * self._power_image.shape[2])
+        mask = image_count > 0
+
+        cached_image = numpy.zeros(image_count.shape, numpy.complex128)
+        cached_image[mask] = self._power_image[mask]
+        cached_image[mask] -= (
+            self._vsum[mask] * self._power_mask[mask] / image_count[mask]
+        )
+        cached_image = (cached_image * numpy.conj(cached_image)).real.astype(
+            numpy.float32
+        )
+        cached_image[~mask] = 0
+
+        self._cached_image = self._wrap_image(cached_image, mask_2d)
+        return self._cached_image
+
+
+class BrightfieldProvider(ImageProvider):
+    """Performs brightfield projection (focus metric based on max-min difference)."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(BrightfieldProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._bright_max = None
+        self._bright_min = None
+        self._norm0 = None
+
+    def save_state(self, d):
+        super(BrightfieldProvider, self).save_state(d)
+        d[self.D_BRIGHT_MAX] = self._bright_max
+        d[self.D_BRIGHT_MIN] = self._bright_min
+        d[self.D_NORM0] = self._norm0
+
+    def restore(self, d):
+        super(BrightfieldProvider, self).restore(d)
+        self._bright_max = d[self.D_BRIGHT_MAX]
+        self._bright_min = d[self.D_BRIGHT_MIN]
+        self._norm0 = d[self.D_NORM0]
+
+    def reset(self):
+        super(BrightfieldProvider, self).reset()
+        self._bright_max = None
+        self._bright_min = None
+        self._norm0 = None
+
+    def _set_image_impl(self, image):
+        self._bright_max = image.pixel_data.copy()
+        self._bright_min = image.pixel_data.copy()
+        self._norm0 = numpy.mean(image.pixel_data)
+
+    def _accumulate_image_impl(self, image):
+        mask = image.mask
+        norm = numpy.mean(image.pixel_data)
+        pixel_data = image.pixel_data * self._norm0 / norm
+        max_mask = (self._bright_max < pixel_data) & mask
+        min_mask = (self._bright_min > pixel_data) & mask
+        self._bright_min[min_mask] = pixel_data[min_mask]
+        self._bright_max[max_mask] = pixel_data[max_mask]
+        self._bright_min[max_mask] = self._bright_max[max_mask]
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        image_count = self._image_count
+        mask_2d = image_count > 0
+
+        if self._bright_max.ndim == 3:
+            image_count = numpy.dstack([image_count] * self._bright_max.shape[2])
+        mask = image_count > 0
+
+        cached_image = numpy.zeros(image_count.shape, numpy.float32)
+        cached_image[mask] = self._bright_max[mask] - self._bright_min[mask]
+        cached_image[~mask] = 0
+
+        self._cached_image = self._wrap_image(cached_image, mask_2d)
+        return self._cached_image
+
+
+class MaskProvider(ImageProvider):
+    """Computes the intersection of all masks."""
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
+        super(MaskProvider, self).__init__(name, how_to_accumulate, frequency)
+        self._image = None
+
+    def save_state(self, d):
+        super(MaskProvider, self).save_state(d)
+        d[self.D_IMAGE] = self._image
+
+    def restore(self, d):
+        super(MaskProvider, self).restore(d)
+        self._image = d[self.D_IMAGE]
+
+    def reset(self):
+        super(MaskProvider, self).reset()
+        self._image = None
+
+    def _set_image_impl(self, image):
+        self._image = image.mask
+
+    def _accumulate_image_impl(self, image):
+        self._image = self._image & image.mask
+
+    def provide_image(self, image_set):
+        if self._cached_image is not None:
+            return self._cached_image
+
+        self._cached_image = Image(self._image)
+        return self._cached_image

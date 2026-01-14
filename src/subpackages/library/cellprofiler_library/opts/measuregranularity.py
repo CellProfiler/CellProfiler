@@ -1,1 +1,2 @@
-C_GRANULARITY = "Granularity_%s_%s"
+class TemplateMeasurementFormat(str):
+    GRANULARITY = "Granularity_%s_%s"

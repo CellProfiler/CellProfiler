@@ -11,6 +11,7 @@ from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.gui.help.content import image_resource
 from cellprofiler_library.modules._measuregranularity import measure_granularity, ObjectRecord
+from cellprofiler_library.opts.measuregranularity import TemplateMeasurementFormat
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,9 +84,6 @@ References
     **{"MEASUREGRANULARITY_EXAMPLE": image_resource("MeasureGranularity_example.png")}
 )
 
-
-"Granularity category"
-C_GRANULARITY = "Granularity_%s_%s"
 
 IMAGE_SETTING_COUNT_V2 = 5
 IMAGE_SETTING_COUNT_V3 = 6
@@ -270,7 +268,7 @@ class MeasureGranularity(Module):
         _image_measurements_arr = []
         ng = granular_spectrum_length
         for i in range(1, ng+1):
-            feature = C_GRANULARITY % (i, image_name)
+            feature = TemplateMeasurementFormat.GRANULARITY % (i, image_name)
             _image_measurements_arr += [(feature, image_measurements_arr[i-1])]
             if i < len(measurements_arr):
                 if measurements_arr[i-1]:
@@ -382,7 +380,7 @@ class MeasureGranularity(Module):
         return result
 
     def granularity_feature(self, length, image_name):
-        return C_GRANULARITY % (length, image_name)
+        return TemplateMeasurementFormat.GRANULARITY % (length, image_name)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

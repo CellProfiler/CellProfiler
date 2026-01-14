@@ -246,9 +246,6 @@ class MeasureGranularity(Module):
         ]
         statistics = []
         for image_name in self.images_list.value:
-            object_records = [
-        (objects_name, workspace.object_set.get_objects(objects_name).segmented) for objects_name in self.objects_list.value
-    ]
             statistic = self.run_on_image_setting(workspace, image_name)
             statistics.append(statistic)
         if self.show_window:

@@ -36,13 +36,15 @@ class ObjectRecord(object):
             self, 
             name: str, 
             segmented: ObjectSegmentation, 
-            im_mask: ImageGrayscaleMask, 
-            im_pixel_data: ImageGrayscale
+            im_mask: Optional[ImageGrayscaleMask], 
+            im_pixel_data: Optional[ImageGrayscale]
             ):
         self.name = name
         self.labels = segmented
         self.nobjects = np.max(self.labels)
         if self.nobjects != 0:
+            assert im_mask is not None
+            assert im_pixel_data is not None
             self.range = np.arange(1, np.max(self.labels) + 1)
             self.labels = self.labels.copy()
             self.labels[~im_mask] = 0
@@ -1486,22 +1488,3 @@ def get_granularity_measurements(
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr, statistics
 
-#
-# For each object, build a little record
-#
-class ObjectRecord(object):
-    def __init__(self, name, segmented, im_mask, im_pixel_data):
-        self.name = name
-        self.labels = segmented
-        self.nobjects = np.max(self.labels)
-        if self.nobjects != 0:
-            self.range = np.arange(1, np.max(self.labels) + 1)
-            self.labels = self.labels.copy()
-            self.labels[~im_mask] = 0
-            self.current_mean = fix(
-                scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
-            )
-            self.start_mean = np.maximum(
-                self.current_mean, np.finfo(float).eps
-            )
-            

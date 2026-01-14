@@ -1,4 +1,4 @@
-[project]
+[workspace]
 authors = ["Nodar Gogoberidze <gnodar01@gmail.com>"]
 channels = ["conda-forge"]
 description = "Dev environment for centrosome"

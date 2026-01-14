@@ -1453,7 +1453,6 @@ def get_granularity_measurements(
         currentmean = np.mean(rec[mask])
         gs = (prevmean - currentmean) * 100 / startmean
         statistics += ["%.2f" % gs]
-        # feature = C_GRANULARITY % (i, image_name)
         image_measurements_arr += [gs]
         # measurements.add_image_measurement(feature, gs)
         #

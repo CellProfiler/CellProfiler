@@ -44,6 +44,7 @@ jobs:
             cibuildwheel: "cibuildwheel<4"
           - python_version: '3.12'
             python: 312
+            cibuildwheel: "cibuildwheel<4"
           - python_version: '3.13'
             python: 313
             cibuildwheel: "cibuildwheel<4"

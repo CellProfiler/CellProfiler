@@ -35,14 +35,18 @@ jobs:
 
           - python_version: '3.9'
             python: 39
+            cibuildwheel: "cibuildwheel<3"
           - python_version: '3.10'
             python: 310
+            cibuildwheel: "cibuildwheel<3"
           - python_version: '3.11'
             python: 311
+            cibuildwheel: "cibuildwheel<4"
           - python_version: '3.12'
             python: 312
           - python_version: '3.13'
             python: 313
+            cibuildwheel: "cibuildwheel<4"
 
     runs-on: ${{ matrix.os }}
 
@@ -63,7 +67,7 @@ jobs:
         pip install -e .
 
     - name: Install cibuildwheel
-      run: python -m pip install cibuildwheel
+      run: python -m pip install ${{ matrix.cibuildwheel }}
 
     - name: Build wheels
       run: python -m cibuildwheel --output-dir wheelhouse

@@ -8,6 +8,7 @@ platforms = ["osx-64"]
 [tasks]
 build = "python -m build"
 tag = "$PIXI_PROJECT_ROOT/scripts/tag.sh"
+retrieve = "$PIXI_PROJECT_ROOT/scripts/download_artifacts.sh"
 publish = "twine upload dist/*"
 
 [pypi-dependencies]

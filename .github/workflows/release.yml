@@ -9,7 +9,7 @@ jobs:
         # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
         # macos-14 (and macos-latest) point to arm architecture, which is incompatible with setup-python + pythonv version 3.9
         # https://github.com/actions/setup-python/issues/808
-        os: [macos-13, windows-2019]
+        os: [macos-15-intel, windows-2019]
         python-version: ["3.9"]
       fail-fast: false
     runs-on: ${{ matrix.os }}

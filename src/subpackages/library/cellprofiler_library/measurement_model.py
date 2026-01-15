@@ -111,3 +111,44 @@ class LibraryMeasurements(BaseModel):
         Serialize to the primitive dictionary format required by the refactoring contract.
         """
         return self.model_dump(by_alias=True, exclude_none=True)
+
+    def merge(self, other: 'LibraryMeasurements') -> 'LibraryMeasurements':
+        """
+        Merge this LibraryMeasurements object with another one, returning a new instance.
+        
+        Collision resolution:
+        - Image measurements: 'other' overwrites 'self'
+        - Experiment measurements: 'other' overwrites 'self'
+        - Object measurements: Merged by object name. Within an object, 'other' features overwrite 'self'.
+        - Relationships: Concatenated
+        
+        Args:
+            other: Another LibraryMeasurements instance
+            
+        Returns:
+            A new LibraryMeasurements instance containing merged data
+        """
+        # Create deep copies of dictionaries to avoid side effects
+        new_image = self.image.copy()
+        new_image.update(other.image)
+        
+        new_experiment = self.experiment.copy()
+        new_experiment.update(other.experiment)
+        
+        new_objects = {}
+        # Merge objects
+        all_objects = set(self.objects.keys()) | set(other.objects.keys())
+        for obj_name in all_objects:
+            obj_measurements = self.objects.get(obj_name, {}).copy()
+            obj_measurements.update(other.objects.get(obj_name, {}))
+            new_objects[obj_name] = obj_measurements
+            
+        # Concatenate relationships
+        new_relationships = self.relationships + other.relationships
+        
+        return LibraryMeasurements(
+            image=new_image,
+            objects=new_objects,
+            experiment=new_experiment,
+            relationships=new_relationships
+        )

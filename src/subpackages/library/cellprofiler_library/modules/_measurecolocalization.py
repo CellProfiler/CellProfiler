@@ -6,6 +6,7 @@ from cellprofiler_library.functions.measurement import measure_correlation_and_s
 from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel, ObjectSegmentation, ImageAny, ImageAnyMask
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.image_processing import crop_image_similarly
 from cellprofiler_library.functions.object_processing import size_similarly, object_crop_image_similarly
 
@@ -121,14 +122,14 @@ def run_image_pair_images(
     costes_method:      Annotated[Optional[CostesMethod], Field(description="")] = CostesMethod.FAST,
     ) -> Annotated[
         Tuple[
-            Dict[str, Dict[str, Union[float, int, str, np.float64]]],
+            LibraryMeasurements,
             List[Tuple[str, str, str, str, str]]
         ], Field(description="List of measurement results and a dictionary of measurements with precise values")]:
     """Calculate the correlation between the pixels of two images"""
 
 
     summary: List[Tuple[str, str, str, str, str]] = []
-    measurements: Dict[str, Union[float, int, str, np.float64]] = {}
+    measurements = LibraryMeasurements()
     corr =      np.float64(np.NaN)
     slope =     np.float64(np.NaN)
     C1 =        np.float64(np.NaN)
@@ -210,24 +211,24 @@ def run_image_pair_images(
     costes_measurement_2 = TemplateMeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
     
     if MeasurementType.CORRELATION in measurement_types:
-        measurements[corr_measurement] = corr
-        measurements[slope_measurement] = slope
+        measurements.add_image_measurement(corr_measurement, corr)
+        measurements.add_image_measurement(slope_measurement, slope)
     if MeasurementType.OVERLAP in measurement_types:        
-        measurements[overlap_measurement] = overlap
-        measurements[k_measurement_1] = K1
-        measurements[k_measurement_2] = K2
+        measurements.add_image_measurement(overlap_measurement, overlap)
+        measurements.add_image_measurement(k_measurement_1, K1)
+        measurements.add_image_measurement(k_measurement_2, K2)
 
     if MeasurementType.MANDERS in measurement_types:
-        measurements[manders_measurement_1] = M1
-        measurements[manders_measurement_2] = M2
+        measurements.add_image_measurement(manders_measurement_1, M1)
+        measurements.add_image_measurement(manders_measurement_2, M2)
     if MeasurementType.RWC in measurement_types:
-        measurements[rwc_measurement_1] = RWC1
-        measurements[rwc_measurement_2] = RWC2
+        measurements.add_image_measurement(rwc_measurement_1, RWC1)
+        measurements.add_image_measurement(rwc_measurement_2, RWC2)
     if MeasurementType.COSTES in measurement_types:
-        measurements[costes_measurement_1] = C1
-        measurements[costes_measurement_2] = C2
+        measurements.add_image_measurement(costes_measurement_1, C1)
+        measurements.add_image_measurement(costes_measurement_2, C2)
 
-    return {"Image": measurements}, summary
+    return measurements, summary
 
 
 def __get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
@@ -259,7 +260,7 @@ def run_image_pair_objects(
     im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
     costes_method:      Annotated[Optional[CostesMethod], Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
     ) -> Tuple[
-        Dict[str, Dict[str, Any]],
+        LibraryMeasurements,
         List[Tuple[str, str, str, str, str]]
         ]:
     if MeasurementType.COSTES in measurement_types:
@@ -346,41 +347,40 @@ def run_image_pair_objects(
             summary += __get_object_result_array((im2_name, im1_name, object_name), "Manders coeff (Costes)", C2)
 
 
-    measurements: Dict[str, NDArray[np.float64]] = {}
+    measurements = LibraryMeasurements()
+    
     if MeasurementType.CORRELATION in measurement_types:
         measurement = TemplateMeasurementFormat.CORRELATION_FORMAT % (im1_name, im2_name)
-        measurements[measurement] = corr
+        measurements.add_measurement(object_name, measurement, corr)
     if MeasurementType.MANDERS in measurement_types:
         manders_measurement_1 = TemplateMeasurementFormat.MANDERS_FORMAT % (im1_name, im2_name)
         manders_measurement_2 = TemplateMeasurementFormat.MANDERS_FORMAT % (im2_name, im1_name)
         
-        measurements[manders_measurement_1] = M1
-        measurements[manders_measurement_2] = M2
+        measurements.add_measurement(object_name, manders_measurement_1, M1)
+        measurements.add_measurement(object_name, manders_measurement_2, M2)
     
     if MeasurementType.RWC in measurement_types:
         rwc_measurement_1 = TemplateMeasurementFormat.RWC_FORMAT % (im1_name, im2_name)
         rwc_measurement_2 = TemplateMeasurementFormat.RWC_FORMAT % (im2_name, im1_name)
 
-        measurements[rwc_measurement_1] = RWC1
-        measurements[rwc_measurement_2] = RWC2
+        measurements.add_measurement(object_name, rwc_measurement_1, RWC1)
+        measurements.add_measurement(object_name, rwc_measurement_2, RWC2)
     
     if MeasurementType.OVERLAP in measurement_types:
         overlap_measurement = TemplateMeasurementFormat.OVERLAP_FORMAT % (im1_name, im2_name)
         k_measurement_1 = TemplateMeasurementFormat.K_FORMAT % (im1_name, im2_name)
         k_measurement_2 = TemplateMeasurementFormat.K_FORMAT % (im2_name, im1_name)
         
-        measurements[overlap_measurement] = overlap
-        measurements[k_measurement_1] = K1
-        measurements[k_measurement_2] = K2
+        measurements.add_measurement(object_name, overlap_measurement, overlap)
+        measurements.add_measurement(object_name, k_measurement_1, K1)
+        measurements.add_measurement(object_name, k_measurement_2, K2)
     
     if MeasurementType.COSTES in measurement_types:
         costes_measurement_1 = TemplateMeasurementFormat.COSTES_FORMAT % (im1_name, im2_name)
         costes_measurement_2 = TemplateMeasurementFormat.COSTES_FORMAT % (im2_name, im1_name)
         
-        measurements[costes_measurement_1] = C1
-        measurements[costes_measurement_2] = C2
-
-    if n_objects == 0:
+        measurements.add_measurement(object_name, costes_measurement_1, C1)
+        measurements.add_measurement(object_name, costes_measurement_2, C2)
         col_order_1 = (im1_name, im2_name, object_name)
         summary +=  [
             (*col_order_1, "Mean correlation", "-"),
@@ -389,7 +389,4 @@ def run_image_pair_objects(
             (*col_order_1, "Max correlation", "-"),
         ]
         
-    return {
-        "Object": {object_name: measurements},
-        "Image": {}
-    }, summary
+    return measurements, summary

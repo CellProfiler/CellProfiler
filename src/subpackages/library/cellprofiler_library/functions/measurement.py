@@ -11,7 +11,7 @@ import centrosome.fastemd
 
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List
+from typing import Tuple, Optional, Dict, Callable, List, Any
 from scipy.linalg import lstsq
 from numpy.typing import NDArray
 
@@ -1419,7 +1419,7 @@ def get_granularity_measurements(
         granular_spectrum_length: int,
         dimensions: int,
         object_records: List[ObjectRecord]
-        ):
+        ) -> Tuple[List[List[Any]], List[float]]:
     # TODO: PR #5034 update the return types of this funciton
     # Transcribed from the Matlab module: granspectr function
     #
@@ -1445,14 +1445,12 @@ def get_granularity_measurements(
     measurements_arr = []
     image_measurements_arr = []
 
-    statistics = []
     for i in range(1, ng + 1):
         prevmean = currentmean
         ero = masked_erode(ero, mask, footprint)
         rec = skimage.morphology.reconstruction(ero, pixels, footprint=footprint)
         currentmean = np.mean(rec[mask])
         gs = (prevmean - currentmean) * 100 / startmean
-        statistics += ["%.2f" % gs]
         image_measurements_arr += [gs]
         # measurements.add_image_measurement(feature, gs)
         #
@@ -1484,6 +1482,6 @@ def get_granularity_measurements(
                 gss = np.zeros((0,))
             obj_measurements += [[object_record.name, gss]]
         measurements_arr += [obj_measurements]
-    return measurements_arr, image_measurements_arr, statistics
+    return measurements_arr, image_measurements_arr
 
             

@@ -7,7 +7,7 @@ jobs:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         # https://github.com/actions/runner-images/tree/main
         # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -76,7 +76,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -140,7 +140,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}

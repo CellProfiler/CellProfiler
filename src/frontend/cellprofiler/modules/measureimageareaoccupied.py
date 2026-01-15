@@ -182,7 +182,7 @@ Select the previously identified objects you would like to measure.""".format(
             numpy.array([features], dtype=float),
         )
 
-    def measure_objects(self, object_set: List[str], workspace):
+    def measure_objects(self, object_set: str, workspace):
         objects = workspace.get_objects(object_set)
 
         label_image = objects.segmented
@@ -196,64 +196,52 @@ Select the previously identified objects you would like to measure.""".format(
         if objects.volumetric:
             if objects.has_parent_image:
                 spacing = objects.parent_image.spacing
-
-        area_occupied, perimeter, total_area = measure_objects_area_perimeter(label_image, mask, objects.volumetric, spacing)
-
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-
-        self._add_image_measurement(
-            object_set,
-            MeasurementType.VOLUME_OCCUPIED if pipeline.volumetric() else MeasurementType.AREA_OCCUPIED,
-            area_occupied,
-            measurements,
+        pipeline_volumetric = workspace.pipeline.volumetric()
+        lib_measurements = measure_objects_area_perimeter(
+            label_image=label_image,
+            object_name=object_set,
+            mask=mask, 
+            volumetric=objects.volumetric, 
+            spacing=spacing
         )
 
-        self._add_image_measurement(
-            object_set,
-            MeasurementType.SURFACE_AREA if pipeline.volumetric() else MeasurementType.PERIMETER,
-            perimeter,
-            measurements,
-        )
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        self._add_image_measurement(
-            object_set,
-            MeasurementType.TOTAL_VOLUME if pipeline.volumetric() else MeasurementType.TOTAL_AREA,
-            total_area,
-            measurements,
-        )
+        # Retrieve values for statistics display
+        # We reconstruct keys to fetch them from the library measurements
+        feature_area_occupied = MeasurementType.VOLUME_OCCUPIED.value if pipeline_volumetric else MeasurementType.AREA_OCCUPIED.value
+        feature_perimeter = MeasurementType.SURFACE_AREA.value if pipeline_volumetric else MeasurementType.PERIMETER.value
+        feature_total_area = MeasurementType.TOTAL_VOLUME.value if pipeline_volumetric else MeasurementType.TOTAL_AREA.value
+
+        area_occupied = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_area_occupied}_{object_set}"]
+        perimeter = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_perimeter}_{object_set}"]
+        total_area = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_total_area}_{object_set}"]
 
         return [[object_set, str(area_occupied), str(perimeter), str(total_area),]]
 
-    def measure_images(self, image_set: List[str], workspace):
+
+    def measure_images(self, image_set: str, workspace):
         image = workspace.image_set.get_image(image_set, must_be_binary=True)
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-
-
-        area_occupied, perimeter, total_area = measure_image_area_perimeter(image.pixel_data, image.volumetric, image.spacing)
+        pipeline_volumetric = workspace.pipeline.volumetric()
         
-
-        self._add_image_measurement(
-            image_set,
-            MeasurementType.VOLUME_OCCUPIED.value if pipeline.volumetric() else MeasurementType.AREA_OCCUPIED.value,
-            area_occupied,
-            measurements,
+        lib_measurements = measure_image_area_perimeter(
+            im_pixel_data=image.pixel_data, 
+            image_name=image_set,
+            im_volumetric=image.volumetric,
+            im_spacing=image.spacing
         )
 
-        self._add_image_measurement(
-            image_set,
-            MeasurementType.SURFACE_AREA.value if pipeline.volumetric() else MeasurementType.PERIMETER.value,
-            perimeter,
-            measurements,
-        )
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        self._add_image_measurement(
-            image_set,
-            MeasurementType.TOTAL_VOLUME.value if pipeline.volumetric() else MeasurementType.TOTAL_AREA.value,
-            total_area,
-            measurements,
-        )
+        feature_area_occupied = MeasurementType.VOLUME_OCCUPIED.value if pipeline_volumetric else MeasurementType.AREA_OCCUPIED.value
+        feature_perimeter = MeasurementType.SURFACE_AREA.value if pipeline_volumetric else MeasurementType.PERIMETER.value
+        feature_total_area = MeasurementType.TOTAL_VOLUME.value if pipeline_volumetric else MeasurementType.TOTAL_AREA.value
+
+        area_occupied = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_area_occupied}_{image_set}"]
+        perimeter = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_perimeter}_{image_set}"]
+        total_area = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_total_area}_{image_set}"]
 
         return [[image_set, str(area_occupied), str(perimeter), str(total_area),]]
 

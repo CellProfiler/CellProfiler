@@ -289,11 +289,11 @@ class MeasureGranularity(Module):
         )
         
         # Record Image Measurements
-        for feature_name, value in measurements["Image"].items():
+        for feature_name, value in measurements.image.items():
             workspace.measurements.add_image_measurement(feature_name, value)
             
         # Record Object Measurements
-        for object_name, features in measurements["Object"].items():
+        for object_name, features in measurements.objects.items():
             for feature_name, values in features.items():
                 workspace.measurements.add_measurement(object_name, feature_name, values)
 

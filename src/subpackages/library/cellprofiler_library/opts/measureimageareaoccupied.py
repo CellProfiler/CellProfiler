@@ -1,6 +1,6 @@
 from enum import Enum
 
-
+# Catrgoty string for the AreaOccupied/VolumeOccupied measurement
 C_AREA_OCCUPIED = "AreaOccupied"
 
 # # Measurement feature name format for the AreaOccupied/VolumeOccupied measurement

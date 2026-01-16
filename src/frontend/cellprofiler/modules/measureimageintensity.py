@@ -185,17 +185,16 @@ class MeasureImageIntensity(Module):
             
         statistics = []
         if self.wants_percentiles:
-            percentiles = get_percentiles(percentiles_to_measure, stop=True)
+            percentiles = self.get_percentiles(percentiles_to_measure, stop=True)
         else:
             percentiles = None
+        
         for im in self.images_list.value:
             image = workspace.image_set.get_image(im, must_be_grayscale=True)
             input_pixels = image.pixel_data
 
-            measurement_name = im
             if wants_object:
                 for object_set in objects_list:
-                    measurement_name += "_" + object_set
                     objects = workspace.get_objects(object_set)
                     if objects.shape != input_pixels.shape:
                         raise ValueError(
@@ -211,17 +210,32 @@ class MeasureImageIntensity(Module):
                         ]
                     else:
                         pixels = input_pixels[objects.segmented != 0]
-                    statistics += self.measure(
-                        pixels, im, object_set, measurement_name, workspace, percentiles=percentiles
+                    
+                    lm = measure_image_intensity(
+                        pixels=pixels,
+                        image_name=im,
+                        object_name=object_set,
+                        percentiles=percentiles
                     )
+                    
+                    self._add_library_measurements_to_core(lm, workspace)
+                    statistics += self._get_statistics(lm, im, object_set)
             else:
                 if image.has_mask:
                     pixels = input_pixels[image.mask]
                 else:
                     pixels = input_pixels
-                statistics += self.measure(
-                    pixels, im, None, measurement_name, workspace, percentiles=percentiles
+                
+                lm = measure_image_intensity(
+                    pixels=pixels,
+                    image_name=im,
+                    object_name=None,
+                    percentiles=percentiles
                 )
+                
+                self._add_library_measurements_to_core(lm, workspace)
+                statistics += self._get_statistics(lm, im, "")
+
         col_labels = ["Image", "Masking object", "Feature", "Value"]
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels
@@ -235,62 +249,54 @@ class MeasureImageIntensity(Module):
             col_labels=workspace.display_data.col_labels,
         )
 
-    def measure(self, pixels, image_name, object_name, measurement_name, workspace, percentiles=None):
-        """Perform measurements on an array of pixels
-        pixels - image pixel data, masked to objects if applicable
-        image_name - name of the current input image
-        object_name - name of the current object set pixels are masked to
-        measurement_name - group title to be used in data tables
-        workspace - has all the details for current image set
-        """
-
-        (
-            pixel_sum,
-            pixel_mean,
-            pixel_median,
-            pixel_std,
-            pixel_mad,
-            pixel_max,
-            pixel_min,
-            pixel_count,
-            pixel_pct_max,
-            pixel_lower_qrt,
-            pixel_upper_qrt,
-        ), percentile_measures = measure_image_intensity(pixels, percentiles)
-        m = workspace.measurements
-        m.add_image_measurement(IntensityMeasurementFormat.TOTAL_INTENSITY % measurement_name, pixel_sum)
-        m.add_image_measurement(IntensityMeasurementFormat.MEAN_INTENSITY % measurement_name, pixel_mean)
-        m.add_image_measurement(IntensityMeasurementFormat.MEDIAN_INTENSITY % measurement_name, pixel_median)
-        m.add_image_measurement(IntensityMeasurementFormat.STD_INTENSITY % measurement_name, pixel_std)
-        m.add_image_measurement(IntensityMeasurementFormat.MAD_INTENSITY % measurement_name, pixel_mad)
-        m.add_image_measurement(IntensityMeasurementFormat.MAX_INTENSITY % measurement_name, pixel_max)
-        m.add_image_measurement(IntensityMeasurementFormat.MIN_INTENSITY % measurement_name, pixel_min)
-        m.add_image_measurement(IntensityMeasurementFormat.TOTAL_AREA % measurement_name, pixel_count)
-        m.add_image_measurement(IntensityMeasurementFormat.PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
-        m.add_image_measurement(IntensityMeasurementFormat.LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
-        m.add_image_measurement(IntensityMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
-
+    def _add_library_measurements_to_core(self, lib_measurements, workspace):
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+    def _get_statistics(self, lib_measurements, image_name, object_name, measurement_name=None):
+        if measurement_name is None:
+            measurement_name = image_name
+            if object_name:
+                measurement_name += "_" + object_name
+            
+        def get_val(fmt):
+            key = fmt % measurement_name
+            return lib_measurements.image.get(key, 0)
+            
         all_features = [
-                ("Total intensity", pixel_sum),
-                ("Mean intensity", pixel_mean),
-                ("Median intensity", pixel_median),
-                ("Std intensity", pixel_std),
-                ("MAD intensity", pixel_mad),
-                ("Min intensity", pixel_min),
-                ("Max intensity", pixel_max),
-                ("Pct maximal", pixel_pct_max),
-                ("Lower quartile", pixel_lower_qrt),
-                ("Upper quartile", pixel_upper_qrt),
-                ("Total area", pixel_count),
+                ("Total intensity", get_val(IntensityMeasurementFormat.TOTAL_INTENSITY)),
+                ("Mean intensity", get_val(IntensityMeasurementFormat.MEAN_INTENSITY)),
+                ("Median intensity", get_val(IntensityMeasurementFormat.MEDIAN_INTENSITY)),
+                ("Std intensity", get_val(IntensityMeasurementFormat.STD_INTENSITY)),
+                ("MAD intensity", get_val(IntensityMeasurementFormat.MAD_INTENSITY)),
+                ("Min intensity", get_val(IntensityMeasurementFormat.MIN_INTENSITY)),
+                ("Max intensity", get_val(IntensityMeasurementFormat.MAX_INTENSITY)),
+                ("Pct maximal", get_val(IntensityMeasurementFormat.PERCENT_MAXIMAL)),
+                ("Lower quartile", get_val(IntensityMeasurementFormat.LOWER_QUARTILE)),
+                ("Upper quartile", get_val(IntensityMeasurementFormat.UPPER_QUARTILE)),
+                ("Total area", get_val(IntensityMeasurementFormat.TOTAL_AREA)),
         ]
-        for percentile, value in percentile_measures.items():
-            m.add_image_measurement(f"Intensity_Percentile_{percentile}_{measurement_name}", value)
-            all_features.append((f"Percentile {percentile}", value))
-
+        
+        prefix = f"Intensity_Percentile_"
+        suffix = f"_{measurement_name}"
+        # extract percentiles from the feature name
+        p_keys = []
+        for key in lib_measurements.image.keys():
+            if key.startswith(prefix) and key.endswith(suffix):
+                p_str = key[len(prefix):-len(suffix)]
+                if p_str.isdigit():
+                    p_keys.append((int(p_str), key))
+        # sort the percentiles to ensure consistent output
+        p_keys.sort()
+        
+        for p, key in p_keys:
+            val = lib_measurements.image[key]
+            all_features.append((f"Percentile {p}", val))
+            
         return [
             [
                 image_name,
-                object_name if self.wants_objects.value else "",
+                object_name if object_name else "",
                 feature_name,
                 str(value),
             ]
@@ -314,7 +320,7 @@ class MeasureImageIntensity(Module):
             (IntensityMeasurementFormat.UPPER_QUARTILE, COLTYPE_FLOAT),
         ]
         if self.wants_percentiles:
-            percentiles = get_percentiles(self.percentiles.value, stop=False)
+            percentiles = self.get_percentiles(self.percentiles.value, stop=False)
             for percentile in percentiles:
                 col_defs.append((f"Intensity_Percentile_{percentile}_%s", COLTYPE_FLOAT))
 
@@ -339,7 +345,7 @@ class MeasureImageIntensity(Module):
         if object_name == "Image" and category == "Intensity":
             measures = ALL_MEASUREMENTS
             if self.wants_percentiles:
-                percentiles = get_percentiles(self.percentiles.value, stop=False)
+                percentiles = self.get_percentiles(self.percentiles.value, stop=False)
                 for i in percentiles:
                     measures.append(f"Percentile_{i}")
             return measures
@@ -348,7 +354,7 @@ class MeasureImageIntensity(Module):
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         measures = ALL_MEASUREMENTS
         if self.wants_percentiles:
-            percentiles = get_percentiles(self.percentiles.value, stop=False)
+            percentiles = self.get_percentiles(self.percentiles.value, stop=False)
             for i in percentiles:
                 measures.append(f"Percentile_{i}")
         if (
@@ -402,16 +408,16 @@ class MeasureImageIntensity(Module):
     def volumetric(self):
         return True
 
-def get_percentiles(percentiles_list, stop=False):
-    # Converts a comma-seperated string of percentiles into a sorted, deduplicated list.
-    # "stop" parameter determines whether to raise an error or ignore invalid values.
-    percentiles = []
-    for percentile in percentiles_list.replace(" ", "").split(","):
-        if percentile == "":
-            continue
-        elif percentile.isdigit() and 0 <= int(percentile) <= 100:
-            percentiles.append(int(percentile))
-        elif stop:
-            raise ValueError(f"Percentile '{percentile}' is not a valid integer between 0 and 100")
-    return sorted(set(percentiles))
-
+    @staticmethod
+    def get_percentiles(percentiles_list, stop=False):
+        # Converts a comma-seperated string of percentiles into a sorted, deduplicated list.
+        # "stop" parameter determines whether to raise an error or ignore invalid values.
+        percentiles = []
+        for percentile in percentiles_list.replace(" ", "").split(","):
+            if percentile == "":
+                continue
+            elif percentile.isdigit() and 0 <= int(percentile) <= 100:
+                percentiles.append(int(percentile))
+            elif stop:
+                raise ValueError(f"Percentile '{percentile}' is not a valid integer between 0 and 100")
+        return sorted(set(percentiles))

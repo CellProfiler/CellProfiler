@@ -2104,7 +2104,7 @@ class PipelineController(object):
             return
         series = self.__path_list_ctrl.get_selected_series()
         show_image(
-            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2, series=series
+            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2, series=series, tiled=self.__pipeline.tiled()
         )
 
     def on_pathlist_file_delete(self, paths):

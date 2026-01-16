@@ -16,7 +16,7 @@ from typing import Tuple
 from cellprofiler.modules import _help
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
 from numpy.typing import NDArray
-from cellprofiler_library.modules._measureobjectintensity import get_measureobjectintensity_measurements
+from cellprofiler_library.modules._measureobjectintensity import measure_object_intensity
 
 __doc__ = """
 MeasureObjectIntensity
@@ -298,77 +298,64 @@ class MeasureObjectIntensity(Module):
 
                 objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
-                (
-                    integrated_intensity,
-                    integrated_intensity_edge,
-                    mean_intensity,
-                    mean_intensity_edge,
-                    std_intensity,
-                    std_intensity_edge,
-                    min_intensity,
-                    min_intensity_edge,
-                    max_intensity,
-                    max_intensity_edge,
-                    mass_displacement,
-                    lower_quartile_intensity,
-                    median_intensity,
-                    mad_intensity,
-                    upper_quartile_intensity,
-                    cmi_x,
-                    cmi_y,
-                    cmi_z,
-                    max_x,
-                    max_y,
-                    max_z
-                ) = get_measureobjectintensity_measurements(
-                    img,
-                    image_mask, 
-                    objects.get_labels(), 
-                    nobjects,
-                    image.dimensions, 
-                    image.has_mask
+                
+                lib_measurements = measure_object_intensity(
+                    img=img,
+                    image_name=image_name,
+                    object_name=object_name,
+                    image_mask=image_mask,
+                    object_labels=objects.get_labels(),
+                    nobjects=nobjects,
+                    image_dimensions=image.dimensions,
+                    image_has_mask=image.has_mask
                 )
 
                 m = workspace.measurements
 
-                for category, feature_name, measurement in (
-                    (INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
-                    (INTENSITY, MEAN_INTENSITY, mean_intensity),
-                    (INTENSITY, STD_INTENSITY, std_intensity),
-                    (INTENSITY, MIN_INTENSITY, min_intensity),
-                    (INTENSITY, MAX_INTENSITY, max_intensity),
-                    (INTENSITY, INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge),
-                    (INTENSITY, MEAN_INTENSITY_EDGE, mean_intensity_edge),
-                    (INTENSITY, STD_INTENSITY_EDGE, std_intensity_edge),
-                    (INTENSITY, MIN_INTENSITY_EDGE, min_intensity_edge),
-                    (INTENSITY, MAX_INTENSITY_EDGE, max_intensity_edge),
-                    (INTENSITY, MASS_DISPLACEMENT, mass_displacement),
-                    (INTENSITY, LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
-                    (INTENSITY, MEDIAN_INTENSITY, median_intensity),
-                    (INTENSITY, MAD_INTENSITY, mad_intensity),
-                    (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                    (C_LOCATION, LOC_CMI_X, cmi_x),
-                    (C_LOCATION, LOC_CMI_Y, cmi_y),
-                    (C_LOCATION, LOC_CMI_Z, cmi_z),
-                    (C_LOCATION, LOC_MAX_X, max_x),
-                    (C_LOCATION, LOC_MAX_Y, max_y),
-                    (C_LOCATION, LOC_MAX_Z, max_z),
+                for category, feature_name in (
+                    (INTENSITY, INTEGRATED_INTENSITY),
+                    (INTENSITY, MEAN_INTENSITY),
+                    (INTENSITY, STD_INTENSITY),
+                    (INTENSITY, MIN_INTENSITY),
+                    (INTENSITY, MAX_INTENSITY),
+                    (INTENSITY, INTEGRATED_INTENSITY_EDGE),
+                    (INTENSITY, MEAN_INTENSITY_EDGE),
+                    (INTENSITY, STD_INTENSITY_EDGE),
+                    (INTENSITY, MIN_INTENSITY_EDGE),
+                    (INTENSITY, MAX_INTENSITY_EDGE),
+                    (INTENSITY, MASS_DISPLACEMENT),
+                    (INTENSITY, LOWER_QUARTILE_INTENSITY),
+                    (INTENSITY, MEDIAN_INTENSITY),
+                    (INTENSITY, MAD_INTENSITY),
+                    (INTENSITY, UPPER_QUARTILE_INTENSITY),
+                    (C_LOCATION, LOC_CMI_X),
+                    (C_LOCATION, LOC_CMI_Y),
+                    (C_LOCATION, LOC_CMI_Z),
+                    (C_LOCATION, LOC_MAX_X),
+                    (C_LOCATION, LOC_MAX_Y),
+                    (C_LOCATION, LOC_MAX_Z),
                 ):
                     measurement_name = "{}_{}_{}".format(
                         category, feature_name, image_name
                     )
-                    m.add_measurement(object_name, measurement_name, measurement)
-                    if self.show_window and len(measurement) > 0:
-                        statistics.append(
-                            (
-                                image_name,
-                                object_name,
-                                feature_name,
-                                numpy.round(numpy.mean(measurement), 3),
-                                numpy.round(numpy.median(measurement), 3),
-                                numpy.round(numpy.std(measurement), 3),
+                    
+                    # Retrieve measurement from LibraryMeasurements
+                    # Note: measure_object_intensity adds them with the same key format
+                    if lib_measurements.has_feature(object_name, measurement_name):
+                        measurement = lib_measurements.get_measurement(object_name, measurement_name)
+                        m.add_measurement(object_name, measurement_name, measurement)
+                        
+                        if self.show_window and len(measurement) > 0:
+                            statistics.append(
+                                (
+                                    image_name,
+                                    object_name,
+                                    feature_name,
+                                    numpy.round(numpy.mean(measurement), 3),
+                                    numpy.round(numpy.median(measurement), 3),
+                                    numpy.round(numpy.std(measurement), 3),
+                                )
                             )
-                        )
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

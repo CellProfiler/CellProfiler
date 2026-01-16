@@ -20,7 +20,8 @@ def measure_object_overlap(
         max_distance:       Annotated[Optional[int], Field(description="Maximum distance")] = 250,
         penalize_missing:   Annotated[Optional[bool], Field(description="Penalize missing pixels")] = False,
         max_points:         Annotated[Optional[int], Field(description="Maximum # of points")] = 250,
-) -> LibraryMeasurements:
+        return_visualization_data: Annotated[bool, Field(description="Return GT_pixels and ID_pixels for visualization")] = False,
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, NDArray[numpy.float64], NDArray[numpy.float64], int, int]]:
 
     measurements = LibraryMeasurements()
 
@@ -33,7 +34,11 @@ def measure_object_overlap(
         true_negative_rate,
         false_negative_rate,
         rand_index,
-        adjusted_rand_index
+        adjusted_rand_index,
+        GT_pixels,
+        ID_pixels,
+        xGT, 
+        yGT,
     ) = calculate_overlap_measurements(
         objects_GT_labelset,
         objects_ID_labelset,
@@ -41,9 +46,10 @@ def measure_object_overlap(
         objects_ID_shape,
     )
     
+    # Helper to construct measurement names
     def get_measurement_name(feature_name: str) -> str:
         return f"{C_IMAGE_OVERLAP}_{feature_name}_{object_name_GT}_{object_name_ID}"
-
+    
     measurements.add_image_measurement(get_measurement_name(Feature.F_FACTOR), F_factor)
     measurements.add_image_measurement(get_measurement_name(Feature.PRECISION), precision)
     measurements.add_image_measurement(get_measurement_name(Feature.RECALL), recall)
@@ -69,16 +75,7 @@ def measure_object_overlap(
         )
         measurements.add_image_measurement(get_measurement_name(Feature.EARTH_MOVERS_DISTANCE), emd)
     
-    return measurements
-
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_overlap_masks(
-    objects_GT_labelset: Annotated[ObjectLabelSet, Field(description="Source objects segmentation")],
-    objects_ID_labelset: Annotated[ObjectLabelSet, Field(description="Destination objects segmentation")],
-    objects_GT_shape:   Annotated[Tuple[int, int], Field(description="Shape of the ground truth segmentation")], 
-    objects_ID_shape:   Annotated[Tuple[int, int], Field(description="Shape of the test segmentation")], 
-) -> Tuple[NDArray[numpy.bool_], NDArray[numpy.bool_]]:
-    """Helper to reconstruct binary masks for visualization"""
-    gt_mask = get_labels_mask(objects_GT_labelset, objects_GT_shape)
-    id_mask = get_labels_mask(objects_ID_labelset, objects_ID_shape)
-    return gt_mask, id_mask
+    if return_visualization_data:
+        return measurements, GT_pixels, ID_pixels, xGT, yGT
+    else:
+        return measurements

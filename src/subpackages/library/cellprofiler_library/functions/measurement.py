@@ -1730,7 +1730,11 @@ def calculate_overlap_measurements(
         Union[numpy.float_, float],
         Union[numpy.float_, float],
         Union[numpy.float_, float],
-        Union[numpy.float_, float]
+        Union[numpy.float_, float],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        int,
+        int,
     ]:
     objects_GT_ijv = convert_label_set_to_ijv(objects_GT_labelset)
     objects_ID_ijv = convert_label_set_to_ijv(objects_ID_labelset)
@@ -1805,7 +1809,11 @@ def calculate_overlap_measurements(
     true_negative_rate,
     false_negative_rate,
     rand_index,
-    adjusted_rand_index
+    adjusted_rand_index,
+    GT_pixels,
+    ID_pixels,
+    xGT,
+    yGT
     )
 
 

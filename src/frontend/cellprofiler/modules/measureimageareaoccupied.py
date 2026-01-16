@@ -44,7 +44,7 @@ Measurements made by this module
 """
 
 import numpy
-import skimage.measure
+from typing import List
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, ValidationError
@@ -53,24 +53,8 @@ from cellprofiler_core.setting.subscriber import (
     ImageListSubscriber,
     LabelListSubscriber,
 )
-
-C_AREA_OCCUPIED = "AreaOccupied"
-
-# Measurement feature name format for the AreaOccupied/VolumeOccupied measurement
-F_AREA_OCCUPIED = "AreaOccupied"
-F_VOLUME_OCCUPIED = "VolumeOccupied"
-
-# Measure feature name format for the Perimeter/SurfaceArea measurement
-F_PERIMETER = "Perimeter"
-F_SURFACE_AREA = "SurfaceArea"
-
-# Measure feature name format for the TotalArea/TotalVolume measurement
-F_TOTAL_AREA = "TotalArea"
-F_TOTAL_VOLUME = "TotalVolume"
-
-O_BINARY_IMAGE = "Binary Image"
-O_OBJECTS = "Objects"
-O_BOTH = "Both"
+from cellprofiler_library.modules._measureimageareaoccupied import measure_image_area_perimeter, measure_objects_area_perimeter
+from cellprofiler_library.opts.measureimageareaoccupied import MeasurementType, Target, C_AREA_OCCUPIED
 
 # The number of settings per image or object group
 IMAGE_SETTING_COUNT = 1
@@ -86,14 +70,14 @@ class MeasureImageAreaOccupied(Module):
     def create_settings(self):
         self.operand_choice = Choice(
             "Measure the area occupied by",
-            [O_BINARY_IMAGE, O_OBJECTS, O_BOTH],
+            [Target.BINARY_IMAGE.value, Target.OBJECTS.value, Target.BOTH.value],
             doc="""\
 Area occupied can be measured in two ways:
 
 -  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
 -  *{O_OBJECTS}:* The area occupied by previously-identified objects.
                     """.format(
-                **{"O_BINARY_IMAGE": O_BINARY_IMAGE, "O_OBJECTS": O_OBJECTS}
+                **{"O_BINARY_IMAGE": Target.BINARY_IMAGE.value, "O_OBJECTS": Target.OBJECTS.value}
             ),
         )
 
@@ -107,7 +91,7 @@ Area occupied can be measured in two ways:
 These should be binary images created earlier in the pipeline, where you would
 like to measure the area occupied by the foreground in the image.
                     """.format(
-                **{"O_BINARY_IMAGE": O_BINARY_IMAGE}
+                **{"O_BINARY_IMAGE": Target.BINARY_IMAGE.value}
             ),
         )
 
@@ -117,13 +101,13 @@ like to measure the area occupied by the foreground in the image.
             doc="""*(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
 Select the previously identified objects you would like to measure.""".format(
-                **{"O_OBJECTS": O_OBJECTS}
+                **{"O_OBJECTS": Target.OBJECTS.value}
             ),
         )
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
-        if self.operand_choice in (O_BINARY_IMAGE, O_BOTH):
+        if self.operand_choice in (Target.BINARY_IMAGE.value, Target.BOTH.value):
             images = set()
             if len(self.images_list.value) == 0:
                 raise ValidationError("No images selected", self.images_list)
@@ -133,7 +117,7 @@ Select the previously identified objects you would like to measure.""".format(
                         "%s has already been selected" % image_name, image_name
                     )
                 images.add(image_name)
-        if self.operand_choice in (O_OBJECTS, O_BOTH):
+        if self.operand_choice in (Target.OBJECTS, Target.BOTH):
             objects = set()
             if len(self.objects_list.value) == 0:
                 raise ValidationError("No objects selected", self.objects_list)
@@ -150,9 +134,9 @@ Select the previously identified objects you would like to measure.""".format(
 
     def visible_settings(self):
         result = [self.operand_choice, self.divider]
-        if self.operand_choice in (O_BOTH, O_BINARY_IMAGE):
+        if self.operand_choice.value in (Target.BOTH, Target.BINARY_IMAGE):
             result.append(self.images_list)
-        if self.operand_choice in (O_BOTH, O_OBJECTS):
+        if self.operand_choice.value in (Target.BOTH, Target.OBJECTS):
             result.append(self.objects_list)
         return result
 
@@ -161,12 +145,12 @@ Select the previously identified objects you would like to measure.""".format(
 
         statistics = []
 
-        if self.operand_choice in (O_BOTH, O_BINARY_IMAGE):
+        if self.operand_choice.value in (Target.BOTH, Target.BINARY_IMAGE):
             if len(self.images_list.value) == 0:
                 raise ValueError("No images were selected for analysis.")
             for binary_image in self.images_list.value:
                 statistics += self.measure_images(binary_image, workspace)
-        if self.operand_choice in (O_BOTH, O_OBJECTS):
+        if self.operand_choice.value in (Target.BOTH, Target.OBJECTS):
             if len(self.objects_list.value) == 0:
                 raise ValueError("No object sets were selected for analysis.")
             for object_set in self.objects_list.value:
@@ -198,122 +182,80 @@ Select the previously identified objects you would like to measure.""".format(
             numpy.array([features], dtype=float),
         )
 
-    def measure_objects(self, object_set, workspace):
+    def measure_objects(self, object_set: str, workspace):
         objects = workspace.get_objects(object_set)
 
         label_image = objects.segmented
 
+        mask = None
         if objects.has_parent_image:
+            # Image always has a mask. returns all ones if not specified.
             mask = objects.parent_image.mask
 
-            label_image[~mask] = 0
-
-            total_area = numpy.sum(mask)
-        else:
-            total_area = numpy.product(label_image.shape)
-
-        region_properties = skimage.measure.regionprops(label_image)
-
-        area_occupied = numpy.sum([region["area"] for region in region_properties])
-        
-        if area_occupied > 0:
-            if objects.volumetric:
-                spacing = None
-
-                if objects.has_parent_image:
-                    spacing = objects.parent_image.spacing
-
-                labels = numpy.unique(label_image)
-
-                if labels[0] == 0:
-                    labels = labels[1:]
-
-                perimeter = surface_area(label_image, spacing=spacing, index=labels)
-            else:
-                perimeter = numpy.sum(
-                    [numpy.round(region["perimeter"]) for region in region_properties]
-                )
-        else:
-            perimeter = 0
-
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-
-        self._add_image_measurement(
-            object_set,
-            F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
-            area_occupied,
-            measurements,
+        spacing = None
+        if objects.volumetric:
+            if objects.has_parent_image:
+                spacing = objects.parent_image.spacing
+        pipeline_volumetric = workspace.pipeline.volumetric()
+        lib_measurements = measure_objects_area_perimeter(
+            label_image=label_image,
+            object_name=object_set,
+            mask=mask, 
+            volumetric=objects.volumetric, 
+            spacing=spacing
         )
 
-        self._add_image_measurement(
-            object_set,
-            F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
-            perimeter,
-            measurements,
-        )
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        self._add_image_measurement(
-            object_set,
-            F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
-            total_area,
-            measurements,
-        )
+        # Retrieve values for statistics display
+        # We reconstruct keys to fetch them from the library measurements
+        feature_area_occupied = MeasurementType.VOLUME_OCCUPIED.value if pipeline_volumetric else MeasurementType.AREA_OCCUPIED.value
+        feature_perimeter = MeasurementType.SURFACE_AREA.value if pipeline_volumetric else MeasurementType.PERIMETER.value
+        feature_total_area = MeasurementType.TOTAL_VOLUME.value if pipeline_volumetric else MeasurementType.TOTAL_AREA.value
+
+        area_occupied = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_area_occupied}_{object_set}"]
+        perimeter = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_perimeter}_{object_set}"]
+        total_area = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_total_area}_{object_set}"]
 
         return [[object_set, str(area_occupied), str(perimeter), str(total_area),]]
 
-    def measure_images(self, image_set, workspace):
+
+    def measure_images(self, image_set: str, workspace):
         image = workspace.image_set.get_image(image_set, must_be_binary=True)
-
-        area_occupied = numpy.sum(image.pixel_data > 0)
-
-        if area_occupied > 0:
-            if image.volumetric:
-                perimeter = surface_area(image.pixel_data > 0, spacing=image.spacing)
-            else:
-                perimeter = skimage.measure.perimeter(image.pixel_data > 0)
-        else:
-            perimeter = 0
-            
-        total_area = numpy.prod(numpy.shape(image.pixel_data))
-
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-
-        self._add_image_measurement(
-            image_set,
-            F_VOLUME_OCCUPIED if pipeline.volumetric() else F_AREA_OCCUPIED,
-            area_occupied,
-            measurements,
+        pipeline_volumetric = workspace.pipeline.volumetric()
+        
+        lib_measurements = measure_image_area_perimeter(
+            im_pixel_data=image.pixel_data, 
+            image_name=image_set,
+            im_volumetric=image.volumetric,
+            im_spacing=image.spacing
         )
 
-        self._add_image_measurement(
-            image_set,
-            F_SURFACE_AREA if pipeline.volumetric() else F_PERIMETER,
-            perimeter,
-            measurements,
-        )
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        self._add_image_measurement(
-            image_set,
-            F_TOTAL_VOLUME if pipeline.volumetric() else F_TOTAL_AREA,
-            total_area,
-            measurements,
-        )
+        feature_area_occupied = MeasurementType.VOLUME_OCCUPIED.value if pipeline_volumetric else MeasurementType.AREA_OCCUPIED.value
+        feature_perimeter = MeasurementType.SURFACE_AREA.value if pipeline_volumetric else MeasurementType.PERIMETER.value
+        feature_total_area = MeasurementType.TOTAL_VOLUME.value if pipeline_volumetric else MeasurementType.TOTAL_AREA.value
+
+        area_occupied = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_area_occupied}_{image_set}"]
+        perimeter = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_perimeter}_{image_set}"]
+        total_area = lib_measurements.image[f"{C_AREA_OCCUPIED}_{feature_total_area}_{image_set}"]
 
         return [[image_set, str(area_occupied), str(perimeter), str(total_area),]]
 
     def _get_feature_names(self, pipeline):
         if pipeline.volumetric():
-            return [F_VOLUME_OCCUPIED, F_SURFACE_AREA, F_TOTAL_VOLUME]
+            return [MeasurementType.VOLUME_OCCUPIED.value, MeasurementType.SURFACE_AREA.value, MeasurementType.TOTAL_VOLUME.value]
 
-        return [F_AREA_OCCUPIED, F_PERIMETER, F_TOTAL_AREA]
+        return [MeasurementType.AREA_OCCUPIED.value, MeasurementType.PERIMETER.value, MeasurementType.TOTAL_AREA.value]
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         columns = []
 
-        if self.operand_choice in (O_BOTH, O_OBJECTS):
+        if self.operand_choice.value in (Target.BOTH, Target.OBJECTS):
             for object_set in self.objects_list.value:
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
@@ -325,7 +267,7 @@ Select the previously identified objects you would like to measure.""".format(
                             COLTYPE_FLOAT,
                         )
                     )
-        if self.operand_choice in (O_BOTH, O_BINARY_IMAGE):
+        if self.operand_choice.value in (Target.BOTH, Target.BINARY_IMAGE):
             for image_set in self.images_list.value:
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
@@ -359,7 +301,7 @@ Select the previously identified objects you would like to measure.""".format(
             return [
                 object_name
                 for object_name in self.objects_list.value
-                if self.operand_choice in (O_OBJECTS, O_BOTH)
+                if self.operand_choice.value in (Target.OBJECTS, Target.BOTH)
             ]
         return []
 
@@ -372,7 +314,7 @@ Select the previously identified objects you would like to measure.""".format(
             return [
                 image_name
                 for image_name in self.images_list.value
-                if self.operand_choice in (O_BINARY_IMAGE, O_BOTH)
+                if self.operand_choice.value in (Target.BINARY_IMAGE, Target.BOTH)
             ]
         return []
 
@@ -426,20 +368,20 @@ Select the previously identified objects you would like to measure.""".format(
             objects_set = set()
             conditions, names1, names2 = [(setting_values[i::3]) for i in range(3)]
             for condition, name1, name2 in zip(conditions, names1, names2):
-                if condition == O_BINARY_IMAGE:
+                if condition == Target.BINARY_IMAGE.value:
                     images_set.add(name2)
-                elif condition == O_OBJECTS:
+                elif condition == Target.OBJECTS.value:
                     objects_set.add(name1)
             if "None" in images_set:
                 images_set.remove("None")
             if "None" in objects_set:
                 objects_set.remove("None")
             if len(images_set) > 0 and len(objects_set) > 0:
-                mode = O_BOTH
+                mode = Target.BOTH.value
             elif len(images_set) == 0:
-                mode = O_OBJECTS
+                mode = Target.OBJECTS.value
             else:
-                mode = O_BINARY_IMAGE
+                mode = Target.BINARY_IMAGE.value
             images_string = ", ".join(map(str, images_set))
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [mode, images_string, objects_string]
@@ -448,30 +390,3 @@ Select the previously identified objects you would like to measure.""".format(
 
     def volumetric(self):
         return True
-
-
-def surface_area(label_image, spacing=None, index=None):
-    if spacing is None:
-        spacing = (1.0,) * label_image.ndim
-
-    if index is None:
-        verts, faces, _normals, _values = skimage.measure.marching_cubes(
-            label_image, spacing=spacing, level=0, method="lorensen"
-        )
-
-        return skimage.measure.mesh_surface_area(verts, faces)
-
-    return numpy.sum(
-        [
-            numpy.round(_label_surface_area(label_image, label, spacing))
-            for label in index
-        ]
-    )
-
-
-def _label_surface_area(label_image, label, spacing):
-    verts, faces, _normals, _values = skimage.measure.marching_cubes(
-        label_image == label, spacing=spacing, level=0, method="lorensen"
-    )
-
-    return skimage.measure.mesh_surface_area(verts, faces)

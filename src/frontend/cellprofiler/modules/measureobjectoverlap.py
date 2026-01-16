@@ -63,7 +63,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Integer
 
-from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap
+from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap, get_overlap_masks
 from cellprofiler_library.opts.measureobjectoverlap import Feature, ALL_FEATURES, C_IMAGE_OVERLAP, DecimationMethod
 from cellprofiler.modules import _help
 
@@ -229,26 +229,13 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         objects_GT_labelset = objects_GT.get_labels()
         objects_ID_labelset = objects_ID.get_labels()
 
-        (
-            F_factor,
-            precision,
-            recall,
-            true_positive_rate,
-            false_positive_rate,
-            true_negative_rate,
-            false_negative_rate,
-            rand_index,
-            adjusted_rand_index,
-            GT_pixels,
-            ID_pixels,
-            xGT, 
-            yGT,
-            emd
-        ) = measure_object_overlap(
+        lib_measurements = measure_object_overlap(
             objects_GT_labelset,
             objects_ID_labelset,
             objects_GT.shape,
             objects_ID.shape,
+            object_name_GT=object_name_GT,
+            object_name_ID=object_name_ID,
             calcualte_emd=self.wants_emd.value,
             decimation_method=self.decimation_method.value,
             max_distance=self.max_distance.value,
@@ -257,57 +244,57 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         )
         
         m = workspace.measurements
-        m.add_image_measurement(self.measurement_name(Feature.F_FACTOR), F_factor)
-        m.add_image_measurement(self.measurement_name(Feature.PRECISION), precision)
-        m.add_image_measurement(self.measurement_name(Feature.RECALL), recall)
-        m.add_image_measurement(
-            self.measurement_name(Feature.TRUE_POS_RATE), true_positive_rate
-        )
-        m.add_image_measurement(
-            self.measurement_name(Feature.FALSE_POS_RATE), false_positive_rate
-        )
-        m.add_image_measurement(
-            self.measurement_name(Feature.TRUE_NEG_RATE), true_negative_rate
-        )
-        m.add_image_measurement(
-            self.measurement_name(Feature.FALSE_NEG_RATE), false_negative_rate
-        )
-        m.add_image_measurement(self.measurement_name(Feature.RAND_INDEX), rand_index)
-        m.add_image_measurement(
-            self.measurement_name(Feature.ADJUSTED_RAND_INDEX), adjusted_rand_index
-        )
-
-        def subscripts(condition1, condition2):
-            x1, y1 = numpy.where(GT_pixels == condition1)
-            x2, y2 = numpy.where(ID_pixels == condition2)
-            mask = set(zip(x1, y1)) & set(zip(x2, y2))
-            return list(mask)
-
-        TP_mask = subscripts(1, 1)
-        FN_mask = subscripts(1, 0)
-        FP_mask = subscripts(0, 1)
-        TN_mask = subscripts(0, 0)
-
-        TP_pixels = numpy.zeros((xGT, yGT))
-        FN_pixels = numpy.zeros((xGT, yGT))
-        FP_pixels = numpy.zeros((xGT, yGT))
-        TN_pixels = numpy.zeros((xGT, yGT))
-
-        def maskimg(mask, img):
-            for ea in mask:
-                img[ea] = 1
-            return img
-
-        TP_pixels = maskimg(TP_mask, TP_pixels)
-        FN_pixels = maskimg(FN_mask, FN_pixels)
-        FP_pixels = maskimg(FP_mask, FP_pixels)
-        TN_pixels = maskimg(TN_mask, TN_pixels)
-        if self.wants_emd:
-            m.add_image_measurement(
-                self.measurement_name(Feature.EARTH_MOVERS_DISTANCE), emd
-            )
+        for feature_name, value in lib_measurements.image.items():
+            m.add_image_measurement(feature_name, value)
 
         if self.show_window:
+            GT_pixels, ID_pixels = get_overlap_masks(
+                objects_GT_labelset,
+                objects_ID_labelset,
+                objects_GT.shape,
+                objects_ID.shape
+            )
+            xGT, yGT = objects_GT.shape
+
+            def get_val(feature):
+                name = self.measurement_name(feature)
+                return lib_measurements.image.get(name)
+
+            F_factor = get_val(Feature.F_FACTOR)
+            precision = get_val(Feature.PRECISION)
+            recall = get_val(Feature.RECALL)
+            false_positive_rate = get_val(Feature.FALSE_POS_RATE)
+            false_negative_rate = get_val(Feature.FALSE_NEG_RATE)
+            rand_index = get_val(Feature.RAND_INDEX)
+            adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
+            emd = get_val(Feature.EARTH_MOVERS_DISTANCE) if self.wants_emd.value else None
+
+            def subscripts(condition1, condition2):
+                x1, y1 = numpy.where(GT_pixels == condition1)
+                x2, y2 = numpy.where(ID_pixels == condition2)
+                mask = set(zip(x1, y1)) & set(zip(x2, y2))
+                return list(mask)
+
+            TP_mask = subscripts(1, 1)
+            FN_mask = subscripts(1, 0)
+            FP_mask = subscripts(0, 1)
+            TN_mask = subscripts(0, 0)
+
+            TP_pixels = numpy.zeros((xGT, yGT))
+            FN_pixels = numpy.zeros((xGT, yGT))
+            FP_pixels = numpy.zeros((xGT, yGT))
+            TN_pixels = numpy.zeros((xGT, yGT))
+
+            def maskimg(mask, img):
+                for ea in mask:
+                    img[ea] = 1
+                return img
+
+            TP_pixels = maskimg(TP_mask, TP_pixels)
+            FN_pixels = maskimg(FN_mask, FN_pixels)
+            FP_pixels = maskimg(FP_mask, FP_pixels)
+            TN_pixels = maskimg(TN_mask, TN_pixels)
+            
             workspace.display_data.true_positives = TP_pixels
             workspace.display_data.true_negatives = TN_pixels
             workspace.display_data.false_positives = FP_pixels

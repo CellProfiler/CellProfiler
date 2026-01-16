@@ -63,7 +63,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Integer
 
-from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap, get_overlap_masks
+from cellprofiler_library.modules._measureobjectoverlap import measure_object_overlap
 from cellprofiler_library.opts.measureobjectoverlap import Feature, ALL_FEATURES, C_IMAGE_OVERLAP, DecimationMethod
 from cellprofiler.modules import _help
 
@@ -229,7 +229,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         objects_GT_labelset = objects_GT.get_labels()
         objects_ID_labelset = objects_ID.get_labels()
 
-        lib_measurements = measure_object_overlap(
+        result = measure_object_overlap(
             objects_GT_labelset,
             objects_ID_labelset,
             objects_GT.shape,
@@ -240,22 +240,21 @@ the two objects. Set this setting to “No” to assess no penalty.""",
             decimation_method=self.decimation_method.value,
             max_distance=self.max_distance.value,
             max_points=self.max_points.value,
-            penalize_missing=self.penalize_missing.value
+            penalize_missing=self.penalize_missing.value,
+            return_visualization_data=self.show_window
         )
+        
+        # Unpack result based on whether visualization data was requested
+        if self.show_window:
+            lib_measurements, GT_pixels, ID_pixels, xGT, yGT = result
+        else:
+            lib_measurements = result
         
         m = workspace.measurements
         for feature_name, value in lib_measurements.image.items():
             m.add_image_measurement(feature_name, value)
 
         if self.show_window:
-            GT_pixels, ID_pixels = get_overlap_masks(
-                objects_GT_labelset,
-                objects_ID_labelset,
-                objects_GT.shape,
-                objects_ID.shape
-            )
-            xGT, yGT = objects_GT.shape
-
             def get_val(feature):
                 name = self.measurement_name(feature)
                 return lib_measurements.image.get(name)

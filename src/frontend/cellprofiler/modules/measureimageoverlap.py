@@ -286,9 +286,10 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         test_pixels = test_image.pixel_data
 
-        data = measureimageoverlap(
+        measurements = measureimageoverlap(
             ground_truth_pixels, 
             test_pixels, 
+            self.test_img.value,
             mask=mask,
             calculate_emd=self.wants_emd.value,
             decimation_method=self.decimation_method.enum_member,
@@ -299,69 +300,42 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         m = workspace.measurements
 
-        m.add_image_measurement(self.measurement_name(Feature.F_FACTOR), data[Feature.F_FACTOR])
-
-        m.add_image_measurement(self.measurement_name(Feature.PRECISION), data[Feature.PRECISION])
-
-        m.add_image_measurement(self.measurement_name(Feature.RECALL), data[Feature.RECALL])
-
-        m.add_image_measurement(
-            self.measurement_name(Feature.TRUE_POS_RATE), data[Feature.TRUE_POS_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(Feature.FALSE_POS_RATE), data[Feature.FALSE_POS_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(Feature.TRUE_NEG_RATE), data[Feature.TRUE_NEG_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(Feature.FALSE_NEG_RATE), data[Feature.FALSE_NEG_RATE]
-        )
-
-        m.add_image_measurement(self.measurement_name(Feature.RAND_INDEX), data[Feature.RAND_INDEX])
-
-        m.add_image_measurement(
-            self.measurement_name(Feature.ADJUSTED_RAND_INDEX), data[Feature.ADJUSTED_RAND_INDEX]
-        )
-
-        if self.wants_emd:
-
-            m.add_image_measurement(
-                self.measurement_name(Feature.EARTH_MOVERS_DISTANCE), data[Feature.EARTH_MOVERS_DISTANCE]
-            )
+        for feature_name, value in measurements.image.items():
+            if feature_name.startswith(C_IMAGE_OVERLAP + "_"):
+                 m.add_image_measurement(feature_name, value)
 
         if self.show_window:
            
             workspace.display_data.dimensions = test_image.dimensions
            
-            workspace.display_data.true_positives = data["true_positives"]
+            workspace.display_data.true_positives = measurements.image["true_positives"]
 
-            workspace.display_data.true_negatives = data["true_negatives"]
+            workspace.display_data.true_negatives = measurements.image["true_negatives"]
 
-            workspace.display_data.false_positives = data["false_positives"]
+            workspace.display_data.false_positives = measurements.image["false_positives"]
 
-            workspace.display_data.false_negatives = data["false_negatives"]
+            workspace.display_data.false_negatives = measurements.image["false_negatives"]
 
-            workspace.display_data.rand_index = data[Feature.RAND_INDEX]
+            def get_val(feature):
+                 return measurements.image[self.measurement_name(feature)]
 
-            workspace.display_data.adjusted_rand_index = data[Feature.ADJUSTED_RAND_INDEX]
+            workspace.display_data.rand_index = get_val(Feature.RAND_INDEX)
+
+            workspace.display_data.adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
 
             workspace.display_data.statistics = [
-                (Feature.F_FACTOR.value, data[Feature.F_FACTOR]),
-                (Feature.PRECISION.value, data[Feature.PRECISION]),
-                (Feature.RECALL.value, data[Feature.RECALL]),
-                (Feature.FALSE_POS_RATE.value, data[Feature.FALSE_POS_RATE]),
-                (Feature.FALSE_NEG_RATE.value, data[Feature.FALSE_NEG_RATE]),
-                (Feature.RAND_INDEX.value, data[Feature.RAND_INDEX]),
-                (Feature.ADJUSTED_RAND_INDEX.value, data[Feature.ADJUSTED_RAND_INDEX]),
+                (Feature.F_FACTOR.value, get_val(Feature.F_FACTOR)),
+                (Feature.PRECISION.value, get_val(Feature.PRECISION)),
+                (Feature.RECALL.value, get_val(Feature.RECALL)),
+                (Feature.FALSE_POS_RATE.value, get_val(Feature.FALSE_POS_RATE)),
+                (Feature.FALSE_NEG_RATE.value, get_val(Feature.FALSE_NEG_RATE)),
+                (Feature.RAND_INDEX.value, get_val(Feature.RAND_INDEX)),
+                (Feature.ADJUSTED_RAND_INDEX.value, get_val(Feature.ADJUSTED_RAND_INDEX)),
             ]
 
             if self.wants_emd:
                 workspace.display_data.statistics.append(
-                    (Feature.EARTH_MOVERS_DISTANCE.value, data[Feature.EARTH_MOVERS_DISTANCE])
+                    (Feature.EARTH_MOVERS_DISTANCE.value, get_val(Feature.EARTH_MOVERS_DISTANCE))
                 )
 
 

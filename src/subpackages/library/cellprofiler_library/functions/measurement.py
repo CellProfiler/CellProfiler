@@ -1730,11 +1730,7 @@ def calculate_overlap_measurements(
         Union[numpy.float_, float],
         Union[numpy.float_, float],
         Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        NDArray[numpy.float64],
-        NDArray[numpy.float64],
-        int,
-        int,
+        Union[numpy.float_, float]
     ]:
     objects_GT_ijv = convert_label_set_to_ijv(objects_GT_labelset)
     objects_ID_ijv = convert_label_set_to_ijv(objects_ID_labelset)
@@ -1809,11 +1805,7 @@ def calculate_overlap_measurements(
     true_negative_rate,
     false_negative_rate,
     rand_index,
-    adjusted_rand_index,
-    GT_pixels,
-    ID_pixels,
-    xGT, 
-    yGT,
+    adjusted_rand_index
     )
 
 
@@ -1942,103 +1934,6 @@ def get_intersect_matrix(
     return intersect_matrix
 
 
-# def compute_rand_index(self, test_labels, ground_truth_labels, mask):
-#     """Calculate the Rand Index
-#
-#     http://en.wikipedia.org/wiki/Rand_index
-#
-#     Given a set of N elements and two partitions of that set, X and Y
-#
-#     A = the number of pairs of elements in S that are in the same set in
-#         X and in the same set in Y
-#     B = the number of pairs of elements in S that are in different sets
-#         in X and different sets in Y
-#     C = the number of pairs of elements in S that are in the same set in
-#         X and different sets in Y
-#     D = the number of pairs of elements in S that are in different sets
-#         in X and the same set in Y
-#
-#     The rand index is:   A + B
-#                          -----
-#                         A+B+C+D
-#
-#
-#     The adjusted rand index is the rand index adjusted for chance
-#     so as not to penalize situations with many segmentations.
-#
-#     Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand
-#     Index as a Metric for Evaluating Supervised Classification",
-#     Lecture Notes in Computer Science,
-#     Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
-#
-#     ExpectedIndex = best possible score
-#
-#     ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2)
-#
-#     MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
-#
-#     A * total - ExpectedIndex
-#     -------------------------
-#     MaxIndex - ExpectedIndex
-#
-#     returns a tuple of the Rand Index and the adjusted Rand Index
-#     """
-#     ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint64)
-#     test_labels = test_labels[mask].astype(numpy.uint64)
-#     if len(test_labels) > 0:
-#         #
-#         # Create a sparse matrix of the pixel labels in each of the sets
-#         #
-#         # The matrix, N(i,j) gives the counts of all of the pixels that were
-#         # labeled with label I in the ground truth and label J in the
-#         # test set.
-#         #
-#         N_ij = scipy.sparse.coo_matrix((numpy.ones(len(test_labels)),
-#                                         (ground_truth_labels, test_labels))).toarray()
-#
-#         def choose2(x):
-#             '''Compute # of pairs of x things = x * (x-1) / 2'''
-#             return x * (x - 1) / 2
-#
-#         #
-#         # Each cell in the matrix is a count of a grouping of pixels whose
-#         # pixel pairs are in the same set in both groups. The number of
-#         # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
-#         #
-#         A = numpy.sum(choose2(N_ij))
-#         #
-#         # B is the sum of pixels that were classified differently by both
-#         # sets. But the easier calculation is to find A, C and D and get
-#         # B by subtracting A, C and D from the N * (N - 1), the total
-#         # number of pairs.
-#         #
-#         # For C, we take the number of pixels classified as "i" and for each
-#         # "j", subtract N(i,j) from N(i) to get the number of pixels in
-#         # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
-#         #
-#         # We do the similar calculation for D
-#         #
-#         N_i = numpy.sum(N_ij, 1)
-#         N_j = numpy.sum(N_ij, 0)
-#         C = numpy.sum((N_i[:, numpy.newaxis] - N_ij) * N_ij) / 2
-#         D = numpy.sum((N_j[numpy.newaxis, :] - N_ij) * N_ij) / 2
-#         total = choose2(len(test_labels))
-#         # an astute observer would say, why bother computing A and B
-#         # when all we need is A+B and C, D and the total can be used to do
-#         # that. The calculations aren't too expensive, though, so I do them.
-#         B = total - A - C - D
-#         rand_index = (A + B) / total
-#         #
-#         # Compute adjusted Rand Index
-#         #
-#         expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
-#         max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
-#
-#         adjusted_rand_index = \
-#             (A * total - expected_index) / (max_index - expected_index)
-#     else:
-#         rand_index = adjusted_rand_index = numpy.nan
-#     return rand_index, adjusted_rand_index
 def compute_rand_index_ijv(
         gt_ijv: ObjectSegmentationIJV,
         test_ijv: ObjectSegmentationIJV,

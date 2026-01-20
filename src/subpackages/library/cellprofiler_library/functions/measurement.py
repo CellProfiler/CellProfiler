@@ -442,234 +442,133 @@ def get_weights(
     return result
 
 
-def measure_object_size_shape(
-    labels,
-    desired_properties,
-    calculate_zernikes: bool = True,
-    calculate_advanced: bool = True,
-    spacing: Tuple = None
-):
-    label_indices = numpy.unique(labels[labels != 0])
-    nobjects = len(label_indices)
+################################################################################
+# MeasureObjectSizeShape
+################################################################################
+
+def get_object_derived_shape_features(
+    area: NDArray[np.float64],
+    perimeter: NDArray[np.float64]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Compute derived shape features from area and perimeter.
     
-    if spacing is None:
-        spacing = (1.0,) * labels.ndim
-
-    if len(labels.shape) == 2:
-        # 2D
-        props = skimage.measure.regionprops_table(labels, properties=desired_properties)
-
-        formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
-        denom = [max(x, 1) for x in 4.0 * numpy.pi * props["area"]]
-        compactness = props["perimeter"] ** 2 / denom
-
-        max_radius = numpy.zeros(nobjects)
-        median_radius = numpy.zeros(nobjects)
-        mean_radius = numpy.zeros(nobjects)
-        min_feret_diameter = numpy.zeros(nobjects)
-        max_feret_diameter = numpy.zeros(nobjects)
-        zernike_numbers = centrosome.zernike.get_zernike_indexes(ObjectSizeShapeFeatures.ZERNIKE_N.value + 1)
-
-        zf = {}
-        for n, m in zernike_numbers:
-            zf[(n, m)] = numpy.zeros(nobjects)
-
-        for index, mini_image in enumerate(props["image"]):
-            # Pad image to assist distance tranform
-            mini_image = numpy.pad(mini_image, 1)
-            distances = scipy.ndimage.distance_transform_edt(mini_image)
-            max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                scipy.ndimage.maximum(distances, mini_image)
-            )
-            mean_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                scipy.ndimage.mean(distances, mini_image)
-            )
-            median_radius[index] = centrosome.cpmorphology.median_of_labels(
-                distances, mini_image.astype("int"), [1]
-            )
-
-        #
-        # Zernike features
-        #
-        if calculate_zernikes:
-            zf_l = centrosome.zernike.zernike(zernike_numbers, labels, label_indices)
-            for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
-                zf[(n, m)] = z
-
-        if nobjects > 0:
-            chulls, chull_counts = centrosome.cpmorphology.convex_hull(
-                labels, label_indices
-            )
-            #
-            # Feret diameter
-            #
-            (
-                min_feret_diameter,
-                max_feret_diameter,
-            ) = centrosome.cpmorphology.feret_diameter(
-                chulls, chull_counts, label_indices
-            )
-
-            features_to_record = {
-                ObjectSizeShapeFeatures.F_AREA.value: props["area"],
-                ObjectSizeShapeFeatures.F_PERIMETER.value: props["perimeter"],
-                ObjectSizeShapeFeatures.F_MAJOR_AXIS_LENGTH.value: props["major_axis_length"],
-                ObjectSizeShapeFeatures.F_MINOR_AXIS_LENGTH.value: props["minor_axis_length"],
-                ObjectSizeShapeFeatures.F_ECCENTRICITY.value: props["eccentricity"],
-                ObjectSizeShapeFeatures.F_ORIENTATION.value: props["orientation"] * (180 / numpy.pi),
-                ObjectSizeShapeFeatures.F_CENTER_X.value: props["centroid-1"],
-                ObjectSizeShapeFeatures.F_CENTER_Y.value: props["centroid-0"],
-                ObjectSizeShapeFeatures.F_BBOX_AREA.value: props["bbox_area"],
-                ObjectSizeShapeFeatures.F_MIN_X.value: props["bbox-1"],
-                ObjectSizeShapeFeatures.F_MAX_X.value: props["bbox-3"],
-                ObjectSizeShapeFeatures.F_MIN_Y.value: props["bbox-0"],
-                ObjectSizeShapeFeatures.F_MAX_Y.value: props["bbox-2"],
-                ObjectSizeShapeFeatures.F_FORM_FACTOR.value: formfactor,
-                ObjectSizeShapeFeatures.F_EXTENT.value: props["extent"],
-                ObjectSizeShapeFeatures.F_SOLIDITY.value: props["solidity"],
-                ObjectSizeShapeFeatures.F_COMPACTNESS.value: compactness,
-                ObjectSizeShapeFeatures.F_EULER_NUMBER.value: props["euler_number"],
-                ObjectSizeShapeFeatures.F_MAXIMUM_RADIUS.value: max_radius,
-                ObjectSizeShapeFeatures.F_MEAN_RADIUS.value: mean_radius,
-                ObjectSizeShapeFeatures.F_MEDIAN_RADIUS.value: median_radius,
-                ObjectSizeShapeFeatures.F_CONVEX_AREA.value: props["convex_area"],
-                ObjectSizeShapeFeatures.F_MIN_FERET_DIAMETER.value: min_feret_diameter,
-                ObjectSizeShapeFeatures.F_MAX_FERET_DIAMETER.value: max_feret_diameter,
-                ObjectSizeShapeFeatures.F_EQUIVALENT_DIAMETER.value: props["equivalent_diameter"],
-            }
-            if calculate_advanced:
-                features_to_record.update(
-                    {
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_0_0.value: props["moments-0-0"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_0_1.value: props["moments-0-1"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_0_2.value: props["moments-0-2"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_0_3.value: props["moments-0-3"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_1_0.value: props["moments-1-0"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_1_1.value: props["moments-1-1"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_1_2.value: props["moments-1-2"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_1_3.value: props["moments-1-3"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_2_0.value: props["moments-2-0"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_2_1.value: props["moments-2-1"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_2_2.value: props["moments-2-2"],
-                        ObjectSizeShapeFeatures.F_SPATIAL_MOMENT_2_3.value: props["moments-2-3"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_0_0.value: props["moments_central-0-0"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_0_1.value: props["moments_central-0-1"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_0_2.value: props["moments_central-0-2"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_0_3.value: props["moments_central-0-3"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_1_0.value: props["moments_central-1-0"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_1_1.value: props["moments_central-1-1"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_1_2.value: props["moments_central-1-2"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_1_3.value: props["moments_central-1-3"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_2_0.value: props["moments_central-2-0"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_2_1.value: props["moments_central-2-1"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_2_2.value: props["moments_central-2-2"],
-                        ObjectSizeShapeFeatures.F_CENTRAL_MOMENT_2_3.value: props["moments_central-2-3"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_0_0.value: props["moments_normalized-0-0"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_0_1.value: props["moments_normalized-0-1"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_0_2.value: props["moments_normalized-0-2"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_0_3.value: props["moments_normalized-0-3"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_1_0.value: props["moments_normalized-1-0"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_1_1.value: props["moments_normalized-1-1"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_1_2.value: props["moments_normalized-1-2"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_1_3.value: props["moments_normalized-1-3"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_2_0.value: props["moments_normalized-2-0"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_2_1.value: props["moments_normalized-2-1"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_2_2.value: props["moments_normalized-2-2"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_2_3.value: props["moments_normalized-2-3"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_3_0.value: props["moments_normalized-3-0"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_3_1.value: props["moments_normalized-3-1"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_3_2.value: props["moments_normalized-3-2"],
-                        ObjectSizeShapeFeatures.F_NORMALIZED_MOMENT_3_3.value: props["moments_normalized-3-3"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_0.value: props["moments_hu-0"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_1.value: props["moments_hu-1"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_2.value: props["moments_hu-2"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_3.value: props["moments_hu-3"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_4.value: props["moments_hu-4"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_5.value: props["moments_hu-5"],
-                        ObjectSizeShapeFeatures.F_HU_MOMENT_6.value: props["moments_hu-6"],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_0_0.value: props["inertia_tensor-0-0"],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_0_1.value: props["inertia_tensor-0-1"],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_1_0.value: props["inertia_tensor-1-0"],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_1_1.value: props["inertia_tensor-1-1"],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_EIGENVALUES_0.value: props[
-                            "inertia_tensor_eigvals-0"
-                        ],
-                        ObjectSizeShapeFeatures.F_INERTIA_TENSOR_EIGENVALUES_1.value: props[
-                            "inertia_tensor_eigvals-1"
-                        ],
-                    }
-                )
-
-            if calculate_zernikes:
-                features_to_record.update(
-                    {f"Zernike_{n}_{m}": zf[(n, m)] for n, m in zernike_numbers}
-                )
-
-    else:
-        # 3D
-        props = skimage.measure.regionprops_table(labels, properties=desired_properties)
-        # SurfaceArea
-        surface_areas = numpy.zeros(len(props["label"]))
-        for index, label in enumerate(props["label"]):
-            # this seems less elegant than you might wish, given that regionprops returns a slice,
-            # but we need to expand the slice out by one voxel in each direction, or surface area freaks out
-            volume = labels[
-                max(props["bbox-0"][index] - 1, 0) : min(
-                    props["bbox-3"][index] + 1, labels.shape[0]
-                ),
-                max(props["bbox-1"][index] - 1, 0) : min(
-                    props["bbox-4"][index] + 1, labels.shape[1]
-                ),
-                max(props["bbox-2"][index] - 1, 0) : min(
-                    props["bbox-5"][index] + 1, labels.shape[2]
-                ),
-            ]
-            volume = volume == label
-            verts, faces, _normals, _values = skimage.measure.marching_cubes(
-                volume,
-                method="lewiner",
-                spacing=spacing,
-                level=0,
-            )
-            surface_areas[index] = skimage.measure.mesh_surface_area(verts, faces)
-
-        features_to_record = {
-            ObjectSizeShapeFeatures.F_VOLUME.value: props["area"],
-            ObjectSizeShapeFeatures.F_SURFACE_AREA.value: surface_areas,
-            ObjectSizeShapeFeatures.F_MAJOR_AXIS_LENGTH.value: props["major_axis_length"],
-            ObjectSizeShapeFeatures.F_MINOR_AXIS_LENGTH.value: props["minor_axis_length"],
-            ObjectSizeShapeFeatures.F_CENTER_X.value: props["centroid-2"],
-            ObjectSizeShapeFeatures.F_CENTER_Y.value: props["centroid-1"],
-            ObjectSizeShapeFeatures.F_CENTER_Z.value: props["centroid-0"],
-            ObjectSizeShapeFeatures.F_BBOX_VOLUME.value: props["bbox_area"],
-            ObjectSizeShapeFeatures.F_MIN_X.value: props["bbox-2"],
-            ObjectSizeShapeFeatures.F_MAX_X.value: props["bbox-5"],
-            ObjectSizeShapeFeatures.F_MIN_Y.value: props["bbox-1"],
-            ObjectSizeShapeFeatures.F_MAX_Y.value: props["bbox-4"],
-            ObjectSizeShapeFeatures.F_MIN_Z.value: props["bbox-0"],
-            ObjectSizeShapeFeatures.F_MAX_Z.value: props["bbox-3"],
-            ObjectSizeShapeFeatures.F_EXTENT.value: props["extent"],
-            ObjectSizeShapeFeatures.F_EULER_NUMBER.value: props["euler_number"],
-            ObjectSizeShapeFeatures.F_EQUIVALENT_DIAMETER.value: props["equivalent_diameter"],
-        }
-        if calculate_advanced:
-            features_to_record[ObjectSizeShapeFeatures.F_SOLIDITY.value] = props["solidity"]
-    return features_to_record, props["label"], nobjects
+    Args:
+        area: Array of object areas
+        perimeter: Array of object perimeters
+        
+    Returns:
+        Tuple of (formfactor, compactness) arrays
+    """
+    formfactor = 4.0 * numpy.pi * area / perimeter ** 2
+    denom = [max(x, 1) for x in 4.0 * numpy.pi * area]
+    compactness = perimeter ** 2 / denom
+    return formfactor, compactness
 
 
+def get_object_radius_features(
+    images: List[NDArray[np.bool_]]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Compute radius features for objects from their binary images.
+    
+    Args:
+        images: List of binary images for each object
+        
+    Returns:
+        Tuple of (max_radius, mean_radius, median_radius) arrays
+    """
+    nobjects = len(images)
+    max_radius = numpy.zeros(nobjects)
+    median_radius = numpy.zeros(nobjects)
+    mean_radius = numpy.zeros(nobjects)
+    
+    for index, mini_image in enumerate(images):
+        # Pad image to assist distance transform
+        mini_image = numpy.pad(mini_image, 1)
+        distances = scipy.ndimage.distance_transform_edt(mini_image)
+        max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            scipy.ndimage.maximum(distances, mini_image)
+        )
+        mean_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            scipy.ndimage.mean(distances, mini_image)
+        )
+        median_radius[index] = centrosome.cpmorphology.median_of_labels(
+            distances, mini_image.astype("int"), [1]
+        )
+    
+    return max_radius, mean_radius, median_radius
 
-def measure_object_size_shape(
-    labels: ObjectSegmentation,
+
+def get_object_zernike_features(
+    labels: NDArray[ObjectLabel],
+    label_indices: NDArray[np.int32],
+    zernike_numbers: List[Tuple[int, int]]
+) -> Dict[Tuple[int, int], NDArray[np.float64]]:
+    """Compute Zernike features for objects.
+    
+    Args:
+        labels: Label matrix
+        label_indices: Array of object label indices
+        zernike_numbers: List of (N, M) Zernike polynomial indices
+        
+    Returns:
+        Dictionary mapping (N, M) tuples to arrays of Zernike coefficients
+    """
+    zf = {}
+    zf_l = centrosome.zernike.zernike(zernike_numbers, labels, label_indices)
+    for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
+        zf[(n, m)] = z
+    return zf
+
+
+def get_object_feret_features(
+    labels: NDArray[ObjectLabel],
+    label_indices: NDArray[np.int32]
+) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Compute Feret diameter features for objects.
+    
+    Args:
+        labels: Label matrix
+        label_indices: Array of object label indices
+        
+    Returns:
+        Tuple of (min_feret_diameter, max_feret_diameter) arrays
+    """
+    if len(label_indices) == 0:
+        return numpy.zeros(0), numpy.zeros(0)
+    
+    chulls, chull_counts = centrosome.cpmorphology.convex_hull(
+        labels, label_indices
+    )
+    min_feret_diameter, max_feret_diameter = centrosome.cpmorphology.feret_diameter(
+        chulls, chull_counts, label_indices
+    )
+    return min_feret_diameter, max_feret_diameter
+
+
+def measure_object_size_shape_2d(
+    labels: NDArray[ObjectLabel],
     desired_properties: List[str],
-    calculate_zernikes: bool = True,
-    spacing: Optional[Tuple] = None
+    calculate_zernikes: bool,
+    spacing: Tuple[float, ...]
 ) -> Tuple[
     Dict[str, Any], # props
-    Tuple[NDArray, NDArray], # formfactor, compactness
-    Tuple[NDArray, NDArray, NDArray], # max, mean, median radius
-    Dict[Tuple[int, int], NDArray], # zernike
-    Tuple[NDArray, NDArray] # feret
+    Tuple[NDArray[np.float64], NDArray[np.float64]], # formfactor, compactness
+    Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]], # max, mean, median radius
+    Dict[Tuple[int, int], NDArray[np.float64]], # zernike
+    Tuple[NDArray[np.float64], NDArray[np.float64]] # feret
 ]:
+    """Compute 2D object size and shape measurements.
+    
+    Args:
+        labels: 2D label matrix
+        desired_properties: List of property names to compute
+        calculate_zernikes: Whether to compute Zernike features
+        spacing: Pixel spacing tuple
+        
+    Returns:
+        Tuple of (props, (formfactor, compactness), (max_r, mean_r, median_r), 
+                  zernike_features, (min_feret, max_feret))
+    """
     label_indices = numpy.unique(labels[labels != 0])
     
     props = skimage.measure.regionprops_table(labels, properties=desired_properties)

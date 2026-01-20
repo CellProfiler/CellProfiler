@@ -37,7 +37,7 @@ import skimage.util
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_library.modules._measureimageskeleton import measure_image_skeleton
-from cellprofiler_library.opts.measureimageskeleton import SkeletonMeasurements
+from cellprofiler_library.opts.measureimageskeleton import TemplateMeasurementFormat
 
 
 
@@ -74,18 +74,25 @@ You can create a morphological skeleton with the
 
         pixels = input_image.pixel_data
 
-        branch_nodes, endpoint_nodes, measurements = measure_image_skeleton(pixels, im_name=self.skeleton_name.value)
+        result = measure_image_skeleton(
+            pixels, 
+            im_name=self.skeleton_name.value,
+            return_visualization_data=self.show_window
+        )
 
-        for object_name, features in measurements.items():
-            if object_name == "Image":
-                for feature_name, value in features.items():
-                    workspace.measurements.add_image_measurement(feature_name, value)
+        if self.show_window:
+            lib_measurements, branch_nodes, endpoint_nodes = result
+        else:
+            lib_measurements = result
 
-        name_branches = SkeletonMeasurements.BRANCHES.value.format(input_image_name)
-        name_endpoints = SkeletonMeasurements.ENDPOINTS.value.format(input_image_name)
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        num_branches = measurements["Image"][name_branches]
-        num_endpoints = measurements["Image"][name_endpoints]
+        name_branches = TemplateMeasurementFormat.BRANCHES % input_image_name
+        name_endpoints = TemplateMeasurementFormat.ENDPOINTS % input_image_name
+
+        num_branches = lib_measurements.image[name_branches]
+        num_endpoints = lib_measurements.image[name_endpoints]
         
         statistics = [[num_branches, num_endpoints]]
 

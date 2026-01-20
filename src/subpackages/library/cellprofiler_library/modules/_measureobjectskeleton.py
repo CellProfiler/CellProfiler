@@ -6,6 +6,8 @@ from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.functions.measurement import calculate_object_skeleton
 from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON
 
+from cellprofiler_library.measurement_model import LibraryMeasurements
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_skeleton(
         object_name:                Annotated[str, Field(description="Name of the object being measured")],
@@ -19,7 +21,7 @@ def measure_object_skeleton(
         intensity_image_pixel_data: Annotated[Optional[Image2DGrayscale], Field(description="Intensity image used for graph relationships")]=None,
         wants_branchpoint_image:    Annotated[bool, Field(description="Return the branchpoint image?")]=False,
         ) -> Tuple[
-            Dict[str, Any],
+            LibraryMeasurements,
             Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
             Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
             Optional[Image2DColor],
@@ -44,12 +46,7 @@ def measure_object_skeleton(
         wants_branchpoint_image
     )
 
-    measurements = {
-        "Image": {},
-        "Object": {
-            object_name: {}
-        }
-    }
+    measurements = LibraryMeasurements()
     
     # Per-object measurements
     feature_map = {
@@ -62,21 +59,21 @@ def measure_object_skeleton(
     for feature_name, values in feature_map.items():
         # Feature name format: ObjectSkeleton_Feature_Image
         full_feature_name = f"{C_OBJSKELETON}_{feature_name}_{image_name}"
-        measurements["Object"][object_name][full_feature_name] = values
+        measurements.add_measurement(object_name, full_feature_name, values)
         
         # Calculate summary statistics
         if len(values) > 0:
-            measurements["Image"][f"Mean_{full_feature_name}"] = numpy.mean(values)
-            measurements["Image"][f"Median_{full_feature_name}"] = numpy.median(values)
-            measurements["Image"][f"StDev_{full_feature_name}"] = numpy.std(values)
-            measurements["Image"][f"Min_{full_feature_name}"] = numpy.min(values)
-            measurements["Image"][f"Max_{full_feature_name}"] = numpy.max(values)
+            measurements.add_image_measurement(f"Mean_{full_feature_name}", numpy.mean(values))
+            measurements.add_image_measurement(f"Median_{full_feature_name}", numpy.median(values))
+            measurements.add_image_measurement(f"StDev_{full_feature_name}", numpy.std(values))
+            measurements.add_image_measurement(f"Min_{full_feature_name}", numpy.min(values))
+            measurements.add_image_measurement(f"Max_{full_feature_name}", numpy.max(values))
         else:
-            measurements["Image"][f"Mean_{full_feature_name}"] = 0.0
-            measurements["Image"][f"Median_{full_feature_name}"] = 0.0
-            measurements["Image"][f"StDev_{full_feature_name}"] = 0.0
-            measurements["Image"][f"Min_{full_feature_name}"] = 0.0
-            measurements["Image"][f"Max_{full_feature_name}"] = 0.0
+            measurements.add_image_measurement(f"Mean_{full_feature_name}", 0.0)
+            measurements.add_image_measurement(f"Median_{full_feature_name}", 0.0)
+            measurements.add_image_measurement(f"StDev_{full_feature_name}", 0.0)
+            measurements.add_image_measurement(f"Min_{full_feature_name}", 0.0)
+            measurements.add_image_measurement(f"Max_{full_feature_name}", 0.0)
 
     return (
         measurements,

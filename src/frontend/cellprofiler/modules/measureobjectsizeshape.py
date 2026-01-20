@@ -344,8 +344,9 @@ module.""".format(
 
             objects = workspace.get_objects(object_name)
 
-            features_to_record = measureobjectsizeshape(
+            lib_measurements = measureobjectsizeshape(
                 objects=objects.dense,
+                object_name=object_name,
                 calculate_advanced=self.calculate_advanced.value,
                 calculate_zernikes=self.calculate_zernikes.value,
                 volumetric=workspace.pipeline.volumetric(),
@@ -354,8 +355,16 @@ module.""".format(
                 else (1.0,) * objects.dimensions,  # TODO: Check this change is OK
             )
 
-            for f, m in features_to_record.items():
-                self.record_measurement(workspace, object_name, f, m)
+            # Unpack LibraryMeasurements into workspace
+            for obj_name, features in lib_measurements.objects.items():
+                for feature_name, values in features.items():
+                    # Extract the feature name without the AreaShape prefix
+                    # since record_measurement adds it back
+                    if feature_name.startswith("AreaShape_"):
+                        f = feature_name[len("AreaShape_"):]
+                    else:
+                        f = feature_name
+                    self.record_measurement(workspace, obj_name, f, values)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

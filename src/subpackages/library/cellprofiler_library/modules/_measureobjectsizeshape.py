@@ -4,6 +4,7 @@ import centrosome
 import centrosome.zernike
 from pydantic import validate_call, ConfigDict, Field
 from cellprofiler_library.types import ObjectLabelsDense
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import (
     measure_object_size_shape_2d,
     measure_object_size_shape_3d
@@ -39,16 +40,28 @@ DEFAULT_INVALID_VALUE_DTYPE = {
     numpy.str_: "",
 }
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measureobjectsizeshape(
     objects:            Annotated[ObjectLabelsDense, Field(description="Object labels in the dense format")],
+    object_name:        Annotated[str, Field(description="Name of the object being measured")],
     calculate_advanced: Annotated[bool, Field(description="Calculate advanced features?")] = True,
     calculate_zernikes: Annotated[bool, Field(description="Calculate zernike features?")] = True,
     volumetric:         Annotated[bool, Field(description="Are the objects volumetric?")] = False,
     spacing:            Annotated[Optional[Tuple], Field(description="Object spacing")] = None,
-) -> Dict[str, Optional[numpy.float_]]:
+) -> LibraryMeasurements:
     """
-    Objects: dense, sparse, ijv, or label objects?
-    For now, we will assume dense
+    Measure object size and shape features.
+    
+    Args:
+        objects: Object labels in the dense format
+        object_name: Name of the object being measured
+        calculate_advanced: Calculate advanced features?
+        calculate_zernikes: Calculate zernike features?
+        volumetric: Are the objects volumetric?
+        spacing: Object spacing
+        
+    Returns:
+        LibraryMeasurements instance with all computed measurements
     """
     # _validate_dense(objects)
 
@@ -70,11 +83,17 @@ def measureobjectsizeshape(
         if calculate_advanced:
             feature_names += [i.value for i in F_ADV_2D]
 
+    measurements = LibraryMeasurements()
+    
     if len(objects[objects != 0]) == 0:
-        data = dict(zip(feature_names, [None] * len(feature_names)))
+        # No objects - return empty measurements
         for ft in feature_names:
-            data[ft] = numpy.zeros((0,))
-        return data
+            measurements.add_measurement(
+                object_name,
+                f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_{ft}",
+                numpy.zeros((0,))
+            )
+        return measurements
 
     if not volumetric:
         desired_properties = [
@@ -167,8 +186,15 @@ def measureobjectsizeshape(
                         )
                     )
 
+    # Convert dictionary to LibraryMeasurements
+    for feature_name, values in features_to_record.items():
+        measurements.add_measurement(
+            object_name,
+            f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_{feature_name}",
+            values
+        )
 
-    return features_to_record
+    return measurements
 
 def _measure_single_labelset(
     labels: numpy.ndarray,

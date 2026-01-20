@@ -350,7 +350,7 @@ The file has the following columns:
             intensity_image = workspace.image_set.get_image(self.intensity_image_name.value, must_be_grayscale=True)
 
         (
-            measurements,
+            lib_measurements,
             edge_graph,
             vertex_graph,
             branchpoint_image
@@ -372,11 +372,11 @@ The file has the following columns:
         m = workspace.measurements
         assert isinstance(m, Measurements)
         
-        for object_name, features in measurements["Object"].items():
+        for object_name, features in lib_measurements.objects.items():
             for feature_name, values in features.items():
                 m.add_measurement(object_name, feature_name, values)
         
-        for feature_name, value in measurements["Image"].items():
+        for feature_name, value in lib_measurements.image.items():
              m.add_image_measurement(feature_name, value)
         #
         # Collect the graph information

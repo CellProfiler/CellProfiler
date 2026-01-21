@@ -351,6 +351,8 @@ previously discarded objects.""".format(
             self.distance.value,
             self.distance_method.value, 
             self.wants_excluded_objects.value,
+            has_pixels,
+            len(objects.indices)
         )
 
 

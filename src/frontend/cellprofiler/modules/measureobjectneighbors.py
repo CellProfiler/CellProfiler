@@ -363,15 +363,13 @@ previously discarded objects.""".format(
         image_set = workspace.image_set
         
         # Record Image Measurements
-        if "Image" in measurements:
-             for feature_name, value in measurements["Image"].items():
-                 m.add_image_measurement(feature_name, value)
+        for feature_name, value in measurements.image.items():
+            m.add_image_measurement(feature_name, value)
         
         # Record Object Measurements
-        if "Object" in measurements:
-            for object_name, features in measurements["Object"].items():
-                for feature_name, data in features.items():
-                    m.add_measurement(object_name, feature_name, data)
+        for object_name, features in measurements.objects.items():
+            for feature_name, data in features.items():
+                m.add_measurement(object_name, feature_name, data)
 
         if len(first_objects) > 0:
             m.add_relate_measurement(
@@ -390,10 +388,10 @@ previously discarded objects.""".format(
         
         # Retrieve data for display
         neighbor_count_feature = self.get_measurement_name(Measurement.NUMBER_OF_NEIGHBORS.value)
-        neighbor_count = measurements["Object"][self.object_name.value][neighbor_count_feature]
+        neighbor_count = measurements.objects[self.object_name.value][neighbor_count_feature]
         
         percent_touching_feature = self.get_measurement_name(Measurement.PERCENT_TOUCHING.value)
-        percent_touching = measurements["Object"][self.object_name.value][percent_touching_feature]
+        percent_touching = measurements.objects[self.object_name.value][percent_touching_feature]
 
         neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0

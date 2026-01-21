@@ -3587,7 +3587,7 @@ class PipelineController(object):
                 module.module_name,
             )
             self.__debug_measurements.add_measurement(
-                "Image", module_error_measurement, failure
+                IMAGE, module_error_measurement, failure
             )
         return failure == 0
 

@@ -4,6 +4,7 @@ from typing import Optional, Tuple, Annotated, Dict, List, Any
 from pydantic import Field, validate_call, ConfigDict
 
 from cellprofiler_library.types import ObjectSegmentation
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectneighbors import (
     DistanceMethod as NeighborsDistanceMethod,
     Measurement as NeighborsMeasurement,
@@ -26,7 +27,7 @@ def measure_object_neighbors(
         distance_method:        Annotated[NeighborsDistanceMethod, Field(description="Method to determine neighbors")], 
         wants_excluded_objects: Annotated[bool, Field(description="Consider objects discarded for touching image border?")]=True,
     ) -> Tuple[
-        Dict[str, Any],
+        LibraryMeasurements,
         Tuple[NDArray[numpy.int_], NDArray[numpy.int_]],
         Optional[NDArray[numpy.int_]],
     ]:
@@ -70,10 +71,7 @@ def measure_object_neighbors(
         else:
              return "_".join((C_NEIGHBORS, feature, neighbors_name, scale))
 
-    measurements = {}
-    
-    # Pack object measurements
-    object_measurements = {}
+    measurements = LibraryMeasurements()
     
     features_and_data = [
         (NeighborsMeasurement.NUMBER_OF_NEIGHBORS.value, neighbor_count),
@@ -87,10 +85,7 @@ def measure_object_neighbors(
 
     for feature_name, data in features_and_data:
         full_name = get_feature_name(feature_name)
-        object_measurements[full_name] = data
-
-    measurements["Object"] = {object_name: object_measurements}
-    measurements["Image"] = {}
+        measurements.add_measurement(object_name, full_name, data)
 
     # Calculate statistics
     for feature_name, data in features_and_data:
@@ -101,16 +96,16 @@ def measure_object_neighbors(
             continue
 
         if len(data) > 0:
-            measurements["Image"][f"Mean_{full_name}"] = float(numpy.mean(data))
-            measurements["Image"][f"Median_{full_name}"] = float(numpy.median(data))
-            measurements["Image"][f"Max_{full_name}"] = float(numpy.max(data))
-            measurements["Image"][f"Min_{full_name}"] = float(numpy.min(data))
-            measurements["Image"][f"StDev_{full_name}"] = float(numpy.std(data))
+            measurements.add_image_measurement(f"Mean_{full_name}", float(numpy.mean(data)))
+            measurements.add_image_measurement(f"Median_{full_name}", float(numpy.median(data)))
+            measurements.add_image_measurement(f"Max_{full_name}", float(numpy.max(data)))
+            measurements.add_image_measurement(f"Min_{full_name}", float(numpy.min(data)))
+            measurements.add_image_measurement(f"StDev_{full_name}", float(numpy.std(data)))
         else:
-            measurements["Image"][f"Mean_{full_name}"] = 0.0
-            measurements["Image"][f"Median_{full_name}"] = 0.0
-            measurements["Image"][f"Max_{full_name}"] = 0.0
-            measurements["Image"][f"Min_{full_name}"] = 0.0
-            measurements["Image"][f"StDev_{full_name}"] = 0.0
+            measurements.add_image_measurement(f"Mean_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Median_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Max_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Min_{full_name}", 0.0)
+            measurements.add_image_measurement(f"StDev_{full_name}", 0.0)
 
     return measurements, (first_objects, second_objects), expanded_labels

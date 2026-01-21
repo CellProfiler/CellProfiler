@@ -1,5 +1,5 @@
 from enum import Enum
-import numpy as np
+import numpy
 from numpy.random.mtrand import RandomState
 import scipy.sparse
 import centrosome.index
@@ -44,7 +44,7 @@ def _validate_dense(dense):
     (see 'indices_from_dense' for more details)
     """
     ndim = len(DENSE_AXIS_NAMES)
-    assert type(dense) == np.ndarray, "dense must be ndarray"
+    assert type(dense) == numpy.ndarray, "dense must be ndarray"
     assert dense.ndim == ndim, \
     f"dense must be {ndim}-dimensional - f{DENSE_AXIS_NAMES}"
 
@@ -72,7 +72,7 @@ def _validate_labels(labels):
     For a 'dense' with shape (2+, 1, 1, 1, y, x), a 'label_set' can be
     constructed (see 'convert_dense_to_label_set' for more details)
     """
-    assert type(labels) == np.ndarray, "labels must be ndarray"
+    assert type(labels) == numpy.ndarray, "labels must be ndarray"
     assert (
         labels.ndim == 2 or
         labels.ndim == 3
@@ -82,7 +82,7 @@ def _validate_sparse(sparse):
     """
     'sparse' is a sparse representation of labelings
     It's either a numpy recarray, or castable as such via
-    'arr.view(np.recarray)'
+    'arr.view(numpy.recarray)'
     where the data types are typed fields who's names are a subset of:
     set('label', 'c', 't', 'z', 'y', 'x')
     and where the data is a 1-dimensional array of tuples, matching the fields
@@ -104,8 +104,8 @@ def _validate_sparse(sparse):
     (i.e. background)
     """
     assert (
-        type(sparse) == np.ndarray or
-        type(sparse) == np.recarray
+        type(sparse) == numpy.ndarray or
+        type(sparse) == numpy.recarray
     ), "sparse must be ndarray or recarray"
 
     assert sparse.ndim == 1, "sparse mut be 1-dimensional"
@@ -143,7 +143,7 @@ def _validate_ijv(ijv):
            [1, 1, 2]],
           dtype=uint16)
     """
-    assert type(ijv) == np.ndarray, "ijv must be ndarray"
+    assert type(ijv) == numpy.ndarray, "ijv must be ndarray"
     assert ijv.ndim == 2, "ijv must be 2-dimensional"
     assert ijv.shape[1] == 3, "ijv must have 3 columns"
 
@@ -172,7 +172,7 @@ def indices_from_dense(dense, validate=True):
     if validate:
         _validate_dense(dense)
 
-    indices = [np.unique(d) for d in dense]
+    indices = [numpy.unique(d) for d in dense]
     indices = [idx[1:] if idx[0] == 0 else idx for idx in indices]
     return indices
 
@@ -181,7 +181,7 @@ def dense_shape_from_sparse(sparse, validate=True):
         _validate_sparse(sparse)
 
     return tuple([
-        np.max(sparse[axis]) + 2
+        numpy.max(sparse[axis]) + 2
         if axis in list(sparse.dtype.fields.keys())
         else 1
         for axis in SPARSE_AXES_FIELDS
@@ -196,11 +196,11 @@ def indices_from_ijv(ijv, validate=True):
         _validate_ijv(ijv)
 
     if len(ijv) == 0:
-        return np.zeros(0, np.int32)
+        return numpy.zeros(0, numpy.int32)
 
-    max_label = np.max(ijv[:, 2])
+    max_label = numpy.max(ijv[:, 2])
 
-    return np.arange(max_label).astype(np.int32) + 1
+    return numpy.arange(max_label).astype(numpy.int32) + 1
 
 def count_from_ijv(ijv, indices=None, validate=True):
     """
@@ -228,9 +228,9 @@ def areas_from_ijv(ijv, indices=None, validate=True):
         indices = indices_from_ijv(ijv, validate=False)
 
     if len(indices) == 0:
-        return np.zeros(0, int)
+        return numpy.zeros(0, int)
 
-    return np.bincount(ijv[:, 2])[indices]
+    return numpy.bincount(ijv[:, 2])[indices]
 
 def downsample_labels(labels, validate=True):
     """
@@ -239,12 +239,12 @@ def downsample_labels(labels, validate=True):
     if validate:
         _validate_labels(labels)
 
-    labels_max = np.max(labels)
+    labels_max = numpy.max(labels)
     if labels_max < 128:
-        return labels.astype(np.int8)
+        return labels.astype(numpy.int8)
     elif labels_max < 32768:
-        return labels.astype(np.int16)
-    return labels.astype(np.int32)
+        return labels.astype(numpy.int16)
+    return labels.astype(numpy.int32)
 
 def convert_dense_to_label_set(dense, indices=None, validate=True):
     """
@@ -278,7 +278,7 @@ def indices_from_labels(labels, validate=True):
     if validate:
         _validate_labels(labels)
 
-    return np.unique(labels[labels != 0])
+    return numpy.unique(labels[labels != 0])
 
 def cast_labels_to_label_set(labels, validate=True):
     """
@@ -312,7 +312,7 @@ def convert_labels_to_dense(labels, validate=True):
             DENSE_AXIS.z.value
         )
 
-    return np.expand_dims(typed_labels, axis=expand_axes)
+    return numpy.expand_dims(typed_labels, axis=expand_axes)
 
 def convert_dense_to_sparse(dense, validate=True):
     if validate:
@@ -324,37 +324,37 @@ def convert_dense_to_sparse(dense, validate=True):
         [full_shape[DENSE_AXIS[n].value] for n in DENSE_SHAPE_NAMES]
     )
 
-    axes_labels = np.array(SPARSE_AXES_FIELDS)
-    axes = axes_labels[np.where(np.array(dense_shape) > 1)]
+    axes_labels = numpy.array(SPARSE_AXES_FIELDS)
+    axes = axes_labels[numpy.where(numpy.array(dense_shape) > 1)]
 
-    compact = np.squeeze(dense)
+    compact = numpy.squeeze(dense)
     if label_dim == 1:
-        compact = np.expand_dims(compact, axis=0)
+        compact = numpy.expand_dims(compact, axis=0)
 
-    coords = np.where(compact != 0)
+    coords = numpy.where(compact != 0)
     labels = compact[coords]
     # no longer need the labels dim
     coords = coords[1:]
 
-    if np.max(compact.shape) < 2 ** 16:
-        coords_dtype = np.uint16
+    if numpy.max(compact.shape) < 2 ** 16:
+        coords_dtype = numpy.uint16
     else:
-        coords_dtype = np.uint32
+        coords_dtype = numpy.uint32
 
     if len(labels) > 0:
-        max_label = np.max(labels)
+        max_label = numpy.max(labels)
         if max_label < 2 ** 8:
-            labels_dtype = np.uint8
+            labels_dtype = numpy.uint8
         elif max_label < 2 ** 16:
-            labels_dtype = np.uint16
+            labels_dtype = numpy.uint16
         else:
-            labels_dtype = np.uint32
+            labels_dtype = numpy.uint32
     else:
-        labels_dtype = np.uint8
+        labels_dtype = numpy.uint8
 
     dtype = [(axis, coords_dtype) for axis in axes]
     dtype.append((SPARSE_FIELD.label.value, labels_dtype))
-    sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+    sparse = numpy.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
 
     return sparse
 
@@ -362,7 +362,7 @@ def convert_ijv_to_sparse(ijv, validate=True):
     if validate:
         _validate_ijv(ijv)
 
-    return np.core.records.fromarrays(
+    return numpy.core.records.fromarrays(
         (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
         [
             (SPARSE_FIELD.y.value, ijv.dtype),
@@ -375,7 +375,7 @@ def convert_sparse_to_ijv(sparse, validate=True):
     if validate:
         _validate_sparse(sparse)
 
-    return np.column_stack([sparse[axis] for axis in (
+    return numpy.column_stack([sparse[axis] for axis in (
         SPARSE_FIELD.y.value, SPARSE_FIELD.x.value, SPARSE_FIELD.label.value)
     ])
 
@@ -413,7 +413,7 @@ def convert_ijv_to_label_set(ijv, dense_shape=None, validate=True):
     return label_set
 
 def convert_label_set_to_ijv(label_set, validate=True):
-    return np.concatenate(
+    return numpy.concatenate(
         [convert_labels_to_ijv(l[0], validate) for l in label_set],
         axis=0
     )
@@ -432,8 +432,8 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
         if dense_shape is None:
             dense_shape = tuple([1 for _ in range(len(DENSE_SHAPE_NAMES))])
 
-        dense = np.expand_dims(
-            np.zeros(dense_shape, np.uint8),
+        dense = numpy.expand_dims(
+            numpy.zeros(dense_shape, numpy.uint8),
             axis=DENSE_AXIS.label_idx.value
         )
 
@@ -459,8 +459,8 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     labels = sparse[SPARSE_FIELD.label.value]
     lexsort_columns.insert(0, labels)
 
-    sort_order = np.lexsort(lexsort_columns)
-    n_labels = np.max(labels)
+    sort_order = numpy.lexsort(lexsort_columns)
+    n_labels = numpy.max(labels)
     #
     # Find the first of a run that's different from the rest
     #
@@ -470,7 +470,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     )
     for column in available_columns[1:]:
         mask = mask | (column[sort_order[:-1]] != column[sort_order[1:]])
-    breaks = np.hstack(([0], np.where(mask)[0] + 1, [len(labels)]))
+    breaks = numpy.hstack(([0], numpy.where(mask)[0] + 1, [len(labels)]))
     firsts = breaks[:-1]
     counts = breaks[1:] - firsts
     #
@@ -480,14 +480,14 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     firsts = firsts[mask]
     counts = counts[mask]
     if len(counts) == 0:
-        dense = np.zeros([1] + list(dense_shape), labels.dtype)
+        dense = numpy.zeros([1] + list(dense_shape), labels.dtype)
         dense[tuple([0] + positional_columns)] = labels
         return dense, indices_from_dense(dense, validate=False)
     #
     # There are n * n-1 pairs for each coordinate (n = # labels)
     # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
     #
-    pairs = centrosome.index.all_pairs(np.max(counts))
+    pairs = centrosome.index.all_pairs(numpy.max(counts))
     pair_counts = counts * (counts - 1)
     #
     # Create an indexer for the inputs (indexes) and for the outputs
@@ -507,11 +507,11 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     #
     # And sort these so that we get consecutive lists for each
     #
-    pair_sort_order = np.lexsort((second, first))
+    pair_sort_order = numpy.lexsort((second, first))
     #
     # Eliminate dupes
     #
-    to_keep = np.hstack(
+    to_keep = numpy.hstack(
         ([True], (first[1:] != first[:-1]) | (second[1:] != second[:-1]))
     )
     to_keep = to_keep & (first != second)
@@ -525,30 +525,30 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # its application to timetabling problems", The Computer Journal, 10(1)
     # p 85 (1967)
     #
-    overlap_counts = np.bincount(first.astype(np.int32))
+    overlap_counts = numpy.bincount(first.astype(numpy.int32))
     #
     # The index to the i'th label's stuff
     #
-    indexes = np.cumsum(overlap_counts) - overlap_counts
+    indexes = numpy.cumsum(overlap_counts) - overlap_counts
     #
     # A vector of a current color per label. All non-overlapping
     # objects are assigned to plane 1
     #
-    v_color = np.ones(n_labels + 1, int)
+    v_color = numpy.ones(n_labels + 1, int)
     v_color[0] = 0
     #
     # Clear all overlapping objects
     #
-    v_color[np.unique(first)] = 0
+    v_color[numpy.unique(first)] = 0
     #
     # The processing order is from most overlapping to least
     #
-    ol_labels = np.where(overlap_counts > 0)[0]
-    processing_order = np.lexsort((ol_labels, overlap_counts[ol_labels]))
+    ol_labels = numpy.where(overlap_counts > 0)[0]
+    processing_order = numpy.lexsort((ol_labels, overlap_counts[ol_labels]))
 
     for index in ol_labels[processing_order]:
         neighbors = second[indexes[index] : indexes[index] + overlap_counts[index]]
-        colors = np.unique(v_color[neighbors])
+        colors = numpy.unique(v_color[neighbors])
         if colors[0] == 0:
             if len(colors) == 1:
                 # all unassigned - put self in group 1
@@ -559,7 +559,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
                 colors = colors[1:]
         # Match a range against the colors array - the first place
         # they don't match is the first color we can use
-        crange = np.arange(1, len(colors) + 1)
+        crange = numpy.arange(1, len(colors) + 1)
         misses = crange[colors != crange]
         if len(misses):
             color = misses[0]
@@ -571,10 +571,10 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # Create the dense matrix by using the color to address the
     # 5-d hyperplane into which we place each label
     #
-    dense = np.zeros([np.max(v_color)] + list(dense_shape), labels.dtype)
+    dense = numpy.zeros([numpy.max(v_color)] + list(dense_shape), labels.dtype)
     slices = tuple([v_color[labels] - 1] + positional_columns)
     dense[slices] = labels
-    indices = [np.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
+    indices = [numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
     return dense, indices
 
@@ -597,7 +597,7 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
     between 'labels' matrices in the 'label_set'
     """
     if validate:
-        assert type(colors) == np.ndarray, "'colors' must be ndarray"
+        assert type(colors) == numpy.ndarray, "'colors' must be ndarray"
         assert (
             colors.ndim == 2 and
             colors.shape[1] == 3
@@ -615,11 +615,11 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
         (centrosome.outline.outline(label), indexes)
         for label, indexes in label_set
     ]
-    rgb_image = np.zeros(list(label_outline_set[0][0].shape) + [3], np.float32)
+    rgb_image = numpy.zeros(list(label_outline_set[0][0].shape) + [3], numpy.float32)
     #
     # Find out how many unique labels in each
     #
-    counts = [np.sum(np.unique(l) != 0) for l, _ in label_outline_set]
+    counts = [numpy.sum(numpy.unique(l) != 0) for l, _ in label_outline_set]
     if len(counts) == 1 and counts[0] == 0:
         return rgb_image
 
@@ -627,26 +627,26 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
         # Have to color 2 planes using the same color!
         # There's some chance that overlapping objects will get
         # the same color. Give me more colors to work with please.
-        colors = np.vstack([colors] * (1 + len(label_outline_set) // len(colors)))
+        colors = numpy.vstack([colors] * (1 + len(label_outline_set) // len(colors)))
     r = RandomState()
     r.seed(random_seed)
-    alpha = np.zeros(label_outline_set[0][0].shape, np.float32)
-    order = np.lexsort([counts])
+    alpha = numpy.zeros(label_outline_set[0][0].shape, numpy.float32)
+    order = numpy.lexsort([counts])
 
     for idx, i in enumerate(order):
         max_available = len(colors) / (len(label_outline_set) - idx)
         ncolors = min(counts[i], max_available)
         my_colors = colors[:ncolors]
         colors = colors[ncolors:]
-        my_colors = my_colors[r.permutation(np.arange(ncolors))]
+        my_colors = my_colors[r.permutation(numpy.arange(ncolors))]
         my_labels, indexes = label_outline_set[i]
-        color_idx = np.zeros(np.max(indexes) + 1, int)
-        color_idx[indexes] = np.arange(len(indexes)) % ncolors
+        color_idx = numpy.zeros(numpy.max(indexes) + 1, int)
+        color_idx[indexes] = numpy.arange(len(indexes)) % ncolors
         rgb_image[my_labels != 0, :] += my_colors[
             color_idx[my_labels[my_labels != 0]], :
         ]
         alpha[my_labels != 0] += 1
-    rgb_image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
+    rgb_image[alpha > 0, :] /= alpha[alpha > 0][:, numpy.newaxis]
 
     return rgb_image
 
@@ -666,12 +666,12 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
         _validate_labels(parent_labels)
         _validate_labels(child_labels)
 
-    parent_count = np.max(parent_labels)
-    child_count = np.max(child_labels)
+    parent_count = numpy.max(parent_labels)
+    child_count = numpy.max(child_labels)
     #
     # If the labels are different shapes, crop to shared shape.
     #
-    common_shape = np.minimum(parent_labels.shape, child_labels.shape)
+    common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
 
     if parent_labels.ndim == 3:
         parent_labels = parent_labels[
@@ -688,7 +688,7 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
     # Only look at points that are labeled in parent and child
     #
     not_zero = (parent_labels > 0) & (child_labels > 0)
-    not_zero_count = np.sum(not_zero)
+    not_zero_count = numpy.sum(not_zero)
 
     #
     # each row (axis = 0) is a parent
@@ -696,7 +696,7 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
     #
     return scipy.sparse.coo_matrix(
         (
-            np.ones((not_zero_count,)),
+            numpy.ones((not_zero_count,)),
             (parent_labels[not_zero], child_labels[not_zero]),
         ),
         shape=(parent_count + 1, child_count + 1),
@@ -718,25 +718,25 @@ def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
         _validate_ijv(parent_ijv)
         _validate_ijv(child_ijv)
 
-    parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
-    child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
+    parent_count = 0 if (parent_ijv.shape[0] == 0) else numpy.max(parent_ijv[:, 2])
+    child_count = 0 if (child_ijv.shape[0] == 0) else numpy.max(child_ijv[:, 2])
 
     if parent_count == 0 or child_count == 0:
-        return np.zeros((parent_count + 1, child_count + 1), int)
+        return numpy.zeros((parent_count + 1, child_count + 1), int)
 
-    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
-    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
+    dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
+    dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
     parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
-        np.uint64
+        numpy.uint64
     )
-    child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
+    child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
     parent_matrix = scipy.sparse.coo_matrix(
-        (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
+        (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
         shape=(parent_count + 1, dim_i * dim_j),
     )
     child_matrix = scipy.sparse.coo_matrix(
-        (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
+        (numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
         shape=(dim_i * dim_j, child_count + 1),
     )
     # I surely do not understand the sparse code.  Converting both
@@ -749,6 +749,6 @@ def center_of_labels_mass(labels, validate=True):
         _validate_labels(labels)
 
     indices = indices_from_labels(labels)
-    return np.array(
-        scipy.ndimage.center_of_mass(np.ones_like(labels), labels, indices)
+    return numpy.array(
+        scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, indices)
     )

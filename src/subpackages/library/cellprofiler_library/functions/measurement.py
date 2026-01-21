@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 import scipy
 import centrosome
 import centrosome.cpmorphology
@@ -10,7 +10,7 @@ from typing import Tuple
 import numpy
 import skimage
 
-from cellprofiler_library.opts import measureimageoverlap as mio
+from cellprofiler_library.opts import measureimageoverlap
 from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
 from cellprofiler_library.functions.segmentation import indices_from_ijv
 from cellprofiler_library.functions.segmentation import count_from_ijv
@@ -26,14 +26,14 @@ def measure_image_overlap_statistics(
     mask=None,
 ):
     # Check that the inputs are binary
-    if not np.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
+    if not numpy.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
     
-    if not np.array_equal(test_image, test_image.astype(bool)):
+    if not numpy.array_equal(test_image, test_image.astype(bool)):
         raise ValueError("test_image is not a binary image")
 
     if mask is None:
-        mask = np.ones_like(ground_truth_image, bool)
+        mask = numpy.ones_like(ground_truth_image, bool)
 
     orig_shape = ground_truth_image.shape
     
@@ -63,13 +63,13 @@ def measure_image_overlap_statistics(
 
     true_negatives[~mask] = False
 
-    false_positive_count = np.sum(false_positives)
+    false_positive_count = numpy.sum(false_positives)
 
-    true_positive_count = np.sum(true_positives)
+    true_positive_count = numpy.sum(true_positives)
 
-    false_negative_count = np.sum(false_negatives)
+    false_negative_count = numpy.sum(false_negatives)
 
-    true_negative_count = np.sum(true_negatives)
+    true_negative_count = numpy.sum(true_negatives)
 
     labeled_pixel_count = true_positive_count + false_positive_count
 
@@ -110,11 +110,11 @@ def measure_image_overlap_statistics(
         true_positive_rate = float(true_positive_count) / float(true_count)
 
     ground_truth_labels, ground_truth_count = scipy.ndimage.label(
-        ground_truth_image & mask, np.ones((3, 3), bool)
+        ground_truth_image & mask, numpy.ones((3, 3), bool)
     )
 
     test_labels, test_count = scipy.ndimage.label(
-        test_image & mask, np.ones((3, 3), bool)
+        test_image & mask, numpy.ones((3, 3), bool)
     )
 
     rand_index, adjusted_rand_index = compute_rand_index(
@@ -181,8 +181,8 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
 
     returns a tuple of the Rand Index and the adjusted Rand Index
     """
-    ground_truth_labels = ground_truth_labels[mask].astype(np.uint32)
-    test_labels = test_labels[mask].astype(np.uint32)
+    ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint32)
+    test_labels = test_labels[mask].astype(numpy.uint32)
     if len(test_labels) > 0:
         #
         # Create a sparse matrix of the pixel labels in each of the sets
@@ -192,7 +192,7 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
         # test set.
         #
         N_ij = scipy.sparse.coo_matrix(
-            (np.ones(len(test_labels)), (ground_truth_labels, test_labels))
+            (numpy.ones(len(test_labels)), (ground_truth_labels, test_labels))
         ).toarray()
 
         def choose2(x):
@@ -204,7 +204,7 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
         # pixel pairs are in the same set in both groups. The number of
         # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
         #
-        A = np.sum(choose2(N_ij))
+        A = numpy.sum(choose2(N_ij))
         #
         # B is the sum of pixels that were classified differently by both
         # sets. But the easier calculation is to find A, C and D and get
@@ -217,10 +217,10 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
         #
         # We do the similar calculation for D
         #
-        N_i = np.sum(N_ij, 1)
-        N_j = np.sum(N_ij, 0)
-        C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
-        D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
+        N_i = numpy.sum(N_ij, 1)
+        N_j = numpy.sum(N_ij, 0)
+        C = numpy.sum((N_i[:, numpy.newaxis] - N_ij) * N_ij) / 2
+        D = numpy.sum((N_j[numpy.newaxis, :] - N_ij) * N_ij) / 2
         total = choose2(len(test_labels))
         # an astute observer would say, why bother computing A and B
         # when all we need is A+B and C, D and the total can be used to do
@@ -230,14 +230,14 @@ def compute_rand_index(test_labels, ground_truth_labels, mask):
         #
         # Compute adjusted Rand Index
         #
-        expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
-        max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
+        expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
+        max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
 
         adjusted_rand_index = (A * total - expected_index) / (
             max_index - expected_index
         )
     else:
-        rand_index = adjusted_rand_index = np.nan
+        rand_index = adjusted_rand_index = numpy.nan
     return rand_index, adjusted_rand_index
 
 
@@ -245,7 +245,7 @@ def compute_earth_movers_distance(
     ground_truth_image,
     test_image,
     mask=None,
-    decimation_method: mio.DM = mio.DM.KMEANS,
+    decimation_method: measureimageoverlap.DM = measureimageoverlap.DM.KMEANS,
     max_distance: int = 250,
     max_points: int = 250,
     penalize_missing: bool = False,
@@ -260,14 +260,14 @@ def compute_earth_movers_distance(
     """
 
     # Check that the inputs are binary
-    if not np.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
+    if not numpy.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
     
-    if not np.array_equal(test_image, test_image.astype(bool)):
+    if not numpy.array_equal(test_image, test_image.astype(bool)):
         raise ValueError("test_image is not a binary image")
 
     if mask is None:
-        mask = np.ones_like(ground_truth_image, bool)
+        mask = numpy.ones_like(ground_truth_image, bool)
 
     # Covert 3D image to 2D long
     if ground_truth_image.ndim > 2:
@@ -281,7 +281,7 @@ def compute_earth_movers_distance(
 
     # ground truth labels
     dest_labels = scipy.ndimage.label(
-        ground_truth_image & mask, np.ones((3, 3), bool)
+        ground_truth_image & mask, numpy.ones((3, 3), bool)
     )[0]
     dest_labelset = cast_labels_to_label_set(dest_labels)
     dest_ijv = convert_labels_to_ijv(dest_labels, validate=False)
@@ -293,7 +293,7 @@ def compute_earth_movers_distance(
 
     # test labels
     src_labels = scipy.ndimage.label(
-        test_image & mask, np.ones((3, 3), bool)
+        test_image & mask, numpy.ones((3, 3), bool)
     )[0]
     src_labelset = cast_labels_to_label_set(src_labels)
     src_ijv = convert_labels_to_ijv(src_labels, validate=False)
@@ -312,13 +312,13 @@ def compute_earth_movers_distance(
     ):
         if lef_count == 0:
             if penalize_missing:
-                return np.sum(right_areas) * max_distance
+                return numpy.sum(right_areas) * max_distance
             else:
                 return 0
-    if decimation_method == mio.DM.KMEANS:
+    if decimation_method == measureimageoverlap.DM.KMEANS:
         isrc, jsrc = get_kmeans_points(src_ijv, dest_ijv, max_points)
         idest, jdest = isrc, jsrc
-    elif decimation_method == mio.DM.SKELETON:
+    elif decimation_method == measureimageoverlap.DM.SKELETON:
         isrc, jsrc = get_skeleton_points(src_labelset, src_labels.shape, max_points)
         idest, jdest = get_skeleton_points(dest_labelset, dest_labels.shape, max_points)
     else:
@@ -331,16 +331,16 @@ def compute_earth_movers_distance(
         )
     ]
     ioff, joff = [
-        src[:, np.newaxis] - dest[np.newaxis, :]
+        src[:, numpy.newaxis] - dest[numpy.newaxis, :]
         for src, dest in ((isrc, idest), (jsrc, jdest))
     ]
-    c = np.sqrt(ioff * ioff + joff * joff).astype(np.int32)
+    c = numpy.sqrt(ioff * ioff + joff * joff).astype(numpy.int32)
     c[c > max_distance] = max_distance
     extra_mass_penalty = max_distance if penalize_missing else 0
 
     emd = centrosome.fastemd.emd_hat_int32(
-        src_weights.astype(np.int32),
-        dest_weights.astype(np.int32),
+        src_weights.astype(numpy.int32),
+        dest_weights.astype(numpy.int32),
         c,
         extra_mass_penalty=extra_mass_penalty,
     )
@@ -348,7 +348,7 @@ def compute_earth_movers_distance(
 
 
 def get_labels_mask(labelset, shape):
-    labels_mask = np.zeros(shape, bool)
+    labels_mask = numpy.zeros(shape, bool)
     for labels, indexes in labelset:
         labels_mask = labels_mask | labels > 0
     return labels_mask
@@ -356,11 +356,11 @@ def get_labels_mask(labelset, shape):
 
 def get_skeleton_points(labelset, shape, max_points):
     """Get points by skeletonizing the objects and decimating"""
-    total_skel = np.zeros(shape, bool)
+    total_skel = numpy.zeros(shape, bool)
 
     for labels, indexes in labelset:
         colors = centrosome.cpmorphology.color_labels(labels)
-        for color in range(1, np.max(colors) + 1):
+        for color in range(1, numpy.max(colors) + 1):
             labels_mask = colors == color
             skel = centrosome.cpmorphology.skeletonize(
                 labels_mask,
@@ -369,37 +369,37 @@ def get_skeleton_points(labelset, shape, max_points):
             )
             total_skel = total_skel | skel
 
-    n_pts = np.sum(total_skel)
+    n_pts = numpy.sum(total_skel)
 
     if n_pts == 0:
-        return np.zeros(0, np.int32), np.zeros(0, np.int32)
+        return numpy.zeros(0, numpy.int32), numpy.zeros(0, numpy.int32)
 
-    i, j = np.where(total_skel)
+    i, j = numpy.where(total_skel)
 
     if n_pts > max_points:
         #
         # Decimate the skeleton by finding the branchpoints in the
         # skeleton and propagating from those.
         #
-        markers = np.zeros(total_skel.shape, np.int32)
+        markers = numpy.zeros(total_skel.shape, numpy.int32)
         branchpoints = centrosome.cpmorphology.branchpoints(
             total_skel
         ) | centrosome.cpmorphology.endpoints(total_skel)
-        markers[branchpoints] = np.arange(np.sum(branchpoints)) + 1
+        markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
         #
         # We compute the propagation distance to that point, then impose
         # a slightly arbitrary order to get an unambiguous ordering
         # which should number the pixels in a skeleton branch monotonically
         #
         ts_labels, distances = centrosome.propagate.propagate(
-            np.zeros(markers.shape), markers, total_skel, 1
+            numpy.zeros(markers.shape), markers, total_skel, 1
         )
-        order = np.lexsort((j, i, distances[i, j], ts_labels[i, j]))
+        order = numpy.lexsort((j, i, distances[i, j], ts_labels[i, j]))
         #
         # Get a linear space of self.max_points elements with bounds at
         # 0 and len(order)-1 and use that to select the points.
         #
-        order = order[np.linspace(0, len(order) - 1, max_points).astype(int)]
+        order = order[numpy.linspace(0, len(order) - 1, max_points).astype(int)]
         return i[order], j[order]
 
     return i, j
@@ -416,16 +416,16 @@ def get_kmeans_points(src_ijv, dest_ijv, max_points):
             of j coordinates
     """
 
-    ijv = np.vstack((src_ijv, dest_ijv))
+    ijv = numpy.vstack((src_ijv, dest_ijv))
     if len(ijv) <= max_points:
         return ijv[:, 0], ijv[:, 1]
-    random_state = np.random.RandomState()
+    random_state = numpy.random.RandomState()
     random_state.seed(ijv.astype(int).flatten())
     kmeans = KMeans(n_clusters=max_points, tol=2, random_state=random_state)
     kmeans.fit(ijv[:, :2])
     return (
-        kmeans.cluster_centers_[:, 0].astype(np.uint32),
-        kmeans.cluster_centers_[:, 1].astype(np.uint32),
+        kmeans.cluster_centers_[:, 0].astype(numpy.uint32),
+        kmeans.cluster_centers_[:, 1].astype(numpy.uint32),
     )
 
 
@@ -438,8 +438,8 @@ def get_weights(i, j, labels_mask):
     #
     # Create a mapping of chosen points to their index in the i,j array
     #
-    total_skel = np.zeros(labels_mask.shape, int)
-    total_skel[i, j] = np.arange(1, len(i) + 1)
+    total_skel = numpy.zeros(labels_mask.shape, int)
+    total_skel[i, j] = numpy.arange(1, len(i) + 1)
     #
     # Compute the distance from each chosen point to all others in image,
     # return the nearest point.
@@ -452,13 +452,13 @@ def get_weights(i, j, labels_mask):
     #
     ii, jj = [x[labels_mask] for x in (ii, jj)]
     if len(ii) == 0:
-        return np.zeros(0, np.int32)
+        return numpy.zeros(0, numpy.int32)
     #
     # Use total_skel to look up the indices of the chosen points and
     # bincount the indices.
     #
-    result = np.zeros(len(i), np.int32)
-    bc = np.bincount(total_skel[ii, jj])[1:]
+    result = numpy.zeros(len(i), numpy.int32)
+    bc = numpy.bincount(total_skel[ii, jj])[1:]
     result[: len(bc)] = bc
     return result
 

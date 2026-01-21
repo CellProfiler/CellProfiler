@@ -3021,6 +3021,10 @@ def measure_object_neighbors(
         distance_value:int, 
         distance_method: NeighborsDistanceMethod, 
         wants_excluded_objects: bool=True,
+        kept_label_has_pixels: Optional[NDArray[numpy.bool_]]=None,
+        nkept_objects: Optional[int]=None,
+        kept_label_set: Optional[ObjectLabelSet]=None,
+        kept_label_ijv: Optional[NDArray[numpy.int_]]=None,
         ) -> Tuple[
         NDArray[numpy.float_],
         NDArray[numpy.int_],
@@ -3036,23 +3040,34 @@ def measure_object_neighbors(
     labels: ObjectSegmentation = objects_small_removed_segmented.copy()
     neighbor_labels: ObjectSegmentation = neighbor_small_removed_segmented.copy()
     
-    kept_label_set = cast_labels_to_label_set(kept_labels)
-    neighbor_kept_label_set = cast_labels_to_label_set(neighbor_kept_labels)
-    kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
-    has_pixels = areas_from_ijv(kept_label_ijv) > 0
+    # nkept_objects <-- (kept_label_ijv <-- (kept_label_set <-- (kept_labels))
+    if nkept_objects is None:
+        if kept_label_ijv is None:
+            if kept_label_set is None:
+                kept_label_set = cast_labels_to_label_set(kept_labels)
+            kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
+        nkept_objects = len(indices_from_ijv(kept_label_ijv, validate=False))
+
+    # kept_label_has_pixels <-- (kept_label_ijv <-- (kept_label_set <-- (kept_labels)))
+    if kept_label_has_pixels is None:
+        if kept_label_ijv is None:
+            if kept_label_set is None:
+                kept_label_set = cast_labels_to_label_set(kept_labels)
+            kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
+        kept_label_has_pixels = areas_from_ijv(kept_label_ijv) > 0
+
     if not wants_excluded_objects:
         # Remove labels not present in kept segmentation while preserving object IDs.
         mask = neighbor_kept_labels > 0
         neighbor_labels[~mask] = 0
 
     nneighbors = numpy.max(neighbor_labels)
-    nkept_objects = len(indices_from_ijv(kept_label_ijv, validate=False))
     nobjects = numpy.max(labels)
 
     _, object_numbers = relate_labels(labels, kept_labels)
     if neighbors_are_objects:
         neighbor_numbers = object_numbers
-        neighbor_has_pixels = has_pixels
+        neighbor_has_pixels = kept_label_has_pixels
     else:
         _, neighbor_numbers = relate_labels(neighbor_labels, neighbor_kept_labels)
         neighbor_has_pixels = numpy.bincount(neighbor_kept_labels.ravel())[1:] > 0
@@ -3137,7 +3152,7 @@ def measure_object_neighbors(
         #
         # Have to recompute nearest
         #
-        first_object_number, second_object_number = get_first_and_second_object_numbers(nkept_objects, ocenters, ncenters, has_pixels, neighbor_has_pixels, object_indexes, neighbor_indexes, neighbors_are_objects)
+        first_object_number, second_object_number = get_first_and_second_object_numbers(nkept_objects, ocenters, ncenters, kept_label_has_pixels, neighbor_has_pixels, object_indexes, neighbor_indexes, neighbors_are_objects)
 
     else:
         
@@ -3169,9 +3184,9 @@ def measure_object_neighbors(
     # the final number set.
     #
     neighbor_count = neighbor_count[object_indexes]
-    neighbor_count[~has_pixels] = 0
+    neighbor_count[~kept_label_has_pixels] = 0
     percent_touching = percent_touching[object_indexes]
-    percent_touching[~has_pixels] = 0
+    percent_touching[~kept_label_has_pixels] = 0
 
     return (
         neighbor_count,

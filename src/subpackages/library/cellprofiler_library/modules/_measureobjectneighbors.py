@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import Optional, Tuple, Annotated, Dict, List, Any
 from pydantic import Field, validate_call, ConfigDict
 
-from cellprofiler_library.types import ObjectSegmentation
+from cellprofiler_library.types import ObjectSegmentation, ObjectLabelSet
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectneighbors import (
     DistanceMethod as NeighborsDistanceMethod,
@@ -26,6 +26,10 @@ def measure_object_neighbors(
         distance_value:         Annotated[int, Field(description="Neighbor distance")],
         distance_method:        Annotated[NeighborsDistanceMethod, Field(description="Method to determine neighbors")], 
         wants_excluded_objects: Annotated[bool, Field(description="Consider objects discarded for touching image border?")]=True,
+        kept_label_has_pixels:  Optional[NDArray[numpy.bool_]]=None,
+        nkept_objects:          Optional[int]=None,
+        kept_label_set:         Optional[ObjectLabelSet]=None,
+        kept_label_ijv:         Optional[NDArray[numpy.int_]]=None,
     ) -> Tuple[
         LibraryMeasurements,
         Tuple[NDArray[numpy.int_], NDArray[numpy.int_]],
@@ -52,6 +56,10 @@ def measure_object_neighbors(
         distance_value,
         distance_method, 
         wants_excluded_objects,
+        kept_label_has_pixels,
+        nkept_objects,
+        kept_label_set,
+        kept_label_ijv,
     )
 
     # Determine scale string

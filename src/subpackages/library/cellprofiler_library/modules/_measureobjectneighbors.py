@@ -12,6 +12,7 @@ from cellprofiler_library.opts.measureobjectneighbors import (
     C_NEIGHBORS
 )
 from cellprofiler_library.functions.measurement import measure_object_neighbors as _measure_object_neighbors
+from cellprofiler_library.functions.segmentation import cast_labels_to_label_set, convert_label_set_to_ijv, indices_from_ijv, areas_from_ijv
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_neighbors(
@@ -25,11 +26,9 @@ def measure_object_neighbors(
         dimensions:             Annotated[int, Field(description="Use 2 for 2D and 3 for 3D")],
         distance_value:         Annotated[int, Field(description="Neighbor distance")],
         distance_method:        Annotated[NeighborsDistanceMethod, Field(description="Method to determine neighbors")], 
+        kept_label_has_pixels:  Annotated[NDArray[numpy.bool_], Field(description="Array of booleans indicating whether each object has any pixels. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
+        nkept_objects:          Annotated[int, Field(description="Number of objects in the segmentation that are of interest (excluding objects that have been discarded for touching image border)")],
         wants_excluded_objects: Annotated[bool, Field(description="Consider objects discarded for touching image border?")]=True,
-        kept_label_has_pixels:  Optional[NDArray[numpy.bool_]]=None,
-        nkept_objects:          Optional[int]=None,
-        kept_label_set:         Optional[ObjectLabelSet]=None,
-        kept_label_ijv:         Optional[NDArray[numpy.int_]]=None,
     ) -> Tuple[
         LibraryMeasurements,
         Tuple[NDArray[numpy.int_], NDArray[numpy.int_]],
@@ -55,11 +54,9 @@ def measure_object_neighbors(
         dimensions, 
         distance_value,
         distance_method, 
-        wants_excluded_objects,
         kept_label_has_pixels,
         nkept_objects,
-        kept_label_set,
-        kept_label_ijv,
+        wants_excluded_objects,
     )
 
     # Determine scale string
@@ -117,3 +114,19 @@ def measure_object_neighbors(
             measurements.add_image_measurement(f"StDev_{full_name}", 0.0)
 
     return measurements, (first_objects, second_objects), expanded_labels
+
+def get_nkept_objects(
+    kept_labels: Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects")],
+    ) -> int:
+    """This is a utility/helper function for the module which returns the number of objects in the segmentation"""
+    kept_label_set = cast_labels_to_label_set(kept_labels)
+    kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
+    return len(indices_from_ijv(kept_label_ijv, validate=False))
+
+def get_kept_label_has_pixels(
+    kept_labels: Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects")],
+    ) -> NDArray[numpy.bool_]:
+    """This is a utility/helper function for the module which returns an array of booleans indicating whether each object has any pixels"""
+    kept_label_set = cast_labels_to_label_set(kept_labels)
+    kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
+    return areas_from_ijv(kept_label_ijv) > 0

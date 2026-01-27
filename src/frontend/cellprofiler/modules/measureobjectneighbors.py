@@ -94,33 +94,6 @@ from cellprofiler_library.types import ObjectSegmentation, ObjectLabel
 from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, areas_from_ijv, cast_labels_to_label_set, indices_from_ijv
 from cellprofiler_library.functions.object_processing import relate_labels
 from cellprofiler_library.modules._measureobjectneighbors import measure_object_neighbors
-# DistanceMethod.ADJACENT = "Adjacent"
-# DistanceMethod.EXPAND = "Expand until adjacent"
-# DistanceMethod.WITHIN = "Within a specified distance"
-# D_ALL = [DistanceMethod.ADJACENT, DistanceMethod.EXPAND, DistanceMethod.WITHIN]
-
-# Measurement.NUMBER_OF_NEIGHBORS = "NumberOfNeighbors"
-# Measurement.PERCENT_TOUCHING = "PercentTouching"
-# Measurement.FIRST_CLOSEST_OBJECT_NUMBER = "FirstClosestObjectNumber"
-# Measurement.FIRST_CLOSEST_DISTANCE = "FirstClosestDistance"
-# Measurement.SECOND_CLOSEST_OBJECT_NUMBER = "SecondClosestObjectNumber"
-# Measurement.SECOND_CLOSEST_DISTANCE = "SecondClosestDistance"
-# Measurement.ANGLE_BETWEEN_NEIGHBORS = "AngleBetweenNeighbors"
-# M_ALL = [
-#     Measurement.NUMBER_OF_NEIGHBORS,
-#     Measurement.PERCENT_TOUCHING,
-#     Measurement.FIRST_CLOSEST_OBJECT_NUMBER,
-#     Measurement.FIRST_CLOSEST_DISTANCE,
-#     Measurement.SECOND_CLOSEST_OBJECT_NUMBER,
-#     Measurement.SECOND_CLOSEST_DISTANCE,
-#     Measurement.ANGLE_BETWEEN_NEIGHBORS,
-# ]
-
-# C_NEIGHBORS = "Neighbors"
-
-# MeasurementScale.EXPANDED = "Expanded"
-# MeasurementScale.ADJACENT = "Adjacent"
-
 
 class MeasureObjectNeighbors(Module):
     module_name = "MeasureObjectNeighbors"
@@ -320,20 +293,17 @@ previously discarded objects.""".format(
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        # labels: ObjectSegmentation = objects.small_removed_segmented
         objects_small_removed_segmented: ObjectSegmentation = objects.small_removed_segmented
         kept_labels: ObjectSegmentation = objects.segmented
         assert isinstance(objects, Objects)
         has_pixels = objects.areas > 0
 
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
-        # neighbor_labels: ObjectSegmentation = neighbor_objects.small_removed_segmented
         neighbor_small_removed_segmented: ObjectSegmentation = neighbor_objects.small_removed_segmented
         neighbor_kept_labels: ObjectSegmentation = neighbor_objects.segmented
         assert isinstance(neighbor_objects, Objects)
        
         dimensions = len(objects.shape)
-
 
         (
             measurements,
@@ -350,9 +320,9 @@ previously discarded objects.""".format(
             dimensions, 
             self.distance.value,
             self.distance_method.value, 
-            self.wants_excluded_objects.value,
             has_pixels,
-            len(objects.indices)
+            len(objects.indices),
+            self.wants_excluded_objects.value,
         )
 
 

@@ -3020,11 +3020,9 @@ def measure_object_neighbors(
         dimensions: int, 
         distance_value:int, 
         distance_method: NeighborsDistanceMethod, 
+        kept_label_has_pixels: NDArray[numpy.bool_],
+        nkept_objects: int,
         wants_excluded_objects: bool=True,
-        kept_label_has_pixels: Optional[NDArray[numpy.bool_]]=None,
-        nkept_objects: Optional[int]=None,
-        kept_label_set: Optional[ObjectLabelSet]=None,
-        kept_label_ijv: Optional[NDArray[numpy.int_]]=None,
         ) -> Tuple[
         NDArray[numpy.float_],
         NDArray[numpy.int_],
@@ -3039,22 +3037,6 @@ def measure_object_neighbors(
     ]:
     labels: ObjectSegmentation = objects_small_removed_segmented.copy()
     neighbor_labels: ObjectSegmentation = neighbor_small_removed_segmented.copy()
-    
-    # nkept_objects <-- (kept_label_ijv <-- (kept_label_set <-- (kept_labels))
-    if nkept_objects is None:
-        if kept_label_ijv is None:
-            if kept_label_set is None:
-                kept_label_set = cast_labels_to_label_set(kept_labels)
-            kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
-        nkept_objects = len(indices_from_ijv(kept_label_ijv, validate=False))
-
-    # kept_label_has_pixels <-- (kept_label_ijv <-- (kept_label_set <-- (kept_labels)))
-    if kept_label_has_pixels is None:
-        if kept_label_ijv is None:
-            if kept_label_set is None:
-                kept_label_set = cast_labels_to_label_set(kept_labels)
-            kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
-        kept_label_has_pixels = areas_from_ijv(kept_label_ijv) > 0
 
     if not wants_excluded_objects:
         # Remove labels not present in kept segmentation while preserving object IDs.

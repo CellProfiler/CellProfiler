@@ -2379,7 +2379,8 @@ def get_power_spectrum_measurement_values(
         dimensions: int = 2
     ) -> float:
     if dimensions == 3:
-        raise NotImplementedError("Power spectrum calculation for volumes is not implemented")
+        # TODO: cannot calculate "radial power spectrum" for volumes: Not implemented.      
+        pass
 
     if image_mask is not None:
         pixel_data = numpy.array(pixel_data)  # make a copy

@@ -1135,28 +1135,6 @@ to the foreground pixels or the background pixels.
             if image_group.check_blur.value:
                 focus_score_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name)
                 focus_score = lib_measurements.image.get(focus_score_name)
-                # Note: original code calculated focus_score using the FIRST scale in the list for the main focus_score metric? 
-                # Wait, original code: 
-                # focus_score, scale, local_focus_score = get_focus_score_for_scale_group(scale_groups, ...)
-                # It returns scale as well.
-                # In get_focus_score_for_scale_group:
-                # for scale in scale_groups: ... focus_score = ... (it overwrites focus_score in loop)
-                # So focus_score corresponds to the LAST scale?
-                # Let's check original code.
-                # for scale in scale_groups: ... focus_score = ... 
-                # Yes, it overwrites.
-                # But wait, logic in original code:
-                # focus_score, scale, local_focus_score = get_focus_score_for_scale_group(...)
-                # In the function:
-                # return focus_score, scale, local_focus_score
-                # `scale` is the loop variable, so it IS the last scale.
-                # `focus_score` is the last focus score.
-                # `local_focus_score` is a list.
-                #
-                # My library implementation does the same thing (iterates and overwrites focus_score).
-                # So `focus_score` returned by library function is correct (value for last scale).
-                # Wait, I need to know WHICH scale it corresponds to for the display string "{} focus score @{:d}".
-                # It corresponds to the LAST scale in `scale_groups`.
                 
                 if scale_groups:
                     last_scale = scale_groups[-1]

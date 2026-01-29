@@ -3,6 +3,8 @@ from enum import Enum
 """Root module measurement name"""
 C_IMAGE_QUALITY = "ImageQuality"
 
+C_SCALING = "Scaling"
+
 class Feature(str, Enum):
     FOCUS_SCORE = "FocusScore"
     LOCAL_FOCUS_SCORE = "LocalFocusScore"

@@ -54,9 +54,16 @@ env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
 [target.osx-arm64.pypi-dependencies]
 wxpython = "==4.2.1"
 
-[feature.mysql.dependencies]
+[feature.mysql.target.osx.dependencies]
 pkg-config = "<1.0.0"
 mysql = "=8.0"
+
+[feature.mysql.target.win-64.dependencies]
+pkg-config = "<1.0.0"
+mysql = "=8.0"
+
+[feature.mysql.target.linux-64.dependencies]
+mysqlclient = ">=2.2.3"
 
 [feature.java.dependencies]
 openjdk = "11.*"

@@ -1,10 +1,10 @@
 import numpy
-from typing import Optional, List, Sequence, Union, Tuple
+from typing import Optional, List, Sequence, Annotated
 from pydantic import BaseModel, Field, validate_call, ConfigDict
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimagequality import (
-    C_IMAGE_QUALITY, Feature, INTENSITY_FEATURES, SATURATION_FEATURES, C_SCALING
+    C_IMAGE_QUALITY, Feature, C_SCALING
 )
 from cellprofiler_library.functions.measurement import (
     get_focus_score_for_scale_group,
@@ -36,18 +36,18 @@ class ThresholdConfig(BaseModel):
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_image_quality(
-    image: ImageGrayscale,
-    image_name: str,
-    mask: Optional[ImageGrayscaleMask] = None,
-    volumetric: bool = False,
-    include_image_scalings: bool = False,
-    image_scale_value: float = numpy.nan,
-    check_blur: bool = False,
-    blur_scales: Optional[Sequence[int]] = None,
-    check_saturation: bool = False,
-    check_intensity: bool = False,
-    calculate_threshold: bool = False,
-    threshold_groups: Optional[List[ThresholdConfig]] = None
+    image:                  Annotated[ImageGrayscale, Field(description="The image to measure.")],
+    image_name:             Annotated[str, Field(description="The name of the image.")],
+    mask:                   Annotated[Optional[ImageGrayscaleMask], Field(description="The mask for the image.")] = None,
+    volumetric:             Annotated[bool, Field(description="Whether the image is volumetric (3D).")] = False,
+    include_image_scalings: Annotated[bool, Field(description="Whether to include image scalings in the measurements.")] = False,
+    image_scale_value:      Annotated[float, Field(description="The scaling value of the image.")] = numpy.nan,
+    check_blur:             Annotated[bool, Field(description="Whether to calculate blur metrics.")] = False,
+    blur_scales:            Annotated[Optional[Sequence[int]], Field(description="List of scales (window sizes) for blur metrics.")] = None,
+    check_saturation:       Annotated[bool, Field(description="Whether to calculate saturation metrics.")] = False,
+    check_intensity:        Annotated[bool, Field(description="Whether to calculate intensity metrics.")] = False,
+    calculate_threshold:    Annotated[bool, Field(description="Whether to calculate threshold metrics.")] = False,
+    threshold_groups:       Annotated[Optional[List[ThresholdConfig]], Field(description="List of threshold configurations.")] = None,
 ) -> LibraryMeasurements:
     """
     Measure image quality metrics.

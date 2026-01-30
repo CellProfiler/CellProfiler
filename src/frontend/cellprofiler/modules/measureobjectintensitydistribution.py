@@ -30,6 +30,10 @@ from cellprofiler_core.utilities.core.object import (
     size_similarly,
 )
 
+from cellprofiler_library.modules._measureobjectintensitydistribution import (
+    measure_object_intensity_distribution,
+    measure_zernike_features,
+)
 import cellprofiler.gui.help.content
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
@@ -646,6 +650,8 @@ be selected in a later **SaveImages** or other module.
                 add_fn()
 
     def run(self, workspace):
+
+        
         header = (
             "Image",
             "Objects",
@@ -657,36 +663,148 @@ be selected in a later **SaveImages** or other module.
         )
 
         stats = []
+        heatmap_data_cache = {}
 
-        d = {}
-
-        for image in self.images_list.value:
+        for image_name in self.images_list.value:
             for o in self.objects:
                 for bin_count_settings in self.bin_counts:
-                    stats += self.do_measurements(
-                        workspace,
-                        image,
-                        o.object_name.value,
-                        o.center_object_name.value
-                        if o.center_choice != C_SELF
-                        else None,
-                        o.center_choice.value,
-                        bin_count_settings,
-                        d,
+                    # Get inputs
+                    image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+                    objects = workspace.object_set.get_objects(o.object_name.value)
+                    
+                    labels, pixel_data = crop_labels_and_image(objects.segmented, image.pixel_data)
+                    
+                    # Prepare center labels if needed
+                    center_object_name = None
+                    center_labels = None
+                    if o.center_choice.value != C_SELF:
+                        center_object_name = o.center_object_name.value
+                        center_objects = workspace.object_set.get_objects(center_object_name)
+                        center_labels, _ = size_similarly(labels, center_objects.segmented)
+                    
+                    # Determine if we need heatmap data
+                    needs_heatmap = any(
+                        heatmap.object_name.get_objects_name() == o.object_name.value
+                        and image_name == heatmap.image_name.get_image_name()
+                        and heatmap.get_number_of_bins() == bin_count_settings.bin_count.value
+                        for heatmap in self.heatmaps
                     )
+                    
+                    # Call library function
+                    result = measure_object_intensity_distribution(
+                        pixel_data=pixel_data,
+                        labels=labels,
+                        image_name=image_name,
+                        object_name=o.object_name.value,
+                        bin_count=bin_count_settings.bin_count.value,
+                        wants_scaled=bin_count_settings.wants_scaled.value,
+                        maximum_radius=bin_count_settings.maximum_radius.value,
+                        center_object_name=center_object_name,
+                        center_labels=center_labels,
+                        center_choice=o.center_choice.value,
+                        wants_zernikes="None",  # Handled separately
+                        zernike_degree=self.zernike_degree.value,
+                        return_heatmap_data=needs_heatmap or self.show_window,
+                    )
+                    
+                    # Unpack result
+                    if needs_heatmap or self.show_window:
+                        lib_measurements, heatmaps = result
+                    else:
+                        lib_measurements = result
+                        heatmaps = {}
+                    
+                    # Add measurements to workspace
+                    for feature_name, values in lib_measurements.objects.get(o.object_name.value, {}).items():
+                        workspace.measurements.add_measurement(
+                            o.object_name.value, feature_name, values
+                        )
+                    
+                    # Cache heatmap data
+                    for heatmap in self.heatmaps:
+                        if (
+                            heatmap.object_name.get_objects_name() == o.object_name.value
+                            and image_name == heatmap.image_name.get_image_name()
+                            and heatmap.get_number_of_bins() == bin_count_settings.bin_count.value
+                        ):
+                            measurement_key = MEASUREMENT_ALIASES[heatmap.measurement.value]
+                            feature_base = measurement_key.split("_")[1]  # Extract FracAtD, MeanFrac, or RadialCV
+                            if feature_base in heatmaps:
+                                heatmap_data_cache[id(heatmap)] = heatmaps[feature_base]
+                    
+                    # Collect statistics for display
+                    nobjects = numpy.max(labels)
+                    if nobjects == 0:
+                        stats.append((image_name, o.object_name.value, "no objects", "-", "-", "-", "-"))
+                    else:
+                        bin_count = bin_count_settings.bin_count.value
+                        wants_scaled = bin_count_settings.wants_scaled.value
+                        
+                        for bin in range(bin_count + (0 if wants_scaled else 1)):
+                            if bin == bin_count:
+                                bin_name = "Overflow"
+                                frac_name = f"RadialDistribution_FracAtD_{image_name}_Overflow"
+                                mean_name = f"RadialDistribution_MeanFrac_{image_name}_Overflow"
+                                cv_name = f"RadialDistribution_RadialCV_{image_name}_Overflow"
+                            else:
+                                bin_name = str(bin + 1)
+                                frac_name = f"RadialDistribution_FracAtD_{image_name}_{bin + 1}of{bin_count}"
+                                mean_name = f"RadialDistribution_MeanFrac_{image_name}_{bin + 1}of{bin_count}"
+                                cv_name = f"RadialDistribution_RadialCV_{image_name}_{bin + 1}of{bin_count}"
+                            
+                            frac_vals = workspace.measurements.get_measurement(o.object_name.value, frac_name)
+                            mean_vals = workspace.measurements.get_measurement(o.object_name.value, mean_name)
+                            cv_vals = workspace.measurements.get_measurement(o.object_name.value, cv_name)
+                            
+                            if frac_vals is not None and len(frac_vals) > 0:
+                                frac_masked = numpy.ma.masked_array(frac_vals, frac_vals == 0)
+                                mean_masked = numpy.ma.masked_array(mean_vals, mean_vals == 0)
+                                cv_masked = numpy.ma.masked_array(cv_vals, cv_vals == 0)
+                                
+                                stats.append((
+                                    image_name,
+                                    o.object_name.value,
+                                    bin_name,
+                                    str(bin_count),
+                                    numpy.round(numpy.mean(frac_masked), 4),
+                                    numpy.round(numpy.mean(mean_masked), 4),
+                                    numpy.round(numpy.mean(cv_masked), 4),
+                                ))
 
+        # Calculate Zernikes
         if self.wants_zernikes != Z_NONE:
-            self.calculate_zernikes(workspace)
+            wants_phase = self.wants_zernikes == Z_MAGNITUDES_AND_PHASE
+            
+            for o in self.objects:
+                object_name = o.object_name.value
+                objects = workspace.object_set.get_objects(object_name)
+                
+                for image_name in self.images_list.value:
+                    image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+                    
+                    zernike_measurements = measure_zernike_features(
+                        pixel_data=image.pixel_data,
+                        image_mask=image.mask,
+                        objects_ijv=objects.ijv,
+                        object_count=objects.count,
+                        object_indices=objects.indices,
+                        image_name=image_name,
+                        object_name=object_name,
+                        zernike_degree=self.zernike_degree.value,
+                        wants_phase=wants_phase,
+                    )
+                    
+                    # Add Zernike measurements to workspace
+                    for feature_name, values in zernike_measurements.objects.get(object_name, {}).items():
+                        workspace.measurements.add_measurement(object_name, feature_name, values)
 
         if self.show_window:
             workspace.display_data.header = header
-
             workspace.display_data.stats = stats
-
             workspace.display_data.heatmaps = []
 
         for heatmap in self.heatmaps:
-            heatmap_img = d.get(id(heatmap))
+            heatmap_img = heatmap_data_cache.get(id(heatmap))
 
             if heatmap_img is not None:
                 if self.show_window or heatmap.wants_to_save_display:
@@ -796,7 +914,11 @@ be selected in a later **SaveImages** or other module.
 
                 idx += 1
 
-    def do_measurements(
+    # Legacy methods removed - now using library functions
+    # do_measurements() and calculate_zernikes() have been replaced
+    # by measure_object_intensity_distribution() and measure_zernike_features()
+
+    def _do_measurements_legacy(
         self,
         workspace,
         image_name,
@@ -1169,7 +1291,7 @@ be selected in a later **SaveImages** or other module.
 
         return statistics
 
-    def calculate_zernikes(self, workspace):
+    def _calculate_zernikes_legacy(self, workspace):
         zernike_indexes = centrosome.zernike.get_zernike_indexes(
             self.zernike_degree.value + 1
         )

@@ -38,10 +38,14 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     FF_SCALE,
     FF_GENERIC
 )
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.modules._measureobjectintensitydistribution import (
-    calculate_object_intensity_zernikes,
-    get_object_intensity_distribution_measurements
+    measure_intensity_distribution,
+    measure_intensity_zernikes,
+    compute_zernike_geometry,
+    compute_radial_distribution_geometry
 )
+from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, indices_from_ijv
 import cellprofiler.gui.help.content
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
     "MeasureObjectIntensityDistribution_Magnitude_Phase.png"
@@ -619,23 +623,183 @@ be selected in a later **SaveImages** or other module.
 
         d = {}
 
-        for image in self.images_list.value:
-            for o in self.objects:
-                for bin_count_settings in self.bin_counts:
-                    stats += self.do_measurements(
-                        workspace,
-                        image,
-                        o.object_name.value,
-                        o.center_object_name.value
-                        if o.center_choice != CenterChoice.SELF.value
-                        else None,
-                        o.center_choice,
-                        bin_count_settings,
-                        d,
-                    )
+        for object_name_setting in self.objects:
+             object_name = object_name_setting.object_name.value
+             objects = workspace.object_set.get_objects(object_name)
+             labels = objects.segmented
+             full_shape = labels.shape
+             
+             center_choice = object_name_setting.center_choice.value
+             center_object_name = (
+                 object_name_setting.center_object_name.value 
+                 if center_choice != CenterChoice.SELF.value 
+                 else None
+             )
+             
+             center_object_labels = None
+             if center_object_name:
+                 center_object_labels = workspace.object_set.get_objects(center_object_name).segmented
+
+             # Calculate bounding box for cropping
+             if numpy.any(labels > 0):
+                 where = numpy.argwhere(labels > 0)
+                 (y_min, x_min), (y_max, x_max) = where.min(0), where.max(0) + 1
+                 # Slices covering the objects with padding
+                 obj_slices = (slice(max(0, y_min - 1), y_max + 1), slice(max(0, x_min - 1), x_max + 1))
+             else:
+                 obj_slices = (slice(0, 0), slice(0, 0))
+             
+             nobjects_full = numpy.max(labels) if labels.size > 0 else 0
+
+             # Cache for radial geometry: (wants_scaled, max_radius) -> (geometry, objects_indices_cropped)
+             radial_geometry_cache = {}
+
+             for bin_count_settings in self.bin_counts:
+                 bin_count = bin_count_settings.bin_count.value
+                 wants_scaled = bin_count_settings.wants_scaled.value
+                 maximum_radius = bin_count_settings.maximum_radius.value
+                 
+                 geom_key = (wants_scaled, maximum_radius)
+                 
+                 for image_name in self.images_list.value:
+                     image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+                     im_shape = image.pixel_data.shape
+                     
+                     # Calculate intersection crop
+                     if obj_slices[0].start == obj_slices[0].stop:
+                         img_slices = obj_slices
+                     else:
+                         y_start = max(0, min(obj_slices[0].start, im_shape[0], full_shape[0]))
+                         y_stop = max(0, min(obj_slices[0].stop, im_shape[0], full_shape[0]))
+                         x_start = max(0, min(obj_slices[1].start, im_shape[1], full_shape[1]))
+                         x_stop = max(0, min(obj_slices[1].stop, im_shape[1], full_shape[1]))
+                         img_slices = (slice(y_start, y_stop), slice(x_start, x_stop))
+                     
+                     if img_slices[0].start == img_slices[0].stop or img_slices[1].start == img_slices[1].stop:
+                         labels_cropped = numpy.zeros((0, 0), dtype=labels.dtype)
+                         pixel_data_cropped = numpy.zeros((0, 0), dtype=image.pixel_data.dtype)
+                     else:
+                         labels_cropped = labels[img_slices]
+                         pixel_data_cropped = image.pixel_data[img_slices]
+                     
+                     nobjects = nobjects_full
+                         
+                     # Heatmaps
+                     heatmap_features = []
+                     relevant_heatmaps = []
+                     for heatmap in self.heatmaps:
+                         if (heatmap.object_name.get_objects_name() == object_name and
+                             heatmap.image_name.get_image_name() == image_name and
+                             heatmap.get_number_of_bins() == bin_count):
+                                 feature = MEASUREMENT_ALIASES.get(heatmap.measurement.value, heatmap.measurement.value)
+                                 heatmap_features.append(feature)
+                                 relevant_heatmaps.append((heatmap, feature))
+                     
+                     # Check/Update Cache
+                     # Note: geometry depends on labels_cropped.
+                     # If image sizes vary, img_slices vary, labels_cropped vary -> geometry varies.
+                     # We only cache if we assume labels_cropped is constant.
+                     # If image sizes vary, we might have misses or incorrect reuse?
+                     # Standard CP assumes images in a run are same size.
+                     # If they are, img_slices is constant.
+                     # So caching is safe.
+                     
+                     if geom_key not in radial_geometry_cache and nobjects > 0:
+                         objects_ijv_cropped = convert_label_set_to_ijv(labels_cropped)
+                         objects_indices_cropped = indices_from_ijv(objects_ijv_cropped)
+                         
+                         center_labels_cropped = None
+                         if center_object_labels is not None:
+                             center_labels_cropped = center_object_labels[img_slices]
+                         
+                         radial_geometry_cache[geom_key] = (
+                             compute_radial_distribution_geometry(
+                                 labels_cropped, 
+                                 center_labels_cropped, 
+                                 objects_indices_cropped, 
+                                 center_choice, 
+                                 wants_scaled, 
+                                 maximum_radius
+                             ),
+                             objects_indices_cropped
+                         )
+                     
+                     geometry = None
+                     objects_indices_cropped = None
+                     if nobjects > 0 and geom_key in radial_geometry_cache:
+                         geometry, objects_indices_cropped = radial_geometry_cache[geom_key]
+                     
+                     center_labels_cropped = None
+                     if center_object_labels is not None:
+                         center_labels_cropped = center_object_labels[img_slices]
+
+                     lib_measurements, iter_stats, heatmap_data = measure_intensity_distribution(
+                         pixel_data_cropped,
+                         image_name,
+                         object_name,
+                         labels_cropped,
+                         nobjects,
+                         bin_count,
+                         wants_scaled,
+                         maximum_radius,
+                         center_choice,
+                         center_object_name,
+                         center_labels_cropped,
+                         geometry=geometry,
+                         objects_indices=objects_indices_cropped,
+                         heatmap_features=heatmap_features if heatmap_features else None,
+                         return_visualization_data=True
+                     )
+                     
+                     # Unpack measurements
+                     for obj_name, features in lib_measurements.objects.items():
+                         for feature_name, val in features.items():
+                             workspace.measurements.add_measurement(obj_name, feature_name, val)
+                             
+                     stats += iter_stats
+                     
+                     # Store heatmaps (Uncropped)
+                     for heatmap, feature in relevant_heatmaps:
+                         if feature in heatmap_data:
+                             full_heatmap = numpy.zeros(full_shape)
+                             full_heatmap[img_slices] = heatmap_data[feature]
+                             d[id(heatmap)] = full_heatmap
 
         if self.wants_zernikes != IntensityZernike.NONE.value:
-            self.calculate_zernikes(workspace)
+            zernike_opts = self.wants_zernikes.value
+            zernike_degree = self.zernike_degree.value
+            
+            zernike_geometry_cache = {} 
+            
+            for object_name_setting in self.objects:
+                object_name = object_name_setting.object_name.value
+                objects = workspace.object_set.get_objects(object_name)
+                # Use get_labels() for Zernike geometry (List of (small, ind))
+                labels_set = objects.get_labels()
+                
+                if (object_name, zernike_degree) not in zernike_geometry_cache:
+                    zernike_geometry_cache[(object_name, zernike_degree)] = compute_zernike_geometry(
+                        labels_set, zernike_degree
+                    )
+                geometry = zernike_geometry_cache[(object_name, zernike_degree)]
+                
+                for image_name in self.images_list.value:
+                     image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+                     
+                     lib_measurements = measure_intensity_zernikes(
+                         image.pixel_data,
+                         image.mask,
+                         image_name,
+                         object_name,
+                         labels_set,
+                         zernike_degree,
+                         zernike_opts,
+                         geometry=geometry
+                     )
+                     
+                     for obj_name, features in lib_measurements.objects.items():
+                         for feature_name, val in features.items():
+                             workspace.measurements.add_measurement(obj_name, feature_name, val)
 
         if self.show_window:
             workspace.display_data.header = header
@@ -754,125 +918,6 @@ be selected in a later **SaveImages** or other module.
                     )
                 idx += 1
                  
-    
-    def add_measuerments_no_objects(self, bin_count, image_name, measurements, object_name, wants_scaled):
-        for bin_index in range(1, bin_count + 1):
-            for feature in (Feature.FRAC_AT_D.value, Feature.MEAN_FRAC.value, Feature.RADIAL_CV.value):
-                feature_name = (feature + FF_GENERIC) % (image_name, bin_index, bin_count)
-
-                measurements.add_measurement(
-                    object_name,
-                    "_".join([M_CATEGORY, feature_name]),
-                    numpy.zeros(0),
-                )
-
-                if not wants_scaled:
-                    measurement_name = "_".join([M_CATEGORY, feature, image_name, FullFeature.OVERFLOW.value])
-                    measurements.add_measurement(object_name, measurement_name, numpy.zeros(0))
-
-        return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
-    
-    def do_measurements(
-        self,
-        workspace,
-        image_name,
-        object_name,
-        center_object_name,
-        center_choice,
-        bin_count_settings,
-        heatmap_dict,
-    ):
-        """Perform the radial measurements on the image set
-
-        workspace - workspace that holds images / objects
-        image_name - make measurements on this image
-        object_name - make measurements on these objects
-        center_object_name - use the centers of these related objects as
-                      the centers for radial measurements. None to use the
-                      objects themselves.
-        center_choice - the user's center choice for this object:
-                      C_SELF, C_CENTERS_OF_OBJECTS or C_EDGES_OF_OBJECTS.
-        bin_count_settings - the bin count settings group
-        d - a dictionary for saving reusable partial results
-
-        returns one statistics tuple per ring.
-        """
-        bin_count = bin_count_settings.bin_count.value
-        wants_scaled = bin_count_settings.wants_scaled.value
-        maximum_radius = bin_count_settings.maximum_radius.value
-        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-        objects = workspace.object_set.get_objects(object_name)
-        labels, pixel_data = crop_labels_and_image(objects.segmented, image.pixel_data)
-        nobjects = numpy.max(objects.segmented)
-        measurements = workspace.measurements
-
-        #TODO: Can this heatmap stuff be moved to library?
-        heatmaps = {}
-        for heatmap in self.heatmaps:
-            if (
-                heatmap.object_name.get_objects_name() == object_name
-                and image_name == heatmap.image_name.get_image_name()
-                and heatmap.get_number_of_bins() == bin_count
-            ):
-
-                heatmap_dict[id(heatmap)] = heatmaps[
-                    MEASUREMENT_ALIASES[heatmap.measurement.value]
-                ] = numpy.zeros(labels.shape)
-
-        if nobjects == 0:
-            return self.add_measuerments_no_objects(bin_count, image_name, measurements, object_name, wants_scaled)
-        
-        center_object_segmented = workspace.object_set.get_objects(center_object_name).segmented if center_object_name is not None else None
-
-        measurements_dict, statistics = get_object_intensity_distribution_measurements(
-            object_name,
-            center_object_name,
-            heatmap_dict,
-            labels,
-            center_object_segmented,
-            center_choice,
-            wants_scaled,
-            maximum_radius,
-            bin_count,
-            pixel_data,
-            nobjects,
-            image_name,
-            heatmaps,
-            objects.indices
-        )
-        if "Object" in measurements_dict:
-            for obj_name, features in measurements_dict["Object"].items():
-                for feature_name, value in features.items():
-                    measurements.add_measurement(obj_name, feature_name, value)
-        return statistics
-
-    def calculate_zernikes(self, workspace):
-        meas = workspace.measurements
-
-        #TODO: is it expensive to populate the lists below?
-        objects_names_list = [o.object_name.value for o in self.objects]
-        objects_labels_list = [workspace.object_set.get_objects(o).get_labels() for o in objects_names_list]
-        objects_names_and_label_sets = [(o_name, o_labelset) for (o_name, o_labelset) in zip(objects_names_list, objects_labels_list)]
-
-        image_names_list = [i for i in self.images_list.value]
-        images_list = [workspace.image_set.get_image(i) for i in image_names_list]
-        image_pixel_data_list = [i.pixel_data for i in images_list]
-        image_mask_list = [i.mask for i in images_list]
-
-        name_data_mask_list = [(i_name, i_data, i_mask) for (i_name, i_data, i_mask) in zip(image_names_list, image_pixel_data_list, image_mask_list)]
-        
-        measurements_dict_primitive = calculate_object_intensity_zernikes(
-            objects_names_and_label_sets,
-            self.zernike_degree.value,
-            name_data_mask_list,
-            self.wants_zernikes.value
-        )
-        
-        if "Object" in measurements_dict_primitive:
-            measurements_dict = measurements_dict_primitive["Object"]
-            for object_name in measurements_dict:
-                for feature in measurements_dict[object_name]:
-                    meas[object_name, feature] = measurements_dict[object_name][feature]
 
     def get_zernike_magnitude_name(self, image_name, n, m):
         """The feature name of the magnitude of a Zernike moment

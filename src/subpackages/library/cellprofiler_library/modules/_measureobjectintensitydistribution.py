@@ -17,13 +17,15 @@ from cellprofiler_library.functions.measurement import (
     compute_zernike_measurements,
 )
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
+    ALL_TEMPLATE_MEASUREMENT_FEATURES,
+    ALL_TEMPLATE_OVERFLOW_FEATURES,
     CenterChoice,
     Feature,
-    MeasurementFeature,
-    OverflowFeature,
-    ZernikeFeature,
+    IntensityZernike,
+    TemplateMeasurementFeature,
+    TemplateOverflowFeature,
+    TemplateZernikeFeature,
 )
-
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_intensity_distribution(
@@ -69,13 +71,13 @@ def measure_object_intensity_distribution(
     # Handle empty case
     if nobjects == 0:
         for bin_index in range(1, bin_count + 1):
-            for feature in MeasurementFeature:
-                feature_name = feature.value % (image_name, bin_index, bin_count)
+            for feature in ALL_TEMPLATE_MEASUREMENT_FEATURES:
+                feature_name = feature % (image_name, bin_index, bin_count)
                 measurements.add_measurement(object_name, feature_name, numpy.zeros(0))
         
         if not wants_scaled:
-            for feature in OverflowFeature:
-                feature_name = feature.value % image_name
+            for feature in ALL_TEMPLATE_OVERFLOW_FEATURES:
+                feature_name = feature % image_name
                 measurements.add_measurement(object_name, feature_name, numpy.zeros(0))
         
         if return_heatmap_data:
@@ -235,14 +237,14 @@ def measure_object_intensity_distribution(
         # Add measurements
         if bin == bin_count:
             # Overflow bin
-            frac_name = OverflowFeature.FRAC_AT_D.value % image_name
-            mean_name = OverflowFeature.MEAN_FRAC.value % image_name
-            cv_name = OverflowFeature.RADIAL_CV.value % image_name
+            frac_name = TemplateOverflowFeature.FRAC_AT_D % image_name
+            mean_name = TemplateOverflowFeature.MEAN_FRAC % image_name
+            cv_name = TemplateOverflowFeature.RADIAL_CV % image_name
         else:
             # Regular bin
-            frac_name = MeasurementFeature.FRAC_AT_D.value % (image_name, bin + 1, bin_count)
-            mean_name = MeasurementFeature.MEAN_FRAC.value % (image_name, bin + 1, bin_count)
-            cv_name = MeasurementFeature.RADIAL_CV.value % (image_name, bin + 1, bin_count)
+            frac_name = TemplateMeasurementFeature.FRAC_AT_D % (image_name, bin + 1, bin_count)
+            mean_name = TemplateMeasurementFeature.MEAN_FRAC % (image_name, bin + 1, bin_count)
+            cv_name = TemplateMeasurementFeature.RADIAL_CV % (image_name, bin + 1, bin_count)
         
         measurements.add_measurement(object_name, frac_name, fraction_at_distance[:, bin])
         measurements.add_measurement(object_name, mean_name, mean_pixel_fraction[:, bin])
@@ -296,11 +298,11 @@ def measure_zernike_features(
     if object_count == 0:
         zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
         for n, m in zernike_indexes:
-            mag_name = ZernikeFeature.MAGNITUDE.value % (image_name, n, m)
+            mag_name = TemplateZernikeFeature.MAGNITUDE % (image_name, n, m)
             measurements.add_measurement(object_name, mag_name, numpy.zeros(0))
             
             if wants_phase:
-                phase_name = ZernikeFeature.PHASE.value % (image_name, n, m)
+                phase_name = TemplateZernikeFeature.PHASE % (image_name, n, m)
                 measurements.add_measurement(object_name, phase_name, numpy.zeros(0))
         
         return measurements
@@ -312,11 +314,11 @@ def measure_zernike_features(
     
     # Add measurements
     for idx, (n, m) in enumerate(zernike_indexes):
-        mag_name = ZernikeFeature.MAGNITUDE.value % (image_name, n, m)
+        mag_name = TemplateZernikeFeature.MAGNITUDE % (image_name, n, m)
         measurements.add_measurement(object_name, mag_name, magnitudes[:, idx])
         
         if wants_phase:
-            phase_name = ZernikeFeature.PHASE.value % (image_name, n, m)
+            phase_name = TemplateZernikeFeature.PHASE % (image_name, n, m)
             measurements.add_measurement(object_name, phase_name, phases[:, idx])
     
     return measurements

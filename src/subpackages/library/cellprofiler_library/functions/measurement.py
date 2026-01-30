@@ -3448,3 +3448,275 @@ def measure_object_neighbors(
         second_objects,
         expanded_labels,
     )
+
+################################################################################
+# MeasureObjectIntensityDistribution
+################################################################################
+
+def compute_normalized_distance(
+    labels: NDArray[np.int32],
+    d_from_center: NDArray[np.float64],
+    d_to_edge: NDArray[np.float64],
+    wants_scaled: bool,
+    maximum_radius: int,
+    good_mask: NDArray[np.bool_],
+) -> NDArray[np.float64]:
+    """Compute normalized distance from center for binning.
+    
+    Args:
+        labels: Object label matrix
+        d_from_center: Distance from object center for each pixel
+        d_to_edge: Distance to object edge for each pixel
+        wants_scaled: If True, scale by total distance (center to edge)
+        maximum_radius: Maximum radius for unscaled binning
+        good_mask: Mask indicating valid pixels to process
+        
+    Returns:
+        Normalized distance array (0 to 1 for scaled, 0 to max_radius for unscaled)
+    """
+    normalized_distance = numpy.zeros(labels.shape)
+    
+    if wants_scaled:
+        total_distance = d_from_center + d_to_edge
+        normalized_distance[good_mask] = d_from_center[good_mask] / (
+            total_distance[good_mask] + 0.001
+        )
+    else:
+        normalized_distance[good_mask] = d_from_center[good_mask] / maximum_radius
+    
+    return normalized_distance
+
+
+def compute_radial_intensity_distribution(
+    pixel_data: NDArray[np.float64],
+    labels: NDArray[np.int32],
+    good_mask: NDArray[np.bool_],
+    bin_indexes: NDArray[np.int32],
+    nobjects: int,
+    bin_count: int,
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.int32]]:
+    """Compute intensity distribution across radial bins.
+    
+    Args:
+        pixel_data: Image pixel intensities
+        labels: Object label matrix
+        good_mask: Mask of valid pixels to process
+        bin_indexes: Bin index for each pixel
+        nobjects: Number of objects
+        bin_count: Number of bins
+        
+    Returns:
+        Tuple of (fraction_at_distance, mean_pixel_fraction, number_at_distance)
+    """
+    good_labels = labels[good_mask]
+    ngood_pixels = numpy.sum(good_mask)
+    labels_and_bins = (good_labels - 1, bin_indexes[good_mask])
+    
+    # Histogram of intensity per bin
+    histogram = scipy.sparse.coo_matrix(
+        (pixel_data[good_mask], labels_and_bins), (nobjects, bin_count + 1)
+    ).toarray()
+    
+    sum_by_object = numpy.sum(histogram, 1)
+    sum_by_object_per_bin = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
+    fraction_at_distance = histogram / sum_by_object_per_bin
+    
+    # Count of pixels per bin
+    number_at_distance = scipy.sparse.coo_matrix(
+        (numpy.ones(ngood_pixels), labels_and_bins), (nobjects, bin_count + 1)
+    ).toarray()
+    
+    sum_by_object = numpy.sum(number_at_distance, 1)
+    sum_by_object_per_bin = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
+    fraction_at_bin = number_at_distance / sum_by_object_per_bin
+    
+    mean_pixel_fraction = fraction_at_distance / (
+        fraction_at_bin + numpy.finfo(float).eps
+    )
+    
+    return fraction_at_distance, mean_pixel_fraction, number_at_distance
+
+
+def compute_radial_cv(
+    pixel_data: NDArray[np.float64],
+    labels: NDArray[np.int32],
+    good_mask: NDArray[np.bool_],
+    bin_indexes: NDArray[np.int32],
+    bin: int,
+    i_center: NDArray[np.float64],
+    j_center: NDArray[np.float64],
+    nobjects: int,
+) -> NDArray[np.float64]:
+    """Compute coefficient of variation across 8 radial wedges for a bin.
+    
+    Args:
+        pixel_data: Image pixel intensities
+        labels: Object label matrix
+        good_mask: Mask of valid pixels
+        bin_indexes: Bin index for each pixel
+        bin: Current bin number to process
+        i_center: Row coordinates of object centers
+        j_center: Column coordinates of object centers
+        nobjects: Number of objects
+        
+    Returns:
+        Array of CV values per object
+    """
+
+    # Anisotropy calculation.  Split each cell into eight wedges, then
+    # compute coefficient of variation of the wedges' mean intensities
+    # in each ring.
+    #
+    # Compute each pixel's delta from the center object's centroid
+    i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+    
+    imask = i[good_mask] > i_center[good_mask]
+    jmask = j[good_mask] > j_center[good_mask]
+    absmask = abs(i[good_mask] - i_center[good_mask]) > abs(
+        j[good_mask] - j_center[good_mask]
+    )
+    
+    radial_index = (
+        imask.astype(int) + jmask.astype(int) * 2 + absmask.astype(int) * 4
+    )
+    
+    bin_mask = good_mask & (bin_indexes == bin)
+    bin_pixels = numpy.sum(bin_mask)
+    bin_labels = labels[bin_mask]
+    bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
+    
+    labels_and_radii = (bin_labels - 1, bin_radial_index)
+    
+    radial_values = scipy.sparse.coo_matrix(
+        (pixel_data[bin_mask], labels_and_radii), (nobjects, 8)
+    ).toarray()
+    
+    pixel_count = scipy.sparse.coo_matrix(
+        (numpy.ones(bin_pixels), labels_and_radii), (nobjects, 8)
+    ).toarray()
+    
+    mask = pixel_count == 0
+    radial_means = numpy.ma.masked_array(radial_values / pixel_count, mask)
+    radial_cv = numpy.std(radial_means, 1) / numpy.mean(radial_means, 1)
+    radial_cv[numpy.sum(~mask, 1) == 0] = 0
+    
+    return numpy.array(radial_cv)
+
+
+def compute_zernike_measurements(
+    objects_ijv: NDArray,
+    image_pixels: NDArray[np.float64],
+    image_mask: NDArray[np.bool_],
+    object_count: int,
+    object_indices: NDArray[np.int32],
+    zernike_degree: int,
+) -> Tuple[NDArray[np.float64], NDArray[np.float64], List[Tuple[int, int]]]:
+    """Compute Zernike moments for intensity distribution.
+    
+    Args:
+        objects_ijv: Object coordinates in IJV format (i, j, label)
+        image_pixels: Image pixel intensities
+        image_mask: Image mask
+        object_count: Number of objects
+        object_indices: Array of object indices
+        zernike_degree: Maximum Zernike degree to compute
+        
+    Returns:
+        Tuple of (magnitudes, phases, zernike_indexes)
+        magnitudes: Array of shape (n_objects, n_zernike_features)
+        phases: Array of shape (n_objects, n_zernike_features)
+        zernike_indexes: List of (n, m) tuples for each Zernike moment
+    """
+    import centrosome.zernike
+    
+    zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
+    
+    #
+    # First, get a table of centers and radii of minimum enclosing
+    # circles per object
+    #
+    ij = numpy.zeros((object_count + 1, 2))
+    r = numpy.zeros(object_count + 1)
+    
+    # Get unique labels from ijv
+    unique_labels = numpy.unique(objects_ijv[:, 2])
+    
+    for label in unique_labels:
+        if label == 0:
+            continue
+        mask = objects_ijv[:, 2] == label
+        coords = objects_ijv[mask, :2]
+        
+        if len(coords) > 0:
+            ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
+                numpy.zeros((1, 1)), numpy.array([label], dtype=int)
+            )
+            # Compute from actual coordinates
+            center = numpy.mean(coords, axis=0)
+            max_dist = numpy.max(numpy.sqrt(numpy.sum((coords - center) ** 2, axis=1)))
+            ij[label] = center
+            r[label] = max_dist
+    
+    #
+    # Then compute x and y, the position of each labeled pixel
+    # within a unit circle around the object
+    #
+    l = objects_ijv[:, 2].astype(int)
+    yx = (objects_ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
+    
+    # Construct Zernike polynomials
+    z = centrosome.zernike.construct_zernike_polynomials(
+        yx[:, 1], yx[:, 0], zernike_indexes
+    )
+    
+    # Filter by image mask
+    mask = (objects_ijv[:, 0] < image_pixels.shape[0]) & (
+        objects_ijv[:, 1] < image_pixels.shape[1]
+    )
+    mask[mask] = image_mask[objects_ijv[mask, 0].astype(int), objects_ijv[mask, 1].astype(int)]
+    
+    yx_ = yx[mask, :]
+    l_ = l[mask]
+    z_ = z[mask, :]
+    
+    if len(l_) == 0:
+        # Return empty arrays
+        n_features = len(zernike_indexes)
+        return (
+            numpy.zeros((0, n_features)),
+            numpy.zeros((0, n_features)),
+            zernike_indexes
+        )
+    
+    # Compute areas
+    areas = scipy.ndimage.sum(
+        numpy.ones(l_.shape, int), labels=l_, index=object_indices
+    )
+    
+    # Compute magnitudes and phases
+    magnitudes_list = []
+    phases_list = []
+    
+    for i, (n, m) in enumerate(zernike_indexes):
+        vr = scipy.ndimage.sum(
+            image_pixels[objects_ijv[mask, 0].astype(int), objects_ijv[mask, 1].astype(int)] * z_[:, i].real,
+            labels=l_,
+            index=object_indices,
+        )
+        
+        vi = scipy.ndimage.sum(
+            image_pixels[objects_ijv[mask, 0].astype(int), objects_ijv[mask, 1].astype(int)] * z_[:, i].imag,
+            labels=l_,
+            index=object_indices,
+        )
+        
+        magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
+        phase = numpy.arctan2(vr, vi)
+        
+        magnitudes_list.append(magnitude)
+        phases_list.append(phase)
+    
+    magnitudes = numpy.column_stack(magnitudes_list)
+    phases = numpy.column_stack(phases_list)
+    
+    return magnitudes, phases, zernike_indexes

@@ -54,9 +54,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_hd72426e_102.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
-      - pypi: https://files.pythonhosted.org/packages/a5/a0/98a3630f0b57f77bae67716562513d3032ae70414fcaf02750279c389a9e/pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
-      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl
+      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-h500dc9f_8.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/c-ares-1.34.5-hf13058a_0.conda
@@ -364,7 +363,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/dc/9b/47798a6c91d8bdb567fe2698fe81e0c6b7cb7ef4d13da4114b41d239f65d/typing_inspection-0.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/33/cf/8435d5a7159e2a9c83a95896ed596f68cf798005fe107cc655b5c5c14704/urllib3-1.26.20-py2.py3-none-any.whl
-      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl
+      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
       - pypi: ./src/frontend
@@ -997,7 +996,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/dc/9b/47798a6c91d8bdb567fe2698fe81e0c6b7cb7ef4d13da4114b41d239f65d/typing_inspection-0.4.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/87/1f677586e8ac487e29672e4b17455758fce261de06a0d086167bb760361a/uc_micro_py-1.0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/33/cf/8435d5a7159e2a9c83a95896ed596f68cf798005fe107cc655b5c5c14704/urllib3-1.26.20-py2.py3-none-any.whl
-      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl
+      - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/5d/bd/8d881d8ca6d80fcb8da2b2f94f8855384daf649499ddfba78ffd1ee2caa3/zarr-2.18.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl
       - pypi: ./src/frontend
@@ -1709,6 +1708,46 @@ packages:
   - pooch>=1.3.0 ; extra == 'test'
   requires_python: '>=3.9'
   editable: true
+- pypi: ./src/frontend
+  name: cellprofiler
+  version: 5.0.0.dev340
+  sha256: 1187b444b5e0d9bd660ca861a5b053628c728768770c74985e9b06b375f33634
+  requires_dist:
+  - cellprofiler-library>=5.dev0
+  - cellprofiler-core>=5.dev0
+  - boto3>=1.28.41
+  - centrosome>=1.3.0
+  - docutils==0.15.2
+  - h5py>=3.7.0
+  - imageio>=2.31.3
+  - jinja2>=3.1.2
+  - joblib>=1.3.2
+  - mahotas>=1.4.13
+  - matplotlib>=3.1.3,<4
+  - mysqlclient>=2.2.3
+  - numpy>=1.24.4,<2
+  - pillow>=10.0.0
+  - pyzmq>=22.3.0
+  - sentry-sdk~=2.8.0
+  - requests>=2.31.0
+  - scikit-image>=0.20.0
+  - scikit-learn>=1.3.0
+  - scipy>=1.9.1,<1.11
+  - scyjava>=1.9.1
+  - six>=1.16.0
+  - tifffile>=2022.4.8
+  - wxpython>=4.2.0
+  - rapidfuzz>=3.0.0
+  - packaging>=20.0
+  - build ; extra == 'build'
+  - pyinstaller ; extra == 'build'
+  - twine ; extra == 'build'
+  - sphinx>=3.1.1 ; extra == 'docs'
+  - sphinx-rtd-theme>=0.5.0 ; extra == 'docs'
+  - pytest~=7.4.1 ; extra == 'test'
+  - pooch>=1.3.0 ; extra == 'test'
+  requires_python: '>=3.9'
+  editable: true
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
   version: 5.0.0.dev280
@@ -1742,9 +1781,61 @@ packages:
   - wxpython==4.2.0 ; extra == 'wx'
   requires_python: '>=3.9'
   editable: true
+- pypi: ./src/subpackages/core
+  name: cellprofiler-core
+  version: 5.0.0.dev340
+  sha256: da5f4966a2ec842aef4443347512572aa6a6963cff7eec3d16285592e90ddbcc
+  requires_dist:
+  - cellprofiler-library>=5.dev0
+  - boto3>=1.12.28
+  - centrosome>=1.3.0
+  - docutils>=0.15.2
+  - future>=0.18.2
+  - fsspec>=2021.11.0
+  - h5py>=3.7.0
+  - lxml>=4.6.4
+  - matplotlib>=3.1.3,<4
+  - numpy>=1.24.4,<2
+  - psutil>=5.9.5
+  - pyzmq>=22.3.0
+  - scikit-image>=0.20.0
+  - scipy>=1.9.1,<1.11
+  - scyjava>=1.9.1
+  - zarr>=2.16.1
+  - google-cloud-storage~=2.10.0
+  - packaging>=20.0
+  - build ; extra == 'build'
+  - pyinstaller ; extra == 'build'
+  - twine ; extra == 'build'
+  - sphinx>=3.1.1 ; extra == 'build'
+  - click>=7.1.2 ; extra == 'build'
+  - pytest~=7.4.1 ; extra == 'test'
+  - pytest-timeout~=2.1.0 ; extra == 'test'
+  - wxpython==4.2.0 ; extra == 'wx'
+  requires_python: '>=3.9'
+  editable: true
 - pypi: ./src/subpackages/library
   name: cellprofiler-library
   version: 5.0.0.dev284
+  sha256: fcf1356d2401865858f761006b365e2c7a9e51dc847c521e5bad0f78e1fe6948
+  requires_dist:
+  - numpy>=1.26.4,<2
+  - scikit-image>=0.20.0
+  - scipy>=1.9.1,<1.11
+  - mahotas>=1.4.13
+  - centrosome>=1.3.0
+  - matplotlib>=3.1.3,<4
+  - packaging>=20.0
+  - pydantic>=2.11.4
+  - build ; extra == 'dev'
+  - pyinstaller ; extra == 'dev'
+  - twine ; extra == 'dev'
+  - pytest~=7.4.1 ; extra == 'test'
+  requires_python: '>=3.9'
+  editable: true
+- pypi: ./src/subpackages/library
+  name: cellprofiler-library
+  version: 5.0.0.dev337
   sha256: fcf1356d2401865858f761006b365e2c7a9e51dc847c521e5bad0f78e1fe6948
   requires_dist:
   - numpy>=1.26.4,<2
@@ -7625,20 +7716,19 @@ packages:
   purls: []
   size: 18919
   timestamp: 1760418632059
-- pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl
-  name: wxpython
-  version: 4.2.1
-  requires_dist:
-  - pillow
-  - six
-  - numpy<1.17 ; python_full_version < '2.8'
-  - numpy ; python_full_version >= '3' and python_full_version < '3.12'
 - pypi: https://files.pythonhosted.org/packages/c5/5c/b3c7097ba107b7e699268bf2585c646ad90660789c1ee33f293e3c195a22/wxPython-4.2.1-cp39-cp39-macosx_10_10_universal2.whl
   name: wxpython
   version: 4.2.1
   sha256: a15b76dad81f9bd6ceadf00fbede9aff9e09859a9aa698c53e8bd56b95d2effc
   requires_dist:
   - pillow
+  - six
+  - numpy<1.17 ; python_full_version < '2.8'
+  - numpy ; python_full_version >= '3' and python_full_version < '3.12'
+- pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl
+  name: wxpython
+  version: 4.2.2
+  requires_dist:
   - six
   - numpy<1.17 ; python_full_version < '2.8'
   - numpy ; python_full_version >= '3' and python_full_version < '3.12'

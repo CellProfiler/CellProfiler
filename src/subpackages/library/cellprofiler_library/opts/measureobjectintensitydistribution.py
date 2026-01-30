@@ -24,7 +24,7 @@ F_ALL = [Feature.FRAC_AT_D, Feature.MEAN_FRAC, Feature.RADIAL_CV]
 
 FF_SCALE = "%dof%d"
 FF_GENERIC = "_%s_" + FF_SCALE
-class FullFeature(str, Enum): # assuming FF_<ABC> means FullFeature_<ABC>
+class TemplateFullFeature(str): # assuming FF_<ABC> means FullFeature_<ABC>
     FRAC_AT_D = Feature.FRAC_AT_D.value + FF_GENERIC
     MEAN_FRAC = Feature.MEAN_FRAC.value + FF_GENERIC
     RADIAL_CV = Feature.RADIAL_CV.value + FF_GENERIC
@@ -32,20 +32,20 @@ class FullFeature(str, Enum): # assuming FF_<ABC> means FullFeature_<ABC>
     ZERNIKE_PHASE = "ZernikePhase"
     OVERFLOW = "Overflow"
 
-class MeasurementFeature(str, Enum):
-    FRAC_AT_D = "_".join((M_CATEGORY, FullFeature.FRAC_AT_D.value))
-    MEAN_FRAC = "_".join((M_CATEGORY, FullFeature.MEAN_FRAC.value))
-    RADIAL_CV = "_".join((M_CATEGORY, FullFeature.RADIAL_CV.value))
+class TemplateMeasurementFeature(str):
+    FRAC_AT_D = "_".join((M_CATEGORY, TemplateFullFeature.FRAC_AT_D))
+    MEAN_FRAC = "_".join((M_CATEGORY, TemplateFullFeature.MEAN_FRAC))
+    RADIAL_CV = "_".join((M_CATEGORY, TemplateFullFeature.RADIAL_CV))
 
-class OverflowFeature(str, Enum):
-    FRAC_AT_D = "_".join((M_CATEGORY, Feature.FRAC_AT_D.value, "%s", FullFeature.OVERFLOW.value))
-    MEAN_FRAC = "_".join((M_CATEGORY, Feature.MEAN_FRAC.value, "%s", FullFeature.OVERFLOW.value))
-    RADIAL_CV = "_".join((M_CATEGORY, Feature.RADIAL_CV.value, "%s", FullFeature.OVERFLOW.value))
+class TemplateOverflowFeature(str):
+    FRAC_AT_D = "_".join((M_CATEGORY, Feature.FRAC_AT_D.value, "%s", TemplateFullFeature.OVERFLOW))
+    MEAN_FRAC = "_".join((M_CATEGORY, Feature.MEAN_FRAC.value, "%s", TemplateFullFeature.OVERFLOW))
+    RADIAL_CV = "_".join((M_CATEGORY, Feature.RADIAL_CV.value, "%s", TemplateFullFeature.OVERFLOW))
 
 
-class ZernikeFeature(str, Enum):
-    MAGNITUDE = "_".join((M_CATEGORY, FullFeature.ZERNIKE_MAGNITUDE.value, "%s", "%s", "%s"))
-    PHASE = "_".join((M_CATEGORY, FullFeature.ZERNIKE_PHASE.value, "%s", "%s", "%s"))
+class TemplateZernikeFeature(str):
+    MAGNITUDE = "_".join((M_CATEGORY, TemplateFullFeature.ZERNIKE_MAGNITUDE, "%s", "%s", "%s"))
+    PHASE = "_".join((M_CATEGORY, TemplateFullFeature.ZERNIKE_PHASE, "%s", "%s", "%s"))
 
 
 class MeasurementAlias(str, Enum):
@@ -55,7 +55,19 @@ class MeasurementAlias(str, Enum):
 MEASUREMENT_CHOICES = [MeasurementAlias.FRAC_AT_D.value, MeasurementAlias.MEAN_FRAC.value, MeasurementAlias.RADIAL_CV.value]
 
 MEASUREMENT_ALIASES = {
-    MeasurementAlias.FRAC_AT_D.value: MeasurementFeature.FRAC_AT_D.value,
-    MeasurementAlias.MEAN_FRAC.value: MeasurementFeature.MEAN_FRAC.value,
-    MeasurementAlias.RADIAL_CV.value: MeasurementFeature.RADIAL_CV.value,
+    MeasurementAlias.FRAC_AT_D.value: TemplateMeasurementFeature.FRAC_AT_D,
+    MeasurementAlias.MEAN_FRAC.value: TemplateMeasurementFeature.MEAN_FRAC,
+    MeasurementAlias.RADIAL_CV.value: TemplateMeasurementFeature.RADIAL_CV,
 }
+
+ALL_TEMPLATE_MEASUREMENT_FEATURES = [
+    TemplateMeasurementFeature.FRAC_AT_D,
+    TemplateMeasurementFeature.MEAN_FRAC,
+    TemplateMeasurementFeature.RADIAL_CV,
+]
+
+ALL_TEMPLATE_OVERFLOW_FEATURES = [
+    TemplateOverflowFeature.FRAC_AT_D,
+    TemplateOverflowFeature.MEAN_FRAC,
+    TemplateOverflowFeature.RADIAL_CV,
+]

@@ -16,7 +16,13 @@ from cellprofiler_library.functions.measurement import (
     compute_radial_cv,
     compute_zernike_measurements,
 )
-from cellprofiler_library.opts.measureobjectintensitydistribution import CenterChoice
+from cellprofiler_library.opts.measureobjectintensitydistribution import (
+    CenterChoice,
+    Feature,
+    MeasurementFeature,
+    OverflowFeature,
+    ZernikeFeature,
+)
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -30,9 +36,7 @@ def measure_object_intensity_distribution(
     maximum_radius:     Annotated[int, Field(description="Maximum radius for unscaled bins", ge=1)] = 100,
     center_object_name: Annotated[Optional[str], Field(description="Name of centering objects")] = None,
     center_labels:      Annotated[Optional[NDArray[np.int32]], Field(description="Labels of centering objects")] = None,
-    center_choice:      Annotated[str, Field(description="Center choice (C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER)")] = "These objects",
-    wants_zernikes:     Annotated[str, Field(description="Calculate Zernikes? (None, Magnitudes only, Magnitudes and phase)")] = "None",
-    zernike_degree:     Annotated[int, Field(description="Maximum Zernike degree", ge=1, le=20)] = 9,
+    center_choice:      Annotated[str, Field(description="Center choice (C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER)")] = CenterChoice.SELF.value,
     return_heatmap_data: Annotated[bool, Field(description="Return heatmap data for display")] = False,
 ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, Dict[str, Any]]]:
     """
@@ -52,8 +56,6 @@ def measure_object_intensity_distribution(
         center_object_name: Name of centering objects (if using centers of other objects)
         center_labels: Label matrix of centering objects (if using centers of other objects)
         center_choice: One of "These objects", "Centers of other objects", "Edges of other objects"
-        wants_zernikes: "None", "Magnitudes only", or "Magnitudes and phase"
-        zernike_degree: Maximum Zernike degree to compute
         return_heatmap_data: If True, return heatmap data for display
         
     Returns:
@@ -67,13 +69,13 @@ def measure_object_intensity_distribution(
     # Handle empty case
     if nobjects == 0:
         for bin_index in range(1, bin_count + 1):
-            for feature in ("FracAtD", "MeanFrac", "RadialCV"):
-                feature_name = f"RadialDistribution_{feature}_{image_name}_{bin_index}of{bin_count}"
+            for feature in MeasurementFeature:
+                feature_name = feature.value % (image_name, bin_index, bin_count)
                 measurements.add_measurement(object_name, feature_name, numpy.zeros(0))
         
         if not wants_scaled:
-            for feature in ("FracAtD", "MeanFrac", "RadialCV"):
-                feature_name = f"RadialDistribution_{feature}_{image_name}_Overflow"
+            for feature in OverflowFeature:
+                feature_name = feature.value % image_name
                 measurements.add_measurement(object_name, feature_name, numpy.zeros(0))
         
         if return_heatmap_data:
@@ -218,9 +220,9 @@ def measure_object_intensity_distribution(
     # Prepare heatmap data if requested
     heatmaps = {}
     if return_heatmap_data:
-        heatmaps["FracAtD"] = numpy.zeros(labels.shape)
-        heatmaps["MeanFrac"] = numpy.zeros(labels.shape)
-        heatmaps["RadialCV"] = numpy.zeros(labels.shape)
+        heatmaps[Feature.FRAC_AT_D.value] = numpy.zeros(labels.shape)
+        heatmaps[Feature.MEAN_FRAC.value] = numpy.zeros(labels.shape)
+        heatmaps[Feature.RADIAL_CV.value] = numpy.zeros(labels.shape)
     
     # Process each bin
     for bin in range(bin_count + (0 if wants_scaled else 1)):
@@ -233,14 +235,14 @@ def measure_object_intensity_distribution(
         # Add measurements
         if bin == bin_count:
             # Overflow bin
-            frac_name = f"RadialDistribution_FracAtD_{image_name}_Overflow"
-            mean_name = f"RadialDistribution_MeanFrac_{image_name}_Overflow"
-            cv_name = f"RadialDistribution_RadialCV_{image_name}_Overflow"
+            frac_name = OverflowFeature.FRAC_AT_D.value % image_name
+            mean_name = OverflowFeature.MEAN_FRAC.value % image_name
+            cv_name = OverflowFeature.RADIAL_CV.value % image_name
         else:
             # Regular bin
-            frac_name = f"RadialDistribution_FracAtD_{image_name}_{bin + 1}of{bin_count}"
-            mean_name = f"RadialDistribution_MeanFrac_{image_name}_{bin + 1}of{bin_count}"
-            cv_name = f"RadialDistribution_RadialCV_{image_name}_{bin + 1}of{bin_count}"
+            frac_name = MeasurementFeature.FRAC_AT_D.value % (image_name, bin + 1, bin_count)
+            mean_name = MeasurementFeature.MEAN_FRAC.value % (image_name, bin + 1, bin_count)
+            cv_name = MeasurementFeature.RADIAL_CV.value % (image_name, bin + 1, bin_count)
         
         measurements.add_measurement(object_name, frac_name, fraction_at_distance[:, bin])
         measurements.add_measurement(object_name, mean_name, mean_pixel_fraction[:, bin])
@@ -251,9 +253,9 @@ def measure_object_intensity_distribution(
             bin_mask = good_mask & (bin_indexes == bin)
             bin_labels = labels[bin_mask]
             
-            heatmaps["FracAtD"][bin_mask] = fraction_at_distance[:, bin][bin_labels - 1]
-            heatmaps["MeanFrac"][bin_mask] = mean_pixel_fraction[:, bin][bin_labels - 1]
-            heatmaps["RadialCV"][bin_mask] = radial_cv[bin_labels - 1]
+            heatmaps[Feature.FRAC_AT_D.value][bin_mask] = fraction_at_distance[:, bin][bin_labels - 1]
+            heatmaps[Feature.MEAN_FRAC.value][bin_mask] = mean_pixel_fraction[:, bin][bin_labels - 1]
+            heatmaps[Feature.RADIAL_CV.value][bin_mask] = radial_cv[bin_labels - 1]
     
     if return_heatmap_data:
         return measurements, heatmaps
@@ -294,11 +296,11 @@ def measure_zernike_features(
     if object_count == 0:
         zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
         for n, m in zernike_indexes:
-            mag_name = f"RadialDistribution_ZernikeMagnitude_{image_name}_{n}_{m}"
+            mag_name = ZernikeFeature.MAGNITUDE.value % (image_name, n, m)
             measurements.add_measurement(object_name, mag_name, numpy.zeros(0))
             
             if wants_phase:
-                phase_name = f"RadialDistribution_ZernikePhase_{image_name}_{n}_{m}"
+                phase_name = ZernikeFeature.PHASE.value % (image_name, n, m)
                 measurements.add_measurement(object_name, phase_name, numpy.zeros(0))
         
         return measurements
@@ -310,11 +312,11 @@ def measure_zernike_features(
     
     # Add measurements
     for idx, (n, m) in enumerate(zernike_indexes):
-        mag_name = f"RadialDistribution_ZernikeMagnitude_{image_name}_{n}_{m}"
+        mag_name = ZernikeFeature.MAGNITUDE.value % (image_name, n, m)
         measurements.add_measurement(object_name, mag_name, magnitudes[:, idx])
         
         if wants_phase:
-            phase_name = f"RadialDistribution_ZernikePhase_{image_name}_{n}_{m}"
+            phase_name = ZernikeFeature.PHASE.value % (image_name, n, m)
             measurements.add_measurement(object_name, phase_name, phases[:, idx])
     
     return measurements

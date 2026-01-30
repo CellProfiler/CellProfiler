@@ -43,6 +43,11 @@ class OverflowFeature(str, Enum):
     RADIAL_CV = "_".join((M_CATEGORY, Feature.RADIAL_CV.value, "%s", FullFeature.OVERFLOW.value))
 
 
+class ZernikeFeature(str, Enum):
+    MAGNITUDE = "_".join((M_CATEGORY, FullFeature.ZERNIKE_MAGNITUDE.value, "%s", "%s", "%s"))
+    PHASE = "_".join((M_CATEGORY, FullFeature.ZERNIKE_PHASE.value, "%s", "%s", "%s"))
+
+
 class MeasurementAlias(str, Enum):
     FRAC_AT_D = "Fraction at Distance"
     MEAN_FRAC = "Mean Fraction"

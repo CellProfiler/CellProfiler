@@ -702,8 +702,6 @@ be selected in a later **SaveImages** or other module.
                         center_object_name=center_object_name,
                         center_labels=center_labels,
                         center_choice=o.center_choice.value,
-                        wants_zernikes="None",  # Handled separately
-                        zernike_degree=self.zernike_degree.value,
                         return_heatmap_data=needs_heatmap or self.show_window,
                     )
                     

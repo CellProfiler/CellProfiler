@@ -45,6 +45,12 @@ h5py = "<3.11"
 [target.linux-64.pypi-dependencies]
 wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl" }
 
+[target.linux-64.dependencies]
+sdl2 = ">=2.0.0,<3.0.0"
+
+[target.linux-64.activation]
+env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
+
 [target.osx-arm64.pypi-dependencies]
 wxpython = "==4.2.1"
 

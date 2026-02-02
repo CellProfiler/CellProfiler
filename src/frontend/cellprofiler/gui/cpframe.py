@@ -155,6 +155,12 @@ WINDOW_IDS = []
 ID_HELP_MODULE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 
+# Why -1? Not sure. I just moved this here from
+# frontend/cellprofiler/gui/module_view/_module_view.py
+# where it was a hardcoded positional argument to wx.Button for the "+" button (__mcp_add_module_button)
+# the other buttons ("-", "^", "v") had Constants with generated IDs defined above
+ID_MODULE_ADD = -1
+
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):

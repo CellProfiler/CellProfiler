@@ -227,7 +227,7 @@ class ReadersDialog(wx.Dialog):
                 widget.Refresh()
                 setting_sizer.Add(widget, proportion=1)
 
-                help_button = wx.Button(self.control_panel, -1, "?", (0, 0), (30, -1))
+                help_button = wx.Button(self.control_panel, -1, "?", (0, 0), (30, -1), style=wx.BU_EXACTFIT)
 
                 def on_help(event, help_text=desc):
                     dlg = HTMLDialog(

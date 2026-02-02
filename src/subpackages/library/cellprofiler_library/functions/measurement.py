@@ -44,9 +44,6 @@ from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABEL
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import Measurement as NeighborsMeasurement
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
-from cellprofiler_library.opts.measureobjectintensitydistribution import CenterChoice, IntensityZernike, FullFeature
-from cellprofiler_library.opts.measureobjectintensitydistribution import M_CATEGORY as ObjectIntensityDistribution_M_CATEGORY
-from cellprofiler_library.opts.measuretexture import F_HARALICK
 
 ###############################################################################
 # MeasureImageOverlap

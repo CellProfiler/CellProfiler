@@ -538,43 +538,6 @@ measured and will result in a undefined value in the output file.
 
         n_directions = 13 if objects.volumetric else 4
 
-        if len(unique_labels) == 0:
-            for direction in range(n_directions):
-                scale_str = "{:d}_{:02d}".format(scale, direction)
-                gray_str = "{:d}".format(gray_levels)
-                for feature_enum in F_HARALICK:
-                    feature_name = feature_enum.value
-                    full_name = "{}_{}_{}_{}_{}".format(
-                        TEXTURE, feature_name, image_name, scale_str, gray_str
-                    )
-                    workspace.add_measurement(
-                        object_name,
-                        full_name,
-                        numpy.zeros((0,))
-                    )
-
-                    stats_map = {
-                        "Mean": "mean",
-                        "Median": "median",
-                        "Min": "min",
-                        "Max": "max",
-                        "StDev": "std dev"
-                    }
-                    
-                    for stat_key, display_name in stats_map.items():
-                        stat_full_name = f"{stat_key}_{full_name}"
-                        # Add image measurement for stat (even if 0)
-                        workspace.measurements.add_image_measurement(stat_full_name, 0.0)
-
-                        statistics.append([
-                            image_name,
-                            object_name,
-                            "{} {}".format(display_name, feature_name),
-                            scale_str,
-                            "-"
-                        ])
-            return statistics
-
         # # IMG-961: Ensure image and objects have the same shape.
         try:
             mask = (
@@ -593,7 +556,7 @@ measured and will result in a undefined value in the output file.
                 else:
                     mask = m1
 
-        results = measure_object_texture(
+        measurements = measure_object_texture(
             object_name, 
             labels,
             image_name, 
@@ -605,6 +568,15 @@ measured and will result in a undefined value in the output file.
             objects.volumetric,
         )
         
+        # Unpack measurements
+        for feature_name, value in measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+        for obj, features in measurements.objects.items():
+            for feature_name, val in features.items():
+                workspace.add_measurement(obj, feature_name, val)
+        
+        # Build statistics for display
         for direction in range(n_directions):
             scale_str = "{:d}_{:02d}".format(scale, direction)
             gray_str = "{:d}".format(gray_levels)
@@ -614,9 +586,8 @@ measured and will result in a undefined value in the output file.
                     TEXTURE, feature_name, image_name, scale_str, gray_str
                 )
                 
-                vals = results["Object"][object_name].get(full_name, numpy.zeros((0,)))
-                vals[~numpy.isfinite(vals)] = 0
-                workspace.add_measurement(object_name, full_name, vals)
+                # Check if we have values (we might check the object measurement itself)
+                vals = measurements.get_measurement(object_name, full_name)
                 
                 stats_map = {
                     "Mean": "mean",
@@ -628,18 +599,14 @@ measured and will result in a undefined value in the output file.
 
                 for stat_key, display_name in stats_map.items():
                     stat_full_name = f"{stat_key}_{full_name}"
-                    stat_val = results["Image"].get(stat_full_name, 0.0)
-                    if not numpy.isfinite(stat_val):
-                        stat_val = 0.0
-
-                    workspace.measurements.add_image_measurement(stat_full_name, stat_val)
+                    stat_val = measurements.image.get(stat_full_name, 0.0)
 
                     statistics.append([
                         image_name,
                         object_name,
                         "{} {}".format(display_name, feature_name),
                         scale_str,
-                        "{:.2f}".format(float(stat_val)) if len(vals) > 0 else "-"
+                        "{:.2f}".format(float(stat_val)) if vals is not None and len(vals) > 0 else "-"
                     ])
 
         return statistics
@@ -651,7 +618,12 @@ measured and will result in a undefined value in the output file.
         gray_levels = int(self.gray_levels.value)
         pixel_data = image.pixel_data
 
-        results = measure_image_texture(pixel_data, gray_levels, scale, image_name)
+        measurements = measure_image_texture(pixel_data, gray_levels, scale, image_name)
+        
+        # Unpack measurements
+        for feature_name, value in measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
         statistics = []
         
         n_directions = 13 if pixel_data.ndim == 3 else 4
@@ -665,11 +637,8 @@ measured and will result in a undefined value in the output file.
                     TEXTURE, feature_name, image_name, scale_str, gray_str
                 )
                 
-                val = results["Image"].get(full_name, 0.0)
-                if not numpy.isfinite(val):
-                    val = 0.0
-                
-                workspace.measurements.add_image_measurement(full_name, val)
+                # Retrieve from LibraryMeasurements
+                val = measurements.image.get(full_name, 0.0)
                 
                 statistics.append([
                     image_name,

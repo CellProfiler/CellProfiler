@@ -1199,7 +1199,7 @@ class Measurements:
         if len(aggs) == 0:
             return d
         for object_name in self.get_object_names():
-            if object_name == IMAGE,
+            if object_name == IMAGE:
                 continue
             for feature in self.get_feature_names(object_name):
                 if self.agg_ignore_feature(object_name, feature):

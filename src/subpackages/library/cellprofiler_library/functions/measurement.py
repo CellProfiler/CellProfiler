@@ -42,9 +42,6 @@ from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as O
 from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABELS, VF_KIND, EF_V1, EF_V2, EF_LENGTH, EF_TOTAL_INTENSITY
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
-from cellprofiler_library.opts.measureobjectintensitydistribution import CenterChoice, IntensityZernike, FullFeature
-from cellprofiler_library.opts.measureobjectintensitydistribution import M_CATEGORY as ObjectIntensityDistribution_M_CATEGORY
-from cellprofiler_library.opts.measuretexture import F_HARALICK
 
 ###############################################################################
 # MeasureImageOverlap

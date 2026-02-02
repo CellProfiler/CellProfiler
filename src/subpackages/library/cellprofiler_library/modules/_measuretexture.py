@@ -5,6 +5,7 @@ from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Objec
 from pydantic import validate_call, Field, ConfigDict
 from cellprofiler_library.functions.measurement import measure_haralick_features_image, measure_haralick_features_objects
 from cellprofiler_library.opts.measuretexture import F_HARALICK, TEXTURE
+from cellprofiler_library.measurement_model import LibraryMeasurements
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -13,10 +14,10 @@ def measure_image_texture(
         gray_levels: Annotated[int, Field(description="Enter the number of gray levels (ie, total possible values of intensity) you want to measure texture at")], 
         scale: Annotated[int, Field(description="You can specify the scale of texture to be measured, in pixel units; the texture scale is the distance between correlated intensities in the image")], 
         image_name: Annotated[str, Field(description="Name to be assigned in measurements")]
-    ) -> Dict:
+    ) -> LibraryMeasurements:
     
     raw_data = measure_haralick_features_image(pixel_data, gray_levels, scale)
-    image_measurements = {}
+    measurements = LibraryMeasurements()
     
     for direction in range(raw_data.shape[0]):
         scale_str = "{:d}_{:02d}".format(scale, direction)
@@ -25,9 +26,12 @@ def measure_image_texture(
         for feature_idx, feature_enum in enumerate(F_HARALICK):
             feature_name = feature_enum.value
             full_name = f"{TEXTURE}_{feature_name}_{image_name}_{scale_str}_{gray_str}"
-            image_measurements[full_name] = raw_data[direction, feature_idx]
+            val = raw_data[direction, feature_idx]
+            if not numpy.isfinite(val):
+                val = 0.0
+            measurements.add_image_measurement(full_name, val)
             
-    return {"Image": image_measurements}
+    return measurements
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -41,7 +45,7 @@ def measure_object_texture(
         unique_labels: Annotated[NDArray[ObjectLabel], Field(description="The unique labels in the object segmentation prior to any masking")], # objects.indices
         scale: Annotated[int, Field(description="You can specify the scale of texture to be measured, in pixel units; the texture scale is the distance between correlated intensities in the image")], 
         volumetric: Annotated[bool, Field(description="Is the input image or objects 3D?")],
-    ) -> Dict:
+    ) -> LibraryMeasurements:
     
     max_label = 0
     if len(unique_labels) > 0:
@@ -49,8 +53,9 @@ def measure_object_texture(
         
     raw_data = measure_haralick_features_objects(labels, pixel_data, mask, gray_levels, max_label, scale, volumetric)
     
-    object_measurements = {}
-    image_stats = {}
+    measurements = LibraryMeasurements()
+    
+    n_directions = 13 if volumetric else 4
     
     if raw_data.size > 0:
         for direction in range(raw_data.shape[1]):
@@ -63,27 +68,44 @@ def measure_object_texture(
                 
                 values = raw_data[:, direction, feature_idx]
                 
-                if object_name not in object_measurements:
-                    object_measurements[object_name] = {}
-                object_measurements[object_name][full_name] = values
-                
+                # Calculate stats on valid (finite) values, mirroring original logic
                 valid_values = values[numpy.isfinite(values)]
                 
+                # Clean values for storage (replace non-finite with 0), mirroring original frontend logic
+                clean_values = values.copy()
+                clean_values[~numpy.isfinite(clean_values)] = 0
+                
+                measurements.add_measurement(object_name, full_name, clean_values)
+                
+                stats_map = {
+                    "Mean": numpy.mean,
+                    "Median": numpy.median,
+                    "Min": numpy.min,
+                    "Max": numpy.max,
+                    "StDev": numpy.std
+                }
+                
                 if len(valid_values) > 0:
-                    image_stats[f"Mean_{full_name}"] = numpy.mean(valid_values)
-                    image_stats[f"Median_{full_name}"] = numpy.median(valid_values)
-                    image_stats[f"Min_{full_name}"] = numpy.min(valid_values)
-                    image_stats[f"Max_{full_name}"] = numpy.max(valid_values)
-                    image_stats[f"StDev_{full_name}"] = numpy.std(valid_values)
+                    for stat_name, func in stats_map.items():
+                        measurements.add_image_measurement(f"{stat_name}_{full_name}", func(valid_values))
                 else:
-                    image_stats[f"Mean_{full_name}"] = 0.0
-                    image_stats[f"Median_{full_name}"] = 0.0
-                    image_stats[f"Min_{full_name}"] = 0.0
-                    image_stats[f"Max_{full_name}"] = 0.0
-                    image_stats[f"StDev_{full_name}"] = 0.0
+                    for stat_name in stats_map.keys():
+                        measurements.add_image_measurement(f"{stat_name}_{full_name}", 0.0)
+    else:
+        # Handle empty objects case
+        for direction in range(n_directions):
+            scale_str = "{:d}_{:02d}".format(scale, direction)
+            gray_str = "{:d}".format(gray_levels)
+            
+            for feature_enum in F_HARALICK:
+                feature_name = feature_enum.value
+                full_name = f"{TEXTURE}_{feature_name}_{image_name}_{scale_str}_{gray_str}"
+                
+                measurements.add_measurement(object_name, full_name, numpy.zeros((0,)))
+                
+                stats_map_keys = ["Mean", "Median", "Min", "Max", "StDev"]
+                for stat_name in stats_map_keys:
+                    measurements.add_image_measurement(f"{stat_name}_{full_name}", 0.0)
 
-    return {
-        "Image": image_stats,
-        "Object": object_measurements
-    }
+    return measurements
     

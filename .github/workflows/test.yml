@@ -7,7 +7,7 @@ jobs:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         # https://github.com/actions/runner-images/tree/main
         # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -24,7 +24,7 @@ jobs:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           # NOTE: if/when we move to a runner using apple M[1-3] (arm64)
           # architecture we'll need to adjust:
@@ -76,7 +76,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -93,7 +93,7 @@ jobs:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
@@ -140,7 +140,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-13]
+        os: [macos-15-intel]
         python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -152,7 +152,7 @@ jobs:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}

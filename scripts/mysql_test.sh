@@ -89,6 +89,8 @@ Higher Level Commands:
   config                 Configure and initialize mysql for cellprofiler database testing (one time)
   clear-config           Clear previous mysql database (WARNING: destroys all previous data)
   run                    Run cellprofiler database tests
+  start                  Start the cellprofiler database
+  stop                   Stop the cellprofiler database
 
 Lower Level Commands:
   config-mysql           Configure blank mysql server
@@ -109,6 +111,14 @@ case "$1" in
       ;;
     run)
       cp_dbtest
+      exit $?
+      ;;
+    start)
+      cp_dbtest_start
+      exit $?
+      ;;
+    stop)
+      cp_dbtest_end
       exit $?
       ;;
     config-mysql)

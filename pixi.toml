@@ -68,6 +68,7 @@ mysql = "=8.0"
 
 [feature.mysql.target.linux-64.dependencies]
 mysqlclient = ">=2.2.3"
+mysql = "*"
 
 [feature.java.dependencies]
 openjdk = "11.*"

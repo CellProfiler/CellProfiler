@@ -2,7 +2,15 @@
 
 set -euo pipefail
 
+ensure_var () {
+  if [ ! -d "${CONDA_PREFIX}/var/mysql" ]; then
+    mkdir -p "${CONDA_PREFIX}/var/mysql"
+  fi
+}
+
 config_mysql_db () {
+  ensure_var
+
   mysqld --initialize-insecure \
          --user="$(whoami)" \
          --datadir="${CONDA_PREFIX}/var/mysql"

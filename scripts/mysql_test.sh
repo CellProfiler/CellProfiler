@@ -68,10 +68,18 @@ cp_dbtest_end () {
   stop_mysql_db
 }
 
-cp_dbtest() {
+cp_dbtest () {
   cp_dbtest_start
 
   pytest "${PIXI_PROJECT_ROOT}/tests/frontend/modules/test_exporttodatabase.py"
+
+  cp_dbtest_end
+}
+
+cp_test_all () {
+  cp_dbtest_start
+
+  pytest "$@" "${PIXI_PROJECT_ROOT}/tests"
 
   cp_dbtest_end
 }
@@ -89,8 +97,7 @@ Higher Level Commands:
   config                 Configure and initialize mysql for cellprofiler database testing (one time)
   clear-config           Clear previous mysql database (WARNING: destroys all previous data)
   run                    Run cellprofiler database tests
-  start                  Start the cellprofiler database
-  stop                   Stop the cellprofiler database
+  run-all                Run all cellprofiler tests
 
 Lower Level Commands:
   config-mysql           Configure blank mysql server
@@ -111,6 +118,11 @@ case "$1" in
       ;;
     run)
       cp_dbtest
+      exit $?
+      ;;
+    run-all)
+      shift
+      cp_test_all "$@"
       exit $?
       ;;
     start)

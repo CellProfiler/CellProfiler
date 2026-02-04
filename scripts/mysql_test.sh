@@ -83,7 +83,11 @@ cp_test_all () {
 
   set +e
   cp_dbtest_start && \
-    pytest "$@" "${PIXI_PROJECT_ROOT}/tests"
+    # WARN: specifying a root dir results in several errors
+    # wx._core.PyNoAppError: the wx.App object must be created first!
+    # pytest "$@" "${PIXI_PROJECT_ROOT}/tests"
+
+    pytest "$@"
 }
 
 usage() {

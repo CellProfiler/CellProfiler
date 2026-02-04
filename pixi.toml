@@ -12,8 +12,11 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 cp = { cmd = ["python", "-m", "cellprofiler"] }
 
 [feature.mysql.tasks]
+# configure the database - should be run only once, on enviroment creation
 cfg-db = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh config"
+# run just the exporttodatabase tests
 dbtest = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run"
+# run all tests, pass in args if you want them to pass through
 tests = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run-all"
 
 [target.osx.tasks]

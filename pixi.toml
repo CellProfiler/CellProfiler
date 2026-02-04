@@ -12,10 +12,9 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 cp = { cmd = ["python", "-m", "cellprofiler"] }
 
 [feature.mysql.tasks]
-cfg_dbtest = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh config"
-run_dbtest = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run"
-start_db = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh start"
-stop_db = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh stop"
+cfg-db = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh config"
+dbtest = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run"
+tests = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run-all"
 
 [target.osx.tasks]
 # run using python.app (i.e. pythonw)

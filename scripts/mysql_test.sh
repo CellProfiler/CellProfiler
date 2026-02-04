@@ -61,27 +61,29 @@ cp_dbtest_start () {
 }
 
 cp_dbtest_end () {
-  #unset LC_ALL
-  unset CP_MYSQL_TEST_HOST
-  unset CP_MYSQL_TEST_USER
-  unset CP_MYSQL_TEST_PASSWORD
   stop_mysql_db
 }
 
 cp_dbtest () {
-  cp_dbtest_start
+  trap '
+    cp_dbtest_end
+    set -e
+  ' RETURN
 
-  pytest "${PIXI_PROJECT_ROOT}/tests/frontend/modules/test_exporttodatabase.py"
-
-  cp_dbtest_end
+  set +e
+  cp_dbtest_start && \
+    pytest "${PIXI_PROJECT_ROOT}/tests/frontend/modules/test_exporttodatabase.py"
 }
 
 cp_test_all () {
-  cp_dbtest_start
+  trap '
+    cp_dbtest_end
+    set -e
+  ' RETURN
 
-  pytest "$@" "${PIXI_PROJECT_ROOT}/tests"
-
-  cp_dbtest_end
+  set +e
+  cp_dbtest_start && \
+    pytest "$@" "${PIXI_PROJECT_ROOT}/tests"
 }
 
 usage() {

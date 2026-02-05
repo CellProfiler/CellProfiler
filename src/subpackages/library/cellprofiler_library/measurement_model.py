@@ -1,5 +1,38 @@
 from typing import Any, Dict, List
+import copy
 from pydantic import BaseModel, Field, ConfigDict
+import numpy as np
+from numpy.typing import NDArray
+
+class RelationshipKey:
+    """Key for identifying relationship groups."""
+    def __init__(self, relationship, object_name1, object_name2):
+        self.relationship = relationship
+        self.object_name1 = object_name1
+        self.object_name2 = object_name2
+
+    def __eq__(self, other):
+        return (
+            self.relationship == other.relationship
+            and self.object_name1 == other.object_name1
+            and self.object_name2 == other.object_name2
+        )
+
+    def __hash__(self):
+        return hash(
+            (self.relationship, self.object_name1, self.object_name2)
+        )
+    
+    def __repr__(self):
+        return f"RelationshipKey({self.relationship}, {self.object_name1}, {self.object_name2})"
+
+
+# Constants for relationship measurements
+IMAGE_NUMBER = "ImageNumber"
+OBJECT_NUMBER = "ObjectNumber"
+R_FIRST_OBJECT_NUMBER = f"{OBJECT_NUMBER}_First"
+R_SECOND_OBJECT_NUMBER = f"{OBJECT_NUMBER}_Second"
+
 
 class LibraryMeasurements(BaseModel):
     """
@@ -59,6 +92,106 @@ class LibraryMeasurements(BaseModel):
     def add_experiment_measurement(self, feature_name: str, data: Any):
         """Helper to add an experiment measurement."""
         self.add_measurement("Experiment", feature_name, data)
+
+    def add_relate_measurement(
+        self,
+        relationship: str,
+        object_name1: str,
+        object_name2: str,
+        object_numbers1: NDArray[np.int_],
+        object_numbers2: NDArray[np.int_],
+    ):
+        """Helper to add a relate measurement.
+        
+        Args:
+            relationship: Name of relationship (e.g., 'Parent')
+            object_name1: Name of first object type
+            object_name2: Name of second object type
+            object_numbers1: Array of indices for first objects
+            object_numbers2: Array of indices for second objects (must match length of object_numbers1)
+        """
+        if len(object_numbers1) == 0:
+            return
+
+        # Check if this relationship group already exists
+        target_item = None
+        for item in self.relationships:
+            if (
+                item["relationship"] == relationship
+                and item["object_name1"] == object_name1
+                and item["object_name2"] == object_name2
+            ):
+                target_item = item
+                break
+
+        if target_item is None:
+            target_item = {
+                "relationship": relationship,
+                "object_name1": object_name1,
+                "object_name2": object_name2,
+                R_FIRST_OBJECT_NUMBER: np.array([], dtype=np.int32),
+                R_SECOND_OBJECT_NUMBER: np.array([], dtype=np.int32),
+            }
+            self.relationships.append(target_item)
+
+        # Append data
+        target_item[R_FIRST_OBJECT_NUMBER] = np.concatenate(
+            (target_item[R_FIRST_OBJECT_NUMBER], object_numbers1)
+        )
+        target_item[R_SECOND_OBJECT_NUMBER] = np.concatenate(
+            (target_item[R_SECOND_OBJECT_NUMBER], object_numbers2)
+        )
+
+    def get_relationship_groups(self) -> List[RelationshipKey]:
+        """Return the keys of each of the relationship groupings."""
+        return [
+            RelationshipKey(
+                item["relationship"],
+                item["object_name1"],
+                item["object_name2"],
+            )
+            for item in self.relationships
+        ]
+
+    def get_relationships(
+        self,
+        relationship: str,
+        object_name1: str,
+        object_name2: str,
+    ) -> NDArray:
+        """Get the relationships recorded by a particular module.
+
+        Returns a recarray with fields:
+        R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
+        """
+        features = (
+            R_FIRST_OBJECT_NUMBER,
+            R_SECOND_OBJECT_NUMBER,
+        )
+        dt = np.dtype([(feature, np.int32, ()) for feature in features])
+
+        # Find the relationship group
+        target_item = None
+        for item in self.relationships:
+            if (
+                item["relationship"] == relationship
+                and item["object_name1"] == object_name1
+                and item["object_name2"] == object_name2
+            ):
+                target_item = item
+                break
+
+        if target_item is None:
+            return np.zeros(0, dt).view(np.recarray)
+
+        n_records = len(target_item[R_FIRST_OBJECT_NUMBER])
+        if n_records == 0:
+            return np.zeros(0, dt).view(np.recarray)
+
+        temp = np.zeros(n_records, dt)
+        for feature in features:
+            temp[feature] = target_item[feature]
+        return temp.view(np.recarray)
 
     def get_experiment_measurement(self, feature_name: str) -> Any:
         """Helper to get an experiment measurement."""
@@ -120,7 +253,7 @@ class LibraryMeasurements(BaseModel):
         - Image measurements: 'other' overwrites 'self'
         - Experiment measurements: 'other' overwrites 'self'
         - Object measurements: Merged by object name. Within an object, 'other' features overwrite 'self'.
-        - Relationships: Concatenated
+        - Relationships: Merged by key (concatenated)
         
         Args:
             other: Another LibraryMeasurements instance
@@ -143,12 +276,82 @@ class LibraryMeasurements(BaseModel):
             obj_measurements.update(other.objects.get(obj_name, {}))
             new_objects[obj_name] = obj_measurements
             
-        # Concatenate relationships
-        new_relationships = self.relationships + other.relationships
+        # Merge relationships
+        new_relationships = copy.deepcopy(self.relationships)
+        
+        for other_item in other.relationships:
+            # Check if matching item exists
+            match_index = -1
+            for i, item in enumerate(new_relationships):
+                 if (
+                    item["relationship"] == other_item["relationship"]
+                    and item["object_name1"] == other_item["object_name1"]
+                    and item["object_name2"] == other_item["object_name2"]
+                ):
+                    match_index = i
+                    break
+            
+            if match_index != -1:
+                # Merge into existing item
+                target = new_relationships[match_index]
+                target[R_FIRST_OBJECT_NUMBER] = np.concatenate(
+                    (target[R_FIRST_OBJECT_NUMBER], other_item[R_FIRST_OBJECT_NUMBER])
+                )
+                target[R_SECOND_OBJECT_NUMBER] = np.concatenate(
+                    (target[R_SECOND_OBJECT_NUMBER], other_item[R_SECOND_OBJECT_NUMBER])
+                )
+            else:
+                # Append new item (deep copy to be safe)
+                new_relationships.append(copy.deepcopy(other_item))
         
         return LibraryMeasurements(
             image=new_image,
             objects=new_objects,
             experiment=new_experiment,
             relationships=new_relationships
+        )
+    
+    @staticmethod
+    def from_cellprofiler_measurements(measurements) -> 'LibraryMeasurements':
+        """
+        Create a LibraryMeasurements instance from a CellProfiler Measurements instance.
+        
+        Args:
+            measurements: A CellProfiler Measurements instance
+            
+        Returns:
+            A LibraryMeasurements instance
+        """
+        image = {}
+        objects = {}
+        experiment = {}
+        relationships = []
+        
+        for object_name in measurements.get_object_names():
+            objects[object_name] = {}
+            for feature in measurements.get_feature_names(object_name):
+                objects[object_name][feature] = measurements.get_measurement(object_name, feature)
+        
+        for feature in measurements.get_feature_names("Image"):
+            image[feature] = measurements.get_measurement("Image", feature)
+        try:
+            for feature in measurements.get_feature_names("Experiment"):
+                experiment[feature] = measurements.get_measurement("Experiment", feature)
+        except KeyError:
+            pass
+        
+        for relationship in measurements.get_relationship_groups():
+            relationships.append({
+                "relationship": relationship["relationship"],
+                "object_name1": relationship["object_name1"],
+                "object_name2": relationship["object_name2"],
+                "object_number1": relationship[R_FIRST_OBJECT_NUMBER],
+                "object_number2": relationship[R_SECOND_OBJECT_NUMBER],
+            })
+        
+        return LibraryMeasurements(
+            image=image,
+            objects=objects,
+            experiment=experiment,
+            relationships=relationships
         )

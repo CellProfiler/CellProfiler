@@ -113,5 +113,14 @@ def measure_object_neighbors(
             measurements.add_image_measurement(f"Min_{full_name}", 0.0)
             measurements.add_image_measurement(f"StDev_{full_name}", 0.0)
 
+    if len(first_objects) > 0:
+        measurements.add_relate_measurement(
+            C_NEIGHBORS,
+            object_name,
+            neighbors_name,
+            first_objects,
+            second_objects,
+        )
+
     return measurements, (first_objects, second_objects), expanded_labels
 

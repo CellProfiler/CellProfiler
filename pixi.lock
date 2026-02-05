@@ -1793,8 +1793,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
-  version: 5.0.0.dev352
-  sha256: da5f4966a2ec842aef4443347512572aa6a6963cff7eec3d16285592e90ddbcc
+  version: 5.0.0.dev354
+  sha256: 0ee813b91640ed4518d01dccf174300538cc96d0463c63c68adfac172d6a5de4
   requires_dist:
   - cellprofiler-library>=5.dev0
   - boto3>=1.12.28
@@ -1814,6 +1814,7 @@ packages:
   - zarr>=2.16.1
   - google-cloud-storage~=2.10.0
   - packaging>=20.0
+  - importlib-metadata
   - build ; extra == 'build'
   - pyinstaller ; extra == 'build'
   - twine ; extra == 'build'

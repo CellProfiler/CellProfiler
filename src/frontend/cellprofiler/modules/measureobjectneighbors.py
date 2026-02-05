@@ -84,6 +84,10 @@ from cellprofiler_core.workspace import Workspace
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
 from cellprofiler_library.types import ObjectSegmentation
 from cellprofiler_library.modules._measureobjectneighbors import measure_object_neighbors
+from cellprofiler_library.measurement_model import (
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+)
 
 class MeasureObjectNeighbors(Module):
     module_name = "MeasureObjectNeighbors"
@@ -333,16 +337,24 @@ previously discarded objects.""".format(
             for feature_name, data in features.items():
                 m.add_measurement(object_name, feature_name, data)
 
-        if len(first_objects) > 0:
+        for relationship in measurements.get_relationship_groups():
+            data = measurements.get_relationships(
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2
+            )
+            n_records = len(data)
+            img_nums = numpy.ones(n_records, int) * m.image_set_number
+
             m.add_relate_measurement(
                 self.module_num,
-                NEIGHBORS,
-                self.object_name.value,
-                self.neighbors_name.value,
-                m.image_set_number * numpy.ones(first_objects.shape, int),
-                first_objects,
-                m.image_set_number * numpy.ones(second_objects.shape, int),
-                second_objects,
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                img_nums,
+                data[R_FIRST_OBJECT_NUMBER],
+                img_nums,
+                data[R_SECOND_OBJECT_NUMBER], 
             )
 
         labels = kept_labels

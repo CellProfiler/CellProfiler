@@ -6,6 +6,20 @@ import imageio
 from cellprofiler_core.readers.imageio_reader import ImageIOReader
 from cellprofiler_core.readers.imageio_reader import SUPPORTED_EXTENSIONS as IMAGEIO_SUPPORTED_EXTENSIONS
 from cellprofiler_core.readers.imageio_reader import SEMI_SUPPORTED_EXTENSIONS as IMAGEIO_SEMI_SUPPORTED_EXTENSIONS
+
+# TODO: python update - this is needed for python < 3.10 only,
+#   remove when ugprading (and also "importlib_metadata" dependency from pyproject.toml, and core/utilities/image.py)
+# google tries to access importlib.metadata.packages_distributions which doesn't exist
+# and pinning it isn't a good idea for security reasons, so force the use of a backport instead
+import importlib.metadata
+if not hasattr(importlib.metadata, "packages_distributions"):
+    from importlib_metadata import packages_distributions
+    importlib.metadata.packages_distributions = packages_distributions
+import warnings
+# this is likewise only needed to prevent warnings for eol python versions
+# when using google packages
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from google.cloud import storage
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud.exceptions import NotFound

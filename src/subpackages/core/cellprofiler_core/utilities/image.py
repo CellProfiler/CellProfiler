@@ -11,6 +11,21 @@ import boto3
 import numpy
 import importlib.resources
 import scipy.io
+
+
+# TODO: python update - this is needed for python < 3.10 only,
+#   remove when ugprading (and also "importlib_metadata" dependency from pyproject.toml, and core/readers/gcs_reader.py)
+# google tries to access importlib.metadata.packages_distributions which doesn't exist
+# and pinning it isn't a good idea for security reasons, so force the use of a backport instead
+import importlib.metadata
+if not hasattr(importlib.metadata, "packages_distributions"):
+    from importlib_metadata import packages_distributions
+    importlib.metadata.packages_distributions = packages_distributions
+import warnings
+# this is likewise only needed to prevent warnings for eol python versions
+# when using google packages
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
 from google.auth.exceptions import DefaultCredentialsError

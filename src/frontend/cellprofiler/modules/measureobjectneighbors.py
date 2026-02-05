@@ -66,9 +66,6 @@ will be positive, but there may not be a corresponding
 
 import matplotlib.cm
 import numpy
-import scipy.ndimage
-import scipy.signal
-import skimage.morphology
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import MCA_AVAILABLE_EACH_CYCLE
@@ -84,15 +81,8 @@ from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.workspace import Workspace
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import strel_disk, centers_of_labels
-from centrosome.outline import outline
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
-from typing import List, Optional, Union, Tuple
-from numpy.typing import NDArray
-from cellprofiler_library.types import ObjectSegmentation, ObjectLabel
-from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv, areas_from_ijv, cast_labels_to_label_set, indices_from_ijv
-from cellprofiler_library.functions.object_processing import relate_labels
+from cellprofiler_library.types import ObjectSegmentation
 from cellprofiler_library.modules._measureobjectneighbors import measure_object_neighbors
 
 class MeasureObjectNeighbors(Module):
@@ -121,7 +111,7 @@ as above.""",
         self.distance_method = Choice(
             "Method to determine neighbors",
             D_ALL,
-            DistanceMethod.EXPAND,
+            DistanceMethod.EXPAND.value,
             doc="""\
 There are several methods by which to determine whether objects are
 neighbors:
@@ -274,7 +264,7 @@ previously discarded objects.""".format(
 
     def visible_settings(self):
         result = [self.object_name, self.neighbors_name, self.distance_method]
-        if self.distance_method == DistanceMethod.WITHIN:
+        if self.distance_method == DistanceMethod.WITHIN.value:
             result += [self.distance]
         result += [self.wants_excluded_objects, self.wants_count_image]
         if self.wants_count_image.value:
@@ -348,7 +338,7 @@ previously discarded objects.""".format(
                 self.module_num,
                 NEIGHBORS,
                 self.object_name.value,
-                self.object_name.value if self.neighbors_are_objects else self.neighbors_name.value,
+                self.neighbors_name.value,
                 m.image_set_number * numpy.ones(first_objects.shape, int),
                 first_objects,
                 m.image_set_number * numpy.ones(second_objects.shape, int),
@@ -497,7 +487,7 @@ previously discarded objects.""".format(
                     sharexy=figure.subplot(0, 0),
                 )
 
-        if self.distance_method == DistanceMethod.EXPAND:
+        if self.distance_method == DistanceMethod.EXPAND.value:
             figure.subplot_imshow_labels(
                 1,
                 expandplot_position,
@@ -511,12 +501,14 @@ previously discarded objects.""".format(
         return M_ALL
 
     def get_measurement_name(self, feature):
-        if self.distance_method == DistanceMethod.EXPAND:
+        if self.distance_method == DistanceMethod.EXPAND.value:
             scale = MeasurementScale.EXPANDED
-        elif self.distance_method == DistanceMethod.WITHIN:
+        elif self.distance_method == DistanceMethod.WITHIN.value:
             scale = str(self.distance.value)
-        elif self.distance_method == DistanceMethod.ADJACENT:
+        elif self.distance_method == DistanceMethod.ADJACENT.value:
             scale = MeasurementScale.ADJACENT
+        else:
+            raise ValueError(f"Unknown distance method: {self.distance_method}. Should be one of {D_ALL}")
         if self.neighbors_are_objects:
             return "_".join((C_NEIGHBORS, feature, scale))
         else:
@@ -579,11 +571,11 @@ previously discarded objects.""".format(
         self, pipeline, object_name, category, measurement, image_name
     ):
         if measurement in self.get_measurements(pipeline, object_name, category):
-            if self.distance_method == DistanceMethod.EXPAND:
+            if self.distance_method == DistanceMethod.EXPAND.value:
                 return [MeasurementScale.EXPANDED]
-            elif self.distance_method == DistanceMethod.ADJACENT:
+            elif self.distance_method == DistanceMethod.ADJACENT.value:
                 return [MeasurementScale.ADJACENT]
-            elif self.distance_method == DistanceMethod.WITHIN:
+            elif self.distance_method == DistanceMethod.WITHIN.value:
                 return [str(self.distance.value)]
             else:
                 raise ValueError(

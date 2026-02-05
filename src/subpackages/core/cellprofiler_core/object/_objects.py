@@ -8,9 +8,11 @@ from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import convert_labels_to_dense
 from cellprofiler_library.functions.segmentation import convert_ijv_to_sparse
 from cellprofiler_library.functions.segmentation import make_rgb_outlines
-from cellprofiler_library.functions.segmentation import find_label_overlaps
 from cellprofiler_library.functions.segmentation import find_ijv_overlaps
 from cellprofiler_library.functions.segmentation import center_of_labels_mass
+from cellprofiler_library.functions.segmentation import histogram_from_labels
+from cellprofiler_library.functions.segmentation import relate_histogram
+from cellprofiler_library.functions.segmentation import relate_labels
 
 from ._segmentation import Segmentation
 
@@ -300,8 +302,7 @@ class Objects:
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        histogram = self.histogram_from_labels(parent_labels, child_labels)
-        return self.relate_histogram(histogram)
+        return relate_labels(parent_labels, child_labels)
 
     @staticmethod
     def relate_histogram(histogram):
@@ -309,21 +310,7 @@ class Objects:
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
         """
-        parent_count = histogram.shape[0] - 1
-
-        parents_of_children = np.asarray(histogram.argmax(axis=0))
-        if len(parents_of_children.shape) == 2:
-            parents_of_children = np.squeeze(parents_of_children, axis=0)
-        #
-        # Create a histogram of # of children per parent
-        children_per_parent = np.histogram(
-            parents_of_children[1:], np.arange(parent_count + 2)
-        )[0][1:]
-
-        #
-        # Make sure to remove the background elements at index 0
-        #
-        return children_per_parent, parents_of_children[1:]
+        return relate_histogram(histogram)
 
     @staticmethod
     def histogram_from_labels(parent_labels, child_labels):
@@ -336,7 +323,7 @@ class Objects:
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
         """
-        return find_label_overlaps(parent_labels, child_labels, validate=True)
+        return histogram_from_labels(parent_labels, child_labels)
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):

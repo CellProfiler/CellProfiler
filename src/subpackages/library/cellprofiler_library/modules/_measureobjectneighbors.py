@@ -115,18 +115,3 @@ def measure_object_neighbors(
 
     return measurements, (first_objects, second_objects), expanded_labels
 
-def get_nkept_objects(
-    kept_labels: Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects")],
-    ) -> int:
-    """This is a utility/helper function for the module which returns the number of objects in the segmentation"""
-    kept_label_set = cast_labels_to_label_set(kept_labels)
-    kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
-    return len(indices_from_ijv(kept_label_ijv, validate=False))
-
-def get_kept_label_has_pixels(
-    kept_labels: Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects")],
-    ) -> NDArray[numpy.bool_]:
-    """This is a utility/helper function for the module which returns an array of booleans indicating whether each object has any pixels"""
-    kept_label_set = cast_labels_to_label_set(kept_labels)
-    kept_label_ijv = convert_label_set_to_ijv(kept_label_set, validate=False)
-    return areas_from_ijv(kept_label_ijv) > 0

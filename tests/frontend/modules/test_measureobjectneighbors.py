@@ -450,20 +450,20 @@ def test_get_measurement_columns():
     module.distance.value = 5
     for distance_method, scale in (
         (
-            DistanceMethod.EXPAND,
-            MeasurementScale.EXPANDED,
+            DistanceMethod.EXPAND.value,
+            MeasurementScale.EXPANDED.value,
         ),
         (
-            DistanceMethod.ADJACENT,
-            MeasurementScale.ADJACENT,
+            DistanceMethod.ADJACENT.value,
+            MeasurementScale.ADJACENT.value,
         ),
-        (DistanceMethod.WITHIN, "5"),
+        (DistanceMethod.WITHIN.value, "5"),
     ):
         module.distance_method.value = distance_method
         columns = module.get_measurement_columns(None)
         features = [
             "%s_%s_%s"
-            % (cellprofiler.modules.measureobjectneighbors.C_NEIGHBORS, feature.value, scale)
+            % (cellprofiler.modules.measureobjectneighbors.C_NEIGHBORS, feature, scale)
             for feature in M_ALL
         ]
         assert len(columns) == len(features)
@@ -478,14 +478,14 @@ def test_get_measurement_columns_neighbors():
     module.distance.value = 5
     for distance_method, scale in (
         (
-            DistanceMethod.EXPAND,
-            MeasurementScale.EXPANDED,
+            DistanceMethod.EXPAND.value,
+            MeasurementScale.EXPANDED.value,
         ),
         (
-            DistanceMethod.ADJACENT,
-            MeasurementScale.ADJACENT,
+            DistanceMethod.ADJACENT.value,
+            MeasurementScale.ADJACENT.value,
         ),
-        (DistanceMethod.WITHIN, "5"),
+        (DistanceMethod.WITHIN.value, "5"),
     ):
         module.distance_method.value = distance_method
         columns = module.get_measurement_columns(None)
@@ -493,7 +493,7 @@ def test_get_measurement_columns_neighbors():
             "%s_%s_%s_%s"
             % (
                 cellprofiler.modules.measureobjectneighbors.C_NEIGHBORS,
-                feature.value,
+                feature,
                 NEIGHBORS_NAME,
                 scale,
             )

@@ -10,7 +10,6 @@ from typing import Optional, Literal, Tuple, Union
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
-from cellprofiler_library.functions.segmentation import find_label_overlaps
 
 def shrink_to_point(labels, fill):
     """
@@ -1192,57 +1191,3 @@ def object_crop_image_similarly(
         raise ValueError("Images are of different size and no parent image")
     return crop_image_similarly(obj_parent_image, other_image, obj_parent_crop_mask)
 
-
-###############################################################################
-# MeasureObjectNeighbors
-###############################################################################
-
-# TODO: Consider moving this to segmentation or a functions/segmentation
-def relate_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
-    """relate the object numbers in one label to those in another
-
-    parent_labels - 2d label matrix of parent labels
-
-    child_labels - 2d label matrix of child labels
-
-    Returns two 1-d arrays. The first gives the number of children within
-    each parent. The second gives the mapping of each child to its parent's
-    object number.
-    """
-    histogram = histogram_from_labels(parent_labels, child_labels)
-    return relate_histogram(histogram)
-
-# TODO: Consider moving this to segmentation or a functions/segmentation
-def histogram_from_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> scipy.sparse.coo_matrix:
-    """Find per pixel overlap of parent labels and child labels
-
-    parent_labels - the parents which contain the children
-    child_labels - the children to be mapped to a parent
-
-    Returns a sparse matrix of overlap between each parent and child.
-    Note that the first row and column are empty, as these
-    correspond to parent and child labels of 0.
-    """
-    return find_label_overlaps(parent_labels, child_labels, validate=True)
-
-# TODO: Consider moving this to segmentation or a functions/segmentation
-def relate_histogram(histogram: scipy.sparse.coo_matrix) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
-    """Return child counts and parents of children given a histogram
-
-    histogram - histogram from histogram_from_ijv or histogram_from_labels
-    """
-    parent_count = histogram.shape[0] - 1
-
-    parents_of_children = numpy.asarray(histogram.argmax(axis=0))
-    if len(parents_of_children.shape) == 2:
-        parents_of_children = numpy.squeeze(parents_of_children, axis=0)
-    #
-    # Create a histogram of # of children per parent
-    children_per_parent = numpy.histogram(
-        parents_of_children[1:], numpy.arange(parent_count + 2)
-    )[0][1:]
-
-    #
-    # Make sure to remove the background elements at index 0
-    #
-    return children_per_parent, parents_of_children[1:]

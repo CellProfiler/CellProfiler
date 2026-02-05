@@ -36,7 +36,6 @@ class TestCellProfiler(unittest.TestCase):
                 sys.executable,
                 "-m",
                 "cellprofiler",
-                "--do-not-fetch",
             ] + list(args)
             return subprocess.check_output(args, cwd=root_dir)
 

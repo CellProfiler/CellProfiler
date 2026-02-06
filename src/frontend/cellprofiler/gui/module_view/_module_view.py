@@ -2020,7 +2020,7 @@ class ModuleView:
         return control
 
     def make_help_control(self, content, title="Help", name=wx.ButtonNameStr):
-        control = wx.Button(self.__module_panel, -1, "?", (0, 0), (30, -1), name=name)
+        control = wx.Button(self.__module_panel, -1, "?", (0, 0), (30, -1), style=wx.BU_EXACTFIT, name=name)
 
         def callback(event):
             dialog = HTMLDialog(

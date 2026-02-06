@@ -84,6 +84,8 @@ dependencies = [
     "wxPython>=4.2.0",
     "rapidfuzz>=3.0.0",
     "packaging>=20.0",
+    # not needed for python > 3.9
+    "importlib_metadata",
 ]
 dynamic = ["version"]
 

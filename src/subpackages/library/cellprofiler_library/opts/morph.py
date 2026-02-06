@@ -22,7 +22,7 @@ class MorphFunction(str, Enum):
     THIN = "thin"
     VBREAK = "vbreak"
 
-F_ALL = [
+MorphFunctions_All = [
     MorphFunction.BRANCHPOINTS.value,
     MorphFunction.BRIDGE.value,
     MorphFunction.CLEAN.value,

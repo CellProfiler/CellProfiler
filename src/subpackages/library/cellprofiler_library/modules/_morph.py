@@ -42,27 +42,7 @@ def morph_operation(
     is_binary = pixel_data.dtype.kind == "b"
 
     if (
-        function_name
-        in (
-            MorphFunction.BRANCHPOINTS,
-            MorphFunction.BRIDGE,
-            MorphFunction.CLEAN,
-            MorphFunction.DIAG,
-            MorphFunction.CONVEX_HULL,
-            MorphFunction.DISTANCE,
-            MorphFunction.ENDPOINTS,
-            MorphFunction.FILL,
-            MorphFunction.HBREAK,
-            MorphFunction.MAJORITY,
-            MorphFunction.REMOVE,
-            MorphFunction.SHRINK,
-            MorphFunction.SKELPE,
-            MorphFunction.SPUR,
-            MorphFunction.THICKEN,
-            MorphFunction.THIN,
-            MorphFunction.VBREAK,
-        )
-        and not is_binary
+        function_name != MorphFunction.OPENLINES and not is_binary
     ):
         # Apply a very crude threshold to the image for binary algorithms
         LOGGER.warning(

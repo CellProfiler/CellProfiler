@@ -6,12 +6,15 @@ from numpy.typing import NDArray
 
 class RelationshipKey:
     """Key for identifying relationship groups."""
-    def __init__(self, relationship, object_name1, object_name2):
+    def __init__(self, relationship: str, object_name1: str, object_name2: str):
         self.relationship = relationship
         self.object_name1 = object_name1
         self.object_name2 = object_name2
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RelationshipKey):
+            return NotImplemented
+
         return (
             self.relationship == other.relationship
             and self.object_name1 == other.object_name1

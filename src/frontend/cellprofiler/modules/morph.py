@@ -268,7 +268,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer
 
 from cellprofiler_library.modules._morph import apply_morphological_operations
-from cellprofiler_library.opts.morph import MorphFunction, F_ALL
+from cellprofiler_library.opts.morph import MorphFunction, MorphFunctions_All as F_ALL
 
 LOGGER = logging.getLogger(__name__)
 

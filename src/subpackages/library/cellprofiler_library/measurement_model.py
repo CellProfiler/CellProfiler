@@ -4,7 +4,13 @@ from pydantic import BaseModel, Field, ConfigDict
 import numpy as np
 from numpy.typing import NDArray
 
-class RelationshipKey:
+# Constants for relationship measurements
+IMAGE_NUMBER = "ImageNumber"
+OBJECT_NUMBER = "ObjectNumber"
+R_FIRST_OBJECT_NUMBER = f"{OBJECT_NUMBER}_First"
+R_SECOND_OBJECT_NUMBER = f"{OBJECT_NUMBER}_Second"
+
+class RelationshipBase:
     """Key for identifying relationship groups."""
     def __init__(self, relationship: str, object_name1: str, object_name2: str):
         self.relationship = relationship
@@ -12,7 +18,7 @@ class RelationshipKey:
         self.object_name2 = object_name2
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, RelationshipKey):
+        if not isinstance(other, RelationshipBase):
             return NotImplemented
 
         return (
@@ -27,14 +33,49 @@ class RelationshipKey:
         )
     
     def __repr__(self):
-        return f"RelationshipKey({self.relationship}, {self.object_name1}, {self.object_name2})"
+        return f"RelationshipBase({self.relationship}, {self.object_name1}, {self.object_name2})"
 
+class Relationship(RelationshipBase):
+    def __init__(self, relationship: str, object_name1: str, object_name2: str, object_numbers1: NDArray[np.int_], object_numbers2: NDArray[np.int_]):
+        super().__init__(relationship, object_name1, object_name2)
+        self.object_numbers1 = object_numbers1
+        self.object_numbers2 = object_numbers2
 
-# Constants for relationship measurements
-IMAGE_NUMBER = "ImageNumber"
-OBJECT_NUMBER = "ObjectNumber"
-R_FIRST_OBJECT_NUMBER = f"{OBJECT_NUMBER}_First"
-R_SECOND_OBJECT_NUMBER = f"{OBJECT_NUMBER}_Second"
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Relationship):
+            return NotImplemented
+
+        return super().__eq__(other)
+
+    def __copy__(self):
+        new_instance = Relationship(
+            self.relationship,
+            self.object_name1,
+            self.object_name2,
+            self.object_numbers1,
+            self.object_numbers2
+        )
+        new_instance.__dict__.update(self.__dict__)
+        return new_instance
+
+    def __deepcopy__(self):
+        new_instance = Relationship(
+            self.relationship,
+            self.object_name1,
+            self.object_name2,
+            self.object_numbers1.copy(),
+            self.object_numbers2.copy()
+        )
+        new_instance.__dict__.update(self.__dict__)
+        return new_instance
+ 
+    def __getitem__(self, obj_num: str) -> NDArray[np.int_]:
+        if obj_num == R_FIRST_OBJECT_NUMBER:
+            return self.object_numbers1
+        elif obj_num == R_SECOND_OBJECT_NUMBER:
+            return self.object_numbers2
+        else:
+            return NotImplemented
 
 
 class LibraryMeasurements(BaseModel):
@@ -57,7 +98,7 @@ class LibraryMeasurements(BaseModel):
     experiment: Dict[str, Any] = Field(default_factory=dict, alias="Experiment")
     
     # Placeholder for relationships if needed in the future
-    relationships: List[Dict[str, Any]] = Field(default_factory=list, alias="Relationship")
+    relationships: List[Relationship] = Field(default_factory=list, alias="Relationship")
 
     def add_measurement(self, object_name: str, feature_name: str, data: Any):
         """
@@ -120,38 +161,38 @@ class LibraryMeasurements(BaseModel):
         target_item = None
         for item in self.relationships:
             if (
-                item["relationship"] == relationship
-                and item["object_name1"] == object_name1
-                and item["object_name2"] == object_name2
+                item.relationship == relationship
+                and item.object_name1 == object_name1
+                and item.object_name2 == object_name2
             ):
                 target_item = item
                 break
 
         if target_item is None:
-            target_item = {
-                "relationship": relationship,
-                "object_name1": object_name1,
-                "object_name2": object_name2,
-                R_FIRST_OBJECT_NUMBER: np.array([], dtype=np.int32),
-                R_SECOND_OBJECT_NUMBER: np.array([], dtype=np.int32),
-            }
+            target_item = Relationship(
+                relationship,
+                object_name1,
+                object_name2,
+                np.array([], dtype=np.int32),
+                np.array([], dtype=np.int32),
+            )
             self.relationships.append(target_item)
 
         # Append data
-        target_item[R_FIRST_OBJECT_NUMBER] = np.concatenate(
-            (target_item[R_FIRST_OBJECT_NUMBER], object_numbers1)
+        target_item.object_numbers1 = np.concatenate(
+            (target_item.object_numbers1, object_numbers1)
         )
-        target_item[R_SECOND_OBJECT_NUMBER] = np.concatenate(
-            (target_item[R_SECOND_OBJECT_NUMBER], object_numbers2)
+        target_item.object_numbers2 = np.concatenate(
+            (target_item.object_numbers2, object_numbers2)
         )
 
-    def get_relationship_groups(self) -> List[RelationshipKey]:
+    def get_relationship_groups(self) -> List[RelationshipBase]:
         """Return the keys of each of the relationship groupings."""
         return [
-            RelationshipKey(
-                item["relationship"],
-                item["object_name1"],
-                item["object_name2"],
+            RelationshipBase(
+                item.relationship,
+                item.object_name1,
+                item.object_name2,
             )
             for item in self.relationships
         ]
@@ -177,9 +218,9 @@ class LibraryMeasurements(BaseModel):
         target_item = None
         for item in self.relationships:
             if (
-                item["relationship"] == relationship
-                and item["object_name1"] == object_name1
-                and item["object_name2"] == object_name2
+                item.relationship == relationship
+                and item.object_name1 == object_name1
+                and item.object_name2 == object_name2
             ):
                 target_item = item
                 break
@@ -187,7 +228,7 @@ class LibraryMeasurements(BaseModel):
         if target_item is None:
             return np.zeros(0, dt).view(np.recarray)
 
-        n_records = len(target_item[R_FIRST_OBJECT_NUMBER])
+        n_records = len(target_item.object_numbers1)
         if n_records == 0:
             return np.zeros(0, dt).view(np.recarray)
 
@@ -286,22 +327,18 @@ class LibraryMeasurements(BaseModel):
             # Check if matching item exists
             match_index = -1
             for i, item in enumerate(new_relationships):
-                 if (
-                    item["relationship"] == other_item["relationship"]
-                    and item["object_name1"] == other_item["object_name1"]
-                    and item["object_name2"] == other_item["object_name2"]
-                ):
+                if item == other_item:
                     match_index = i
                     break
             
             if match_index != -1:
                 # Merge into existing item
                 target = new_relationships[match_index]
-                target[R_FIRST_OBJECT_NUMBER] = np.concatenate(
-                    (target[R_FIRST_OBJECT_NUMBER], other_item[R_FIRST_OBJECT_NUMBER])
+                target.object_numbers1 = np.concatenate(
+                    (target.object_numbers1, other_item.object_numbers1)
                 )
-                target[R_SECOND_OBJECT_NUMBER] = np.concatenate(
-                    (target[R_SECOND_OBJECT_NUMBER], other_item[R_SECOND_OBJECT_NUMBER])
+                target.object_numbers2 = np.concatenate(
+                    (target.object_numbers2, other_item.object_numbers2)
                 )
             else:
                 # Append new item (deep copy to be safe)

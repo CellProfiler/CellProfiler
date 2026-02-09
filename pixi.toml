@@ -83,10 +83,16 @@ cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], 
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
+[feature.build.pypi-dependencies]
+cellprofiler-library = { path = "./src/subpackages/library", extras = ["build"], editable = true }
+cellprofiler-core = { path = "./src/subpackages/core", extras = ["build"], editable = true }
+cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable = true }
+
 [feature.profile.pypi-dependencies]
 py-spy = "*"
 memray = "*"
 
 [environments]
 dev = ["mod", "java", "mysql"]
+build = ["build", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]

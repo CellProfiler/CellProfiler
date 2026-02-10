@@ -43,6 +43,7 @@ M_DIVIDE_BY_IMAGE_MAXIMUM = "Divide by the image's maximum"
 M_DIVIDE_BY_VALUE = "Divide each image by the same value"
 M_DIVIDE_BY_MEASUREMENT = "Divide each image by a previously calculated value"
 M_SCALE_BY_IMAGE_MAXIMUM = "Match the image's maximum to another image's maximum"
+M_SCALE_LOG = "Scale the image with log"
 
 M_ALL = [
     M_STRETCH,
@@ -53,6 +54,7 @@ M_ALL = [
     M_DIVIDE_BY_VALUE,
     M_DIVIDE_BY_MEASUREMENT,
     M_SCALE_BY_IMAGE_MAXIMUM,
+    M_SCALE_LOG,
 ]
 
 R_SCALE = "Scale similarly to others"
@@ -117,7 +119,8 @@ There are a number of options for rescaling the input image:
    loaded by the **Metadata** module.
 -  *%(M_SCALE_BY_IMAGE_MAXIMUM)s:* Scale an image so that its
    maximum value is the same as the maximum value within the reference
-   image."""
+   image.
+-  *%(M_SCALE_LOG)s:* Scale the image so that it has a better contrast."""
             % globals(),
         )
 
@@ -417,6 +420,8 @@ Select the measurement value to use as the divisor for the final image.
             output_image = self.divide_by_measurement(workspace, input_image)
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
+        elif self.rescale_method == M_SCALE_LOG:
+            output_image = self.scale_log(input_image)
 
         rescaled_image = Image(
             output_image,
@@ -569,6 +574,15 @@ Select the measurement value to use as the divisor for the final image.
             reference_max = numpy.max(masked_ref)
 
         return self.divide(input_image.pixel_data * reference_max, image_max)
+
+    def scale_log(self, input_image):
+        log_eps = numpy.log(1.0 / 256)
+        log_one_plus_eps = numpy.log(257.0 / 256)
+        pixel_data = (numpy.log(input_image.pixel_data + 1.0 / 256) - log_eps) / (
+         log_one_plus_eps - log_eps
+        )
+        return pixel_data
+
 
     def get_source_range(self, input_image, workspace):
         """Get the source range, accounting for automatically computed values"""

@@ -38,7 +38,7 @@ class GcsReader(ImageIOReader):
     supported_schemes = SUPPORTED_SCHEMES
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=False, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -55,6 +55,9 @@ class GcsReader(ImageIOReader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         """
+        if tiled:
+            return -1
+
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
 
@@ -66,7 +69,7 @@ class GcsReader(ImageIOReader):
 
         return 4
 
-    def get_reader(self, volume=False):
+    def __get_reader(self, volume=False):
         image_resource = self.__download_blob(self.file.url)
         if self._reader is None or volume != self._volume:
             if volume:

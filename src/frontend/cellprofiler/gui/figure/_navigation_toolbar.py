@@ -18,6 +18,7 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
     def __init__(self, canvas, want_measure=False):
         super(NavigationToolbar, self).__init__(canvas)
         self.volumetric = False
+        self.tiled = False
         if want_measure:
             self.bmp_error = wx.Bitmap(BMP_MEASURE)
             self.wx_ids["Measure"] = wx.NewId()
@@ -31,6 +32,54 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             )
             self.InsertTool(6, self.measure_tool)
         self.Realize()
+
+    def set_tiled(self):
+        if not self.tiled:
+            self.tilelabel = wx.StaticText(self, label="Tiles")
+            self.tileNum = wx.lib.intctrl.IntCtrl(self, id=0, value=0, min=0, max=99999, limited=True, size=wx.Size(30,20), style=wx.TE_CENTRE)
+            self.left_tile = wx.Button(self, label="<", size=wx.Size(22,22))
+            self.right_tile = wx.Button(self, label=">", size=wx.Size(22,22))
+            self.up_tile = wx.Button(self, label="^", size=wx.Size(22,22))
+            self.down_tile = wx.Button(self, label="v", size=wx.Size(22,22))
+
+            self.pyramidlabel = wx.StaticText(self, label="Pyramid Level:")
+            self.pyramidNum = wx.lib.intctrl.IntCtrl(self, id=0, value=0, min=0, max=99999, limited=True, size=wx.Size(30,20), style=wx.TE_CENTRE)
+            self.up_pyramid = wx.Button(self, label="^", size=wx.Size(22,22))
+            self.down_pyramid = wx.Button(self, label="v", size=wx.Size(22,22))
+
+            self.AddSeparator()
+            self.AddStretchableSpace()
+
+            pos = self.GetToolsCount()
+
+            self.InsertControl(pos, self.tilelabel, "Tile")
+            self.InsertControl(pos + 1, self.tileNum, "Tile Number")
+            self.InsertControl(pos + 2, self.left_tile, "Tile Left")
+            self.InsertControl(pos + 3, self.right_tile, "Tile Right")
+            self.InsertControl(pos + 4, self.up_tile, "Tile Up")
+            self.InsertControl(pos + 5, self.down_tile, "Tile Down")
+            self.InsertControl(pos + 6, self.pyramidlabel, "Pyramid")
+            self.InsertControl(pos + 7, self.pyramidNum, "Pyramid Number")
+            self.InsertControl(pos + 8, self.up_pyramid, "Pyramid Up")
+            self.InsertControl(pos + 9, self.down_pyramid, "Pyramid Down")
+
+            for control in (
+                self.tilelabel,
+                self.tileNum,
+                self.left_tile,
+                self.right_tile,
+                self.up_tile,
+                self.down_tile,
+                self.pyramidlabel,
+                self.pyramidNum,
+                self.up_pyramid,
+                self.down_pyramid):
+                # Hacky fix for OSX display issues
+                control.Hide()
+                control.Show()
+            self.Realize()
+
+            self.tiled = True
 
     def set_volumetric(self):
         if not self.volumetric:

@@ -1,0 +1,40 @@
+id: org.cellprofiler.CellProfiler
+runtime: org.freedesktop.Platform
+# 21.08 contains python 3.9
+sdk: org.freedesktop.Sdk
+runtime-version: '25.08'
+#runtime: org.gnome.Platform
+#sdk: org.gnome.Sdk
+#runtime-version: '49'
+command: cellprofiler
+modules:
+  - name: pixi-install
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - curl -fsSL https://pixi.sh/install.sh | env PIXI_HOME="/app" sh
+      - export PATH="$HOME/.pixi/bin:$PATH"
+      - pixi install -e prod --frozen
+      # - pixi install -e prod --frozen --run-post-link-scripts
+      # - pixi run -e prod --as-is pyton -m compileall $CONDA_PREFIX/lib/python3.9/site-packages/
+      # - pixi run -e prod --as-is pyton -m compileall src
+      - cp -r src ${FLATPAK_DEST}/
+      - cp -r .pixi ${FLATPAK_DEST}/
+      - cp pixi.lock ${FLATPAK_DEST}/
+      - cp pixi.toml ${FLATPAK_DEST}/
+      - pixi shell-hook --manifest-path ${FLATPAK_DEST} -e prod --as-is > shell-hook.sh
+      - echo 'exec python -m cellprofiler -L 10' >> shell-hook.sh
+      - install -Dm0755 shell-hook.sh ${FLATPAK_DEST}/bin/cellprofiler
+    sources:
+      - type: git
+        url: https://github.com/CellProfiler/CellProfiler.git
+        commit: 826da6c07abd993e1796b403319b56ba4ce745ae
+        #tag: v5.0.0
+finish-args:
+  # TODO: linux - wayland support
+  - --socket=x11
+  # - --share=socket
+  # - --share=network
+  # - --filesystem=xdg-documents

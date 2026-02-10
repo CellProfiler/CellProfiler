@@ -378,6 +378,7 @@ def parse_args():
 
     default_show_gui = True
 
+    # TODO: linux - wayland support; WAYLAND_DISPLAY
     if sys.platform.startswith("linux") and not os.getenv("DISPLAY"):
         default_show_gui = False
 

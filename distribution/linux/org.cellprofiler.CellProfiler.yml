@@ -15,9 +15,7 @@ modules:
         - --share=network
     build-commands:
       - curl -fsSL https://pixi.sh/install.sh | env PIXI_HOME="/app" sh
-      - export PATH="$HOME/.pixi/bin:$PATH"
-      - pixi install -e prod --frozen
-      # - pixi install -e prod --frozen --run-post-link-scripts
+      - pixi install -e prod --frozen --color never # --run-post-link-scripts
       # - pixi run -e prod --as-is pyton -m compileall $CONDA_PREFIX/lib/python3.9/site-packages/
       # - pixi run -e prod --as-is pyton -m compileall src
       - cp -r src ${FLATPAK_DEST}/
@@ -38,3 +36,5 @@ finish-args:
   # - --share=socket
   # - --share=network
   # - --filesystem=xdg-documents
+  # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
+  # - --env=GTK_MODULES=

@@ -45,7 +45,7 @@ class Relationship(RelationshipBase):
         if not isinstance(other, Relationship):
             return NotImplemented
 
-        return super().__eq__(other)
+        return super().__eq__(other) and np.array_equal(self.object_numbers1, other.object_numbers1) and np.array_equal(self.object_numbers2, other.object_numbers2)
 
     def __copy__(self):
         new_instance = Relationship(
@@ -58,16 +58,14 @@ class Relationship(RelationshipBase):
         new_instance.__dict__.update(self.__dict__)
         return new_instance
 
-    def __deepcopy__(self):
-        new_instance = Relationship(
+    def __deepcopy__(self, memo):
+        return Relationship(
             self.relationship,
             self.object_name1,
             self.object_name2,
             self.object_numbers1.copy(),
             self.object_numbers2.copy()
         )
-        new_instance.__dict__.update(self.__dict__)
-        return new_instance
  
     def __getitem__(self, obj_num: str) -> NDArray[np.int_]:
         if obj_num == R_FIRST_OBJECT_NUMBER:
@@ -327,9 +325,15 @@ class LibraryMeasurements(BaseModel):
             # Check if matching item exists
             match_index = -1
             for i, item in enumerate(new_relationships):
-                if item == other_item:
+                 # Check if this relationship group already exists
+                if (
+                    item.relationship == other_item.relationship
+                    and item.object_name1 == other_item.object_name1
+                    and item.object_name2 == other_item.object_name2
+                ):
                     match_index = i
                     break
+
             
             if match_index != -1:
                 # Merge into existing item
@@ -351,47 +355,3 @@ class LibraryMeasurements(BaseModel):
             relationships=new_relationships
         )
     
-    @staticmethod
-    def from_cellprofiler_measurements(measurements) -> 'LibraryMeasurements':
-        """
-        Create a LibraryMeasurements instance from a CellProfiler Measurements instance.
-        
-        Args:
-            measurements: A CellProfiler Measurements instance
-            
-        Returns:
-            A LibraryMeasurements instance
-        """
-        image = {}
-        objects = {}
-        experiment = {}
-        relationships = []
-        
-        for object_name in measurements.get_object_names():
-            objects[object_name] = {}
-            for feature in measurements.get_feature_names(object_name):
-                objects[object_name][feature] = measurements.get_measurement(object_name, feature)
-        
-        for feature in measurements.get_feature_names("Image"):
-            image[feature] = measurements.get_measurement("Image", feature)
-        try:
-            for feature in measurements.get_feature_names("Experiment"):
-                experiment[feature] = measurements.get_measurement("Experiment", feature)
-        except KeyError:
-            pass
-        
-        for relationship in measurements.get_relationship_groups():
-            relationships.append({
-                "relationship": relationship["relationship"],
-                "object_name1": relationship["object_name1"],
-                "object_name2": relationship["object_name2"],
-                "object_number1": relationship[R_FIRST_OBJECT_NUMBER],
-                "object_number2": relationship[R_SECOND_OBJECT_NUMBER],
-            })
-        
-        return LibraryMeasurements(
-            image=image,
-            objects=objects,
-            experiment=experiment,
-            relationships=relationships
-        )

@@ -351,6 +351,7 @@ parents or children of the parent object.""",
 
         m = workspace.measurements
         all_measurements = m.to_library_measurements()
+        step_parent_names = self.get_parent_names()
         # 1. Relate Primary
         lib_measurements = run_relate_objects(
             parent_labels=parent_labels,
@@ -360,8 +361,7 @@ parents or children of the parent object.""",
             parent_name=self.x_name.value,
             child_name=self.y_name.value,
             volumetric=volumetric,
-            step_parent_names=self.step_parent_names,
-            wants_step_parent_disatnces=self.wants_step_parent_distances.value,
+            parent_and_step_parent_names=step_parent_names,
             find_centroid=find_centroid,
             find_minimum=find_minimum,
             child_dimensions = children.dimensions,

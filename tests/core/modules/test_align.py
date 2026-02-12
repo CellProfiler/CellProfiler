@@ -8,22 +8,22 @@ from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.modules.align import (
     Align,
-    A_SIMILARLY,
-    A_SEPARATELY,
-    M_MUTUAL_INFORMATION,
-    C_SAME_SIZE,
-    C_CROP,
-    C_PAD,
-    M_CROSS_CORRELATION,
-    MEASUREMENT_FORMAT,
-    C_ALIGN,
+    # AdditionalAlignmentChoice.SIMILARLY.value,
+    # AdditionalAlignmentChoice.SEPARATELY.value,
+    # AlignmentMethod.MUTUAL_INFORMATION.value,
+    # CropMode.SAME_SIZE.value,
+    # CropMode.CROP.value,
+    # CropMode.PAD.value,
+    # AlignmentMethod.CROSS_CORRELATION.value,
+    # MEASUREMENT_FORMAT,
+    # C_ALIGN,
 )
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import Pipeline, LoadException
 from cellprofiler_core.workspace import Workspace
 from tests.core.modules import read_example_image
 from cellprofiler_core.image import ImageSetList, Image
-
+from cellprofiler_library.opts.align import AlignmentMethod, CropMode, AdditionalAlignmentChoice, MEASUREMENT_FORMAT, C_ALIGN
 
 class TestAlign:
     def make_workspace(self, images, masks):
@@ -79,8 +79,8 @@ Name the second output image:AlignedImage2
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[0]
         assert isinstance(module, Align)
-        assert module.alignment_method == M_MUTUAL_INFORMATION
-        assert module.crop_mode == C_CROP
+        assert module.alignment_method == AlignmentMethod.MUTUAL_INFORMATION.value
+        assert module.crop_mode == CropMode.CROP.value
         assert module.first_input_image == "Image1"
         assert module.second_input_image == "Image2"
         assert module.first_output_image == "AlignedImage1"
@@ -124,10 +124,10 @@ Name the second output image:AlignedImage2
         pipeline.load(StringIO(data))
         assert len(pipeline.modules()) == 3
         for module, crop_method in zip(
-            pipeline.modules(), (C_SAME_SIZE, C_CROP, C_PAD)
+            pipeline.modules(), (CropMode.SAME_SIZE.value, CropMode.CROP.value, CropMode.PAD.value)
         ):
             assert isinstance(module, Align)
-            assert module.alignment_method == M_MUTUAL_INFORMATION
+            assert module.alignment_method == AlignmentMethod.MUTUAL_INFORMATION.value
             assert module.crop_mode == crop_method
             assert module.first_input_image == "Image1"
             assert module.second_input_image == "Image2"
@@ -146,8 +146,8 @@ Name the second output image:AlignedImage2
             #
             for mask1 in (None, np.random.uniform(size=shape) > 0.1):
                 for mask2 in (None, np.random.uniform(size=shape) > 0.1):
-                    for method in (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION):
-                        if method == M_CROSS_CORRELATION and (
+                    for method in (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value):
+                        if method == AlignmentMethod.CROSS_CORRELATION.value and (
                             (mask1 is not None) or (mask2 is not None)
                         ):
                             continue
@@ -162,7 +162,7 @@ Name the second output image:AlignedImage2
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
-                        if method == M_MUTUAL_INFORMATION:
+                        if method == AlignmentMethod.MUTUAL_INFORMATION.value:
                             image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
                             image2 = image1[
@@ -183,7 +183,7 @@ Name the second output image:AlignedImage2
                         )
                         assert isinstance(module, Align)
                         module.alignment_method.value = method
-                        module.crop_mode.value = C_CROP
+                        module.crop_mode.value = CropMode.CROP.value
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
@@ -279,8 +279,8 @@ Name the second output image:AlignedImage2
         ):
             for mask1 in (None, np.random.uniform(size=shape) > 0.1):
                 for mask2 in (None, np.random.uniform(size=shape) > 0.1):
-                    for method in (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION):
-                        if method == M_CROSS_CORRELATION and (
+                    for method in (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value):
+                        if method == AlignmentMethod.CROSS_CORRELATION.value and (
                             (mask1 is not None) or (mask2 is not None)
                         ):
                             continue
@@ -294,7 +294,7 @@ Name the second output image:AlignedImage2
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
-                        if method == M_MUTUAL_INFORMATION:
+                        if method == AlignmentMethod.MUTUAL_INFORMATION.value:
                             image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
                             image2 = image1[
@@ -315,7 +315,7 @@ Name the second output image:AlignedImage2
                         )
                         assert isinstance(module, Align)
                         module.alignment_method.value = method
-                        module.crop_mode.value = C_PAD
+                        module.crop_mode.value = CropMode.PAD.value
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
@@ -379,8 +379,8 @@ Name the second output image:AlignedImage2
         ):
             for mask1 in (None, np.random.uniform(size=shape) > 0.1):
                 for mask2 in (None, np.random.uniform(size=shape) > 0.1):
-                    for method in (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION):
-                        if method == M_CROSS_CORRELATION and (
+                    for method in (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value):
+                        if method == AlignmentMethod.CROSS_CORRELATION.value and (
                             (mask1 is not None) or (mask2 is not None)
                         ):
                             continue
@@ -394,7 +394,7 @@ Name the second output image:AlignedImage2
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
-                        if method == M_MUTUAL_INFORMATION:
+                        if method == AlignmentMethod.MUTUAL_INFORMATION.value:
                             image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
                             image2 = image1[
@@ -415,7 +415,7 @@ Name the second output image:AlignedImage2
                         )
                         assert isinstance(module, Align)
                         module.alignment_method.value = method
-                        module.crop_mode.value = C_SAME_SIZE
+                        module.crop_mode.value = CropMode.SAME_SIZE.value
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
@@ -493,9 +493,9 @@ Name the second output image:AlignedImage2
                 (image1, image2, image3), (None, None, None)
             )
             assert isinstance(module, Align)
-            module.alignment_method.value = M_CROSS_CORRELATION
-            module.crop_mode.value = C_PAD
-            module.additional_images[0].align_choice.value = A_SIMILARLY
+            module.alignment_method.value = AlignmentMethod.CROSS_CORRELATION.value
+            module.crop_mode.value = CropMode.PAD.value
+            module.additional_images[0].align_choice.value = AdditionalAlignmentChoice.SIMILARLY.value
             module.run(workspace)
             output = workspace.image_set.get_image("Aligned2")
             m = workspace.measurements
@@ -540,9 +540,9 @@ Name the second output image:AlignedImage2
                 (image1, image2, image3), (None, None, None)
             )
             assert isinstance(module, Align)
-            module.alignment_method.value = M_CROSS_CORRELATION
-            module.crop_mode.value = C_PAD
-            module.additional_images[0].align_choice.value = A_SEPARATELY
+            module.alignment_method.value = AlignmentMethod.CROSS_CORRELATION.value
+            module.crop_mode.value = CropMode.PAD.value
+            module.additional_images[0].align_choice.value = AdditionalAlignmentChoice.SEPARATELY.value
             module.run(workspace)
             m = workspace.measurements
             assert isinstance(m, Measurements)
@@ -579,8 +579,8 @@ Name the second output image:AlignedImage2
         ):
             for mask1 in (None, np.random.uniform(size=shape[:2]) > 0.1):
                 for mask2 in (None, np.random.uniform(size=shape[:2]) > 0.1):
-                    for method in (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION):
-                        if method == M_CROSS_CORRELATION and (
+                    for method in (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value):
+                        if method == AlignmentMethod.CROSS_CORRELATION.value and (
                             (mask1 is not None) or (mask2 is not None)
                         ):
                             continue
@@ -599,7 +599,7 @@ Name the second output image:AlignedImage2
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
-                        if method == M_MUTUAL_INFORMATION:
+                        if method == AlignmentMethod.MUTUAL_INFORMATION.value:
                             image2[si2, sj2, :] = 1 - image1[si1, sj1, :]
                         else:
                             image2 = image1[
@@ -625,7 +625,7 @@ Name the second output image:AlignedImage2
                         )
                         assert isinstance(module, Align)
                         module.alignment_method.value = method
-                        module.crop_mode.value = C_SAME_SIZE
+                        module.crop_mode.value = CropMode.SAME_SIZE.value
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
@@ -694,8 +694,8 @@ Name the second output image:AlignedImage2
         ):
             for mask1 in (None, np.random.uniform(size=shape) > 0.1):
                 for mask2 in (None, np.random.uniform(size=shape) > 0.1):
-                    for method in (M_MUTUAL_INFORMATION, M_CROSS_CORRELATION):
-                        if method == M_CROSS_CORRELATION and (
+                    for method in (AlignmentMethod.MUTUAL_INFORMATION.value, AlignmentMethod.CROSS_CORRELATION.value):
+                        if method == AlignmentMethod.CROSS_CORRELATION.value and (
                             (mask1 is not None) or (mask2 is not None)
                         ):
                             continue
@@ -707,7 +707,7 @@ Name the second output image:AlignedImage2
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape, bool)
-                        if method == M_MUTUAL_INFORMATION:
+                        if method == AlignmentMethod.MUTUAL_INFORMATION.value:
                             image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
                             image2 = image1[
@@ -723,7 +723,7 @@ Name the second output image:AlignedImage2
                         )
                         assert isinstance(module, Align)
                         module.alignment_method.value = method
-                        module.crop_mode.value = C_SAME_SIZE
+                        module.crop_mode.value = CropMode.SAME_SIZE.value
                         module.run(workspace)
                         output = workspace.image_set.get_image("Aligned0")
                         m = workspace.measurements
@@ -834,8 +834,8 @@ Name the second output image:AlignedImage2
         image = read_example_image("ExampleFlyImages", "01_POS002_D.TIF")
         image = image[0:300, 0:300]  # make smaller so as to be faster
         workspace, module = self.make_workspace((image, image), (None, None))
-        module.alignment_method.value = M_MUTUAL_INFORMATION
-        module.crop_mode.value = C_PAD
+        module.alignment_method.value = AlignmentMethod.MUTUAL_INFORMATION.value
+        module.crop_mode.value = CropMode.PAD.value
         module.run(workspace)
         m = workspace.measurements
         assert m.get_current_image_measurement("Align_Xshift_Aligned1") == 0
@@ -848,7 +848,7 @@ Name the second output image:AlignedImage2
         """
         np.random.seed(61)
         shape = (61, 43)
-        for method in (M_CROSS_CORRELATION, M_MUTUAL_INFORMATION):
+        for method in (AlignmentMethod.CROSS_CORRELATION.value, AlignmentMethod.MUTUAL_INFORMATION.value):
             i, j = np.mgrid[0 : shape[0], 0 : shape[1]]
             image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
             image1[
@@ -862,7 +862,7 @@ Name the second output image:AlignedImage2
                 workspace, module = self.make_workspace(order, (None, None))
                 assert isinstance(module, Align)
                 module.alignment_method.value = method
-                module.crop_mode.value = C_CROP
+                module.crop_mode.value = CropMode.CROP.value
                 module.run(workspace)
                 i1 = workspace.image_set.get_image(i1_name)
                 assert isinstance(i1, Image)
@@ -890,7 +890,7 @@ Name the second output image:AlignedImage2
         image2 = image1[2:-2, 2:-2]
         workspace, module = self.make_workspace((image1, image2), (None, None))
         assert isinstance(module, Align)
-        module.crop_mode.value = C_PAD
+        module.crop_mode.value = CropMode.PAD.value
         module.run(workspace)
         i1 = workspace.image_set.get_image("Aligned0")
         assert isinstance(i1, Image)

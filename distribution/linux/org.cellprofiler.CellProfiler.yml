@@ -37,4 +37,5 @@ finish-args:
   # - --share=network
   # - --filesystem=xdg-documents
   # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
-  # - --env=GTK_MODULES=
+  - --env=GTK_MODULES=
+  - --env=LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1

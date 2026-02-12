@@ -4130,7 +4130,7 @@ def calculate_minimum_distances(
         dist[mask] = min_dist
     return dist
     
-def get_parents_of(
+def find_parents_of(
         parent_name: str, 
         x_name: str, 
         y_name: str, 

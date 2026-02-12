@@ -32,6 +32,7 @@ from scipy.ndimage import mean as mean_of_labels
 import scipy.ndimage as scind
 import scipy.sparse
 from centrosome.filter import stretch
+from skimage.feature import peak_local_max
 from scipy.fftpack import fft2, ifft2
 from cellprofiler_library.types import (
     ImageGrayscale, 
@@ -3056,3 +3057,38 @@ def get_source_range(
         src_max = source_high
         
     return src_min, src_max
+
+################################################################################
+# FindMaxima
+################################################################################
+
+def find_maxima_in_data(
+        x_data: ImageAny, 
+        min_distance_value: int, 
+        label_maxima: bool, 
+        th_abs: Optional[float]=None
+    ) -> Union[ImageBinary, ObjectSegmentation]:
+    maxima_coords = peak_local_max(
+        x_data,
+        min_distance=min_distance_value,
+        threshold_abs=th_abs,
+    )
+    y_data = numpy.zeros(x_data.shape, dtype=bool)
+    y_data[tuple(maxima_coords.T)] = True
+
+    if label_maxima:
+        y_data = scipy.ndimage.label(y_data)[0]
+    return y_data
+
+def find_maxima_threshold(x_data: ImageAny) -> ImageAny:
+    """Identity function, just returns the input"""
+    return x_data
+
+def apply_target_mask(x_data: ImageAny, masking_image: Union[ImageAny,ObjectSegmentation]) -> ImageAny:
+    mask = masking_image.astype(bool)
+    x_data[~mask] = 0
+    return x_data
+
+
+
+

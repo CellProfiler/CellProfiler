@@ -1,3 +1,4 @@
+
 """
 FindMaxima
 ==========
@@ -33,10 +34,8 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscribe
 from cellprofiler_core.setting.text import Integer, Float
 from cellprofiler_core.utilities.core.object import overlay_labels
 
-MODE_THRESHOLD = "Threshold"
-MODE_MASK = "Mask"
-MODE_OBJECTS = "Within Objects"
-
+from cellprofiler_library.opts.findmaxima import BackgroundExclusionMode
+from cellprofiler_library.modules._findmaxima import find_maxima
 
 class FindMaxima(ImageProcessing):
     category = "Advanced"
@@ -57,21 +56,21 @@ class FindMaxima(ImageProcessing):
 
         self.exclude_mode = Choice(
             "Method for excluding background",
-            [MODE_THRESHOLD, MODE_MASK, MODE_OBJECTS],
+            [BackgroundExclusionMode.THRESHOLD.value, BackgroundExclusionMode.MASK.value, BackgroundExclusionMode.OBJECTS.value],
             value="Threshold",
             doc=f"""\
 By default, local maxima will be searched for across the whole image. This means
 that maxima will be found in areas that consist entirely of background. To
 resolve this we have several methods to exclude background.
 
-**{MODE_THRESHOLD}** allows you to specify a minimum pixel intensity to be
+**{BackgroundExclusionMode.THRESHOLD.value}** allows you to specify a minimum pixel intensity to be
 considered as a peak. Setting this to 0 effectively uses no threshold.
 
-**{MODE_MASK}** will restrict peaks to areas which are within a provided mask
+**{BackgroundExclusionMode.MASK.value}** will restrict peaks to areas which are within a provided mask
 image. This mask will typically come from the threshold module or another means
 of finding background.
 
-**{MODE_OBJECTS}** will restrict peaks to areas within an existing set of
+**{BackgroundExclusionMode.OBJECTS.value}** will restrict peaks to areas within an existing set of
 objects.
 """,
         )
@@ -143,11 +142,11 @@ images.
             self.exclude_mode,
         ]
 
-        if self.exclude_mode == MODE_THRESHOLD:
+        if self.exclude_mode == BackgroundExclusionMode.THRESHOLD.value:
             result.append(self.min_intensity)
-        elif self.exclude_mode == MODE_MASK:
+        elif self.exclude_mode == BackgroundExclusionMode.MASK.value:
             result.append(self.mask_image)
-        elif self.exclude_mode == MODE_OBJECTS:
+        elif self.exclude_mode == BackgroundExclusionMode.OBJECTS.value:
             result.append(self.mask_objects)
 
         result.append(self.maxima_size)
@@ -173,30 +172,18 @@ images.
 
         x_data = x_data_orig.copy()
 
-        th_abs = None
-
-        if self.exclude_mode.value == MODE_THRESHOLD:
-            th_abs = self.min_intensity.value
-        elif self.exclude_mode.value == MODE_MASK:
-            mask = images.get_image(self.mask_image.value).pixel_data.astype(bool)
-            x_data[~mask] = 0
-        elif self.exclude_mode.value == MODE_OBJECTS:
-            mask_objects = workspace.object_set.get_objects(self.mask_objects.value)
-            mask = mask_objects.segmented.astype(bool)
-            x_data[~mask] = 0
-        else:
-            raise NotImplementedError("Invalid background method choice")
-
-        maxima_coords = peak_local_max(
-            x_data,
-            min_distance=self.min_distance.value,
-            threshold_abs=th_abs,
+        min_intensity_value = self.min_intensity.value if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value else None
+        target_mask = images.get_image(self.mask_image.value).pixel_data if self.exclude_mode.value == BackgroundExclusionMode.MASK.value else None
+        target_mask = workspace.object_set.get_objects(self.mask_objects.value).segmented if self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value else target_mask
+     
+        y_data = find_maxima(
+            x_data, 
+            self.exclude_mode.value, 
+            self.min_distance.value, 
+            self.label_maxima.value,
+            min_intensity_value, 
+            target_mask,
         )
-        y_data = numpy.zeros(x_data.shape, dtype=bool)
-        y_data[tuple(maxima_coords.T)] = True
-
-        if self.label_maxima:
-            y_data = scipy.ndimage.label(y_data)[0]
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 

@@ -81,25 +81,27 @@ def validate_object_segmentation_ijv(ijv: NDArray[np.int_]) -> NDArray[np.int_]:
     if ijv.shape[1] != 3:
         raise ValueError(f"Expected a 2-dimensional array with 3 columns, got {ijv.shape[1]}")
     return ijv
-
-Pixel = Annotated[Union[np.float32, np.float64], Field(description="Pixel value")]
+Pixel_ = Union[np.float32, np.float64, np.int_, np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32]
+Pixel = Annotated[Pixel_, Field(description="Pixel value")]
 ObjectLabel =           Annotated[Union[np.int8, np.int16,np.int32], Field(description="Object label")]
 
-Image2DColor =          Annotated[NDArray[Pixel],       Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
+Image2DColor =          Annotated[NDArray[Pixel],       Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Pixel_))]
 Image2DColorMask =      Annotated[NDArray[np.bool_],    Field(description="2D color mask"),        AfterValidator(create_type_validator(False, True, False, np.bool_))]
-Image2DGrayscale =      Annotated[NDArray[Pixel],       Field(description="2D grayscale image of type float32"), AfterValidator(create_type_validator(False, False, False, Union[np.float32, np.float64]))]
+Image2DGrayscale =      Annotated[NDArray[Pixel],       Field(description="2D grayscale image of type float32"), AfterValidator(create_type_validator(False, False, False, Pixel_))]
 Image2DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="2D grayscale mask"),    AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinary =         Annotated[NDArray[np.bool_],    Field(description="2D binary image"),      AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="2D binary mask"),       AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DInt =            Annotated[NDArray[np.int32],    Field(description="2D int32 image"),       AfterValidator(create_type_validator(False, False, False, np.int32))]
+Image2DUInt =           Annotated[NDArray[np.uint8],    Field(description="2D uint8 image"),       AfterValidator(create_type_validator(False, False, False, np.uint8))]
 
-Image3DColor =          Annotated[NDArray[Pixel],       Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, Union[np.float32, np.float64]))]
+Image3DColor =          Annotated[NDArray[Pixel],       Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, Pixel_))]
 Image3DColorMask =      Annotated[NDArray[np.bool_],    Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, np.bool_))]
-Image3DGrayscale =      Annotated[NDArray[Pixel],       Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Union[np.float32, np.float64]))]
+Image3DGrayscale =      Annotated[NDArray[Pixel],       Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Pixel_))]
 Image3DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="3D grayscale mask"),    AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinary =         Annotated[NDArray[np.bool_],    Field(description="3D binary image"),      AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="3D binary mask"),       AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DInt =            Annotated[NDArray[np.int32],    Field(description="3D int32 image"),       AfterValidator(create_type_validator(True, False, False, np.int32))]
+Image3DUInt =           Annotated[NDArray[np.uint8],    Field(description="3D uint8 image"),       AfterValidator(create_type_validator(True, False, False, np.uint8))]
 
 # see cellprofiler_library.functions.segmentation._validate_<type> for more details 
 ObjectLabelsDense =     Annotated[NDArray[ObjectLabel], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]

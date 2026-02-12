@@ -1,5 +1,5 @@
-from typing import Optional
-from pydantic import validate_call, ConfigDict
+from typing import Optional, Annotated, List
+from pydantic import validate_call, ConfigDict, Field
 import numpy as np
 import scipy.ndimage
 
@@ -15,23 +15,22 @@ from cellprofiler_library.functions.measurement import (
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def run_relate_objects(
-        parent_labels: ObjectSegmentation,
-        child_labels: ObjectSegmentation,
-        parent_ijv: Optional[ObjectSegmentationIJV],
-        child_ijv: Optional[ObjectSegmentationIJV],
-        parent_name: str = Relationship.PARENT.value,
-        child_name: str = Relationship.CHILD.value,
-        volumetric: bool = False,
-        step_parent_names = [],
-        wants_step_parent_disatnces: bool = False,
-        find_centroid = False,
-        find_minimum = False,
-        child_dimensions: int = 2,
-        wants_per_parent_means: bool = False,
-        measurements: Optional[LibraryMeasurements] = None
+        parent_labels:          Annotated[ObjectSegmentation, Field(description="Segmentation of parent")],
+        child_labels:           Annotated[ObjectSegmentation, Field(description="Segmentation of children")],
+        parent_ijv:             Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of parent in IJV format")],
+        child_ijv:              Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of children in IJV format")],
+        parent_name:            Annotated[str, Field(description="Name of the parent object")] = Relationship.PARENT.value,
+        child_name:             Annotated[str, Field(description="Name of the child object")] = Relationship.CHILD.value,
+        volumetric:             Annotated[bool, Field(description="Indicates whether objects are 3D")] = False,
+        parent_and_step_parent_names:Annotated[List[str], Field(description="List of parents and step-parent names for which to calculate distances")] = [],
+        find_centroid:          Annotated[bool, Field(description="Indicates whether centroid-centroid distances should be calculated")] = False,
+        find_minimum:           Annotated[bool, Field(description="Indicates whether minimum distances should be calculated")] = False,
+        child_dimensions:       Annotated[int, Field(description="Number of dimensions of the child object")] = 2,
+        wants_per_parent_means: Annotated[bool, Field(description="Inidicates whether per-parent means should be calculated")] = False,
+        measurements:           Annotated[Optional[LibraryMeasurements], Field(description="Measurements object for which per-parent means will be calculated")] = None,
 ) -> LibraryMeasurements:
     """
-    Relate child objects to parent objects and compute basic statistics.
+    Relate child objects to parent objects, compute basic statistics, and optionally calculate distances between parent and child objects, and optionally calculate per-parent means.
     
     Args:
         parent_labels: Segmentation of primary parent
@@ -41,6 +40,12 @@ def run_relate_objects(
         parent_name: Name of primary parent
         child_name: Name of children
         volumetric: Whether objects are 3D
+        parent_and_step_parent_names: List of parents and step-parent names for which to calculate distances
+        find_centroid: Indicates whether centroid-centroid distances should be calculated
+        find_minimum: Indicates whether minimum distances should be calculated
+        child_dimensions: Number of dimensions of the child object
+        wants_per_parent_means: Inidicates whether per-parent means should be calculated
+        measurements: Measurements object for which per-parent means will be calculated
     """
 
     # lib_measurements is the object that will be returned
@@ -96,7 +101,6 @@ def run_relate_objects(
         )
         # No need to add relate measurements to measurements as aggregation cannot be performed on relationships
     
-    parent_and_step_parent_names = __get_parent_names(parent_name, wants_step_parent_disatnces, step_parent_names)
     for parent_step_parent_name in parent_and_step_parent_names:
         merged_measurements = measurements.merge(lib_measurements)
         parents_of = find_parents_of(parent_step_parent_name, parent_name, child_name, merged_measurements)
@@ -143,17 +147,7 @@ def run_relate_objects(
 
     return lib_measurements
 
-def __get_parent_names(x_name, wants_step_parent_distances, step_parent_names):
-    parent_names = [x_name]
-
-    if wants_step_parent_distances:
-        parent_names += [
-            group.step_parent_name.value for group in step_parent_names
-        ]
-
-    return parent_names
-
-def __should_aggregate_feature(feature_name):
+def __should_aggregate_feature(feature_name: str) -> bool:
     """Return True if aggregate measurements should be made on a feature
 
     feature_name - name of a measurement, such as Location_Center_X

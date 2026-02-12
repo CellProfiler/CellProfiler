@@ -44,6 +44,12 @@ from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABEL
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import Measurement as NeighborsMeasurement
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
+from cellprofiler_core.constants.measurement import (
+    FF_PARENT,
+)
+from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
+from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.functions.segmentation import center_of_labels_mass
 
 ###############################################################################
 # MeasureImageOverlap
@@ -3786,3 +3792,426 @@ def measure_haralick_features_objects(
             pass
 
     return features
+
+###############################################################################
+# RelateObjects
+###############################################################################
+
+def compute_centroid_distances(
+    child_centers: NDArray[np.float64],
+    parent_centers: NDArray[np.float64],
+    parents_of: NDArray[np.int32]
+) -> NDArray[np.float64]:
+    """Calculate the centroid-centroid distance between parent & child
+    
+    Args:
+        child_centers: (N, 2) or (N, 3) array of child object centroids
+        parent_centers: (M, 2) or (M, 3) array of parent object centroids
+        parents_of: Array of length N mapping each child to its parent index (1-based).
+                   0 indicates no parent.
+                   
+    Returns:
+        Array of length N containing distances. NaN for unparented children.
+    """
+    if parent_centers.shape[0] == 0 or child_centers.shape[0] == 0:
+        return numpy.full(len(parents_of), numpy.nan)
+
+    # Adjust to 0-based indexing
+    parents_of_idx = parents_of - 1
+    
+    # Mask for valid parents
+    # parents_of > 0 checks for 0 (no parent)
+    # parents_of <= len(parent_centers) checks for valid index
+    mask = (parents_of > 0) & (parents_of <= parent_centers.shape[0])
+    
+    dist = numpy.full(child_centers.shape[0], numpy.nan)
+    
+    if numpy.any(mask):
+        # Calculate Euclidean distance
+        # parent_centers[parents_of_idx[mask]] gets the parent center for each child
+        diff = child_centers[mask, :] - parent_centers[parents_of_idx[mask], :]
+        dist[mask] = numpy.sqrt(numpy.sum(diff ** 2, axis=1))
+        
+    return dist
+
+
+def compute_minimum_distances(
+    child_centers: NDArray[np.float64],
+    parent_labels: NDArray[ObjectLabel],
+    parents_of: NDArray[np.int32]
+) -> NDArray[np.float64]:
+    """Calculate the distance from child center to parent perimeter
+    
+    Args:
+        child_centers: (N, 2) or (N, 3) array of child object centroids
+        parent_labels: Label matrix of parent objects
+        parents_of: Array of length N mapping each child to its parent index (1-based)
+        
+    Returns:
+        Array of length N containing minimum distances. NaN for unparented children.
+    """
+    if len(parents_of) == 0:
+        return numpy.zeros((0,))
+        
+    if numpy.all(parents_of == 0):
+        return numpy.full(len(parents_of), numpy.nan)
+
+    mask = parents_of > 0
+    
+    # Filter for children with parents
+    child_centers_masked = child_centers[mask, :]
+    parents_of_masked = parents_of[mask] - 1
+    
+    # Find parent boundaries
+    # inner mode: boundaries are inside the object
+    pperim = (
+        skimage.segmentation.find_boundaries(parent_labels, mode="inner")
+        * parent_labels
+    )
+    
+    # Get a list of all points on the perimeter
+    perim_loc = numpy.argwhere(pperim != 0)
+    
+    if len(perim_loc) == 0:
+        # Should not happen if there are parents, but safety check
+        return numpy.full(len(parents_of), numpy.nan)
+
+    # Get the label # for each point
+    # multidimensional indexing with non-tuple values
+    perim_loc_t = tuple(map(tuple, perim_loc.transpose()))
+    perim_idx = pperim[perim_loc_t]
+    
+    # Sort the points by label #
+    # We sort perimeter points so we can group them by parent label
+    # The original code sorts by column order reversed? 
+    # reverse_column_order = list(range(children.dimensions))[::-1] -> implied from perim_loc
+    # Actually we just need to group by label.
+    
+    # Sort by label first
+    sort_idx = numpy.argsort(perim_idx)
+    perim_loc = perim_loc[sort_idx, :]
+    perim_idx = perim_idx[sort_idx]
+    
+    # Get counts and indexes to each run of perimeter points
+    # This tells us where each parent's perimeter points start and end in the sorted array
+    counts = scipy.ndimage.sum(
+        numpy.ones(len(perim_idx)),
+        perim_idx,
+        numpy.arange(1, perim_idx[-1] + 1),
+    ).astype(numpy.int32)
+    
+    # Start indices for each label
+    indexes = numpy.cumsum(counts) - counts
+    
+    # Check if parents_of_masked are within range of counts
+    # It's possible a parent has no perimeter pixels? (single pixel object?)
+    # find_boundaries should handle it.
+    
+    valid_parents_mask = parents_of_masked < len(counts)
+    # Further filter if needed, but assuming parents_of aligns with parent_labels
+    
+    # For the children, get the index and count of the parent's perimeter points
+    # We might have parents in parents_of that are not in perim_idx if they have no perimeter?
+    # But parents_of comes from relate_children, so they must overlap.
+    
+    # We need to handle the case where a parent label exists but has no perimeter points 
+    # (though find_boundaries inner usually returns the pixel itself for single pixel)
+    
+    ccounts = counts[parents_of_masked]
+    cindexes = indexes[parents_of_masked]
+    
+    # ccounts is num perimeter points for the parent of each child
+    
+    # Now make an array that has an element for each of that child's perimeter points
+    # Total size = sum(ccounts)
+    total_points = numpy.sum(ccounts)
+    
+    if total_points == 0:
+         return numpy.full(len(parents_of), numpy.nan)
+
+    clabel = numpy.zeros(total_points, int)
+    
+    # cfirst is the eventual first index of each child in the clabel array
+    cfirst = numpy.cumsum(ccounts) - ccounts
+    
+    # Mark transitions
+    if len(cfirst) > 1:
+        clabel[cfirst[1:]] += 1
+    
+    clabel = numpy.cumsum(clabel)
+    
+    # clabel is an index into child_centers_masked (0 to N_children-1)
+    # mapped to the expanded perimeter points
+    
+    # Make an index that runs from 0 to ccounts for each child label.
+    cp_index = numpy.arange(len(clabel)) - cfirst[clabel]
+    
+    # then add cindexes to get an index to the perimeter point in perim_loc
+    # cindexes[clabel] gives the start of the parent's perimeter points in perim_loc
+    cp_index += cindexes[clabel]
+    
+    # Now, calculate the distance from the centroid of each label to each perimeter point in the parent.
+    # perim_loc[cp_index, :] are the coordinates of the perimeter points
+    # child_centers_masked[clabel, :] are the coordinates of the child centers
+    
+    dists_expanded = numpy.sqrt(
+        numpy.sum((perim_loc[cp_index, :] - child_centers_masked[clabel, :]) ** 2, 1)
+    )
+    
+    # Finally, find the minimum distance per child
+    min_dist = scipy.ndimage.minimum(dists_expanded, clabel, numpy.arange(len(ccounts)))
+    
+    # Account for unparented children
+    dist = numpy.full(len(parents_of), numpy.nan)
+    dist[mask] = min_dist
+    
+    return dist
+
+def measure_centroid_distances(
+    parent_labels: ObjectSegmentation,
+    child_labels: ObjectSegmentation,
+    parents_of: NDArray[ObjectLabel]
+) -> NDArray[np.float64]:
+    """Calculate the centroid-centroid distance between parent & child
+    
+    Args:
+        parent_labels: Label matrix of parent objects
+        child_labels: Label matrix of child objects
+        parents_of: Array mapping child index to parent label (from relate_children)
+        
+    Returns:
+        Array of distances for each child
+    """
+    # Calculate centers of mass
+    # centers_of_labels returns (N, 2) or (N, 3) array. Row i corresponds to label i+1.
+    pcenters = centers_of_labels(parent_labels)
+    ccenters = centers_of_labels(child_labels)
+
+    if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
+        dist = numpy.array([numpy.NaN] * len(parents_of))
+    else:
+        #
+        # Make indexing of parents_of be same as pcenters
+        # parents_of contains label numbers (1-based). pcenters is 0-indexed (row 0 is label 1).
+        # So we subtract 1.
+        #
+        parents_of_idx = parents_of - 1
+
+        # mask for children that have a valid parent (parent label > 0 and within range)
+        # Note: parents_of == 0 means no parent.
+        mask = (parents_of_idx != -1) & (parents_of_idx < pcenters.shape[0])
+        
+        # Also need to check if parents_of indices are valid for pcenters array size
+        # (Though relate_children should ensure parents_of contains valid parent labels)
+
+        dist = numpy.array([numpy.NaN] * ccenters.shape[0])
+
+        if numpy.any(mask):
+            # ccenters has shape (n_children, dims). 
+            # pcenters[parents_of_idx[mask], :] has shape (n_masked_children, dims)
+            # We calculate Euclidean distance between child center and its parent center
+            dist[mask] = numpy.sqrt(
+                numpy.sum((ccenters[mask, :] - pcenters[parents_of_idx[mask], :]) ** 2, 1)
+            )
+
+    return dist
+
+def calculate_centroid_distances(
+        parents: ObjectSegmentation,
+        children: ObjectSegmentation,
+        parents_of: NDArray[ObjectLabel]
+    ) -> NDArray[np.float64]:
+    """Calculate the centroid-centroid distance between parent & child"""
+
+    # pcenters = parents.center_of_mass()
+    pcenters = center_of_labels_mass(parents, validate=False)
+
+    # ccenters = children.center_of_mass()
+    ccenters = center_of_labels_mass(children, validate=False)
+
+    if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
+        dist = numpy.array([numpy.NaN] * len(parents_of))
+    else:
+        #
+        # Make indexing of parents_of be same as pcenters
+        #
+        parents_of = parents_of - 1
+
+        mask = (parents_of != -1) | (parents_of > pcenters.shape[0])
+
+        dist = numpy.array([numpy.NaN] * ccenters.shape[0])
+
+        dist[mask] = numpy.sqrt(
+            numpy.sum((ccenters[mask, :] - pcenters[parents_of[mask], :]) ** 2, 1)
+        )
+    return dist
+
+def calculate_minimum_distances(
+        parents: ObjectSegmentation,
+        children: ObjectSegmentation,
+        children_dimensions: int,
+        parents_of: NDArray[ObjectLabel]
+    ) -> NDArray[np.float64]:
+    """Calculate the distance from child center to parent perimeter"""
+    if len(parents_of) == 0:
+        dist = numpy.zeros((0,))
+    elif numpy.all(parents_of == 0):
+        dist = numpy.array([numpy.NaN] * len(parents_of))
+    else:
+        mask = parents_of > 0
+
+        # this is what core _objects.py does
+        ccenters = center_of_labels_mass(children, validate=False)
+
+        ccenters = ccenters[mask, :]
+
+        parents_of_masked = parents_of[mask] - 1
+
+        pperim = (
+            skimage.segmentation.find_boundaries(parents, mode="inner")
+            * parents
+        )
+
+        # Get a list of all points on the perimeter
+        perim_loc = numpy.argwhere(pperim != 0)
+
+        # Get the label # for each point
+        # multidimensional indexing with non-tuple values not allowed as of numpy 1.23
+        perim_loc_t = tuple(map(tuple, perim_loc.transpose()))
+        perim_idx = pperim[perim_loc_t]
+
+        # Sort the points by label #
+        reverse_column_order = list(range(children_dimensions))[::-1]
+
+        coordinates = perim_loc[:, reverse_column_order].transpose().tolist()
+
+        coordinates.append(perim_idx)
+
+        idx = numpy.lexsort(coordinates)
+
+        perim_loc = perim_loc[idx, :]
+
+        perim_idx = perim_idx[idx]
+
+        # Get counts and indexes to each run of perimeter points
+        counts = scipy.ndimage.sum(
+            numpy.ones(len(perim_idx)),
+            perim_idx,
+            numpy.arange(1, perim_idx[-1] + 1),
+        ).astype(numpy.int32)
+
+        indexes = numpy.cumsum(counts) - counts
+
+        # For the children, get the index and count of the parent
+        ccounts = counts[parents_of_masked]
+        cindexes = indexes[parents_of_masked]
+
+        # Now make an array that has an element for each of that child's perimeter points
+        clabel = numpy.zeros(numpy.sum(ccounts), int)
+
+        # cfirst is the eventual first index of each child in the clabel array
+        cfirst = numpy.cumsum(ccounts) - ccounts
+
+        clabel[cfirst[1:]] += 1
+        clabel = numpy.cumsum(clabel)
+
+        # Make an index that runs from 0 to ccounts for each child label.
+        cp_index = numpy.arange(len(clabel)) - cfirst[clabel]
+
+        # then add cindexes to get an index to the perimeter point
+        cp_index += cindexes[clabel]
+
+        # Now, calculate the distance from the centroid of each label to each perimeter point in the parent.
+        dist = numpy.sqrt(
+            numpy.sum((perim_loc[cp_index, :] - ccenters[clabel, :]) ** 2, 1)
+        )
+
+        # Finally, find the minimum distance per child
+        min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
+
+        # Account for unparented children
+        dist = numpy.array([numpy.NaN] * len(mask))
+        dist[mask] = min_dist
+    return dist
+    
+def find_parents_of(
+    parent_name: str, 
+    x_name: str, 
+    y_name: str, 
+    meas: LibraryMeasurements,
+    ) -> NDArray[ObjectLabel]:
+    """Return the parents_of measurement or equivalent
+    parent_name - name of parent objects
+
+    Return a vector of parent indexes to the given parent name using
+    the Parent measurement. Look for a direct parent / child link first
+    and then look for relationships between self.parent_name and the
+    named parent.
+    """
+    parent_feature = FF_PARENT % parent_name
+
+    primary_parent = x_name
+
+    sub_object_name = y_name
+
+    primary_parent_feature = FF_PARENT % primary_parent
+
+    parents_of: NDArray[ObjectLabel] = numpy.zeros(0, int)
+
+    if parent_feature in meas.get_feature_names(sub_object_name):
+        parents_of = meas.get_measurement(sub_object_name, parent_feature) # changed get_current_measurement to get_measurement assuming that when get_meaurement is called with the LibraryMeasurement object here, it is always the LibraryMeasurement of the current image set
+    elif parent_feature in meas.get_feature_names(primary_parent):
+        #
+        # parent_name is the grandparent of the sub-object via
+        # the primary parent.
+        #
+        primary_parents_of = meas.get_measurement( # changed get_current_measurement to get_measurement
+            sub_object_name, primary_parent_feature
+        )
+
+        grandparents_of = meas.get_measurement( # changed get_current_measurement to get_measurement
+            primary_parent, parent_feature
+        )
+
+        mask = primary_parents_of != 0
+
+        parents_of = numpy.zeros(primary_parents_of.shape[0], grandparents_of.dtype)
+
+        if primary_parents_of.shape[0] > 0:
+            parents_of[mask] = grandparents_of[primary_parents_of[mask] - 1]
+    elif primary_parent_feature in meas.get_feature_names(parent_name):
+        primary_parents_of = meas.get_measurement(
+            sub_object_name, primary_parent_feature
+        )
+
+        primary_parents_of_parent = meas.get_measurement(
+            parent_name, primary_parent_feature
+        )
+
+        if len(primary_parents_of_parent) == 0:
+            return primary_parents_of_parent
+
+        #
+        # There may not be a 1-1 relationship, but we attempt to
+        # construct one
+        #
+        reverse_lookup_len = max(
+            numpy.max(primary_parents_of) + 1, len(primary_parents_of_parent)
+        )
+
+        reverse_lookup = numpy.zeros(reverse_lookup_len, int)
+
+        if primary_parents_of_parent.shape[0] > 0:
+            reverse_lookup[primary_parents_of_parent] = numpy.arange(
+                1, len(primary_parents_of_parent) + 1
+            )
+
+        if primary_parents_of.shape[0] > 0:
+            parents_of = reverse_lookup[primary_parents_of]
+    else:
+        raise ValueError(
+            "Don't know how to relate {} to {}".format(primary_parent, parent_name)
+        )
+
+    return parents_of
+

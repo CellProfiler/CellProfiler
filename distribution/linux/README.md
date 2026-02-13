@@ -12,6 +12,22 @@ The command to build the package is:
 flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --install builddir org.cellprofiler.Cellprofiler.yml
 ```
 
+### Metaifno File
+
+The [Metainfo](https://docs.flatpak.org/en/latest/conventions.html#metainfo-files) file is `org.cellprofiler.CellProfiler.metainfo.xml`. It was generated using the [AppStream MetaInfo Creator](https://www.freedesktop.org/software/appstream/metainfocreator/#/guiapp).
+
+In the Flatpak it is installed as `/app/share/metainfo/org.cellprofiler.CellProfiler.metainfo.xml`.
+
+The [icon](https://specifications.freedesktop.org/icon-theme/latest/) is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler` (without `.png` or `.svg` extension, and `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
+It can be validated with `appstreamcli validate --explain org.cellprofiler.CellProfiler.metainfo.xml`.
+
+Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/exports/share` or `/var/lib/flatpak/exports/share` depending on whether it's a user or system level install.
+
+The desktop file, compliant with the [Freedesktop specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
+
+The desktop-entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`.
+The desktop-entry file can be validated with `desktop-file-validate`.
+
 ## Pixi Pack
 
 CellProfiler builds are managed with `pixi` on all platforms, including Linux. This allows us to source from conda-forge along with PyPI, set enviornment variables, activation scripts, etc. It also allows us to use the `pixi.lock` file for deterministic environments. Flatpak has a limited amount of build systems (e.g. `autotools`, `cmake`, `meson`, etc.). These are robust, but not what CellProfiler uses. In order to build Python applications, Flatpak [recommends](https://docs.flatpak.org/en/latest/python.html) using the plain `simple` build system, and using the `pip` bundled with the Flatpak runtime and sdk (`org.freedesktop.Platform` and `org.freedesktop.Sdk`). They also recommend including the full dependency package manifest as Flatpak module sources, rather than attempting to do a `pip install` from within the build environment. Doing so avoids two things 1) performing non-determenistic dependency resolution via `pip` (since it doesn't use lock files by default) and 2) network calls from `pip` to PyPI from within the build environment. Instead exact urls to exact versions of PyPI packages are given as sources, and they are retrieved as inputs to the build. Using `pip` isn't strictly problematic for building CellProfiler, however the point of using `pixi` is to allow for extra packages not on PyPI, reproducible environments via lock file, etc. `pip` is insufficient for installing the `jdk` and setting the `JAVA_HOME` environment variable for instance.

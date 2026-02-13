@@ -11,6 +11,14 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 [tasks]
 cp = { cmd = ["python", "-m", "cellprofiler"] }
 
+[feature.mysql.tasks]
+# configure the database - should be run only once, on enviroment creation
+cfg-db = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh config"
+# run just the exporttodatabase tests
+dbtest = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run"
+# run all tests, pass in args if you want them to pass through
+tests = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run-all"
+
 [target.osx.tasks]
 # run using python.app (i.e. pythonw)
 cp = { cmd = ["pythonw", "-m", "cellprofiler", "-L", "10"] }
@@ -24,13 +32,13 @@ scripts = ["scripts/link-pythonapp.sh"]
 
 [feature.mysql.activation]
 # https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
-env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/dev/lib", PKG_CONFIG_PATH = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/pkgconfig" }
+env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$CONDA_PREFIX/lib -lmysqlclient -rpath $CONDA_PREFIX/lib", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig" }
 
 [feature.mysql.target.linux-64.activation]
-env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib" }
+env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$CONDA_PREFIX/lib" }
 
 [feature.java.activation]
-env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
+env = { JAVA_HOME = "$CONDA_PREFIX/lib/jvm" }
 
 [dependencies]
 python = "3.9.*"
@@ -43,14 +51,28 @@ h5py = "<3.11"
 # disable to build wheel from scratch
 # url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/
 [target.linux-64.pypi-dependencies]
-wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
+wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxPython-4.2.2-cp39-cp39-linux_x86_64.whl" }
+
+[target.linux-64.dependencies]
+sdl2 = ">=2.0.0,<3.0.0"
+
+[target.linux-64.activation]
+env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
 
 [target.osx-arm64.pypi-dependencies]
 wxpython = "==4.2.1"
 
-[feature.mysql.dependencies]
+[feature.mysql.target.osx.dependencies]
 pkg-config = "<1.0.0"
-mysql = "=8.0"
+mysql = "8.4.*"
+
+[feature.mysql.target.win-64.dependencies]
+pkg-config = "<1.0.0"
+mysql = "8.4.*"
+
+[feature.mysql.target.linux-64.dependencies]
+mysqlclient = ">=2.2.3"
+mysql = "*"
 
 [feature.java.dependencies]
 openjdk = "11.*"
@@ -61,10 +83,30 @@ cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], 
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
+[feature.build.pypi-dependencies]
+cellprofiler-library = { path = "./src/subpackages/library", extras = ["build"], editable = true }
+cellprofiler-core = { path = "./src/subpackages/core", extras = ["build"], editable = true }
+cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable = true }
+
+# get conda package rather than pypi for publishing on linux
+# as it's the only pypi source file, which pixi-pack doesn't support
+[feature.publish.target.linux-64.dependencies]
+asciitree = "==0.3.3"
+# below two needed for installing cellprofiler source into final env inside flatpak
+setuptools = "*"
+setuptools-scm = "*"
+
+[feature.publish.pypi-dependencies]
+cellprofiler-library = { path = "./src/subpackages/library", editable = false }
+cellprofiler-core = { path = "./src/subpackages/core", editable = false }
+cellprofiler = { path = "./src/frontend", editable = false }
+
 [feature.profile.pypi-dependencies]
 py-spy = "*"
 memray = "*"
 
 [environments]
 dev = ["mod", "java", "mysql"]
+build = ["build", "java", "mysql"]
+prod = ["publish", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]

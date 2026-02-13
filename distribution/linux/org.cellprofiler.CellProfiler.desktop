@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=CellProfiler
+Comment=An open-source application for biological image analysis
+Icon=org.cellprofiler.CellProfiler
+Exec=cellprofiler
+Categories=Science;Biology

@@ -138,7 +138,7 @@ def main(main_args=None):
         worker_main()
         return exit_code
 
-    args = parse_args(main_args)
+    args = parse_args()
 
     # put up towards top, some things below need log level set
     set_log_level(args.log_level)
@@ -351,7 +351,7 @@ def stop_cellprofiler():
     stop_java()
 
 
-def parse_args(args):
+def parse_args():
     """Parse the CellProfiler command-line arguments"""
 
     # https://stackoverflow.com/a/22157136
@@ -364,11 +364,6 @@ def parse_args(args):
 
     usage = """%(prog)s [arguments]
          The flags -p, -r and -c are required for a headless run."""
-
-    if "--do-not-fetch" in args:
-        args = list(args)
-
-        args.remove("--do-not-fetch")
 
     parser = argparse.ArgumentParser(usage=usage, prog="cellprofiler", formatter_class=SmartFormatter)
 
@@ -383,6 +378,7 @@ def parse_args(args):
 
     default_show_gui = True
 
+    # TODO: linux - wayland support; WAYLAND_DISPLAY
     if sys.platform.startswith("linux") and not os.getenv("DISPLAY"):
         default_show_gui = False
 

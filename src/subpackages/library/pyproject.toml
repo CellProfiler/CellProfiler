@@ -68,7 +68,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["build", "pyinstaller", "twine"]
+build = ["build", "pyinstaller", "twine"]
 # TODO: should be handled by nox or tox
 test = ["pytest~=7.4.1"]
 

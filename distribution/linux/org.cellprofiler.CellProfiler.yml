@@ -1,0 +1,43 @@
+id: org.cellprofiler.CellProfiler
+runtime: org.freedesktop.Platform
+# 21.08 contains python 3.9
+sdk: org.freedesktop.Sdk
+runtime-version: '25.08'
+#runtime: org.gnome.Platform
+#sdk: org.gnome.Sdk
+#runtime-version: '49'
+command: cellprofiler
+modules:
+  - name: pixi-install
+    buildsystem: simple
+    build-commands:
+      - ${FLATPAK_BUILDER_BUILDDIR}/environment.sh --output-directory ${FLATPAK_DEST} --verbose
+      - echo 'exec "$@"' >> ${FLATPAK_DEST}/activate.sh
+      - chmod +x ${FLATPAK_DEST}/activate.sh
+      - echo "${FLATPAK_DEST}/activate.sh python -m cellprofiler -L 10" > cellprofiler
+      - install -Dm0755 cellprofiler ${FLATPAK_DEST}/bin/cellprofiler
+      - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/library
+      - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
+      - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/frontend
+      # - ${FLATPAK_DEST}/activate.sh python -m compileall ${FLATPAK_DEST}/env/lib/python3.9/site-packages/
+      - mkdir -p /app/share/{icons/hicolor/128x128/apps,metainfo,applications}
+      - cp src/frontend/cellprofiler/data/icons/CellProfiler-favicon-128.png /app/share/icons/hicolor/128x128/apps/org.cellprofiler.CellProfiler.png
+      - cp distribution/linux/org.cellprofiler.CellProfiler.metainfo.xml /app/share/metainfo/org.cellprofiler.CellProfiler.metainfo.xml
+      - cp distribution/linux/org.cellprofiler.CellProfiler.desktop /app/share/applications/org.cellprofiler.CellProfiler.desktop
+    sources:
+      - type: git
+        url: https://github.com/CellProfiler/CellProfiler.git
+        commit: 7aaf076a51a83b76e2708bfedc52601b783a9e61
+        #tag: v5.0.0
+      - type: file
+        path: ./environment.sh
+finish-args:
+  # TODO: linux - wayland support
+  - --socket=x11
+  # - --share=socket
+  # - --share=network
+  # - --filesystem=xdg-documents
+  # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
+  - --env=GTK_MODULES=
+  - --env=LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+  - --env=LD_LIBRARY_PATH=/app/env/lib

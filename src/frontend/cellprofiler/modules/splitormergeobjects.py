@@ -21,6 +21,7 @@ from cellprofiler_core.utilities.core.module.identify import (
 )
 
 from cellprofiler.modules import _help
+from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, ObjectIntensityMethod
 
 __doc__ = """\
 SplitOrMergeObjects
@@ -94,19 +95,6 @@ reassignment.
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-OPTION_MERGE = "Merge"
-OPTION_SPLIT = "Split"
-
-UNIFY_DISTANCE = "Distance"
-UNIFY_PARENT = "Per-parent"
-
-CA_CENTROIDS = "Centroids"
-CA_CLOSEST_POINT = "Closest point"
-
-UM_DISCONNECTED = "Disconnected"
-UM_CONVEX_HULL = "Convex hull"
-
-
 class SplitOrMergeObjects(Module):
     module_name = "SplitOrMergeObjects"
     category = "Object Processing"
@@ -134,52 +122,59 @@ You can use this name in subsequent modules that take objects as inputs.""",
 
         self.relabel_option = Choice(
             "Operation",
-            [OPTION_MERGE, OPTION_SPLIT],
+            [RelabelOption.MERGE.value, RelabelOption.SPLIT.value],
             doc="""\
 You can choose one of the following options:
 
--  *%(OPTION_MERGE)s:* Assign adjacent or nearby objects the same label
+-  *{OPTION_MERGE}:* Assign adjacent or nearby objects the same label
    based on certain criteria. It can be useful, for example, to merge
    together touching objects that were incorrectly split into two pieces
    by an **Identify** module.
--  *%(OPTION_SPLIT)s:* Assign a unique number to separate objects that
+-  *{OPTION_SPLIT}:* Assign a unique number to separate objects that
    currently share the same label. This can occur if you applied certain
-   operations in the **Morph** module to objects."""
-            % globals(),
+   operations in the **Morph** module to objects.""".format(
+        **{"OPTION_MERGE": RelabelOption.MERGE.value, "OPTION_SPLIT": RelabelOption.SPLIT.value}
+   ),
         )
 
         self.merge_option = Choice(
             "Merging method",
-            [UNIFY_DISTANCE, UNIFY_PARENT],
+            [MergeOption.UNIFY_DISTANCE.value, MergeOption.UNIFY_PARENT.value],
             doc="""\
-*(Used only with the "%(OPTION_MERGE)s" option)*
+*(Used only with the "{OPTION_MERGE}" option)*
 
 You can merge objects in one of two ways:
 
--  *%(UNIFY_DISTANCE)s:* All objects within a certain pixel radius from
+-  *{UNIFY_DISTANCE}:* All objects within a certain pixel radius from
    each other will be merged.
--  *%(UNIFY_PARENT)s:* All objects which share the same parent
+-  *{UNIFY_PARENT}:* All objects which share the same parent
    relationship to another object will be merged. This is not to be
    confused with using the **RelateObjects** module, in which the
    related objects remain as individual objects. See **RelateObjects**
-   for more details."""
-            % globals(),
+   for more details.""".format(
+       **{
+           "OPTION_MERGE": RelabelOption.MERGE.value,
+           "UNIFY_DISTANCE": MergeOption.UNIFY_DISTANCE.value,
+           "UNIFY_PARENT": MergeOption.UNIFY_PARENT.value
+       }
+   ),
         )
 
         self.merging_method = Choice(
             "Output object type",
-            [UM_DISCONNECTED, UM_CONVEX_HULL],
+            [MergingMethod.DISCONNECTED.value, MergingMethod.CONVEX_HULL.value],
             doc="""\
-*(Used only with the "%(UNIFY_PARENT)s" merging method)*
+*(Used only with the "{UNIFY_PARENT}" merging method)*
 
 **SplitOrMergeObjects** can either merge the child objects and keep them
 disconnected or it can find the smallest convex polygon (the convex
 hull) that encloses all of a parent’s child objects. The convex hull
 will be truncated to include only those pixels in the parent - in that
-case it may not truly be convex. Choose *%(UM_DISCONNECTED)s* to leave
-the children as disconnected pieces. Choose *%(UM_CONVEX_HULL)s* to
-create an output object that is the convex hull around them all."""
-            % globals(),
+case it may not truly be convex. Choose *{UM_DISCONNECTED}* to leave
+the children as disconnected pieces. Choose *{UM_CONVEX_HULL}* to
+create an output object that is the convex hull around them all.""".format(
+    **{"UNIFY_PARENT": MergeOption.UNIFY_PARENT.value, "UM_DISCONNECTED": MergingMethod.DISCONNECTED.value, "UM_CONVEX_HULL": MergingMethod.CONVEX_HULL.value}
+),
         )
 
         self.parent_object = Choice(
@@ -202,32 +197,34 @@ Please note the following:
             0,
             minval=0,
             doc="""\
-*(Used only with the "%(OPTION_MERGE)s" option and the "%(UNIFY_DISTANCE)s"
+*(Used only with the "{OPTION_MERGE}" option and the "{UNIFY_DISTANCE}"
 method)*
 
 Objects that are less than or equal to the distance you enter here, in
 pixels, will be merged. If you choose zero (the default), only objects
-that are touching will be merged. Note that *%(OPTION_MERGE)s* will
+that are touching will be merged. Note that *{OPTION_MERGE}* will
 not actually connect or bridge the two objects by adding any new pixels;
 it simply assigns the same object number to the portions of the object.
 The new, merged object may therefore consist of two or more unconnected
 components. If you want to add pixels around objects, see
-**ExpandOrShrink** or **Morph**."""
-            % globals(),
+**ExpandOrShrink** or **Morph**.""".format(
+    **{"OPTION_MERGE": RelabelOption.MERGE.value, "UNIFY_DISTANCE": MergeOption.UNIFY_DISTANCE.value}
+),
         )
 
         self.wants_image = Binary(
             "Merge using a grayscale image?",
             False,
             doc="""\
-*(Used only with the "%(OPTION_MERGE)s" option)*
+*(Used only with the "{OPTION_MERGE}" option)*
 
 Select *Yes* to use the objects’ intensity features to determine
 whether two objects should be merged. If you choose to use a grayscale
-image, *%(OPTION_MERGE)s* will merge two objects only if they are
+image, *{OPTION_MERGE}* will merge two objects only if they are
 within the distance you have specified *and* certain criteria about the
-objects within the grayscale image are met."""
-            % globals(),
+objects within the grayscale image are met.""".format(
+    **{"OPTION_MERGE": RelabelOption.MERGE.value}
+),
         )
 
         self.image_name = ImageSubscriber(
@@ -255,7 +252,7 @@ described for the method you choose in the next setting.""",
 
         self.where_algorithm = Choice(
             "Method to find object intensity",
-            [CA_CLOSEST_POINT, CA_CENTROIDS],
+            [ObjectIntensityMethod.CLOSEST_POINT.value, ObjectIntensityMethod.CENTROIDS.value],
             doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
@@ -264,7 +261,7 @@ You can use one of two methods to determine whether two objects should
 merged, assuming they meet the distance criteria (as specified
 above):
 
--  *%(CA_CENTROIDS)s:* When the module considers merging two objects,
+-  *{CA_CENTROIDS}:* When the module considers merging two objects,
    this method identifies the centroid of each object, records the
    intensity value of the dimmer of the two centroids, multiplies this
    value by the *minimum intensity fraction* to generate a threshold,
@@ -278,7 +275,7 @@ above):
    the center of the cell: a single cell that was incorrectly segmented
    into two objects will typically not have a dim line between the
    centroids of the two halves and will be correctly merged.
--  *%(CA_CLOSEST_POINT)s:* This method is useful for unifying
+-  *{CA_CLOSEST_POINT}:* This method is useful for unifying
    irregularly shaped cells that are connected. It starts by assigning
    background pixels in the vicinity of the objects to the nearest
    object. Objects are then merged if each object has background pixels
@@ -291,8 +288,9 @@ above):
    An example of a feature that satisfies the above constraints is a
    line of pixels that connects two neighboring objects and is roughly
    the same intensity as the boundary pixels of both (such as an axon
-   connecting two neurons' soma)."""
-            % globals(),
+   connecting two neurons' soma).""".format(
+       **{"CA_CENTROIDS": ObjectIntensityMethod.CENTROIDS.value, "CA_CLOSEST_POINT": ObjectIntensityMethod.CLOSEST_POINT.value}
+   ),
         )
 
     def get_parent_choices(self, pipeline):
@@ -306,8 +304,8 @@ above):
 
     def validate_module(self, pipeline):
         if (
-            self.relabel_option == OPTION_MERGE
-            and self.merge_option == UNIFY_PARENT
+            self.relabel_option == RelabelOption.MERGE.value
+            and self.merge_option == MergeOption.UNIFY_PARENT.value
             and self.parent_object.value == "None"
         ):
             raise ValidationError(
@@ -331,9 +329,9 @@ above):
 
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name, self.relabel_option]
-        if self.relabel_option == OPTION_MERGE:
+        if self.relabel_option == RelabelOption.MERGE.value:
             result += [self.merge_option]
-            if self.merge_option == UNIFY_DISTANCE:
+            if self.merge_option == MergeOption.UNIFY_DISTANCE.value:
                 result += [self.distance_threshold, self.wants_image]
                 if self.wants_image:
                     result += [
@@ -341,7 +339,7 @@ above):
                         self.minimum_intensity_fraction,
                         self.where_algorithm,
                     ]
-            elif self.merge_option == UNIFY_PARENT:
+            elif self.merge_option == MergeOption.UNIFY_PARENT.value:
                 result += [self.merging_method, self.parent_object]
         return result
 
@@ -350,12 +348,12 @@ above):
         objects = workspace.object_set.get_objects(objects_name)
         assert isinstance(objects, Objects)
         labels = objects.segmented
-        if self.relabel_option == OPTION_SPLIT:
+        if self.relabel_option == RelabelOption.SPLIT.value:
             output_labels, count = scipy.ndimage.label(
                 labels > 0, numpy.ones((3, 3), bool)
             )
         else:
-            if self.merge_option == UNIFY_DISTANCE:
+            if self.merge_option == MergeOption.UNIFY_DISTANCE.value:
                 mask = labels > 0
                 if self.distance_threshold.value > 0:
                     #
@@ -371,14 +369,14 @@ above):
                 output_labels[labels == 0] = 0
                 if self.wants_image:
                     output_labels = self.filter_using_image(workspace, mask)
-            elif self.merge_option == UNIFY_PARENT:
+            elif self.merge_option == MergeOption.UNIFY_PARENT.value:
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
                     objects_name, "_".join((C_PARENT, parents_name))
                 ]
                 output_labels = labels.copy().astype(numpy.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
-                if self.merging_method == UM_CONVEX_HULL:
+                if self.merging_method == MergingMethod.CONVEX_HULL.value:
                     ch_pts, n_pts = centrosome.cpmorphology.convex_hull(output_labels)
                     ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
@@ -439,7 +437,7 @@ above):
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
-            if self.merge_option == UNIFY_PARENT:
+            if self.merge_option == MergeOption.UNIFY_PARENT.value:
                 workspace.display_data.parent_labels = workspace.object_set.get_objects(
                     self.parent_object.value
                 ).segmented
@@ -455,11 +453,11 @@ above):
             0, 0, workspace.display_data.orig_labels, title=self.objects_name.value
         )
 
-        if self.relabel_option == OPTION_MERGE and (
-            (self.merge_option == UNIFY_DISTANCE and self.wants_image)
-            or (self.merge_option == UNIFY_PARENT)
+        if self.relabel_option == RelabelOption.MERGE.value and (
+            (self.merge_option == MergeOption.UNIFY_DISTANCE.value and self.wants_image)
+            or (self.merge_option == MergeOption.UNIFY_PARENT.value)
         ):
-            if self.merge_option == UNIFY_DISTANCE and self.wants_image:
+            if self.merge_option == MergeOption.UNIFY_DISTANCE.value and self.wants_image:
                 image = workspace.display_data.image
                 cplabels = [
                     dict(
@@ -472,7 +470,7 @@ above):
                     ),
                 ]
 
-            elif self.merge_option == UNIFY_PARENT:
+            elif self.merge_option == MergeOption.UNIFY_PARENT.value:
                 image = numpy.zeros(workspace.display_data.output_labels.shape)
                 cplabels = [
                     dict(
@@ -556,7 +554,7 @@ above):
         )
         confluent_labels = labels[i, j]
         confluent_labels[~mask] = 0
-        if self.where_algorithm == CA_CLOSEST_POINT:
+        if self.where_algorithm == ObjectIntensityMethod.CLOSEST_POINT.value:
             #
             # For the closest point method, find the intensity at
             # the closest point in the object (which will be the point itself
@@ -585,7 +583,7 @@ above):
         label_numbers[1:] = label_numbers[1:] - label_numbers[:-1]
         c_i[index] = label_numbers
         c_i = numpy.cumsum(c_i).astype(int)
-        if self.where_algorithm == CA_CENTROIDS:
+        if self.where_algorithm == ObjectIntensityMethod.CENTROIDS.value:
             #
             # Only connect points > minimum intensity fraction
             #
@@ -650,11 +648,11 @@ above):
 
         if variable_revision_number == 1:
             # Added per-parent unification
-            setting_values += [UNIFY_DISTANCE, "None"]
+            setting_values += [MergeOption.UNIFY_DISTANCE.value, "None"]
             variable_revision_number = 3
 
         if variable_revision_number == 3:
-            setting_values = setting_values + [UM_DISCONNECTED]
+            setting_values = setting_values + [MergingMethod.DISCONNECTED.value]
             variable_revision_number = 4
 
         if variable_revision_number == 4:

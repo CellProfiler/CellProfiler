@@ -15,3 +15,5 @@ class MergingMethod(str, Enum):
 class ObjectIntensityMethod(str, Enum):
     CLOSEST_POINT = "Closest point"
     CENTROIDS = "Centroids"
+
+C_PARENT = "Parent"

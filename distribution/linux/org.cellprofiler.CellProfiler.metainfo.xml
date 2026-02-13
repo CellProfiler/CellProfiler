@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.cellprofiler.CellProfiler</id>
+  
+  <name>CellProfiler</name>
+  <summary>An open-source application for biological image analysis</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>BSD-3-Clause</project_license>
+  
+  <description>
+    <p>
+      CellProfiler is a versatile, open-source software tool for quantifying data from biological images, particularly in high-throughput experiments. CellProfiler is designed for modular, flexible, high-throughput analysis of images, measuring size, shape, intensity, and texture of every cell (or other object) in every image. Using the point-and-click graphical user interface (GUI), users construct an image analysis “pipeline”, a sequential series of modules that each perform an image processing function such as illumination correction, object identification (segmentation), and object measurement. Users mix and match modules and adjust their settings to measure the phenotype of interest. While originally designed for high-throughput images, it is equally appropriate for low-throughput assays as well (i.e., assays of &lt; 100 images).
+    </p>
+    <p>
+      CellProfiler can extract valuable biological information from images quickly while increasing the objectivity and statistical power of assays. It helps researchers approach a variety of biological questions quantitatively, including standard assays (e.g., cell count, size, per-cell protein levels) as well as complex morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA or protein staining).
+    </p>
+    <p>
+      The wide variety of measurements produced by CellProfiler serves as useful “raw material” for machine learning algorithms.
+    </p>
+    <p>
+      In summary, CellProfiler contains:
+    </p>
+    <p>
+      - Advanced algorithms for image analysis that are able to accurately identify crowded cells and non-mammalian cell types. - A modular, flexible design allowing analysis of new assays and phenotypes. - Open-source code so the underlying methodology is known and can be modified or improved by others. - A user-friendly interface. - The ability to use high-throughput computing (clusters, cloud). - A design that eliminates the tedium of the many steps typically involved in image analysis, many of which are not easily transferable from one project to another (for example, image formatting, combining several image analysis steps, or repeating the analysis with slightly different parameters).
+    </p>
+  </description>
+
+  <url type="homepage">https://cellprofiler.org</url>
+  
+  <launchable type="desktop-id">org.cellprofiler.CellProfiler.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://cellprofiler.org/files/cellprofiler/files/cellprofilershuffle2_1.png</image>
+    </screenshot>
+  </screenshots>
+  
+  <icon type="stock">org.cellprofiler.CellProfiler</icon>
+  
+  <categories>
+    <category>Science</category>
+    <category>Biology</category>
+  </categories>
+  
+  <provides>
+    <binary>cellprofiler</binary>
+  </provides>
+</component>

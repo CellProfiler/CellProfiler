@@ -20,7 +20,7 @@ In the Flatpak it is installed as `/app/share/metainfo/org.cellprofiler.CellProf
 
 It can be validated with `appstreamcli validate --explain org.cellprofiler.CellProfiler.metainfo.xml`.
 
-The [application icon](https://docs.flatpak.org/en/latest/conventions.html#application-icons), as specified by [FreeDesktop](https://specifications.freedesktop.org/icon-theme/latest/), is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler` (without `.png` or `.svg` extension, and `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
+The [application icon](https://docs.flatpak.org/en/latest/conventions.html#application-icons), as specified by [FreeDesktop](https://specifications.freedesktop.org/icon-theme/latest/), is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler.png` (with `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
 
 Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/exports/share` or `/var/lib/flatpak/exports/share` depending on whether it's a user or system level install.
 

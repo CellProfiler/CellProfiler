@@ -1,6 +1,4 @@
-import centrosome.cpmorphology
 import numpy
-import scipy.ndimage
 from cellprofiler_core.constants.measurement import (
     C_PARENT,
     FF_CHILDREN_COUNT,
@@ -22,7 +20,9 @@ from cellprofiler_core.utilities.core.module.identify import (
 
 from cellprofiler.modules import _help
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, ObjectIntensityMethod
-
+from cellprofiler_library.modules._splitormergeobjects import split_or_merge_objects
+from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.functions.segmentation import copy_labels
 __doc__ = """\
 SplitOrMergeObjects
 ===================
@@ -344,55 +344,46 @@ above):
         return result
 
     def run(self, workspace):
+        #
+        # Construct arguments for split_or_merge_objects
+        #
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
         assert isinstance(objects, Objects)
         labels = objects.segmented
-        if self.relabel_option == RelabelOption.SPLIT.value:
-            output_labels, count = scipy.ndimage.label(
-                labels > 0, numpy.ones((3, 3), bool)
-            )
-        else:
-            if self.merge_option == MergeOption.UNIFY_DISTANCE.value:
-                mask = labels > 0
-                if self.distance_threshold.value > 0:
-                    #
-                    # Take the distance transform of the reverse of the mask
-                    # and figure out what points are less than 1/2 of the
-                    # distance from an object.
-                    #
-                    d = scipy.ndimage.distance_transform_edt(~mask)
-                    mask = d < self.distance_threshold.value / 2 + 1
-                output_labels, count = scipy.ndimage.label(
-                    mask, numpy.ones((3, 3), bool)
-                )
-                output_labels[labels == 0] = 0
-                if self.wants_image:
-                    output_labels = self.filter_using_image(workspace, mask)
-            elif self.merge_option == MergeOption.UNIFY_PARENT.value:
-                parents_name = self.parent_object.value
-                parents_of = workspace.measurements[
-                    objects_name, "_".join((C_PARENT, parents_name))
-                ]
-                output_labels = labels.copy().astype(numpy.uint32)
-                output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
-                if self.merging_method == MergingMethod.CONVEX_HULL.value:
-                    ch_pts, n_pts = centrosome.cpmorphology.convex_hull(output_labels)
-                    ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
-                    output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
-                #Renumber to be consecutive
-                ## Create an array that maps label indexes to their new values
-                ## All labels to be deleted have a value in this array of zero
-                indexes = numpy.unique(output_labels)[1:]
-                new_object_count = len(indexes)
-                max_label = numpy.max(output_labels)
-                label_indexes = numpy.zeros((max_label + 1,), int)
-                label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+        parent_measurements = LibraryMeasurements()
+        if self.merge_option == MergeOption.UNIFY_PARENT.value:
+            feature_name = "_".join((C_PARENT, self.parent_object.value))
+            parent_measurements.add_measurement(objects_name, feature_name, workspace.measurements[objects_name, feature_name])
+        image = None
+        if self.relabel_option.value != RelabelOption.SPLIT.value and self.merge_option.value == MergeOption.UNIFY_DISTANCE.value and self.wants_image.value:
+            image = self.get_image(workspace)
+        if self.show_window:
+            # Save the image for display
+            workspace.display_data.image = image
 
-                # Reindex the labels of the old source image
-                output_labels = label_indexes[output_labels]
+        #
+        # Run split_or_merge_objects
+        #
+        output_labels = split_or_merge_objects(
+            labels=labels,
+            relabel_option=self.relabel_option.value,
+            merge_option=self.merge_option.value,
+            distance_threshold=self.distance_threshold.value,
+            objects_name=objects_name,
+            parent_name=self.parent_object.value,
+            relaitonship_measurement=parent_measurements,
+            merge_using_image=self.wants_image.value,
+            merging_method=self.merging_method.value,
+            image=image,
+            where_algorithm=self.where_algorithm.value,
+            minimum_intensity_fraction=self.minimum_intensity_fraction.value
+        )
 
+        #
+        # Add the outputs of the split_or_merge_objects to the workspace
+        #
         output_objects = Objects()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
@@ -406,6 +397,7 @@ above):
         output_objects.parent_image = objects.parent_image
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
+        # TODO: #5117 move these to library from <here>
         measurements = workspace.measurements
         add_object_count_measurements(
             measurements,
@@ -433,6 +425,7 @@ above):
             FF_PARENT % self.objects_name.value,
             parents_of_children,
         )
+        # TODO: #5117 move these to library to </here>
 
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
@@ -513,132 +506,6 @@ above):
                 title=self.output_objects_name.value,
                 sharexy=ax,
             )
-
-    def filter_using_image(self, workspace, mask):
-        """Filter out connections using local intensity minima between objects
-
-        workspace - the workspace for the image set
-        mask - mask of background points within the minimum distance
-        """
-        #
-        # NOTE: This is an efficient implementation and an improvement
-        #       in accuracy over the Matlab version. It would be faster and
-        #       more accurate to eliminate the line-connecting and instead
-        #       do the following:
-        #     * Distance transform to get the coordinates of the closest
-        #       point in an object for points in the background that are
-        #       at most 1/2 of the max distance between objects.
-        #     * Take the intensity at this closest point and similarly
-        #       label the background point if the background intensity
-        #       is at least the minimum intensity fraction
-        #     * Assume there is a connection between objects if, after this
-        #       labeling, there are adjacent points in each object.
-        #
-        # As it is, the algorithm duplicates the Matlab version but suffers
-        # for cells whose intensity isn't high in the centroid and clearly
-        # suffers when two cells touch at some point that's off of the line
-        # between the two.
-        #
-        objects = workspace.object_set.get_objects(self.objects_name.value)
-        labels = objects.segmented
-        image = self.get_image(workspace)
-        if self.show_window:
-            # Save the image for display
-            workspace.display_data.image = image
-        #
-        # Do a distance transform into the background to label points
-        # in the background with their closest foreground object
-        #
-        i, j = scipy.ndimage.distance_transform_edt(
-            labels == 0, return_indices=True, return_distances=False
-        )
-        confluent_labels = labels[i, j]
-        confluent_labels[~mask] = 0
-        if self.where_algorithm == ObjectIntensityMethod.CLOSEST_POINT.value:
-            #
-            # For the closest point method, find the intensity at
-            # the closest point in the object (which will be the point itself
-            # for points in the object).
-            #
-            object_intensity = image[i, j] * self.minimum_intensity_fraction.value
-            confluent_labels[object_intensity > image] = 0
-        count, index, c_j = centrosome.cpmorphology.find_neighbors(confluent_labels)
-        if len(c_j) == 0:
-            # Nobody touches - return the labels matrix
-            return labels
-        #
-        # Make a row of i matching the touching j
-        #
-        c_i = numpy.zeros(len(c_j))
-        #
-        # Eliminate labels without matches
-        #
-        label_numbers = numpy.arange(1, len(count) + 1)[count > 0]
-        index = index[count > 0]
-        count = count[count > 0]
-        #
-        # Get the differences between labels so we can use a cumsum trick
-        # to increment to the next label when they change
-        #
-        label_numbers[1:] = label_numbers[1:] - label_numbers[:-1]
-        c_i[index] = label_numbers
-        c_i = numpy.cumsum(c_i).astype(int)
-        if self.where_algorithm == ObjectIntensityMethod.CENTROIDS.value:
-            #
-            # Only connect points > minimum intensity fraction
-            #
-            center_i, center_j = centrosome.cpmorphology.centers_of_labels(labels)
-            indexes, counts, i, j = centrosome.cpmorphology.get_line_pts(
-                center_i[c_i - 1],
-                center_j[c_i - 1],
-                center_i[c_j - 1],
-                center_j[c_j - 1],
-            )
-            #
-            # The indexes of the centroids at pt1
-            #
-            last_indexes = indexes + counts - 1
-            #
-            # The minimum of the intensities at pt0 and pt1
-            #
-            centroid_intensities = numpy.minimum(
-                image[i[indexes], j[indexes]], image[i[last_indexes], j[last_indexes]]
-            )
-            #
-            # Assign label numbers to each point so we can use
-            # scipy.ndimage.minimum. The label numbers are indexes into
-            # "connections" above.
-            #
-            pt_labels = numpy.zeros(len(i), int)
-            pt_labels[indexes[1:]] = 1
-            pt_labels = numpy.cumsum(pt_labels)
-            minima = scipy.ndimage.minimum(
-                image[i, j], pt_labels, numpy.arange(len(indexes))
-            )
-            minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(minima)
-            #
-            # Filter the connections using the image
-            #
-            mif = self.minimum_intensity_fraction.value
-            i = c_i[centroid_intensities * mif <= minima]
-            j = c_j[centroid_intensities * mif <= minima]
-        else:
-            i = c_i
-            j = c_j
-        #
-        # Add in connections from self to self
-        #
-        unique_labels = numpy.unique(labels)
-        i = numpy.hstack((i, unique_labels))
-        j = numpy.hstack((j, unique_labels))
-        #
-        # Run "all_connected_components" to get a component # for
-        # objects identified as same.
-        #
-        new_indexes = centrosome.cpmorphology.all_connected_components(i, j)
-        new_labels = numpy.zeros(labels.shape, int)
-        new_labels[labels != 0] = new_indexes[labels[labels != 0]]
-        return new_labels
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
@@ -724,15 +591,3 @@ above):
             return ["%s_Count" % self.output_objects_name.value]
         return []
 
-
-def copy_labels(labels, segmented):
-    """Carry differences between orig_segmented and new_segmented into "labels"
-
-    labels - labels matrix similarly segmented to "segmented"
-    segmented - the newly numbered labels matrix (a subset of pixels are labeled)
-    """
-    max_labels = len(numpy.unique(segmented))
-    seglabel = scipy.ndimage.minimum(labels, segmented, numpy.arange(1, max_labels + 1))
-    labels_new = labels.copy()
-    labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
-    return labels_new

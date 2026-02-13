@@ -20,10 +20,14 @@ modules:
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/frontend
       # - ${FLATPAK_DEST}/activate.sh python -m compileall ${FLATPAK_DEST}/env/lib/python3.9/site-packages/
+      - mkdir -p /app/share/{icons/hicolor/128x128/apps,metainfo,applications}
+      - cp src/frontend/cellprofiler/data/icons/CellProfiler-favicon-128.png /app/share/icons/hicolor/128x128/apps/org.cellprofiler.CellProfiler.png
+      - cp distribution/linux/org.cellprofiler.CellProfiler.metainfo.xml /app/share/metainfo/org.cellprofiler.CellProfiler.metainfo.xml
+      - cp distribution/linux/org.cellprofiler.CellProfiler.desktop /app/share/applications/org.cellprofiler.CellProfiler.desktop
     sources:
       - type: git
         url: https://github.com/CellProfiler/CellProfiler.git
-        commit: 826da6c07abd993e1796b403319b56ba4ce745ae
+        commit: 7aaf076a51a83b76e2708bfedc52601b783a9e61
         #tag: v5.0.0
       - type: file
         path: ./environment.sh

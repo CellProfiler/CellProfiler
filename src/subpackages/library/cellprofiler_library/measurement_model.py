@@ -355,3 +355,18 @@ class LibraryMeasurements(BaseModel):
             relationships=new_relationships
         )
     
+def add_object_location_measurements(*args, **kwargs):
+    # TODO: #5117 implement add_object_location_measurements from src/subpackages/core/cellprofiler_core/utilities/core/module/identify.py
+    pass
+
+def add_object_count_measurements(*args, **kwargs):
+    # TODO: #5117 implement add_object_location_measurements from src/subpackages/core/cellprofiler_core/utilities/core/module/identify.py
+    pass
+
+def add_object_processing_measurements(*args, **kwargs):
+    # TODO: #5117 implement add_measurements from src/subpackages/core/cellprofiler_core/module/image_segmentation/_object_processing.py
+    pass
+
+def add_image_segmentation_measurements(*args, **kwargs):
+    # TODO: #5117 implement add_measurements from src/subpackages/core/cellprofiler_core/module/image_segmentation/_image_segmentation.py
+    pass

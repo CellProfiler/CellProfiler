@@ -18,15 +18,15 @@ The [Metainfo](https://docs.flatpak.org/en/latest/conventions.html#metainfo-file
 
 In the Flatpak it is installed as `/app/share/metainfo/org.cellprofiler.CellProfiler.metainfo.xml`.
 
-The [icon](https://specifications.freedesktop.org/icon-theme/latest/) is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler` (without `.png` or `.svg` extension, and `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
 It can be validated with `appstreamcli validate --explain org.cellprofiler.CellProfiler.metainfo.xml`.
+
+The [application icon](https://docs.flatpak.org/en/latest/conventions.html#application-icons), as specified by [FreeDesktop](https://specifications.freedesktop.org/icon-theme/latest/), is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler` (without `.png` or `.svg` extension, and `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
 
 Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/exports/share` or `/var/lib/flatpak/exports/share` depending on whether it's a user or system level install.
 
-The desktop file, compliant with the [Freedesktop specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
+The [desktop file](https://docs.flatpak.org/en/latest/conventions.html#desktop-files), compliant with the [Freedesktop specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
 
-The desktop-entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`.
-The desktop-entry file can be validated with `desktop-file-validate`.
+The desktop-entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`. It can be validated with `desktop-file-validate`.
 
 ## Pixi Pack
 

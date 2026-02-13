@@ -86,3 +86,4 @@ wheels/
 linux/builddir
 linux/.flatpak-builder
 linux/repo
+linux/environment.sh

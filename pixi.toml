@@ -88,10 +88,18 @@ cellprofiler-library = { path = "./src/subpackages/library", extras = ["build"],
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["build"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable = true }
 
+# get conda package rather than pypi for publishing on linux
+# as it's the only pypi source file, which pixi-pack doesn't support
+[feature.publish.target.linux-64.dependencies]
+asciitree = "==0.3.3"
+# below two needed for installing cellprofiler source into final env inside flatpak
+setuptools = "*"
+setuptools-scm = "*"
+
 [feature.publish.pypi-dependencies]
-cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = false }
-cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = false }
-cellprofiler = { path = "./src/frontend", extras = ["test"], editable = false }
+cellprofiler-library = { path = "./src/subpackages/library", editable = false }
+cellprofiler-core = { path = "./src/subpackages/core", editable = false }
+cellprofiler = { path = "./src/frontend", editable = false }
 
 [feature.profile.pypi-dependencies]
 py-spy = "*"

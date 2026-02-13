@@ -2,6 +2,15 @@
 
 Linux distributions of CellProfiler are done via Flatpak.
 
+## Pixi Pack
+
+Open `pixi-pack` [PR](https://github.com/Quantco/pixi-pack/pull/259) to allow local wheels.
+Open `pixi-pack` [PR](https://github.com/Quantco/pixi-pack/pull/244) to build packages from source conda packages.
+
+`pixi-pack --environment prod --platform linux-64 --use-cache ~/.pixi_pack/cache --ignore-pypi-non-wheel --create-executable pixi.toml`
+
+`pixi list --environment prod --platform linux-64 --fields name,version,build,size,kind,source,url | grep pythonhosted | grep tar`
+
 ## Why not pyinstaller?
 
 Currently there is no `pyinstaller`-based build targeting Linux. There is in theory no reason it shouldn't work but simply hasn't been done.

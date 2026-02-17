@@ -2,7 +2,7 @@ from typing import Optional, Union, Annotated
 from pydantic import validate_call, ConfigDict, Field
 from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
 from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscale, ImageGrayscaleMask
-from cellprofiler_library.functions.image_processing import stretch, manual_input_range, manual_io_range, divide_by_image_maximum, divide_by_image_minimum, divide_by_value, scale_by_image_maximum
+from cellprofiler_library.functions.image_processing import stretch_rescale, manual_input_range, manual_io_range, divide_by_image_maximum, divide_by_image_minimum, divide_by_value, scale_by_image_maximum
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def rescale_intensity(
@@ -25,7 +25,7 @@ def rescale_intensity(
         reference_image_mask:   Annotated[Optional[ImageGrayscaleMask], Field(description="Reference image mask - for scale by image maximum")],
     ) -> ImageAny:
     if rescale_method == RescaleMethod.STRETCH.value:
-        output_image = stretch(in_pixel_data, in_mask, in_multichannel)
+        output_image = stretch_rescale(in_pixel_data, in_mask, in_multichannel)
     elif (rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value) or (rescale_method == RescaleMethod.MANUAL_IO_RANGE.value):
         in_mask_manual_input = None if input_image_has_mask else in_mask # for this method, mask needs to be None if not present
         if rescale_method == RescaleMethod.MANUAL_INPUT_RANGE.value:

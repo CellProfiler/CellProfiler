@@ -2892,7 +2892,7 @@ def rescale(
     return rescaled
 
 
-def stretch(
+def stretch_rescale(
         data: ImageAny, 
         mask: ImageAnyMask, 
         multichannel: bool = False

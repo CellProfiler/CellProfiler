@@ -368,8 +368,8 @@ above):
         #
         output_labels = split_or_merge_objects(
             labels=labels,
-            relabel_option=self.relabel_option.value,
-            merge_option=self.merge_option.value,
+            relabel_option=RelabelOption(self.relabel_option.value),
+            merge_option=MergeOption(self.merge_option.value),
             distance_threshold=self.distance_threshold.value,
             objects_name=objects_name,
             parent_name=self.parent_object.value,

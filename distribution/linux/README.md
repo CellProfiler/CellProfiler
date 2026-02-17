@@ -14,19 +14,19 @@ flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --i
 
 ### Metaifno File
 
-The [Metainfo](https://docs.flatpak.org/en/latest/conventions.html#metainfo-files) file is `org.cellprofiler.CellProfiler.metainfo.xml`. It was generated using the [AppStream MetaInfo Creator](https://www.freedesktop.org/software/appstream/metainfocreator/#/guiapp).
+The [Metainfo](https://docs.flatpak.org/en/latest/conventions.html#metainfo-files) file is `org.cellprofiler.CellProfiler.metainfo.xml` and follows the [FreeDesktop AppStream specification](https://www.freedesktop.org/software/appstream/docs/).
 
 In the Flatpak it is installed as `/app/share/metainfo/org.cellprofiler.CellProfiler.metainfo.xml`.
 
 It can be validated with `appstreamcli validate --explain org.cellprofiler.CellProfiler.metainfo.xml`.
 
-The [application icon](https://docs.flatpak.org/en/latest/conventions.html#application-icons), as specified by [FreeDesktop](https://specifications.freedesktop.org/icon-theme/latest/), is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler.png` (with `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
+The [application icon](https://docs.flatpak.org/en/latest/conventions.html#application-icons), as specified by the [FreeDesktop icon theme specification](https://specifications.freedesktop.org/icon-theme/latest/), is installed in `/app/share/icons/hicolor/<size>/apps/org.cellprofiler.CellProfiler.png` (with `<size>` being e.g. `128x128` or `scalable` for SVG). The icon must be square with a max of `512x512`.
 
 Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/exports/share` or `/var/lib/flatpak/exports/share` depending on whether it's a user or system level install.
 
-The [desktop file](https://docs.flatpak.org/en/latest/conventions.html#desktop-files), compliant with the [Freedesktop specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
+The [desktop file](https://docs.flatpak.org/en/latest/conventions.html#desktop-files), compliant with the [FreeDesktop dektop entry specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
 
-The desktop-entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`. It can be validated with `desktop-file-validate`.
+The desktop entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`. It can be validated with `desktop-file-validate`.
 
 ## Pixi Pack
 

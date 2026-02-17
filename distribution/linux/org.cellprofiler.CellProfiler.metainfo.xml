@@ -7,6 +7,14 @@
   
   <metadata_license>MIT</metadata_license>
   <project_license>BSD-3-Clause</project_license>
+
+  <developer id="org.cellprofiler">
+    <name>Cimini Lab</name>
+  </developer>
+
+  <releases>
+    <release version="5.0.0~dev" type="development" />
+  </releases>
   
   <description>
     <p>
@@ -20,22 +28,46 @@
     </p>
     <p>
       In summary, CellProfiler contains:
-    </p>
-    <p>
-      - Advanced algorithms for image analysis that are able to accurately identify crowded cells and non-mammalian cell types. - A modular, flexible design allowing analysis of new assays and phenotypes. - Open-source code so the underlying methodology is known and can be modified or improved by others. - A user-friendly interface. - The ability to use high-throughput computing (clusters, cloud). - A design that eliminates the tedium of the many steps typically involved in image analysis, many of which are not easily transferable from one project to another (for example, image formatting, combining several image analysis steps, or repeating the analysis with slightly different parameters).
+      <ul>
+        <li>Advanced algorithms for image analysis that are able to accurately identify crowded cells and non-mammalian cell types.</li>
+        <li>A modular, flexible design allowing analysis of new assays and phenotypes.</li>
+        <li>Open-source code so the underlying methodology is known and can be modified or improved by others.</li>
+        <li>A user-friendly interface.</li>
+        <li>The ability to use high-throughput computing (clusters, cloud).</li>
+        <li>A design that eliminates the tedium of the many steps typically involved in image analysis, many of which are not easily transferable from one project to another (for example, image formatting, combining several image analysis steps, or repeating the analysis with slightly different parameters).</li>
+      </ul>
     </p>
   </description>
 
   <url type="homepage">https://cellprofiler.org</url>
+  <url type="vcs-browser">https://github.com/CellProfiler/CellProfiler</url>
+  <url type="bugtracker">https://github.com/CellProfiler/CellProfiler/issues</url>
   
   <launchable type="desktop-id">org.cellprofiler.CellProfiler.desktop</launchable>
+
   <screenshots>
     <screenshot type="default">
-      <image>https://cellprofiler.org/files/cellprofiler/files/cellprofilershuffle2_1.png</image>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/main_window.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/welcome.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/id_primary.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/workspace.png</image>
     </screenshot>
   </screenshots>
   
   <icon type="stock">org.cellprofiler.CellProfiler</icon>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#7f64b4</color>
+    <color type="primary" scheme_preference="dark">#4f3a78</color>
+  </branding>
+
+  <content_rating type="oars-1.0" />
   
   <categories>
     <category>Science</category>
@@ -45,4 +77,10 @@
   <provides>
     <binary>cellprofiler</binary>
   </provides>
+
+  <!-- ONLY desktop supported -->
+  <requires>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </requires>
 </component>

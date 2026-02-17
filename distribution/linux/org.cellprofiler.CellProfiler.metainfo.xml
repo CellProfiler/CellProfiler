@@ -13,7 +13,8 @@
   </developer>
 
   <releases>
-    <release version="5.0.0~dev" type="development" />
+    <!-- TODO: linux - template this -->
+    <release version="5.0.0~dev" type="development" date="2026-02-17" />
   </releases>
   
   <description>

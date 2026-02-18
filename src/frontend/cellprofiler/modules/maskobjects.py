@@ -19,7 +19,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline
@@ -413,7 +413,7 @@ controls how remaining objects are associated with their predecessors:
         add_object_count_measurements(m, remaining_object_name, remaining_object_count)
         # add_object_location_measurements(m, remaining_object_name, labels)
         obj_location_measurements = get_object_location_measurements(remaining_object_name, labels)
-        add_library_measurements_to_workspace(workspace, self.module_num, obj_location_measurements)
+        add_library_measurements_to_workspace_measurements(m, self.module_num, obj_location_measurements)
         #
         # Save the input, mask and output images for display
         #

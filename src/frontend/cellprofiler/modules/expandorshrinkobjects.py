@@ -9,7 +9,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_count_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 from cellprofiler_library.modules import expand_or_shrink_objects
 from cellprofiler_library.functions.measurement import get_object_location_measurements
@@ -277,7 +277,7 @@ Select the measurement value to use as the divisor for the final image.
         # )
 
         object_location_measurements = get_object_location_measurements(self.output_object_name.value, output_objects.segmented)
-        add_library_measurements_to_workspace(workspace, self.module_num, object_location_measurements)
+        add_library_measurements_to_workspace_measurements(workspace.measurements, self.module_num, object_location_measurements)
 
         if self.show_window:
             workspace.display_data.input_objects_segmented = input_objects.segmented

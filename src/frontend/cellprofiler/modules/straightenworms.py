@@ -129,7 +129,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     add_object_count_measurements,
 )
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 from scipy.interpolate import interp1d
 
 from cellprofiler.modules.untangleworms import C_WORM
@@ -1136,7 +1136,7 @@ of the straightened worms.""",
         add_object_count_measurements(m, straightened_objects_name, nworms)
         # add_object_location_measurements(m, straightened_objects_name, labels, nworms)
         object_location_measurements = get_object_location_measurements(straightened_objects_name, labels, nworms)
-        add_library_measurements_to_workspace(workspace, self.module_num, object_location_measurements)
+        add_library_measurements_to_workspace_measurements(m, self.module_num, object_location_measurements)
 
     def display(self, workspace, figure):
         """Display the results of the worm straightening"""

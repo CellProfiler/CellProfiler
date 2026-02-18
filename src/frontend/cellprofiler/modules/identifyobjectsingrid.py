@@ -7,9 +7,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_count_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
-from cellprofiler_library.functions.measurement import get_object_location_measurements
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -257,11 +255,9 @@ depending on the method chosen.
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects, self.output_objects_name.value)
-        # add_object_location_measurements(
-        #     workspace.measurements, self.output_objects_name.value, labels, object_count
-        # )
-        object_location_measurements = get_object_location_measurements(self.output_objects_name.value, labels, object_count)
-        add_library_measurements_to_workspace_measurements(workspace.measurements, self.module_num, object_location_measurements)
+        add_object_location_measurements(
+            workspace.measurements, self.output_objects_name.value, labels, object_count
+        )
         add_object_count_measurements(
             workspace.measurements, self.output_objects_name.value, object_count
         )

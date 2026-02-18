@@ -1,25 +1,34 @@
 id: org.cellprofiler.CellProfiler
-runtime: org.freedesktop.Platform
-# 21.08 contains python 3.9
-sdk: org.freedesktop.Sdk
-runtime-version: '25.08'
-#runtime: org.gnome.Platform
-#sdk: org.gnome.Sdk
-#runtime-version: '49'
+# wxPython doesn't generally need gtk libs from GNOME, but webkit2gtk is not available in freedesktop runtime
+runtime: org.gnome.Platform
+sdk: org.gnome.Sdk
+runtime-version: '49'
 command: cellprofiler
 modules:
   - name: pixi-install
     buildsystem: simple
     build-commands:
+      # unpack the bundled environment
       - ${FLATPAK_BUILDER_BUILDDIR}/environment.sh --output-directory ${FLATPAK_DEST} --verbose
+      # remove these so the flatpak bundled libs in /usr/lib/x86-64-linux-gnu are linked to instead
+      - rm -f ${FLATPAK_DEST}/env/lib/libfontconfig*
+      - rm -f ${FLATPAK_DEST}/env/lib/libGL*
+      - rm -f ${FLATPAK_DEST}/env/lib/libEGL*
+      - rm -f ${FLATPAK_DEST}/env/lib/libgbm*
+      - rm -f ${FLATPAK_DEST}/env/lib/libglapi*
+      # command passthrough in activation script
       - echo 'exec "$@"' >> ${FLATPAK_DEST}/activate.sh
       - chmod +x ${FLATPAK_DEST}/activate.sh
+      # script to provide the command to passthrough
       - echo "${FLATPAK_DEST}/activate.sh python -m cellprofiler -L 10" > cellprofiler
       - install -Dm0755 cellprofiler ${FLATPAK_DEST}/bin/cellprofiler
+      # pip install the source only, the deps are already installed in the unpacked enviornment above
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/library
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/frontend
+      # compile all the python code for faster startup
       # - ${FLATPAK_DEST}/activate.sh python -m compileall ${FLATPAK_DEST}/env/lib/python3.9/site-packages/
+      # install app metadata, desktop entry, and icon
       - mkdir -p /app/share/{icons/hicolor/scalable/apps,metainfo,applications}
       # - cp src/frontend/cellprofiler/data/icons/CellProfiler-favicon-128.png /app/share/icons/hicolor/128x128/apps/org.cellprofiler.CellProfiler.png
       - cp src/frontend/cellprofiler/data/icons/CellProfiler_square.svg /app/share/icons/hicolor/scalable/apps/org.cellprofiler.CellProfiler.svg
@@ -37,10 +46,16 @@ modules:
 finish-args:
   # TODO: linux - wayland support
   - --socket=x11
+  - --device=dri
+  - --share=ipc
   # - --share=socket
   # - --share=network
   # - --filesystem=xdg-documents
   # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
-  - --env=GTK_MODULES=
-  - --env=LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+  - --unset-env=GTK_MODULES
+  # find pixi provided libs, like libjpeg.so.8
   - --env=LD_LIBRARY_PATH=/app/env/lib
+  # prevent direct memory access buffer protocol, to stop webkit from sharing graphics buffer with main UI process
+  # especially for Ubuntu with X11 and NVIDIA drivers, or older version of Meson on the host, the "handshake" required fails
+  # don't use shared-memory buffer protocol and fallback to traditional texture-sharing or software-fallback path
+  - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1

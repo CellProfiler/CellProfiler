@@ -44,8 +44,8 @@ from cellprofiler_core.utilities.core.module.identify import add_object_count_me
 from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
 from cellprofiler_core.utilities.core.module.identify import add_object_location_measurements
 from cellprofiler_library.modules import combineobjects
-from cellprofiler_library.functions.measurement import get_object_location_measurements
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
+
+
 class CombineObjects(Identify):
     category = "Object Processing"
 
@@ -136,9 +136,7 @@ subsequent modules.""",
         m = workspace.measurements
         object_count = numpy.max(output_labels)
         add_object_count_measurements(m, self.output_object.value, object_count)
-        # add_object_location_measurements(m, self.output_object.value, output_labels)
-        obj_location_measurements = get_object_location_measurements(self.output_object.value, output_labels)
-        add_library_measurements_to_workspace_measurements(m, self.module_num, obj_location_measurements)
+        add_object_location_measurements(m, self.output_object.value, output_labels)
 
         if self.show_window:
             workspace.display_data.input_object_x_name = self.objects_x.value

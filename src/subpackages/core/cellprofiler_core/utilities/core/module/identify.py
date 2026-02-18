@@ -27,46 +27,8 @@ def add_object_location_measurements(
                    takes the maximum value in the labels matrix which is
                    usually correct.
     """
-    # if object_count is None:
-    #     object_count = numpy.max(labels)
-    # #
-    # # Get the centers of each object - center_of_mass <- list of two-tuples.
-    # #
-    # if object_count:
-    #     centers = scipy.ndimage.center_of_mass(
-    #         numpy.ones(labels.shape), labels, list(range(1, object_count + 1))
-    #     )
-    #     centers = numpy.array(centers)
-    #     centers = centers.reshape((object_count, len(labels.shape)))
-    #     if centers.shape[1] != 3:
-    #         location_center_y = centers[:, 0]
-    #         location_center_x = centers[:, 1]
-    #     else:
-    #         location_center_z = centers[:, 0]
-    #         location_center_y = centers[:, 1]
-    #         location_center_x = centers[:, 2]
-    #     number = numpy.arange(1, object_count + 1)
-    # else:
-    #     location_center_z = numpy.zeros((0,), dtype=float)
-    #     location_center_y = numpy.zeros((0,), dtype=float)
-    #     location_center_x = numpy.zeros((0,), dtype=float)
-    #     number = numpy.zeros((0,), dtype=int)
-    # measurements.add_measurement(
-    #     object_name, M_LOCATION_CENTER_X, location_center_x,
-    # )
-    # measurements.add_measurement(
-    #     object_name, M_LOCATION_CENTER_Y, location_center_y,
-    # )
-    # if len(labels.shape) > 2:
-    #     measurements.add_measurement(
-    #         object_name, M_LOCATION_CENTER_Z, location_center_z,
-    #     )
-
-    # measurements.add_measurement(
-    #     object_name, M_NUMBER_OBJECT_NUMBER, number,
-    # )
     object_location_measurements = get_object_location_measurements(object_name, labels, object_count)
-    add_library_measurements_to_workspace_measurements(measurements, self.module_num, object_location_measurements)
+    add_library_measurements_to_workspace_measurements(measurements, object_location_measurements)
 
 
 

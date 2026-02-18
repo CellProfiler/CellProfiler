@@ -19,6 +19,9 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
+
+from cellprofiler_library.functions.measurement import get_object_location_measurements
 
 from cellprofiler.modules import _help
 
@@ -414,9 +417,11 @@ above):
             self.output_objects_name.value,
             numpy.max(output_objects.segmented),
         )
-        add_object_location_measurements(
-            measurements, self.output_objects_name.value, output_objects.segmented
-        )
+        # add_object_location_measurements(
+        #     measurements, self.output_objects_name.value, output_objects.segmented
+        # )
+        object_location_measurements = get_object_location_measurements(self.output_objects_name.value, output_objects.segmented)
+        add_library_measurements_to_workspace(workspace, self.module_num, object_location_measurements)
 
         #
         # Relate the output objects to the input ones and record

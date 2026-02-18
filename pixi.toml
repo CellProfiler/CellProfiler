@@ -95,6 +95,8 @@ asciitree = "==0.3.3"
 # below two needed for installing cellprofiler source into final env inside flatpak
 setuptools = "*"
 setuptools-scm = "*"
+# don't need all of mysql feature, but do need prebuild mysqlclient
+mysqlclient = ">=2.2.3"
 
 [feature.publish.pypi-dependencies]
 cellprofiler-library = { path = "./src/subpackages/library", editable = false }
@@ -108,5 +110,5 @@ memray = "*"
 [environments]
 dev = ["mod", "java", "mysql"]
 build = ["build", "java", "mysql"]
-prod = ["publish", "java", "mysql"]
+prod = ["publish", "java"]
 profile = ["mod", "java", "mysql", "profile"]

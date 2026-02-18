@@ -137,9 +137,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
-from cellprofiler_library.functions.measurement import get_object_location_measurements
 from cellprofiler import __version__ as cellprofiler_version
 
 
@@ -1219,10 +1217,7 @@ should be processed.
             object_names.append(name)
             object_set.add_objects(o, name)
             add_object_count_measurements(measurements, name, o.count)
-            # add_object_location_measurements(measurements, name, labels, o.count)
-            object_location_measurements = get_object_location_measurements(name, labels, o.count)
-            add_library_measurements_to_workspace_measurements(measurements, self.module_num, object_location_measurements)
-
+            add_object_location_measurements(measurements, name, labels, o.count)
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
                     l for l, idx in o.get_labels()

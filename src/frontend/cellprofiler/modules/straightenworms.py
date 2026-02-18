@@ -129,6 +129,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     add_object_count_measurements,
 )
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
 from scipy.interpolate import interp1d
 
 from cellprofiler.modules.untangleworms import C_WORM
@@ -137,6 +138,8 @@ from cellprofiler.modules.untangleworms import F_CONTROL_POINT_Y
 from cellprofiler.modules.untangleworms import F_LENGTH
 from cellprofiler.modules.untangleworms import read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
+
+from cellprofiler_library.functions.measurement import get_object_location_measurements
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -1131,7 +1134,9 @@ of the straightened worms.""",
         straightened_objects.segmented = labels
         object_set.add_objects(straightened_objects, straightened_objects_name)
         add_object_count_measurements(m, straightened_objects_name, nworms)
-        add_object_location_measurements(m, straightened_objects_name, labels, nworms)
+        # add_object_location_measurements(m, straightened_objects_name, labels, nworms)
+        object_location_measurements = get_object_location_measurements(straightened_objects_name, labels, nworms)
+        add_library_measurements_to_workspace(workspace, self.module_num, object_location_measurements)
 
     def display(self, workspace, figure):
         """Display the results of the worm straightening"""

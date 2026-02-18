@@ -4213,7 +4213,7 @@ def find_parents_of(
 
     return parents_of
 
-def get_object_location_measurements(labels, object_count, object_name):
+def get_object_location_measurements(object_name, labels, object_count=None):
     measurements = LibraryMeasurements()
     if object_count is None:
         object_count = numpy.max(labels)

@@ -16,7 +16,7 @@ def is_workspace_file(path):
     finally:
         h5file.close()
 
-def add_library_measurements_to_workspace(library_measurements: LibraryMeasurements, workspace, module_num):
+def add_library_measurements_to_workspace(workspace, module_num, library_measurements: LibraryMeasurements):
     """Add the library measurements to the workspace
 
     library_measurements - the library measurements to be added

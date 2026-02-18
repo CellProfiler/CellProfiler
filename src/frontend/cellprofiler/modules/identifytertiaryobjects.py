@@ -16,9 +16,11 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace
+
 from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.modules import identifytertiaryobjects
-
+from cellprofiler_library.functions.measurement import get_object_location_measurements
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -365,9 +367,11 @@ but the results will be zero or not-a-number (NaN).
         #
         # The object locations
         #
-        add_object_location_measurements(
-            workspace.measurements, self.subregion_objects_name.value, tertiary_labels
-        )
+        # add_object_location_measurements(
+        #     workspace.measurements, self.subregion_objects_name.value, tertiary_labels
+        # )
+        object_location_measurements = get_object_location_measurements(self.subregion_objects_name.value, tertiary_labels)
+        add_library_measurements_to_workspace(workspace, self.module_num, object_location_measurements)
 
         if self.show_window:
             workspace.display_data.primary_labels = primary_labels

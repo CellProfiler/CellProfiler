@@ -90,9 +90,18 @@ def get_config():
     if wx.App.Get() is None:
         app = wx.App(0)
 
+        if sys.platform.startswith("linux"):
+            _std_pths = wx.StandardPaths.Get()
+            if _std_pths.GetFileLayout() != wx.StandardPaths.FileLayout_XDG:
+                LOGGER.debug("Setting file layout to XDG")
+                # use XDG standard file layout
+                _std_pths.SetFileLayout(wx.StandardPaths.FileLayout_XDG)
+
+
     config = wx.Config.Get(False)
 
     if not config:
+        LOGGER.debug(f"Init Config - location is {wx.StandardPaths.Get().GetUserConfigDir()}/CellProfilerLocal.cfg")
         wx.Config.Set(
             wx.Config(
                 "CellProfiler",

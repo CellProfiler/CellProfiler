@@ -12,6 +12,7 @@ from cellprofiler_core.constants.measurement import (
     M_LOCATION_CENTER_Z,
 )
 from cellprofiler_library.functions.measurement import get_object_location_measurements
+from cellprofiler_library.functions.measurement import get_object_count_measurements
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 
@@ -60,9 +61,8 @@ def add_object_location_measurements_ijv(
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
-    measurements.add_measurement(
-        "Image", FF_COUNT % object_name, numpy.array([object_count], dtype=float),
-    )
+    object_count_measurements = get_object_count_measurements(object_name, object_count)
+    add_library_measurements_to_workspace_measurements(measurements, object_count_measurements)
 
 
 def get_object_measurement_columns(object_name):

@@ -668,7 +668,9 @@ class Pipeline:
                 "Module %s did not have a variable revision # attribute" % module_name
             )
         module.set_settings_from_values(settings, variable_revision_number, module_name)
-        if module_name == "NamesAndTypes":
+        # Import here to avoid circular imports
+        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
+        if isinstance(module, NamesAndTypes):
             self.__volumetric = module.process_as_3d.value
 
         return module

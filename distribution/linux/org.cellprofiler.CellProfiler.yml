@@ -45,12 +45,16 @@ modules:
         path: ./environment.sh
 finish-args:
   # TODO: linux - wayland support
+  #- --socket=wayland
+  #- --socket=fallback-x11
   - --socket=x11
   - --device=dri
   - --share=ipc
-  # - --share=socket
-  # - --share=network
-  # - --filesystem=xdg-documents
+  - --share=network
+  # only allow access to host's XDG_DOCUMENTS_DIR or $HOME/documents
+  - --filesystem=xdg-documents:rw
+  # persist flatpak's ~/.jgo in host's ~/.var/app/org.cellprofiler.CellProfiler/.jgo across runs
+  - --persist=.jgo
   # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
   - --unset-env=GTK_MODULES
   # find pixi provided libs, like libjpeg.so.8

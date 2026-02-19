@@ -1,4 +1,5 @@
 import glob
+import sys
 import os.path
 import logging
 
@@ -108,6 +109,12 @@ class WelcomeFrame(wx.Frame):
             return
         elif href.startswith("loadexample:"):
             self.__load_example_pipeline(href[12:])
+            # on linux, pipeline is loaded, but welcome screen becomes just
+            # "The URL can't be shown"
+            # with no way to get back to welcome screen
+            # so force it to redisplay welcome screen
+            if sys.platform.startswith("linux"):
+                self.__display_welcome()
             return
         elif href.startswith("pref:"):
             self.__set_startup_blurb()

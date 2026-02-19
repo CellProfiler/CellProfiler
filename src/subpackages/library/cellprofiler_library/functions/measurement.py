@@ -45,6 +45,7 @@ from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as N
 from cellprofiler_library.opts.measureobjectneighbors import Measurement as NeighborsMeasurement
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
 from cellprofiler_core.constants.measurement import (
+    FF_COUNT,
     FF_PARENT,
 )
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
@@ -4265,9 +4266,11 @@ def get_object_location_measurements(object_name, labels, object_count=None):
     )
     return measurements
 
-def get_object_count_measurements(*args, **kwargs):
-    # TODO: #5117 implement add_object_location_measurements from src/subpackages/core/cellprofiler_core/utilities/core/module/identify.py
-    pass
+def get_object_count_measurements(object_name, object_count):
+    """Add the # of objects to the measurements"""
+    lib_measurements = LibraryMeasurements()
+    lib_measurements.add_image_measurement(FF_COUNT % object_name, object_count)
+    return lib_measurements
 
 def get_object_processing_measurements(*args, **kwargs):
     # TODO: #5117 implement add_measurements from src/subpackages/core/cellprofiler_core/module/image_segmentation/_object_processing.py

@@ -32,6 +32,7 @@ from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv
+from cellprofiler_library.functions.segmentation import relate_children
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 from cellprofiler_library.functions.segmentation import relate_labels
 
@@ -55,6 +56,7 @@ from cellprofiler_library.opts.measurement import (
     M_LOCATION_CENTER_Z,
     C_LOCATION,
     M_NUMBER_OBJECT_NUMBER,
+    FF_CHILDREN_COUNT,
 )
 
 ###############################################################################
@@ -4263,12 +4265,88 @@ def get_object_count_measurements(object_name, object_count):
     lib_measurements.add_image_measurement(FF_COUNT % object_name, object_count)
     return lib_measurements
 
-def get_object_processing_measurements(*args, **kwargs):
-    # TODO: #5117 implement add_measurements from src/subpackages/core/cellprofiler_core/module/image_segmentation/_object_processing.py
-    pass
+def get_object_processing_measurements(
+        object_labels,
+        object_volumetric,
+        object_count,
+        object_name,
+        object_ijv,
+        parent_object_name,  
+        parent_object_labels,
+        parent_object_ijv,
+    ):
 
-def get_image_segmentation_measurements(*args, **kwargs):
-    # TODO: #5117 implement add_measurements from src/subpackages/core/cellprofiler_core/module/image_segmentation/_image_segmentation.py
-    pass
+    lib_measurements = get_image_segmentation_measurements(
+        object_labels, object_volumetric, object_count, object_name
+    )
+    lib_measurements_relate = get_relate_object_measurements(
+        object_labels, object_volumetric, object_name, object_ijv, 
+        parent_object_name, parent_object_labels, parent_object_ijv, 
+    )
+    lib_measurements = lib_measurements.merge(lib_measurements_relate)
 
+    return lib_measurements
+
+def get_relate_object_measurements(
+        object_labels, object_volumetric, object_name, object_ijv,
+        parent_object_name, parent_object_labels, parent_object_ijv,
+    ):
+    lib_measurements = LibraryMeasurements()
+    children_per_parent, parents_of_children = relate_children(
+        parent_object_labels, 
+        object_labels, 
+        parent_object_ijv, 
+        object_ijv, 
+        volumetric=object_volumetric
+    )
+    lib_measurements.add_measurement(
+        parent_object_name,
+        FF_CHILDREN_COUNT % object_name,
+        children_per_parent,
+    )
+
+    lib_measurements.add_measurement(
+        object_name, FF_PARENT % parent_object_name, parents_of_children,
+    )
+    return lib_measurements
+
+def get_image_segmentation_measurements(
+        object_labels, 
+        objects_volumetric, 
+        objects_count, 
+        object_name
+    ):
+    lib_measurements = LibraryMeasurements()
+    centers = center_of_labels_mass(object_labels, validate=False)
+
+    if len(centers) == 0:
+        center_z, center_y, center_x = [], [], []
+    else:
+        if objects_volumetric:
+            center_z, center_y, center_x = centers.transpose()
+        else:
+            center_z = [0] * len(centers)
+
+            center_y, center_x = centers.transpose()
+
+    lib_measurements.add_measurement(
+        object_name, M_LOCATION_CENTER_X, center_x,
+    )
+
+    lib_measurements.add_measurement(
+        object_name, M_LOCATION_CENTER_Y, center_y,
+    )
+
+    lib_measurements.add_measurement(
+        object_name, M_LOCATION_CENTER_Z, center_z,
+    )
+
+    lib_measurements.add_measurement(
+        object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects_count + 1),
+    )
+
+    lib_measurements.add_image_measurement( 
+        FF_COUNT % object_name, numpy.array([objects_count], dtype=float),
+    )
+    return lib_measurements
 

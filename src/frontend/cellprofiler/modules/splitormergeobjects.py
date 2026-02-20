@@ -18,6 +18,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     get_object_measurement_columns,
 )
 
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 from cellprofiler.modules import _help
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, ObjectIntensityMethod
 from cellprofiler_library.modules._splitormergeobjects import split_or_merge_objects
@@ -366,19 +367,22 @@ above):
         #
         # Run split_or_merge_objects
         #
-        output_labels = split_or_merge_objects(
+        output_labels, lib_measurements = split_or_merge_objects(
             labels=labels,
             relabel_option=RelabelOption(self.relabel_option.value),
-            merge_option=MergeOption(self.merge_option.value),
-            distance_threshold=self.distance_threshold.value,
             objects_name=objects_name,
             parent_name=self.parent_object.value,
+            merge_option=MergeOption(self.merge_option.value),
+            distance_threshold=self.distance_threshold.value,
             relaitonship_measurement=parent_measurements,
-            merge_using_image=self.wants_image.value,
             merging_method=self.merging_method.value,
-            image=image,
-            where_algorithm=self.where_algorithm.value,
-            minimum_intensity_fraction=self.minimum_intensity_fraction.value
+            image=image if self.wants_image.value else None,
+            merge_condition=self.where_algorithm.value,
+            minimum_intensity_fraction=self.minimum_intensity_fraction.value,
+            output_objects_name = self.output_objects_name.value,
+            output_object_volumetric=objects.volumetric,
+            labels_ijv=objects.ijv,
+            return_measurements=True
         )
 
         #
@@ -397,35 +401,8 @@ above):
         output_objects.parent_image = objects.parent_image
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
-        # TODO: #5117 move these to library from <here>
         measurements = workspace.measurements
-        add_object_count_measurements(
-            measurements,
-            self.output_objects_name.value,
-            numpy.max(output_objects.segmented),
-        )
-        add_object_location_measurements(
-            measurements, self.output_objects_name.value, output_objects.segmented
-        )
-
-        #
-        # Relate the output objects to the input ones and record
-        # the relationship.
-        #
-        children_per_parent, parents_of_children = objects.relate_children(
-            output_objects
-        )
-        measurements.add_measurement(
-            self.objects_name.value,
-            FF_CHILDREN_COUNT % self.output_objects_name.value,
-            children_per_parent,
-        )
-        measurements.add_measurement(
-            self.output_objects_name.value,
-            FF_PARENT % self.objects_name.value,
-            parents_of_children,
-        )
-        # TODO: #5117 move these to library to </here>
+        add_library_measurements_to_workspace_measurements(measurements, lib_measurements)
 
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented

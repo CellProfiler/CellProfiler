@@ -1356,9 +1356,8 @@ def split_objects(labels: ObjectSegmentation) -> ObjectSegmentation:
 def merge_unify_distance(
         labels: ObjectSegmentation,
         distance_threshold: float,
-        merge_using_image: bool,
         image: Optional[Image2DGrayscale],
-        where_algorithm: Optional[ObjectIntensityMethod],
+        merge_condition: Optional[ObjectIntensityMethod],
         minimum_intensity_fraction: Optional[float]
 ):
     mask = labels > 0
@@ -1374,11 +1373,10 @@ def merge_unify_distance(
         mask, numpy.ones((3, 3), bool)
     )
     output_labels[labels == 0] = 0
-    if merge_using_image:
-        assert image is not None, "Image must be provided if merge_using_image is True"
-        assert where_algorithm is not None, "Where algorithm must be provided if merge_using_image is True"
-        assert minimum_intensity_fraction is not None, "Minimum intensity fraction must be provided if merge_using_image is True"
-        output_labels = filter_using_image(labels, image, mask, where_algorithm, minimum_intensity_fraction)
+    if image is not None:
+        assert merge_condition is not None, "Merge condition must be provided if using an image to guide merging"
+        assert minimum_intensity_fraction is not None, "Minimum intensity fraction must be provided if Using an image to guide merging"
+        output_labels = filter_using_image(labels, image, mask, merge_condition, minimum_intensity_fraction)
     return output_labels
 
 def merge_unify_parent(

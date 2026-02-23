@@ -359,7 +359,7 @@ def parse_args(args):
 
     default_show_gui = True
 
-    if sys.platform.startswith("linux") and not os.getenv("DISPLAY"):
+    if sys.platform.startswith("linux") and not os.getenv("DISPLAY") and not os.getenv("WAYLAND_DISPLAY"):
         default_show_gui = False
 
     parser.add_option(

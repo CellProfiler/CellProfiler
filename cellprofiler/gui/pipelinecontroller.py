@@ -562,13 +562,14 @@ class PipelineController(object):
             "?",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT
         )
         self.__help_button.SetToolTip("Get Help for selected module")
         self.__mcp_text = wx.StaticText(
             self.__module_controls_panel, -1, "Adjust modules:"
         )
         self.__mcp_add_module_button = wx.Button(
-            self.__module_controls_panel, -1, "+", (0, 0), (30, -1)
+            self.__module_controls_panel, cellprofiler.gui.cpframe.ID_MODULE_ADD, "+", (0, 0), (30, -1), style=wx.BU_EXACTFIT
         )
         self.__mcp_add_module_button.SetToolTip("Add a module")
         self.__mcp_remove_module_button = wx.Button(
@@ -577,6 +578,7 @@ class PipelineController(object):
             "-",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT
         )
         self.__mcp_remove_module_button.SetToolTip("Remove selected module")
         self.__mcp_module_up_button = wx.Button(
@@ -585,6 +587,7 @@ class PipelineController(object):
             "^",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT
         )
         self.__mcp_module_up_button.SetToolTip("Move selected module up")
         self.__mcp_module_down_button = wx.Button(
@@ -593,6 +596,7 @@ class PipelineController(object):
             "v",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT
         )
         self.__mcp_module_down_button.SetToolTip("Move selected module down")
         mcp_sizer.AddMany(

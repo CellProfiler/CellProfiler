@@ -146,6 +146,8 @@ WINDOW_IDS = []
 ID_HELP_MODULE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 
+ID_MODULE_ADD = -1
+
 
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):

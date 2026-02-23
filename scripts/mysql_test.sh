@@ -90,6 +90,10 @@ cp_test_all () {
     pytest "$@"
 }
 
+cp_db_destroy () {
+  destroy_mysql_db
+}
+
 usage() {
   cat <<EOF
 Usage:

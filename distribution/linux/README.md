@@ -12,7 +12,7 @@ The command to build the package is:
 flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --install builddir org.cellprofiler.Cellprofiler.yml
 ```
 
-### Metaifno File
+### Metainfo File
 
 The [Metainfo](https://docs.flatpak.org/en/latest/conventions.html#metainfo-files) file is `org.cellprofiler.CellProfiler.metainfo.xml` and follows the [FreeDesktop AppStream specification](https://www.freedesktop.org/software/appstream/docs/).
 

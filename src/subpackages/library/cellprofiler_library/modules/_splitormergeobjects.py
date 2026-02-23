@@ -1,10 +1,10 @@
 import numpy as np
 from pydantic import validate_call, Field, ConfigDict
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Tuple, Union
 from cellprofiler_library.types import ObjectSegmentation, Image2DGrayscale
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, C_PARENT, ObjectIntensityMethod
-from cellprofiler_library.functions.object_processing import filter_using_image, split_objects, merge_unify_distance, merge_unify_parent
+from cellprofiler_library.functions.object_processing import split_objects, merge_unify_distance, merge_unify_parent
 from cellprofiler_library.functions.measurement import get_object_count_measurements, get_object_location_measurements, get_relate_object_measurements
 from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
 
@@ -25,7 +25,7 @@ def split_or_merge_objects(
         output_object_volumetric:   Annotated[Optional[bool], Field(description="Whether the output objects are volumetric. Only used if returning measurements.")],
         labels_ijv:                 Annotated[Optional[ObjectSegmentation], Field(description="The ijv representation of the input objects. Only used if returning measurements.")],
         return_measurements:        Annotated[bool, Field(description="Whether to return the relabeled objects and their measurements.")] = False
-    ):
+    ) -> Union[ObjectSegmentation, Tuple[ObjectSegmentation, LibraryMeasurements]]:
     if relabel_option == RelabelOption.SPLIT:
         output_labels = split_objects(labels)
     else:

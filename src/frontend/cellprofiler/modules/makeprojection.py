@@ -63,8 +63,8 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text.number import Float
 
-from cellprofiler_library.modules._makeprojection import accumulate_projection, calculate_final_projection
-from cellprofiler_library.opts.makeprojection import ProjectionType
+from cellprofiler_library.modules._makeprojection import accumulate_projection, calculate_final_projection, set_projection
+from cellprofiler_library.opts.makeprojection import ProjectionType, StateKey
 
 P_AVERAGE = ProjectionType.AVERAGE.value
 P_MAXIMUM = ProjectionType.MAXIMUM.value
@@ -298,10 +298,10 @@ class ImageProvider(AbstractImage):
 
         d - store state in this dictionary
         """
-        d[self.D_NAME] = self._name
-        d[self.D_FREQUENCY] = self.frequency
-        d[self.D_METHOD] = self.method.value
-        d[self.D_LIBRARY_STATE] = self.library_state
+        d[ImageProvider.D_NAME] = self._name
+        d[ImageProvider.D_FREQUENCY] = self.frequency
+        d[ImageProvider.D_METHOD] = self.method.value
+        d[ImageProvider.D_LIBRARY_STATE] = self.library_state
 
     @staticmethod
     def restore_from_state(d):
@@ -331,12 +331,17 @@ class ImageProvider(AbstractImage):
 
     @property
     def count(self):
-        return self.library_state.get("image_count")
+        return self.library_state.get(StateKey.IMAGE_COUNT)
 
     def set_image(self, image):
         self._cached_image = None
         self.library_state = {}
-        self.accumulate_image(image)
+        set_projection(
+            image.pixel_data, 
+            image.mask,
+            self.library_state,
+            self.method
+        )
 
     def accumulate_image(self, image):
         self._cached_image = None

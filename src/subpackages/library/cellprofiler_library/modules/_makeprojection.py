@@ -125,37 +125,32 @@ def calculate_final_projection(
     Returns:
         Tuple of (pixel_data, mask).
     """
+    
+    image_count = state[StateKey.IMAGE_COUNT.value]
+    mask_2d = image_count > 0
+    final_projection = None
     if method == ProjectionType.AVERAGE:
-        return _finalize_average(state)
+        final_projection = _finalize_average(state)
     elif method == ProjectionType.SUM:
-        return _finalize_sum(state)
+        final_projection = _finalize_sum(state)
     elif method == ProjectionType.MAXIMUM:
-        return _finalize_maximum(state)
+        final_projection = _finalize_maximum(state)
     elif method == ProjectionType.MINIMUM:
-        return _finalize_minimum(state)
+        final_projection = _finalize_minimum(state)
     elif method == ProjectionType.VARIANCE:
-        return _finalize_variance(state)
+        final_projection = _finalize_variance(state)
     elif method == ProjectionType.POWER:
-        return _finalize_power(state)
+        final_projection = _finalize_power(state)
     elif method == ProjectionType.BRIGHTFIELD:
-        return _finalize_brightfield(state)
+        final_projection = _finalize_brightfield(state)
     elif method == ProjectionType.MASK:
-        return _finalize_mask(state)
+        final_projection = _finalize_mask(state)
     else:
         raise ValueError(PROJECTION_METHOD_INVALID % method)
 
-# --- Helper functions ---
+    return final_projection, mask_2d
 
-def _wrap_result(image: Image2D, mask: Image2DMask) -> Tuple[Image2D, Image2DMask]:
-    """Helper to ensure mask compatibility and return tuple"""
-    # Original logic: _wrap_image
-    # If mask is 3D, take first slice
-    final_mask = mask
-    if mask.ndim == 3:
-        final_mask = mask[:, :, 0]
-    
-    # Original logic checks numpy.all(mask) but here we return mask always
-    return image, final_mask
+# --- Helper functions ---
 
 def _accumulate_sum(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
     """This function is called by both sum and average projection methods"""
@@ -163,7 +158,7 @@ def _accumulate_sum(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
     state[StateKey.IMAGE.value][mask] += image[mask]
 
 
-def _finalize_sum(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_sum(state: Dict[str, Any]) -> Image2D:
     image = state[StateKey.IMAGE.value]
     image_count = state[StateKey.IMAGE_COUNT.value]
     
@@ -175,12 +170,11 @@ def _finalize_sum(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
     else:
         cached_image = image
         
-    return _wrap_result(cached_image, mask)
+    return cached_image
 
-def _finalize_average(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_average(state: Dict[str, Any]) -> Image2D:
     image = state[StateKey.IMAGE.value]
     image_count = state[StateKey.IMAGE_COUNT.value]
-    
     # Handle multi-channel image count broadcasting
     if image.ndim == 3 and image_count.ndim == 2:
         image_count = np.dstack([image_count] * image.shape[2])
@@ -197,14 +191,14 @@ def _finalize_average(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
     else:
         cached_image[~mask] = 0
         
-    return _wrap_result(cached_image, mask)
+    return cached_image
 
 def _accumulate_maximum(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
     assert StateKey.IMAGE.value in state, STATE_NOT_INITIALIZED
     current_image = state[StateKey.IMAGE.value]
     state[StateKey.IMAGE.value][mask] = np.maximum(current_image[mask], image[mask])
 
-def _finalize_maximum(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_maximum(state: Dict[str, Any]) -> Image2D:
     # Same finalization logic as SumProvider except it uses the max accumulated image
     return _finalize_sum(state)
 
@@ -213,7 +207,7 @@ def _accumulate_minimum(image: Image2D, mask: Image2DMask, state: Dict[str, Any]
     current_image = state[StateKey.IMAGE.value]
     state[StateKey.IMAGE.value][mask] = np.minimum(current_image[mask], image[mask])
 
-def _finalize_minimum(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_minimum(state: Dict[str, Any]) -> Image2D:
     return _finalize_sum(state)
 
 def _accumulate_variance(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
@@ -222,7 +216,7 @@ def _accumulate_variance(image: Image2D, mask: Image2DMask, state: Dict[str, Any
     state[StateKey.VSUM.value][mask] += image[mask]
     state[StateKey.VSQUARED.value][mask] += image[mask].astype(np.float64) ** 2
 
-def _finalize_variance(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_variance(state: Dict[str, Any]) -> Image2D:
     vsum = state[StateKey.VSUM.value]
     vsquared = state[StateKey.VSQUARED.value]
     image_count = state[StateKey.IMAGE_COUNT.value]
@@ -242,7 +236,7 @@ def _finalize_variance(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
     
     cached_image[~mask] = 0
     
-    return _wrap_result(cached_image, mask)
+    return cached_image
 
 def _accumulate_power(image: Image2D, mask: Image2DMask, state: Dict[str, Any], frequency: float):     
     assert StateKey.VSUM.value in state, STATE_NOT_INITIALIZED
@@ -258,7 +252,7 @@ def _accumulate_power(image: Image2D, mask: Image2DMask, state: Dict[str, Any], 
     state[StateKey.POWER_IMAGE.value][mask] += multiplier * image[mask]
     state[StateKey.POWER_MASK.value][mask] += multiplier
 
-def _finalize_power(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_power(state: Dict[str, Any]) -> Image2D:
     image_count = state[StateKey.IMAGE_COUNT.value]
     power_image = state[StateKey.POWER_IMAGE.value]
     vsum = state[StateKey.VSUM.value]
@@ -277,7 +271,7 @@ def _finalize_power(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
     cached_image = (cached_image * np.conj(cached_image)).real.astype(np.float32)
     cached_image[~mask] = 0
     
-    return _wrap_result(cached_image, mask)
+    return cached_image
 
 def _accumulate_brightfield(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
     assert StateKey.BRIGHT_MAX.value in state, STATE_NOT_INITIALIZED
@@ -301,7 +295,7 @@ def _accumulate_brightfield(image: Image2D, mask: Image2DMask, state: Dict[str, 
     state[StateKey.BRIGHT_MAX.value] = bright_max
     state[StateKey.BRIGHT_MIN.value] = bright_min  
 
-def _finalize_brightfield(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_brightfield(state: Dict[str, Any]) -> Image2D:
     image_count = state[StateKey.IMAGE_COUNT.value]
     bright_max = state[StateKey.BRIGHT_MAX.value]
     bright_min = state[StateKey.BRIGHT_MIN.value]
@@ -315,13 +309,13 @@ def _finalize_brightfield(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
     cached_image[mask] = bright_max[mask] - bright_min[mask]
     cached_image[~mask] = 0
     
-    return _wrap_result(cached_image, mask)
+    return cached_image
 
 def _accumulate_mask(image: Image2D, mask: Image2DMask, state: Dict[str, Any]):
     assert StateKey.IMAGE.value in state, STATE_NOT_INITIALIZED
     state[StateKey.IMAGE.value] = state[StateKey.IMAGE.value] & mask
 
-def _finalize_mask(state: Dict[str, Any]) -> Tuple[Image2D, Image2DMask]:
+def _finalize_mask(state: Dict[str, Any]) -> Image2D:
     final_mask = state[StateKey.IMAGE.value]
-    return final_mask, np.ones(final_mask.shape, dtype=bool)
+    return final_mask
 

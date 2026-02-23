@@ -1222,7 +1222,7 @@ def filter_using_image(
         mask: Image2DGrayscaleMask, 
         where_algorithm: ObjectIntensityMethod, 
         minimum_intensity_fraction: float
-    ):
+    ) -> ObjectSegmentation:
     """Filter out connections using local intensity minima between objects
 
     workspace - the workspace for the image set
@@ -1359,7 +1359,7 @@ def merge_unify_distance(
         image: Optional[Image2DGrayscale],
         merge_condition: Optional[ObjectIntensityMethod],
         minimum_intensity_fraction: Optional[float]
-):
+) -> ObjectSegmentation:
     mask = labels > 0
     if distance_threshold > 0:
         #
@@ -1383,7 +1383,7 @@ def merge_unify_parent(
         labels: ObjectSegmentation,
         parents_of: numpy.ndarray,
         merging_method: MergingMethod,
-):
+) -> ObjectSegmentation:
     # parents_of = relaitonship_measurement[
     #     objects_name, "_".join((C_PARENT, parent_name))
     # ]

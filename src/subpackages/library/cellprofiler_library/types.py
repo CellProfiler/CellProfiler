@@ -75,6 +75,13 @@ def validate_object_label_set(label_set: Sequence[Tuple[NDArray[np.int32], NDArr
             raise ValueError(f"Expected labels of shape (y, x) or (z, y, x), got {label[0].shape}")
     return label_set
 
+def validate_object_segmentation_ijv(ijv: NDArray[np.int_]) -> NDArray[np.int_]:
+    if len(ijv.shape) != 2:
+        raise ValueError(f"Expected a 2-dimensional array, got {ijv.shape}")
+    if ijv.shape[1] != 3:
+        raise ValueError(f"Expected a 2-dimensional array with 3 columns, got {ijv.shape[1]}")
+    return ijv
+
 Pixel = Annotated[Union[np.float32, np.float64], Field(description="Pixel value")]
 ObjectLabel =           Annotated[Union[np.int8, np.int16,np.int32], Field(description="Object label")]
 
@@ -98,6 +105,7 @@ Image3DInt =            Annotated[NDArray[np.int32],    Field(description="3D in
 ObjectLabelsDense =     Annotated[NDArray[ObjectLabel], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
 ObjectLabelSet =        Annotated[Sequence[Tuple[NDArray[ObjectLabel], NDArray[np.int32]]], Field(description="List of Tuples of object labels and object numbers in each label matrix"), AfterValidator(validate_object_label_set)]
 ObjectSegmentation =    Annotated[NDArray[ObjectLabel], Field(description="Object segmentation")]
+ObjectSegmentationIJV = Annotated[NDArray[ObjectLabel], Field(description="Object segmentation in IJV format"), AfterValidator(validate_object_segmentation_ijv)]
 
 ImageGrayscale =        Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask =    Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

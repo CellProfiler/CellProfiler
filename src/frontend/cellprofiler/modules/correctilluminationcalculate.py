@@ -717,14 +717,14 @@ fewer iterations, but less accuracy.
                     image = w.image_set.get_image(self.image_name.value, cache=False)
                     output_image_provider.add_image(image)
                     w.image_set.clear_cache()
-            output_image_provider.serialize(d)
+            output_image_provider.save_state(d)
 
         return True
 
     def run(self, workspace):
         if self.each_or_all != EA_EACH:
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
-            output_image_provider = CorrectIlluminationImageProvider.deserialize(
+            output_image_provider = CorrectIlluminationImageProvider.restore_from_state(
                 d, self
             )
             if self.each_or_all == EA_ALL_ACROSS:
@@ -734,7 +734,7 @@ fewer iterations, but less accuracy.
                 #
                 orig_image = workspace.image_set.get_image(self.image_name.value)
                 output_image_provider.add_image(orig_image)
-                output_image_provider.serialize(d)
+                output_image_provider.save_state(d)
 
             # fetch images for display
             if (
@@ -784,7 +784,7 @@ fewer iterations, but less accuracy.
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
-            output_image_provider = CorrectIlluminationImageProvider.deserialize(
+            output_image_provider = CorrectIlluminationImageProvider.restore_from_state(
                 d, self
             )
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
@@ -1177,7 +1177,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
     D_IMAGE_SUM = "image_sum"
     D_MASK_COUNT = "mask_count"
 
-    def serialize(self, d):
+    def save_state(self, d):
         """Save the internal state of the provider to a dictionary
 
         d - save to this dictionary, numpy arrays and json serializable only
@@ -1187,7 +1187,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         d[self.D_MASK_COUNT] = self.__mask_count
 
     @staticmethod
-    def deserialize(d, module):
+    def restore_from_state(d, module):
         """Restore a state saved by serialize
 
         d - dictionary containing the state

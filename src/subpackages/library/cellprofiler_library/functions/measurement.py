@@ -4,6 +4,9 @@ import scipy
 import scipy.ndimage
 import scipy.sparse
 import skimage
+import mahotas.features
+import skimage.exposure
+import skimage.measure
 import centrosome
 import centrosome.cpmorphology
 import centrosome.filter
@@ -3720,3 +3723,66 @@ def compute_zernike_measurements(
     phases = numpy.column_stack(phases_list)
     
     return magnitudes, phases, zernike_indexes
+
+
+###############################################################################
+# MeasureTexture
+###############################################################################
+
+
+def measure_haralick_features_image(
+    pixel_data: ImageGrayscale, 
+    gray_levels: int, 
+    scale: int
+) -> NDArray[numpy.float64]:
+    pixel_data = skimage.util.img_as_ubyte(pixel_data)
+    if gray_levels != 256:
+        pixel_data = skimage.exposure.rescale_intensity(
+            pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+        ).astype(numpy.uint8)
+
+    # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+    # Returns (n_directions, 13)
+    return mahotas.features.haralick(pixel_data, distance=scale)
+
+
+def measure_haralick_features_objects(
+    labels: ObjectSegmentation,
+    pixel_data: ImageGrayscale,
+    mask: Optional[ImageGrayscaleMask],
+    gray_levels: int, 
+    max_label: int,
+    scale: int, 
+    volumetric: bool,
+) -> NDArray[numpy.float64]:
+    n_directions = 13 if volumetric else 4
+    if mask is not None:
+        pixel_data[~mask] = 0
+    # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
+    pixel_data = skimage.util.img_as_ubyte(pixel_data)
+    if gray_levels != 256:
+        pixel_data = skimage.exposure.rescale_intensity(
+            pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+        ).astype(numpy.uint8)
+    props = skimage.measure.regionprops(labels, pixel_data)
+    
+    # Shape: (max_label, n_directions, 13)
+    # We use max_label so that result[i] corresponds to label i+1
+    features = numpy.full((max_label, n_directions, 13), numpy.nan)
+
+    for prop in props:
+        label_data = prop["intensity_image"]
+        try:
+            # mahotas.features.haralick returns (n_directions, 13)
+            # ignore_zeros=True is important for masked objects
+            res = mahotas.features.haralick(
+                label_data, distance=scale, ignore_zeros=True
+            )
+            # If the object is too small or something, mahotas might return something else?
+            # Assuming it returns correct shape if successful.
+            features[prop.label-1, :, :] = res
+        except ValueError:
+            # Keep as NaN
+            pass
+
+    return features

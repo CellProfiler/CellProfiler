@@ -7,7 +7,8 @@ import mahotas
 import centrosome.cpmorphology
 import cellprofiler.utilities.morphology
 from typing import Optional, Literal, Tuple, Union
-from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ObjectSegmentation, StructuringElement
+from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny
+from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
 
@@ -853,7 +854,10 @@ def filter_labels(labels_out, objects, mask=None, discard_edge=False):
     return segmented_labels_out
 
 
-def size_similarly(labels, secondary):
+def size_similarly(
+        labels: ObjectSegmentation, 
+        secondary: Union[ObjectSegmentation, ImageAny],
+    ):
     """Size the secondary matrix similarly to the labels matrix
 
     labels - labels matrix
@@ -894,6 +898,7 @@ def size_similarly(labels, secondary):
     mask = numpy.zeros(labels.shape, bool)
     mask[:i_max, :j_max] = 1
     return result, mask
+
 
 def outline(labels: ObjectSegmentation) -> ObjectSegmentation:
     """Given a label matrix, return a matrix of the outlines of the labeled objects
@@ -1169,3 +1174,20 @@ def find_centroids(
         output_segmented[tuple(arr)] = ind + 1
 
     return output_segmented
+################################################################################
+# MeasureColocalization
+################################################################################
+
+
+def object_crop_image_similarly(
+        obj_segmented: ObjectSegmentation, 
+        other_image: Union[ImageAny, ImageAnyMask], 
+        obj_parent_image: ImageAny, 
+        obj_parent_crop_mask: ImageAnyMask
+    ):
+    """Crop an image in the same way as the object's parent image was cropped."""
+    if other_image.shape == obj_segmented.shape:
+        return other_image
+    if obj_parent_image is None:
+        raise ValueError("Images are of different size and no parent image")
+    return crop_image_similarly(obj_parent_image, other_image, obj_parent_crop_mask)

@@ -3,7 +3,7 @@ import numpy
 import skimage.color
 
 from ...preferences import get_default_colormap
-
+from cellprofiler_library.functions.object_processing import size_similarly as _size_similarly
 
 def crop_labels_and_image(labels, image):
     """Crop a labels matrix and an image to the lowest common size
@@ -48,35 +48,7 @@ def size_similarly(labels, secondary):
     Either the mask is all ones or the result is a copy, so you can
     modify the output within the unmasked region w/o destroying the original.
     """
-    if labels.shape[:2] == secondary.shape[:2]:
-        return secondary, numpy.ones(secondary.shape, bool)
-    if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
-        if secondary.ndim == 2:
-            return (
-                secondary[: labels.shape[0], : labels.shape[1]],
-                numpy.ones(labels.shape, bool),
-            )
-        else:
-            return (
-                secondary[: labels.shape[0], : labels.shape[1], :],
-                numpy.ones(labels.shape, bool),
-            )
-
-    #
-    # Some portion of the secondary matrix does not cover the labels
-    #
-    result = numpy.zeros(
-        list(labels.shape) + list(secondary.shape[2:]), secondary.dtype
-    )
-    i_max = min(secondary.shape[0], labels.shape[0])
-    j_max = min(secondary.shape[1], labels.shape[1])
-    if secondary.ndim == 2:
-        result[:i_max, :j_max] = secondary[:i_max, :j_max]
-    else:
-        result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
-    mask = numpy.zeros(labels.shape, bool)
-    mask[:i_max, :j_max] = 1
-    return result, mask
+    return _size_similarly(labels, secondary)
 
 
 def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):

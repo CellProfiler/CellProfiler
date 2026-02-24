@@ -10,6 +10,7 @@ import cellprofiler.modules.flipandrotate
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.flipandrotate import FlipDirection, RotateMethod, RotationCoordinateAlignmnet
 
 IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"
@@ -74,8 +75,8 @@ def test_flip_left_to_right():
 
     def fn(module):
         assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-        module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_LEFT_TO_RIGHT
-        module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_NONE
+        module.flip_choice.value = FlipDirection.LEFT_TO_RIGHT
+        module.rotate_choice.value = RotateMethod.NONE
 
     output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
@@ -98,8 +99,8 @@ def test_flip_top_to_bottom():
 
     def fn(module):
         assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-        module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_TOP_TO_BOTTOM
-        module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_NONE
+        module.flip_choice.value = FlipDirection.TOP_TO_BOTTOM
+        module.rotate_choice.value = RotateMethod.NONE
 
     output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
@@ -123,8 +124,8 @@ def test_flip_both():
 
     def fn(module):
         assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-        module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_BOTH
-        module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_NONE
+        module.flip_choice.value = FlipDirection.BOTH
+        module.rotate_choice.value = RotateMethod.NONE
 
     output_image, angle = run_module(image, mask=mask, fn=fn)
     assert angle == 0
@@ -158,8 +159,8 @@ def test_rotate_angle():
 
         def fn(module, angle=angle):
             assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-            module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_NONE
-            module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_ANGLE
+            module.flip_choice.value = FlipDirection.NONE
+            module.rotate_choice.value = RotateMethod.ANGLE
             module.wants_crop.value = False
             module.angle.value = angle
 
@@ -224,15 +225,15 @@ def test_rotate_coordinates():
     centrosome.cpmorphology.draw_line(img, pt0, pt1, 1)
     i, j = numpy.mgrid[0:20, 0:20]
     for option in (
-        cellprofiler.modules.flipandrotate.C_HORIZONTALLY,
-        cellprofiler.modules.flipandrotate.C_VERTICALLY,
+        RotationCoordinateAlignmnet.HORIZONTALLY,
+        RotationCoordinateAlignmnet.VERTICALLY,
     ):
 
         def fn(module):
             assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-            module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_NONE
+            module.flip_choice.value = FlipDirection.NONE
             module.rotate_choice.value = (
-                cellprofiler.modules.flipandrotate.ROTATE_COORDINATES
+                RotateMethod.COORDINATES
             )
             module.horiz_or_vert.value = option
             module.wants_crop.value = False
@@ -242,7 +243,7 @@ def test_rotate_coordinates():
         output_image, angle = run_module(img, fn=fn)
         pixels = output_image.pixel_data
 
-        if option == cellprofiler.modules.flipandrotate.C_HORIZONTALLY:
+        if option == RotationCoordinateAlignmnet.HORIZONTALLY:
             assert (
                 round(
                     abs(
@@ -292,8 +293,8 @@ def test_crop():
         #
         def fn(module, angle=angle):
             assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-            module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_NONE
-            module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_ANGLE
+            module.flip_choice.value = FlipDirection.NONE
+            module.rotate_choice.value = RotateMethod.ANGLE
             module.angle.value = angle
             module.wants_crop.value = True
 
@@ -307,8 +308,8 @@ def test_crop():
         #
         def fn(module, angle=angle):
             assert isinstance(module, cellprofiler.modules.flipandrotate.FlipAndRotate)
-            module.flip_choice.value = cellprofiler.modules.flipandrotate.FLIP_NONE
-            module.rotate_choice.value = cellprofiler.modules.flipandrotate.ROTATE_ANGLE
+            module.flip_choice.value = FlipDirection.NONE
+            module.rotate_choice.value = RotateMethod.ANGLE
             module.angle.value = angle
             module.wants_crop.value = False
 

@@ -15,6 +15,7 @@ import scipy
 import scipy.interpolate
 import matplotlib
 import math
+from numpy.typing import NDArray
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
@@ -248,7 +249,6 @@ def morphology_dilation(image: ImageAny, structuring_element: StructuringElement
     # Apply dilation directly for matching dimensions
     y_data = skimage.morphology.dilation(image, structuring_element)
     return y_data
-
 
 def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
@@ -2183,3 +2183,118 @@ def apply_threshold_to_objects(
         output_image_arr[mask] = (image >= scaled_image[segmented - 1])        
 
     return output_image_arr
+
+
+################################################################################
+# MeasureGranularity
+################################################################################
+
+def rescale_pixel_data_and_mask(
+    new_shape: Union[Tuple[int, ...], NDArray[numpy.float64]], 
+    subsample_size: float, 
+    im_pixel_data: ImageGrayscale, 
+    im_mask: ImageGrayscaleMask, 
+    dimensions: int
+    ) -> Tuple[ImageGrayscale, ImageGrayscaleMask]:
+    if dimensions == 2:
+        i, j = (
+            numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
+            / subsample_size
+        )
+        pixels = scipy.ndimage.map_coordinates(im_pixel_data, (i, j), order=1)
+        mask = (
+            scipy.ndimage.map_coordinates(im_mask.astype(float), (i, j)).astype(float) > 0.9
+        )
+    else:
+        k, i, j = (
+            numpy.mgrid[0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]].astype(float)
+            / subsample_size
+        )
+        pixels = scipy.ndimage.map_coordinates(im_pixel_data, (k, i, j), order=1)
+        mask = (
+            scipy.ndimage.map_coordinates(im_mask.astype(float), (k, i, j)).astype(float) > 0.9
+            )
+    return pixels, mask
+
+
+def restore_scale(
+    dimensions: int, 
+    orig_shape: NDArray[numpy.float64], 
+    scaled_shape: NDArray[numpy.float64], 
+    scaled_pixels: ImageGrayscale
+    ) -> ImageGrayscale:
+    if dimensions == 2:
+        i, j = numpy.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
+        #
+        # Make sure the mapping only references the index range of
+        # back_pixels.
+        #
+        i *= float(scaled_shape[0] - 1) / float(orig_shape[0] - 1)
+        j *= float(scaled_shape[1] - 1) / float(orig_shape[1] - 1)
+        scaled_pixels = scipy.ndimage.map_coordinates(scaled_pixels, (i, j), order=1).astype(float)
+    else:
+        k, i, j = numpy.mgrid[
+            0 : orig_shape[0], 0 : orig_shape[1], 0 : orig_shape[2]
+        ].astype(float)
+        k *= float(scaled_shape[0] - 1) / float(orig_shape[0] - 1)
+        i *= float(scaled_shape[1] - 1) / float(orig_shape[1] - 1)
+        j *= float(scaled_shape[2] - 1) / float(orig_shape[2] - 1)
+        scaled_pixels = scipy.ndimage.map_coordinates(scaled_pixels, (k, i, j), order=1).astype(float)
+    return scaled_pixels
+
+def downsample_image_and_mask(
+    im_pixel_data: ImageGrayscale, 
+    im_mask: ImageGrayscaleMask, 
+    dimensions: int, 
+    subsample_size: float
+    ) -> Tuple[ImageGrayscale, ImageGrayscaleMask, NDArray[numpy.float64]]:
+    #
+    # Downsample the image and mask
+    #
+    new_shape = numpy.array(im_pixel_data.shape)
+    if subsample_size < 1:
+        new_shape = new_shape * subsample_size
+        pixels, mask = rescale_pixel_data_and_mask(new_shape, subsample_size, im_pixel_data, im_mask, dimensions)
+    else:
+        pixels = im_pixel_data.copy()
+        mask = im_mask.copy()
+    return pixels, mask, new_shape
+
+def apply_grayscale_tophat_filter(
+    pixels: ImageGrayscale, 
+    mask: ImageGrayscaleMask, 
+    dimensions: int, 
+    image_sample_size: float, 
+    radius: int, 
+    new_shape: NDArray[numpy.float64]
+    ) -> ImageGrayscale:
+    back_pixels, back_mask, back_shape = downsample_image_and_mask(pixels, mask, dimensions, image_sample_size)
+    # radius = element_size
+    footprint = get_morphology_footprint(radius, dimensions)
+    back_pixels = masked_erode(back_pixels, back_mask, footprint)
+    back_pixels = masked_dilate(back_pixels, back_mask, footprint)
+    if image_sample_size < 1:
+        back_pixels = restore_scale(dimensions, new_shape, back_shape, back_pixels)
+    pixels -= back_pixels
+    pixels[pixels < 0] = 0
+    return pixels
+
+def masked_dilate(im, mask, footprint):
+    im_mask = numpy.zeros_like(im)
+    im_mask[mask == True] = im[mask == True]
+    im = morphology_dilation(im_mask, footprint)
+    return im
+
+def masked_erode(im, mask, footprint):
+    im_mask = numpy.zeros_like(im)
+    im_mask[mask == True] = im[mask == True]
+    im = morphology_erosion(im_mask, footprint)
+    return im
+
+def get_morphology_footprint(radius, dimensions):
+    if dimensions == 2:
+        footprint = skimage.morphology.disk(radius, dtype=bool)
+    else:
+        footprint = skimage.morphology.ball(radius, dtype=bool)
+    return footprint
+    

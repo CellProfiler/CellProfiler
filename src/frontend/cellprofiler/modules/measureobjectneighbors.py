@@ -66,9 +66,6 @@ will be positive, but there may not be a corresponding
 
 import matplotlib.cm
 import numpy
-import scipy.ndimage
-import scipy.signal
-import skimage.morphology
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import MCA_AVAILABLE_EACH_CYCLE
@@ -84,37 +81,13 @@ from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.workspace import Workspace
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import strel_disk, centers_of_labels
-from centrosome.outline import outline
-
-D_ADJACENT = "Adjacent"
-D_EXPAND = "Expand until adjacent"
-D_WITHIN = "Within a specified distance"
-D_ALL = [D_ADJACENT, D_EXPAND, D_WITHIN]
-
-M_NUMBER_OF_NEIGHBORS = "NumberOfNeighbors"
-M_PERCENT_TOUCHING = "PercentTouching"
-M_FIRST_CLOSEST_OBJECT_NUMBER = "FirstClosestObjectNumber"
-M_FIRST_CLOSEST_DISTANCE = "FirstClosestDistance"
-M_SECOND_CLOSEST_OBJECT_NUMBER = "SecondClosestObjectNumber"
-M_SECOND_CLOSEST_DISTANCE = "SecondClosestDistance"
-M_ANGLE_BETWEEN_NEIGHBORS = "AngleBetweenNeighbors"
-M_ALL = [
-    M_NUMBER_OF_NEIGHBORS,
-    M_PERCENT_TOUCHING,
-    M_FIRST_CLOSEST_OBJECT_NUMBER,
-    M_FIRST_CLOSEST_DISTANCE,
-    M_SECOND_CLOSEST_OBJECT_NUMBER,
-    M_SECOND_CLOSEST_DISTANCE,
-    M_ANGLE_BETWEEN_NEIGHBORS,
-]
-
-C_NEIGHBORS = "Neighbors"
-
-S_EXPANDED = "Expanded"
-S_ADJACENT = "Adjacent"
-
+from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
+from cellprofiler_library.types import ObjectSegmentation
+from cellprofiler_library.modules._measureobjectneighbors import measure_object_neighbors
+from cellprofiler_library.measurement_model import (
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+)
 
 class MeasureObjectNeighbors(Module):
     module_name = "MeasureObjectNeighbors"
@@ -142,31 +115,37 @@ as above.""",
         self.distance_method = Choice(
             "Method to determine neighbors",
             D_ALL,
-            D_EXPAND,
+            DistanceMethod.EXPAND.value,
             doc="""\
 There are several methods by which to determine whether objects are
 neighbors:
 
--  *%(D_ADJACENT)s:* In this mode, two objects must have adjacent
+-  *{D_ADJACENT}:* In this mode, two objects must have adjacent
    boundary pixels to be neighbors.
--  *%(D_EXPAND)s:* The objects are expanded until all pixels on the
+-  *{D_EXPAND}:* The objects are expanded until all pixels on the
    object boundaries are touching another. Two objects are neighbors if
    any of their boundary pixels are adjacent after expansion.
--  *%(D_WITHIN)s:* Each object is expanded by the number of pixels you
+-  *{D_WITHIN}:* Each object is expanded by the number of pixels you
    specify. Two objects are neighbors if they have adjacent pixels after
    expansion. Note that *all* objects are expanded by this amount (e.g., 
    if this distance is set to 10, a pair of objects will count as 
    neighbors if their edges are 20 pixels apart or closer).
 
-For *%(D_ADJACENT)s* and *%(D_EXPAND)s*, the
-*%(M_PERCENT_TOUCHING)s* measurement is the percentage of pixels on
+For *{D_ADJACENT}* and *{D_EXPAND}*, the
+*{M_PERCENT_TOUCHING}* measurement is the percentage of pixels on
 the boundary of an object that touch adjacent objects. For
-*%(D_WITHIN)s*, two objects are touching if any of their boundary
-pixels are adjacent after expansion and *%(M_PERCENT_TOUCHING)s*
+*{D_WITHIN}*, two objects are touching if any of their boundary
+pixels are adjacent after expansion and *{M_PERCENT_TOUCHING}*
 measures the percentage of boundary pixels of an *expanded* object that
 touch adjacent objects.
-"""
-            % globals(),
+""".format(
+    **{
+        "D_ADJACENT": DistanceMethod.ADJACENT.value,
+        "D_EXPAND": DistanceMethod.EXPAND.value,
+        "D_WITHIN": DistanceMethod.WITHIN.value,
+        "M_PERCENT_TOUCHING": Measurement.PERCENT_TOUCHING.value,
+    }
+),
         )
 
         self.distance = Integer(
@@ -179,8 +158,11 @@ touch adjacent objects.
 The Neighbor distance is the number of pixels that each object is
 expanded for the neighbor calculation. Expanded objects that touch are
 considered neighbors.
-"""
-            % globals(),
+""".format(
+    **{
+        "D_WITHIN": DistanceMethod.WITHIN.value,
+    }
+),
         )
 
         self.wants_count_image = Binary(
@@ -286,7 +268,7 @@ previously discarded objects.""".format(
 
     def visible_settings(self):
         result = [self.object_name, self.neighbors_name, self.distance_method]
-        if self.distance_method == D_WITHIN:
+        if self.distance_method == DistanceMethod.WITHIN.value:
             result += [self.distance]
         result += [self.wants_excluded_objects, self.wants_count_image]
         if self.wants_count_image.value:
@@ -301,370 +283,43 @@ previously discarded objects.""".format(
         """True if the neighbors are taken from the same object set as objects"""
         return self.object_name.value == self.neighbors_name.value
 
+
+
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        dimensions = len(objects.shape)
+        objects_small_removed_segmented: ObjectSegmentation = objects.small_removed_segmented
+        kept_labels: ObjectSegmentation = objects.segmented
         assert isinstance(objects, Objects)
         has_pixels = objects.areas > 0
-        labels = objects.small_removed_segmented
-        kept_labels = objects.segmented
+
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
-        neighbor_labels = neighbor_objects.small_removed_segmented
-        neighbor_kept_labels = neighbor_objects.segmented
+        neighbor_small_removed_segmented: ObjectSegmentation = neighbor_objects.small_removed_segmented
+        neighbor_kept_labels: ObjectSegmentation = neighbor_objects.segmented
         assert isinstance(neighbor_objects, Objects)
-        if not self.wants_excluded_objects.value:
-            # Remove labels not present in kept segmentation while preserving object IDs.
-            mask = neighbor_kept_labels > 0
-            neighbor_labels[~mask] = 0
-        nobjects = numpy.max(labels)
-        nkept_objects = len(objects.indices)
-        nneighbors = numpy.max(neighbor_labels)
+       
+        dimensions = len(objects.shape)
 
-        _, object_numbers = objects.relate_labels(labels, kept_labels)
-        if self.neighbors_are_objects:
-            neighbor_numbers = object_numbers
-            neighbor_has_pixels = has_pixels
-        else:
-            _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_kept_labels
-            )
-            neighbor_has_pixels = numpy.bincount(neighbor_kept_labels.ravel())[1:] > 0
-        neighbor_count = numpy.zeros((nobjects,))
-        pixel_count = numpy.zeros((nobjects,))
-        first_object_number = numpy.zeros((nobjects,), int)
-        second_object_number = numpy.zeros((nobjects,), int)
-        first_x_vector = numpy.zeros((nobjects,))
-        second_x_vector = numpy.zeros((nobjects,))
-        first_y_vector = numpy.zeros((nobjects,))
-        second_y_vector = numpy.zeros((nobjects,))
-        angle = numpy.zeros((nobjects,))
-        percent_touching = numpy.zeros((nobjects,))
-        expanded_labels = None
-        if self.distance_method == D_EXPAND:
-            # Find the i,j coordinates of the nearest foreground point
-            # to every background point
-            if dimensions == 2:
-                i, j = scipy.ndimage.distance_transform_edt(
-                    labels == 0, return_distances=False, return_indices=True
-                )
-                # Assign each background pixel to the label of its nearest
-                # foreground pixel. Assign label to label for foreground.
-                labels = labels[i, j]
-            else:
-                k, i, j = scipy.ndimage.distance_transform_edt(
-                    labels == 0, return_distances=False, return_indices=True
-                )
-                labels = labels[k, i, j]
-            expanded_labels = labels  # for display
-            distance = 1  # dilate once to make touching edges overlap
-            scale = S_EXPANDED
-            if self.neighbors_are_objects:
-                neighbor_labels = labels.copy()
-        elif self.distance_method == D_WITHIN:
-            distance = self.distance.value
-            scale = str(distance)
-        elif self.distance_method == D_ADJACENT:
-            distance = 1
-            scale = S_ADJACENT
-        else:
-            raise ValueError("Unknown distance method: %s" % self.distance_method.value)
-        if nneighbors > (1 if self.neighbors_are_objects else 0):
-            first_objects = []
-            second_objects = []
-            object_indexes = numpy.arange(nobjects, dtype=numpy.int32) + 1
-            #
-            # First, compute the first and second nearest neighbors,
-            # and the angles between self and the first and second
-            # nearest neighbors
-            #
-            ocenters = centers_of_labels(objects.small_removed_segmented).transpose()
-            ncenters = centers_of_labels(
-                neighbor_objects.small_removed_segmented
-            ).transpose()
-            areas = fix(
-                scipy.ndimage.sum(numpy.ones(labels.shape), labels, object_indexes)
-            )
-            perimeter_outlines = outline(labels)
-            perimeters = fix(
-                scipy.ndimage.sum(
-                    numpy.ones(labels.shape), perimeter_outlines, object_indexes
-                )
-            )
+        (
+            measurements,
+            (first_objects, second_objects),
+            expanded_labels,
+        ) = measure_object_neighbors( 
+            objects_small_removed_segmented, 
+            kept_labels,
+            neighbor_small_removed_segmented, 
+            neighbor_kept_labels,
+            self.object_name.value,
+            self.neighbors_name.value,
+            self.neighbors_are_objects,
+            dimensions, 
+            self.distance.value,
+            self.distance_method.value, 
+            has_pixels,
+            len(objects.indices),
+            self.wants_excluded_objects.value,
+        )
 
-            #
-            # order[:,0] should be arange(nobjects)
-            # order[:,1] should be the nearest neighbor
-            # order[:,2] should be the next nearest neighbor
-            #
-            order = numpy.zeros((nobjects, min(nneighbors, 3)), dtype=numpy.uint32)
-            j = numpy.arange(nneighbors)
-            # (0, 1, 2) unless there are less than 3 neighbors
-            partition_keys = tuple(range(min(nneighbors, 3)))
-            for i in range(nobjects):
-                dr = numpy.sqrt((ocenters[i, 0] - ncenters[j, 0])**2 + (ocenters[i, 1] - ncenters[j, 1])**2)
-                order[i, :] = numpy.argpartition(dr, partition_keys)[:3]
 
-            first_neighbor = 1 if self.neighbors_are_objects else 0
-            first_object_index = order[:, first_neighbor]
-            first_x_vector = ncenters[first_object_index, 1] - ocenters[:, 1]
-            first_y_vector = ncenters[first_object_index, 0] - ocenters[:, 0]
-            if nneighbors > first_neighbor + 1:
-                second_object_index = order[:, first_neighbor + 1]
-                second_x_vector = ncenters[second_object_index, 1] - ocenters[:, 1]
-                second_y_vector = ncenters[second_object_index, 0] - ocenters[:, 0]
-                v1 = numpy.array((first_x_vector, first_y_vector))
-                v2 = numpy.array((second_x_vector, second_y_vector))
-                #
-                # Project the unit vector v1 against the unit vector v2
-                #
-                dot = numpy.sum(v1 * v2, 0) / numpy.sqrt(
-                    numpy.sum(v1 ** 2, 0) * numpy.sum(v2 ** 2, 0)
-                )
-                angle = numpy.arccos(dot) * 180.0 / numpy.pi
-
-            # Make the structuring element for dilation
-            if dimensions == 2:
-                strel = strel_disk(distance)
-            else:
-                strel = skimage.morphology.ball(distance)
-            #
-            # A little bigger one to enter into the border with a structure
-            # that mimics the one used to create the outline
-            #
-            if dimensions == 2:
-                strel_touching = strel_disk(distance + 0.5)
-            else:
-                strel_touching = skimage.morphology.ball(distance + 0.5)
-            #
-            # Get the extents for each object and calculate the patch
-            # that excises the part of the image that is "distance"
-            # away
-            if dimensions == 2:
-                i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-
-                minimums_i, maximums_i, _, _ = scipy.ndimage.extrema(
-                    i, labels, object_indexes
-                )
-                minimums_j, maximums_j, _, _ = scipy.ndimage.extrema(
-                    j, labels, object_indexes
-                )
-
-                minimums_i = numpy.maximum(fix(minimums_i) - distance, 0).astype(int)
-                maximums_i = numpy.minimum(
-                    fix(maximums_i) + distance + 1, labels.shape[0]
-                ).astype(int)
-                minimums_j = numpy.maximum(fix(minimums_j) - distance, 0).astype(int)
-                maximums_j = numpy.minimum(
-                    fix(maximums_j) + distance + 1, labels.shape[1]
-                ).astype(int)
-            else:
-                k, i, j = numpy.mgrid[
-                    0 : labels.shape[0], 0 : labels.shape[1], 0 : labels.shape[2]
-                ]
-
-                minimums_k, maximums_k, _, _ = scipy.ndimage.extrema(
-                    k, labels, object_indexes
-                )
-                minimums_i, maximums_i, _, _ = scipy.ndimage.extrema(
-                    i, labels, object_indexes
-                )
-                minimums_j, maximums_j, _, _ = scipy.ndimage.extrema(
-                    j, labels, object_indexes
-                )
-
-                minimums_k = numpy.maximum(fix(minimums_k) - distance, 0).astype(int)
-                maximums_k = numpy.minimum(
-                    fix(maximums_k) + distance + 1, labels.shape[0]
-                ).astype(int)
-                minimums_i = numpy.maximum(fix(minimums_i) - distance, 0).astype(int)
-                maximums_i = numpy.minimum(
-                    fix(maximums_i) + distance + 1, labels.shape[1]
-                ).astype(int)
-                minimums_j = numpy.maximum(fix(minimums_j) - distance, 0).astype(int)
-                maximums_j = numpy.minimum(
-                    fix(maximums_j) + distance + 1, labels.shape[2]
-                ).astype(int)
-            #
-            # Loop over all objects
-            # Calculate which ones overlap "index"
-            # Calculate how much overlap there is of others to "index"
-            #
-            for object_number in object_numbers:
-                if object_number == 0:
-                    #
-                    # No corresponding object in small-removed. This means
-                    # that the object has no pixels, e.g., not renumbered.
-                    #
-                    continue
-                index = object_number - 1
-                if dimensions == 2:
-                    patch = labels[
-                        minimums_i[index] : maximums_i[index],
-                        minimums_j[index] : maximums_j[index],
-                    ]
-                    npatch = neighbor_labels[
-                        minimums_i[index] : maximums_i[index],
-                        minimums_j[index] : maximums_j[index],
-                    ]
-                else:
-                    patch = labels[
-                        minimums_k[index] : maximums_k[index],
-                        minimums_i[index] : maximums_i[index],
-                        minimums_j[index] : maximums_j[index],
-                    ]
-                    npatch = neighbor_labels[
-                        minimums_k[index] : maximums_k[index],
-                        minimums_i[index] : maximums_i[index],
-                        minimums_j[index] : maximums_j[index],
-                    ]
-
-                #
-                # Find the neighbors
-                #
-                patch_mask = patch == (index + 1)
-                if distance <= 5:
-                    extended = scipy.ndimage.binary_dilation(patch_mask, strel)
-                else:
-                    extended = (
-                        scipy.signal.fftconvolve(patch_mask, strel, mode="same") > 0.5
-                    )
-                neighbors = numpy.unique(npatch[extended])
-                neighbors = neighbors[neighbors != 0]
-                if self.neighbors_are_objects:
-                    neighbors = neighbors[neighbors != object_number]
-                nc = len(neighbors)
-                neighbor_count[index] = nc
-                if nc > 0:
-                    first_objects.append(numpy.ones(nc, int) * object_number)
-                    second_objects.append(neighbors)
-                #
-                # Find the # of overlapping pixels. Dilate the neighbors
-                # and see how many pixels overlap our image. Use a 3x3
-                # structuring element to expand the overlapping edge
-                # into the perimeter.
-                #
-                if dimensions == 2:
-                    outline_patch = (
-                        perimeter_outlines[
-                            minimums_i[index] : maximums_i[index],
-                            minimums_j[index] : maximums_j[index],
-                        ]
-                        == object_number
-                    )
-                else:
-                    outline_patch = (
-                        perimeter_outlines[
-                            minimums_k[index] : maximums_k[index],
-                            minimums_i[index] : maximums_i[index],
-                            minimums_j[index] : maximums_j[index],
-                        ]
-                        == object_number
-                    )
-                if self.neighbors_are_objects:
-                    extendme = (patch != 0) & (patch != object_number)
-                    if distance <= 5:
-                        extended = scipy.ndimage.binary_dilation(
-                            extendme, strel_touching
-                        )
-                    else:
-                        extended = (
-                            scipy.signal.fftconvolve(
-                                extendme, strel_touching, mode="same"
-                            )
-                            > 0.5
-                        )
-                else:
-                    if distance <= 5:
-                        extended = scipy.ndimage.binary_dilation(
-                            (npatch != 0), strel_touching
-                        )
-                    else:
-                        extended = (
-                            scipy.signal.fftconvolve(
-                                (npatch != 0), strel_touching, mode="same"
-                            )
-                            > 0.5
-                        )
-                overlap = numpy.sum(outline_patch & extended)
-                pixel_count[index] = overlap
-            if sum([len(x) for x in first_objects]) > 0:
-                first_objects = numpy.hstack(first_objects)
-                reverse_object_numbers = numpy.zeros(
-                    max(numpy.max(object_numbers), numpy.max(first_objects)) + 1, int
-                )
-                reverse_object_numbers[object_numbers] = (
-                    numpy.arange(len(object_numbers)) + 1
-                )
-                first_objects = reverse_object_numbers[first_objects]
-
-                second_objects = numpy.hstack(second_objects)
-                reverse_neighbor_numbers = numpy.zeros(
-                    max(numpy.max(neighbor_numbers), numpy.max(second_objects)) + 1, int
-                )
-                reverse_neighbor_numbers[neighbor_numbers] = (
-                    numpy.arange(len(neighbor_numbers)) + 1
-                )
-                second_objects = reverse_neighbor_numbers[second_objects]
-                to_keep = (first_objects > 0) & (second_objects > 0)
-                first_objects = first_objects[to_keep]
-                second_objects = second_objects[to_keep]
-            else:
-                first_objects = numpy.zeros(0, int)
-                second_objects = numpy.zeros(0, int)
-            percent_touching = pixel_count * 100 / perimeters
-            object_indexes = object_numbers - 1
-            neighbor_indexes = neighbor_numbers - 1
-            #
-            # Have to recompute nearest
-            #
-            first_object_number = numpy.zeros(nkept_objects, int)
-            second_object_number = numpy.zeros(nkept_objects, int)
-            if nkept_objects > (1 if self.neighbors_are_objects else 0):
-                di = (
-                    ocenters[object_indexes[:, numpy.newaxis], 0]
-                    - ncenters[neighbor_indexes[numpy.newaxis, :], 0]
-                )
-                dj = (
-                    ocenters[object_indexes[:, numpy.newaxis], 1]
-                    - ncenters[neighbor_indexes[numpy.newaxis, :], 1]
-                )
-                distance_matrix = numpy.sqrt(di * di + dj * dj)
-                distance_matrix[~has_pixels, :] = numpy.inf
-                distance_matrix[:, ~neighbor_has_pixels] = numpy.inf
-                #
-                # order[:,0] should be arange(nobjects)
-                # order[:,1] should be the nearest neighbor
-                # order[:,2] should be the next nearest neighbor
-                #
-                order = numpy.lexsort([distance_matrix]).astype(
-                    first_object_number.dtype
-                )
-                if self.neighbors_are_objects:
-                    first_object_number[has_pixels] = order[has_pixels, 1] + 1
-                    if nkept_objects > 2:
-                        second_object_number[has_pixels] = order[has_pixels, 2] + 1
-                else:
-                    first_object_number[has_pixels] = order[has_pixels, 0] + 1
-                    if order.shape[1] > 1:
-                        second_object_number[has_pixels] = order[has_pixels, 1] + 1
-        else:
-            object_indexes = object_numbers - 1
-            neighbor_indexes = neighbor_numbers - 1
-            first_objects = numpy.zeros(0, int)
-            second_objects = numpy.zeros(0, int)
-        #
-        # Now convert all measurements from the small-removed to
-        # the final number set.
-        #
-        neighbor_count = neighbor_count[object_indexes]
-        neighbor_count[~has_pixels] = 0
-        percent_touching = percent_touching[object_indexes]
-        percent_touching[~has_pixels] = 0
-        first_x_vector = first_x_vector[object_indexes]
-        second_x_vector = second_x_vector[object_indexes]
-        first_y_vector = first_y_vector[object_indexes]
-        second_y_vector = second_y_vector[object_indexes]
-        angle = angle[object_indexes]
         #
         # Record the measurements
         #
@@ -672,41 +327,45 @@ previously discarded objects.""".format(
         m = workspace.measurements
         assert isinstance(m, Measurements)
         image_set = workspace.image_set
-        features_and_data = [
-            (M_NUMBER_OF_NEIGHBORS, neighbor_count),
-            (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
-            (
-                M_FIRST_CLOSEST_DISTANCE,
-                numpy.sqrt(first_x_vector ** 2 + first_y_vector ** 2),
-            ),
-            (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
-            (
-                M_SECOND_CLOSEST_DISTANCE,
-                numpy.sqrt(second_x_vector ** 2 + second_y_vector ** 2),
-            ),
-            (M_ANGLE_BETWEEN_NEIGHBORS, angle),
-            (M_PERCENT_TOUCHING, percent_touching),
-        ]
-        for feature_name, data in features_and_data:
-            m.add_measurement(
-                self.object_name.value, self.get_measurement_name(feature_name), data
+        
+        # Record Image Measurements
+        for feature_name, value in measurements.image.items():
+            m.add_image_measurement(feature_name, value)
+        
+        # Record Object Measurements
+        for object_name, features in measurements.objects.items():
+            for feature_name, data in features.items():
+                m.add_measurement(object_name, feature_name, data)
+
+        for relationship in measurements.get_relationship_groups():
+            data = measurements.get_relationships(
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2
             )
-        if len(first_objects) > 0:
+            n_records = len(data)
+            img_nums = numpy.ones(n_records, int) * m.image_set_number
+
             m.add_relate_measurement(
                 self.module_num,
-                NEIGHBORS,
-                self.object_name.value,
-                self.object_name.value
-                if self.neighbors_are_objects
-                else self.neighbors_name.value,
-                m.image_set_number * numpy.ones(first_objects.shape, int),
-                first_objects,
-                m.image_set_number * numpy.ones(second_objects.shape, int),
-                second_objects,
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                img_nums,
+                data[R_FIRST_OBJECT_NUMBER],
+                img_nums,
+                data[R_SECOND_OBJECT_NUMBER], 
             )
 
         labels = kept_labels
         neighbor_labels = neighbor_kept_labels
+        
+        # Retrieve data for display
+        neighbor_count_feature = self.get_measurement_name(Measurement.NUMBER_OF_NEIGHBORS.value)
+        neighbor_count = measurements.objects[self.object_name.value][neighbor_count_feature]
+        
+        percent_touching_feature = self.get_measurement_name(Measurement.PERCENT_TOUCHING.value)
+        percent_touching = measurements.objects[self.object_name.value][percent_touching_feature]
 
         neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0
@@ -840,7 +499,7 @@ previously discarded objects.""".format(
                     sharexy=figure.subplot(0, 0),
                 )
 
-        if self.distance_method == D_EXPAND:
+        if self.distance_method == DistanceMethod.EXPAND.value:
             figure.subplot_imshow_labels(
                 1,
                 expandplot_position,
@@ -854,12 +513,14 @@ previously discarded objects.""".format(
         return M_ALL
 
     def get_measurement_name(self, feature):
-        if self.distance_method == D_EXPAND:
-            scale = S_EXPANDED
-        elif self.distance_method == D_WITHIN:
+        if self.distance_method == DistanceMethod.EXPAND.value:
+            scale = MeasurementScale.EXPANDED
+        elif self.distance_method == DistanceMethod.WITHIN.value:
             scale = str(self.distance.value)
-        elif self.distance_method == D_ADJACENT:
-            scale = S_ADJACENT
+        elif self.distance_method == DistanceMethod.ADJACENT.value:
+            scale = MeasurementScale.ADJACENT
+        else:
+            raise ValueError(f"Unknown distance method: {self.distance_method}. Should be one of {D_ALL}")
         if self.neighbors_are_objects:
             return "_".join((C_NEIGHBORS, feature, scale))
         else:
@@ -874,9 +535,9 @@ previously discarded objects.""".format(
                     COLTYPE_INTEGER
                     if feature
                     in (
-                        M_NUMBER_OF_NEIGHBORS,
-                        M_FIRST_CLOSEST_OBJECT_NUMBER,
-                        M_SECOND_CLOSEST_OBJECT_NUMBER,
+                        Measurement.NUMBER_OF_NEIGHBORS,
+                        Measurement.FIRST_CLOSEST_OBJECT_NUMBER,
+                        Measurement.SECOND_CLOSEST_OBJECT_NUMBER,
                     )
                     else COLTYPE_FLOAT,
                 )
@@ -922,11 +583,11 @@ previously discarded objects.""".format(
         self, pipeline, object_name, category, measurement, image_name
     ):
         if measurement in self.get_measurements(pipeline, object_name, category):
-            if self.distance_method == D_EXPAND:
-                return [S_EXPANDED]
-            elif self.distance_method == D_ADJACENT:
-                return [S_ADJACENT]
-            elif self.distance_method == D_WITHIN:
+            if self.distance_method == DistanceMethod.EXPAND.value:
+                return [MeasurementScale.EXPANDED]
+            elif self.distance_method == DistanceMethod.ADJACENT.value:
+                return [MeasurementScale.ADJACENT]
+            elif self.distance_method == DistanceMethod.WITHIN.value:
                 return [str(self.distance.value)]
             else:
                 raise ValueError(

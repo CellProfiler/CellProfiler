@@ -60,7 +60,7 @@ from ..utilities.hdf5_dict import HDF5Dict, NullLock
 from ..utilities.measurement import agg_ignore_feature
 from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
-
+from cellprofiler_library.measurement_model import LibraryMeasurements, Relationship
 
 LOGGER = logging.getLogger(__name__)
 
@@ -532,7 +532,7 @@ class Measurements:
                         second objects in these image numbers.
 
         returns a recarray with the following fields:
-        R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
+        R_FIRST_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER, R_SECOND_IMAGE_NUMBER, 
         R_SECOND_OBJECT_NUMBER
         """
         features = (
@@ -1764,3 +1764,56 @@ class Measurements:
             return []
 
         return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))
+
+    def to_library_measurements(self, image_numbers=None):
+        """Convert a Measurements instance to a LibraryMeasurements instance
+        
+        Args:
+            measurements: A Measurements instance
+            
+        Returns:
+            A LibraryMeasurements instance
+        """        
+        image = {}
+        objects = {}
+        experiment = {}
+        relationships = []
+        
+        for object_name in self.get_object_names():
+            objects[object_name] = {}
+            for feature in self.get_feature_names(object_name):
+                objects[object_name][feature] = self.get_measurement(object_name, feature)
+        
+        for feature in self.get_feature_names("Image"):
+            image[feature] = self.get_measurement("Image", feature)
+        try:
+            for feature in self.get_feature_names("Experiment"):
+                experiment[feature] = self.get_measurement("Experiment", feature)
+        except KeyError:
+            pass
+        
+        for relationship in self.get_relationship_groups():
+            relationship_measurements = self.get_relationships(
+                relationship.module_number,
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                image_numbers=image_numbers
+            )
+            
+            relationships.append(Relationship(
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                relationship_measurements[R_FIRST_OBJECT_NUMBER],
+                relationship_measurements[R_SECOND_OBJECT_NUMBER],
+            ))
+        
+        return LibraryMeasurements(
+            image=image,
+            objects=objects,
+            experiment=experiment,
+            relationships=relationships
+        )
+
+        

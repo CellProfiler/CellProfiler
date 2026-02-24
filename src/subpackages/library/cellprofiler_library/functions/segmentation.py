@@ -3,6 +3,9 @@ import numpy as np
 from numpy.random.mtrand import RandomState
 import scipy.sparse
 import centrosome.index
+from typing import Tuple
+from numpy.typing import NDArray
+from ..types import ObjectLabel, ObjectSegmentation
 
 class SPARSE_FIELD(Enum):
     label = "label"
@@ -754,3 +757,56 @@ def center_of_labels_mass(labels, validate=True):
     return np.array(
         scipy.ndimage.center_of_mass(np.ones_like(labels), labels, indices)
     )
+
+
+###############################################################################
+# MeasureObjectNeighbors
+###############################################################################
+
+def relate_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
+    """relate the object numbers in one label to those in another
+
+    parent_labels - 2d label matrix of parent labels
+
+    child_labels - 2d label matrix of child labels
+
+    Returns two 1-d arrays. The first gives the number of children within
+    each parent. The second gives the mapping of each child to its parent's
+    object number.
+    """
+    histogram = histogram_from_labels(parent_labels, child_labels)
+    return relate_histogram(histogram)
+
+def histogram_from_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> scipy.sparse.coo_matrix:
+    """Find per pixel overlap of parent labels and child labels
+
+    parent_labels - the parents which contain the children
+    child_labels - the children to be mapped to a parent
+
+    Returns a sparse matrix of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    return find_label_overlaps(parent_labels, child_labels, validate=True)
+
+def relate_histogram(histogram: scipy.sparse.coo_matrix) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
+    """Return child counts and parents of children given a histogram
+
+    histogram - histogram from histogram_from_ijv or histogram_from_labels
+    """
+    parent_count = histogram.shape[0] - 1
+
+    parents_of_children = np.asarray(histogram.argmax(axis=0))
+    if len(parents_of_children.shape) == 2:
+        parents_of_children = np.squeeze(parents_of_children, axis=0)
+    #
+    # Create a histogram of # of children per parent
+    children_per_parent = np.histogram(
+        parents_of_children[1:], np.arange(parent_count + 2)
+    )[0][1:]
+
+    #
+    # Make sure to remove the background elements at index 0
+    #
+    return children_per_parent, parents_of_children[1:]
+

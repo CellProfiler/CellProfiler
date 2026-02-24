@@ -11,7 +11,6 @@ from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, Im
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
-
 def shrink_to_point(labels, fill):
     """
     Remove all pixels but one from filled objects.
@@ -1191,3 +1190,4 @@ def object_crop_image_similarly(
     if obj_parent_image is None:
         raise ValueError("Images are of different size and no parent image")
     return crop_image_similarly(obj_parent_image, other_image, obj_parent_crop_mask)
+

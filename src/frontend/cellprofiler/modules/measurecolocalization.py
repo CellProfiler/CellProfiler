@@ -99,6 +99,7 @@ from cellprofiler_library.functions.image_processing import apply_threshold, get
 import cellprofiler_library.opts.threshold as Threshold
 from cellprofiler_library.opts.measurecolocalization import MeasurementType, TemplateMeasurementFormat, Target, CostesMethod
 from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects, crop_image_pair_similarly, crop_image_pair_and_object_similarly
+from cellprofiler_library.measurement_model import LibraryMeasurements
 
 # The number of settings per threshold
 THRESHOLD_SETTING_COUNT = 2
@@ -615,6 +616,10 @@ You can set a different threshold for each image selected in the module.
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
         image_dims = None
+        
+        # Accumulate all measurements here and unpack once at the end
+        all_measurements = LibraryMeasurements()
+        
         if len(self.images_list.value) < 2:
             raise ValueError("At least 2 images must be selected for analysis.")
         for im1_name, im2_name in self.get_image_pairs():
@@ -652,8 +657,7 @@ You can set a different threshold for each image selected in the module.
                     costes_method = costes_method
                 )
                 statistics += measurements_summary
-                for measurement_name, measurement_value in colocalization_measurements.items():
-                    workspace.measurements.add_image_measurement(measurement_name, measurement_value)
+                all_measurements = all_measurements.merge(colocalization_measurements)
 
             if self.wants_objects():
                 for object_name in self.objects_list.value:
@@ -705,8 +709,15 @@ You can set a different threshold for each image selected in the module.
 
                     )
                     statistics += measurements_summary
-                    for measurement_name, measurement_value in colocalization_measurements.items():
-                        workspace.measurements.add_measurement(object_name, measurement_name, measurement_value)
+                    all_measurements = all_measurements.merge(colocalization_measurements)
+
+        # Unpack all measurements to workspace
+        for measurement_name, measurement_value in all_measurements.image.items():
+            workspace.measurements.add_image_measurement(measurement_name, measurement_value)
+            
+        for object_name, features in all_measurements.objects.items():
+            for measurement_name, measurement_value in features.items():
+                workspace.measurements.add_measurement(object_name, measurement_name, measurement_value)
 
         if self.wants_masks_saved.value:
             self.save_requested_masks(workspace)

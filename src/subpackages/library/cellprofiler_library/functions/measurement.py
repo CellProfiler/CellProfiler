@@ -1589,3 +1589,64 @@ def measure_label_surface_area(
 
     return skimage.measure.mesh_surface_area(verts, faces)
 
+
+###############################################################################
+# MeasureImageIntensity
+###############################################################################
+
+def measure_image_intensities(
+        pixels: NDArray[np.float32], 
+        percentiles: List[int]=[]
+    ) -> Tuple[List[float], Dict[int, float]]:
+    pixel_count = numpy.product(pixels.shape)
+    percentile_measures = {}
+    if pixel_count == 0:
+        pixel_sum = 0
+        pixel_mean = 0
+        pixel_std = 0
+        pixel_mad = 0
+        pixel_median = 0
+        pixel_min = 0
+        pixel_max = 0
+        pixel_pct_max = 0
+        pixel_lower_qrt = 0
+        pixel_upper_qrt = 0
+        if percentiles:
+            for percentile in percentiles:
+                percentile_measures[percentile] = 0
+    else:
+        pixels = pixels.flatten()
+        pixels = pixels[
+            numpy.nonzero(numpy.isfinite(pixels))[0]
+        ]  # Ignore NaNs, Infs
+        pixel_count = numpy.product(pixels.shape)
+
+        pixel_sum = numpy.sum(pixels)
+        pixel_mean = pixel_sum / float(pixel_count)
+        pixel_std = numpy.std(pixels)
+        pixel_median = numpy.median(pixels)
+        pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
+        pixel_min = numpy.min(pixels)
+        pixel_max = numpy.max(pixels)
+        pixel_pct_max = (
+            100.0 * float(numpy.sum(pixels == pixel_max)) / float(pixel_count)
+        )
+        pixel_lower_qrt, pixel_upper_qrt = numpy.percentile(pixels, [25, 75])
+
+        if percentiles:
+            percentile_results = numpy.percentile(pixels, percentiles)
+            for percentile, res in zip(percentiles, percentile_results):
+                percentile_measures[percentile] = res
+    return (
+        pixel_sum,
+        pixel_mean,
+        pixel_median,
+        pixel_std,
+        pixel_mad,
+        pixel_max,
+        pixel_min,
+        pixel_count,
+        pixel_pct_max,
+        pixel_lower_qrt,
+        pixel_upper_qrt,
+    ), percentile_measures

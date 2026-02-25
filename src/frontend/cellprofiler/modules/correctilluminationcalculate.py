@@ -63,35 +63,21 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_library.opts.correctilluminationapply import Method as CorrectIlluminationApplyMethod
+from cellprofiler_library.opts.correctilluminationcalculate import (
+    IntensityChoice,
+    RescaleIlluminationFunction,
+    CalculateFunctionTarget,
+    SmoothingMethod,
+    SmoothingFilterSize,
+    SplineBackgroundMode
+)
 
-IC_REGULAR = "Regular"
-IC_BACKGROUND = "Background"
-RE_MEDIAN = "Median"
-EA_EACH = "Each"
 EA_ALL = "All"
-EA_ALL_FIRST = "All: First cycle"
-EA_ALL_ACROSS = "All: Across cycles"
-SRC_LOAD_IMAGES = "Load Images module"
-SRC_PIPELINE = "Pipeline"
-SM_NONE = "No smoothing"
-SM_CONVEX_HULL = "Convex Hull"
-SM_FIT_POLYNOMIAL = "Fit Polynomial"
-SM_MEDIAN_FILTER = "Median Filter"
-SM_GAUSSIAN_FILTER = "Gaussian Filter"
-SM_TO_AVERAGE = "Smooth to Average"
-SM_SPLINES = "Splines"
-
-FI_AUTOMATIC = "Automatic"
-FI_OBJECT_SIZE = "Object size"
-FI_MANUALLY = "Manually"
 
 ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
 OUTPUT_IMAGE = "OutputImage"
-
-DOS_DIVIDE = "Divide"
-DOS_SUBTRACT = "Subtract"
-
 
 class CorrectIlluminationCalculate(Module):
     module_name = "CorrectIlluminationCalculate"
@@ -114,8 +100,8 @@ class CorrectIlluminationCalculate(Module):
 
         self.intensity_choice = Choice(
             "Select how the illumination function is calculated",
-            [IC_REGULAR, IC_BACKGROUND],
-            IC_REGULAR,
+            [IntensityChoice.REGULAR.value, IntensityChoice.BACKGROUND.value],
+            IntensityChoice.REGULAR.value,
             doc="""\
 Choose which method you want to use to calculate the illumination
 function. You may chose from the following options:
@@ -152,12 +138,12 @@ illumination correction function along the interior well edge. Masking
 the image beforehand solves this problem.
 """.format(
                 **{
-                    "IC_REGULAR": IC_REGULAR,
+                    "IC_REGULAR": IntensityChoice.REGULAR.value,
                     "EA_ALL": EA_ALL,
-                    "EA_EACH": EA_EACH,
-                    "SM_NONE": SM_NONE,
-                    "IC_BACKGROUND": IC_BACKGROUND,
-                    "DOS_SUBTRACT": DOS_SUBTRACT,
+                    "EA_EACH": CalculateFunctionTarget.EACH.value,
+                    "SM_NONE": SmoothingMethod.NONE.value,
+                    "IC_BACKGROUND": IntensityChoice.BACKGROUND.value,
+                    "DOS_SUBTRACT": CorrectIlluminationApplyMethod.SUBTRACT.value,
                 }
             ),
         )
@@ -166,15 +152,16 @@ the image beforehand solves this problem.
             "Dilate objects in the final averaged image?",
             False,
             doc="""\
-*(Used only if the “%(IC_REGULAR)s” method is selected)*
+*(Used only if the “{IC_REGULAR}” method is selected)*
 
 For some applications, the incoming images are binary and each object
 should be dilated with a Gaussian filter in the final averaged
 (projection) image. This is for a sophisticated method of illumination
 correction where model objects are produced. Select *Yes* to dilate
 objects for this approach.
-"""
-            % globals(),
+""".format(
+                **{"IC_REGULAR": IntensityChoice.REGULAR.value}
+),
         )
 
         self.object_dilation_radius = Integer(
@@ -182,11 +169,12 @@ objects for this approach.
             1,
             0,
             doc="""\
-*(Used only if the “%(IC_REGULAR)s” method and dilation is selected)*
+*(Used only if the “{IC_REGULAR}” method and dilation is selected)*
 
 This value should be roughly equal to the original radius of the objects.
-"""
-            % globals(),
+""".format(
+                **{"IC_REGULAR": IntensityChoice.REGULAR.value}
+),
         )
 
         self.block_size = Integer(
@@ -194,42 +182,50 @@ This value should be roughly equal to the original radius of the objects.
             60,
             1,
             doc="""\
-*(Used only if “%(IC_BACKGROUND)s” is selected)*
+*(Used only if “{IC_BACKGROUND}” is selected)*
 
 The block size should be large enough that every square block of pixels
 is likely to contain some background pixels, where no objects are
 located.
-"""
-            % globals(),
+""".format(
+                **{"IC_BACKGROUND": IntensityChoice.BACKGROUND.value}
+),
         )
 
         self.rescale_option = Choice(
             "Rescale the illumination function?",
-            ["Yes", "No", RE_MEDIAN],
+            ["Yes", "No", RescaleIlluminationFunction.MEDIAN.value],
             doc="""\
 The illumination function can be rescaled so that the pixel intensities
 are all equal to or greater than 1. You have the following options:
 
 -  *Yes:* Rescaling is recommended if you plan to use the
-   *%(IC_REGULAR)s* method (and hence, the *%(DOS_DIVIDE)s* option in
+   *{IC_REGULAR}* method (and hence, the *{DOS_DIVIDE}* option in
    **CorrectIlluminationApply**). Rescaling the illumination function to
    >1 ensures that the values in your corrected image will stay between
    0-1 after division.
 -  *No:* Rescaling is not recommended if you plan to use the
-   *%(IC_BACKGROUND)s* method, which is paired with the
-   *%(DOS_SUBTRACT)s* option in **CorrectIlluminationApply**. Because
+   *{IC_BACKGROUND}* method, which is paired with the
+   *{DOS_SUBTRACT}* option in **CorrectIlluminationApply**. Because
    rescaling causes the illumination function to have values from 1 to
    infinity, subtracting those values from your image would cause the
    corrected images to be very dark, even negative.
--  %(RE_MEDIAN)s\ *:* This option chooses the median value in the image
+-  {RE_MEDIAN}\ *:* This option chooses the median value in the image
    to rescale so that division increases some values and decreases others.
-"""
-            % globals(),
+""".format(
+                **{
+                    "IC_REGULAR": IntensityChoice.REGULAR.value, 
+                    "IC_BACKGROUND": IntensityChoice.BACKGROUND.value,
+                    "DOS_SUBTRACT": CorrectIlluminationApplyMethod.SUBTRACT.value,
+                    "DOS_DIVIDE": CorrectIlluminationApplyMethod.DIVIDE.value,
+                    "RE_MEDIAN": RescaleIlluminationFunction.MEDIAN.value,
+                    }  
+),
         )
 
         self.each_or_all = Choice(
             "Calculate function for each image individually, or based on all images?",
-            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS],
+            [CalculateFunctionTarget.EACH.value, CalculateFunctionTarget.ALL_FIRST.value, CalculateFunctionTarget.ALL_ACROSS.value],
             doc="""\
 Calculate a separate function for each image, or one for all the
 images? You can calculate the illumination function using just the
@@ -237,9 +233,9 @@ current image or you can calculate the illumination function using all
 of the images in each group (or in the entire experiment). The
 illumination function can be calculated in one of the three ways:
 
--  *%(EA_EACH)s:* Calculate an illumination function for each image
+-  *{EA_EACH}:* Calculate an illumination function for each image
    individually.
--  *%(EA_ALL_FIRST)s:* Calculate an illumination function based on all
+-  *{EA_ALL_FIRST}:* Calculate an illumination function based on all
    of the images in a group, performing the calculation before
    proceeding to the next module. This means that the illumination
    function will be created in the first cycle (making the first cycle
@@ -251,7 +247,7 @@ illumination function can be calculated in one of the three ways:
    other modules will yield an error. Thus, typically,
    **CorrectIlluminationCalculate** will be the first module after the
    input modules.
--  *%(EA_ALL_ACROSS)s:* Calculate an illumination function across all
+-  *{EA_ALL_ACROSS}:* Calculate an illumination function across all
    cycles in each group. This option takes any image as input; however,
    the illumination function will not be completed until the end of the
    last cycle in the group. You can use **SaveImages** to save the
@@ -259,19 +255,24 @@ illumination function can be calculated in one of the three ways:
    the resulting image in another pipeline. The option is useful if you
    want to exclude images that are filtered by a prior **FlagImage**
    module.
-"""
-            % globals(),
+""".format(
+                **{
+                    "EA_EACH": CalculateFunctionTarget.EACH.value, 
+                    "EA_ALL_FIRST": CalculateFunctionTarget.ALL_FIRST.value, 
+                    "EA_ALL_ACROSS": CalculateFunctionTarget.ALL_ACROSS.value
+                   }
+),
         )
         self.smoothing_method = Choice(
             "Smoothing method",
             [
-                SM_NONE,
-                SM_CONVEX_HULL,
-                SM_FIT_POLYNOMIAL,
-                SM_MEDIAN_FILTER,
-                SM_GAUSSIAN_FILTER,
-                SM_TO_AVERAGE,
-                SM_SPLINES,
+                SmoothingMethod.NONE.value,
+                SmoothingMethod.CONVEX_HULL.value,
+                SmoothingMethod.FIT_POLYNOMIAL.value,
+                SmoothingMethod.MEDIAN_FILTER.value,
+                SmoothingMethod.GAUSSIAN_FILTER.value,
+                SmoothingMethod.TO_AVERAGE.value,
+                SmoothingMethod.SPLINES.value,
             ],
             doc="""\
 If requested, the resulting image is smoothed. If you are using *Each* mode,
@@ -284,7 +285,7 @@ illumination problem, apply smoothing until you obtain a fairly smooth
 pattern without sharp bright or dim regions. Note that smoothing is a
 time-consuming process, but some methods are faster than others.
 
--  *%(SM_FIT_POLYNOMIAL)s:* This method is fastest but does not allow
+-  *{SM_FIT_POLYNOMIAL}:* This method is fastest but does not allow
    a very tight “fit” compared to the other methods. Thus, it will usually be less
    accurate. The method treats the intensity of the image
    pixels as a polynomial function of the x and y position of each
@@ -296,24 +297,24 @@ time-consuming process, but some methods are faster than others.
    view), this method will produce an image with a bright central region
    and dimmer edges. But, in some cases the peak/trough of the
    polynomial may actually occur outside of the image itself.
--  *%(SM_MEDIAN_FILTER)s* and *%(SM_GAUSSIAN_FILTER)s:*
+-  *{SM_MEDIAN_FILTER}* and *{SM_GAUSSIAN_FILTER}:*
    We typically recommend
-   *%(SM_MEDIAN_FILTER)s* vs. *%(SM_GAUSSIAN_FILTER)s* because the
+   *{SM_MEDIAN_FILTER}* vs. *{SM_GAUSSIAN_FILTER}* because the
    median is less sensitive to outliers, although the results are also
    slightly less smooth and the fact that images are in the range of 0
    to 1 means that outliers typically will not dominate too strongly
-   anyway. The *%(SM_GAUSSIAN_FILTER)s* convolves the image with a
+   anyway. The *{SM_GAUSSIAN_FILTER}* convolves the image with a
    Gaussian whose full width at half maximum is the artifact diameter
    entered. Its effect is to blur and obscure features smaller than the
    specified diameter and spread bright or dim features larger than the
-   specified diameter. The *%(SM_MEDIAN_FILTER)s* finds the median pixel value within
+   specified diameter. The *{SM_MEDIAN_FILTER}* finds the median pixel value within
    the diameter you specify. It removes bright or dim features
    that are significantly smaller than the specified diameter.
--  *%(SM_TO_AVERAGE)s:* A less commonly used option is to completely
+-  *{SM_TO_AVERAGE}:* A less commonly used option is to completely
    smooth the entire image, which will create a flat, smooth image where
    every pixel of the image is the average of what the illumination
    function would otherwise have been.
--  *%(SM_SPLINES)s:* This method (*Lindblad and Bengtsson, 2001*) fits
+-  *{SM_SPLINES}:* This method (*Lindblad and Bengtsson, 2001*) fits
    a grid of cubic splines to the background while excluding foreground
    pixels from the calculation. It operates iteratively, classifying
    pixels as background, computing a best fit spline to this background
@@ -321,7 +322,7 @@ time-consuming process, but some methods are faster than others.
    converges on its final value. This method is best for backgrounds that
    are highly variable and irregular. Note that the computation time can
    be significant, especially with a large number of control points.
--  *%(SM_CONVEX_HULL)s:* This method can be used on an image whose objects are
+-  *{SM_CONVEX_HULL}:* This method can be used on an image whose objects are
    darker than their background and whose illumination intensity
    decreases monotonically from the brightest point. It proceeds as follows:
    
@@ -336,7 +337,7 @@ time-consuming process, but some methods are faster than others.
    -  Set the intensity of the output image within the convex hull to
       the current intensity
 
-   The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction
+   The *{SM_CONVEX_HULL}* method is useful for calculating illumination correction
    images in empty brightfield images. It is a good option if the image contains a whole well.
    The edges of the well will be preserved, where there is a sharp transition in
    intensity, because there is no smoothing involved with this method.
@@ -346,47 +347,62 @@ time-consuming process, but some methods are faster than others.
 of intensity nonuniformities in 2D and 3D microscope images of fluorescence
 stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
 (SCIA), pp. 264-271
-"""
-            % globals(),
+""".format(
+                **{
+                    "SM_FIT_POLYNOMIAL": SmoothingMethod.FIT_POLYNOMIAL.value,
+                    "SM_MEDIAN_FILTER": SmoothingMethod.MEDIAN_FILTER.value,
+                    "SM_GAUSSIAN_FILTER": SmoothingMethod.GAUSSIAN_FILTER.value,
+                    "SM_TO_AVERAGE": SmoothingMethod.TO_AVERAGE.value,
+                    "SM_SPLINES": SmoothingMethod.SPLINES.value,
+                    "SM_CONVEX_HULL": SmoothingMethod.CONVEX_HULL.value,
+                }
+),
         )
 
         self.automatic_object_width = Choice(
             "Method to calculate smoothing filter size",
-            [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY],
+            [SmoothingFilterSize.AUTOMATIC.value, SmoothingFilterSize.OBJECT_SIZE.value, SmoothingFilterSize.MANUALLY.value],
             doc="""\
 *(Used only if a smoothing method other than Fit Polynomial is selected)*
 
 Calculate the smoothing filter size. There are three options:
 
--  *%(FI_AUTOMATIC)s:* The size is computed as 1/40 the size of the
+-  *{FI_AUTOMATIC}:* The size is computed as 1/40 the size of the
    image or 30 pixels, whichever is smaller.
--  *%(FI_OBJECT_SIZE)s:* The module will calculate the smoothing size
+-  *{FI_OBJECT_SIZE}:* The module will calculate the smoothing size
    based on the width of typical objects in your images.
--  *%(FI_MANUALLY)s:* You can enter a value yourself.
-"""
-            % globals(),
+-  *{FI_MANUALLY}:* You can enter a value yourself.
+""".format(
+                **{
+                    "FI_AUTOMATIC": SmoothingFilterSize.AUTOMATIC.value,
+                    "FI_OBJECT_SIZE": SmoothingFilterSize.OBJECT_SIZE.value,
+                    "FI_MANUALLY": SmoothingFilterSize.MANUALLY.value,
+                }
+),
         )
 
         self.object_width = Integer(
             "Approximate object diameter",
             10,
             doc="""\
-*(Used only if %(FI_OBJECT_SIZE)s is selected for smoothing filter size calculation)*
+*(Used only if {FI_OBJECT_SIZE} is selected for smoothing filter size calculation)*
 
 Enter the approximate diameter of typical objects, in pixels.
-"""
-            % globals(),
+""".format(
+                **{"FI_OBJECT_SIZE": SmoothingFilterSize.OBJECT_SIZE.value}
+),
         )
 
         self.size_of_smoothing_filter = Integer(
             "Smoothing filter size",
             10,
             doc="""\
-*(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)*
+*(Used only if {FI_MANUALLY} is selected for smoothing filter size calculation)*
 
 Enter the size of the desired smoothing filter, in pixels.
-"""
-            % globals(),
+""".format(
+                **{"FI_MANUALLY": SmoothingFilterSize.MANUALLY.value}
+),
         )
 
         self.save_average_image = Binary(
@@ -401,8 +417,7 @@ taking the time to recalculate the averaged image each time.
 
 Select *Yes* to retain this averaged image. Use the **SaveImages**
 module to save it to your hard drive.
-"""
-            % globals(),
+""",
         )
 
         self.average_image_name = ImageName(
@@ -424,8 +439,7 @@ not typically needed for downstream modules.
 
 Select *Yes* to retain this dilated image. Use the **SaveImages**
 module to save it to your hard drive.
-"""
-            % globals(),
+""",
         )
 
         self.dilated_image_name = ImageName(
@@ -442,51 +456,56 @@ the pipeline.""",
             "Automatically calculate spline parameters?",
             True,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method)*
+*(Used only if {SM_SPLINES} are selected for the smoothing method)*
 
 Select *Yes* to automatically calculate the parameters for spline
 fitting.
 
 Select *No* to specify the background mode, background threshold,
 scale, maximum number of iterations and convergence.
-"""
-            % globals(),
+""".format(
+                **{"SM_SPLINES": SmoothingMethod.SPLINES.value,}
+),
         )
 
         self.spline_bg_mode = Choice(
             "Background mode",
             [
-                centrosome.bg_compensate.MODE_AUTO,
-                centrosome.bg_compensate.MODE_DARK,
-                centrosome.bg_compensate.MODE_BRIGHT,
-                centrosome.bg_compensate.MODE_GRAY,
+                SplineBackgroundMode.AUTO.value,
+                SplineBackgroundMode.DARK.value,
+                SplineBackgroundMode.BRIGHT.value,
+                SplineBackgroundMode.GRAY.value,
             ],
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+*(Used only if {SM_SPLINES} are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
 This setting determines which pixels are background and which are
 foreground.
 
--  *{auto}*: Determine the mode from the image. This will set
-   the mode to {dark} if most of the pixels are dark,
-   {bright} if most of the pixels are bright and %(MODE_GRAY)s
+-  *{MODE_AUTO}*: Determine the mode from the image. This will set
+   the mode to {MODE_DARK} if most of the pixels are dark,
+   {MODE_BRIGHT} if most of the pixels are bright and {MODE_GRAY}
    if there are relatively few dark and light pixels relative to the
    number of mid-level pixels
--  *{dark}s*: Fit the spline to the darkest pixels in the image,
+-  *{MODE_DARK}s*: Fit the spline to the darkest pixels in the image,
    excluding brighter pixels from consideration. This may be appropriate
    for a fluorescent image.
--  *{bright}*: Fit the spline to the lightest pixels in the
+-  *{MODE_BRIGHT}*: Fit the spline to the lightest pixels in the
    image, excluding the darker pixels. This may be appropriate for a
    histologically stained image.
--  *{gray}*: Fit the spline to mid-range pixels, excluding both
+-  *{MODE_GRAY}*: Fit the spline to mid-range pixels, excluding both
    dark and light pixels. This may be appropriate for a brightfield
    image where the objects of interest have light and dark features.
 """.format(
-                auto=centrosome.bg_compensate.MODE_AUTO,
-                bright=centrosome.bg_compensate.MODE_BRIGHT,
-                dark=centrosome.bg_compensate.MODE_DARK,
-                gray=centrosome.bg_compensate.MODE_GRAY,
+                **{
+                    "SM_SPLINES": SmoothingMethod.SPLINES.value,
+                    "MODE_AUTO": SplineBackgroundMode.AUTO.value, 
+                    "MODE_BRIGHT": SplineBackgroundMode.BRIGHT.value, 
+                    "MODE_DARK": SplineBackgroundMode.DARK.value, 
+                    "MODE_GRAY": SplineBackgroundMode.GRAY.value
+                    }
+                
             ),
         )
 
@@ -496,7 +515,7 @@ foreground.
             minval=0.1,
             maxval=5.0,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+*(Used only if {SM_SPLINES} are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
 This setting determines the cutoff used when excluding foreground
@@ -510,8 +529,9 @@ You should enter a higher number to converge stabily and slowly on a
 final background and a lower number to converge more rapidly, but with
 lower stability. The default for this parameter is two standard
 deviations; this will provide a fairly stable, smooth background estimate.
-"""
-            % globals(),
+""".format(
+            **{"SM_SPLINES": SmoothingMethod.SPLINES.value}
+    ),
         )
 
         self.spline_points = Integer(
@@ -519,7 +539,7 @@ deviations; this will provide a fairly stable, smooth background estimate.
             5,
             4,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+*(Used only if {SM_SPLINES} are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
 This is the number of control points for the spline. A value of 5
@@ -527,8 +547,9 @@ results in a 5x5 grid of splines across the image and is the value
 suggested by the method’s authors. A lower value will give you a more
 stable background while a higher one will fit variations in the
 background more closely and take more time to compute.
-"""
-            % globals(),
+""".format(
+                **{"SM_SPLINES": SmoothingMethod.SPLINES.value}
+),
         )
 
         self.spline_rescale = Float(
@@ -536,7 +557,7 @@ background more closely and take more time to compute.
             2,
             minval=1,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+*(Used only if {SM_SPLINES} are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
 This setting controls how the image is resampled to make a smaller
@@ -545,8 +566,9 @@ if the resampling factor is larger than the diameter of foreground
 objects. The image will be downsampled by the factor you enter. For
 instance, a 500x600 image will be downsampled into a 250x300 image if a
 factor of 2 is entered.
-"""
-            % globals(),
+""".format(
+                **{"SM_SPLINES": SmoothingMethod.SPLINES.value}
+),
         )
 
         self.spline_maximum_iterations = Integer(
@@ -554,14 +576,15 @@ factor of 2 is entered.
             40,
             minval=1,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+*(Used only if {SM_SPLINES} are selected for the smoothing method and
 spline parameters are not calculated automatically)*
 
 This setting determines the maximum number of iterations of the
 algorithm to be performed. The algorithm will perform fewer iterations
 if it converges.
-"""
-            % globals(),
+""".format(
+                **{"SM_SPLINES": SmoothingMethod.SPLINES.value}
+),
         )
 
         self.spline_convergence = Float(
@@ -570,7 +593,7 @@ if it converges.
             minval=0.00001,
             maxval=0.1,
             doc="""\
-*(Used only if %(SM_SPLINES)s are selected for the smoothing method
+*(Used only if {SM_SPLINES} are selected for the smoothing method
 and spline parameters are not calculated automatically)*
 
 This setting determines the convergence criterion. The software sets
@@ -585,8 +608,9 @@ iteration is less than the convergence criterion.
 Enter a smaller number for the convergence to calculate a more accurate
 background. Enter a larger number to calculate the background using
 fewer iterations, but less accuracy.
-"""
-            % globals(),
+""".format(
+                **{"SM_SPLINES": SmoothingMethod.SPLINES.value}
+),
         )
 
     def settings(self):
@@ -621,21 +645,21 @@ fewer iterations, but less accuracy.
 
         """
         result = [self.image_name, self.illumination_image_name, self.intensity_choice]
-        if self.intensity_choice == IC_REGULAR:
+        if self.intensity_choice == IntensityChoice.REGULAR.value:
             result += [self.dilate_objects]
             if self.dilate_objects.value:
                 result += [self.object_dilation_radius]
-        elif self.smoothing_method != SM_SPLINES:
+        elif self.smoothing_method != SmoothingMethod.SPLINES.value:
             result += [self.block_size]
 
         result += [self.rescale_option, self.each_or_all, self.smoothing_method]
-        if self.smoothing_method in (SM_GAUSSIAN_FILTER, SM_MEDIAN_FILTER):
+        if self.smoothing_method in (SmoothingMethod.GAUSSIAN_FILTER.value, SmoothingMethod.MEDIAN_FILTER.value):
             result += [self.automatic_object_width]
-            if self.automatic_object_width == FI_OBJECT_SIZE:
+            if self.automatic_object_width == SmoothingFilterSize.OBJECT_SIZE.value:
                 result += [self.object_width]
-            elif self.automatic_object_width == FI_MANUALLY:
+            elif self.automatic_object_width == SmoothingFilterSize.MANUALLY.value:
                 result += [self.size_of_smoothing_filter]
-        elif self.smoothing_method == SM_SPLINES:
+        elif self.smoothing_method == SmoothingMethod.SPLINES.value:
             result += [self.automatic_splines]
             if not self.automatic_splines:
                 result += [
@@ -687,7 +711,7 @@ fewer iterations, but less accuracy.
         assert isinstance(pipeline, Pipeline)
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        if self.each_or_all != EA_EACH and len(image_numbers) > 0:
+        if self.each_or_all != CalculateFunctionTarget.EACH.value and len(image_numbers) > 0:
             title = "#%d: CorrectIlluminationCalculate for %s" % (
                 self.module_num,
                 self.image_name,
@@ -700,7 +724,7 @@ fewer iterations, but less accuracy.
                 self.illumination_image_name.value, self
             )
             d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
-            if self.each_or_all == EA_ALL_FIRST:
+            if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
                 #
                 # Find the module that provides the image we need
                 #
@@ -722,12 +746,12 @@ fewer iterations, but less accuracy.
         return True
 
     def run(self, workspace):
-        if self.each_or_all != EA_EACH:
+        if self.each_or_all != CalculateFunctionTarget.EACH.value:
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.restore_from_state(
                 d, self
             )
-            if self.each_or_all == EA_ALL_ACROSS:
+            if self.each_or_all == CalculateFunctionTarget.ALL_ACROSS.value:
                 #
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
@@ -741,7 +765,7 @@ fewer iterations, but less accuracy.
                 self.show_window
                 or self.save_average_image
                 or self.save_dilated_image
-                or self.each_or_all == EA_ALL_FIRST
+                or self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value
             ):
                 avg_image = output_image_provider.provide_avg_image()
                 dilated_image = output_image_provider.provide_dilated_image()
@@ -772,7 +796,7 @@ fewer iterations, but less accuracy.
 
     def is_aggregation_module(self):
         """Return True if aggregation is performed within a group"""
-        return self.each_or_all != EA_EACH
+        return self.each_or_all != CalculateFunctionTarget.EACH.value
 
     def post_group(self, workspace, grouping):
         """Handle tasks to be performed after a group has been processed
@@ -781,7 +805,7 @@ fewer iterations, but less accuracy.
         set includes the aggregate image. "run" may not have run if an
         image was filtered out.
         """
-        if self.each_or_all != EA_EACH:
+        if self.each_or_all != CalculateFunctionTarget.EACH.value:
             image_set = workspace.image_set
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.restore_from_state(
@@ -837,9 +861,9 @@ fewer iterations, but less accuracy.
             ["Max value", round(numpy.max(output_image), 2)],
             ["Calculation type", self.intensity_choice.value],
         ]
-        if self.intensity_choice == IC_REGULAR:
+        if self.intensity_choice == IntensityChoice.REGULAR.value:
             statistics.append(["Radius", self.object_dilation_radius.value])
-        elif self.smoothing_method != SM_SPLINES:
+        elif self.smoothing_method != SmoothingMethod.SPLINES.value:
             statistics.append(["Block size", self.block_size.value])
         statistics.append(["Rescaling?", self.rescale_option.value])
         statistics.append(["Each or all?", self.each_or_all.value])
@@ -894,13 +918,13 @@ fewer iterations, but less accuracy.
         """Return the smoothing filter size based on the settings and image size
 
         """
-        if self.automatic_object_width == FI_MANUALLY:
+        if self.automatic_object_width == SmoothingFilterSize.MANUALLY.value:
             # Convert from full-width at half-maximum to standard deviation
             # (or so says CPsmooth.m)
             return self.size_of_smoothing_filter.value
-        elif self.automatic_object_width == FI_OBJECT_SIZE:
+        elif self.automatic_object_width == SmoothingFilterSize.OBJECT_SIZE.value:
             return self.object_width.value * 2.35 / 3.5
-        elif self.automatic_object_width == FI_AUTOMATIC:
+        elif self.automatic_object_width == SmoothingFilterSize.AUTOMATIC.value:
             return min(30, float(numpy.max(image_shape)) / 40.0)
 
     def preprocess_image_for_averaging(self, orig_image):
@@ -908,7 +932,7 @@ fewer iterations, but less accuracy.
 
         """
         pixels = orig_image.pixel_data
-        if self.intensity_choice == IC_REGULAR or self.smoothing_method == SM_SPLINES:
+        if self.intensity_choice == IntensityChoice.REGULAR.value or self.smoothing_method == SmoothingMethod.SPLINES.value:
             if orig_image.has_mask:
                 if pixels.ndim == 2:
                     pixels[~orig_image.mask] = 0
@@ -948,7 +972,7 @@ fewer iterations, but less accuracy.
         orig_image - the ancestor source image or None if ambiguous
         returns another instance of cpimage.Image
         """
-        if self.smoothing_method == SM_NONE:
+        if self.smoothing_method == SmoothingMethod.NONE.value:
             return image
 
         pixel_data = image.pixel_data
@@ -967,9 +991,9 @@ fewer iterations, but less accuracy.
         """Smooth one 2-d color plane of an image"""
 
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
-        if self.smoothing_method == SM_FIT_POLYNOMIAL:
+        if self.smoothing_method == SmoothingMethod.FIT_POLYNOMIAL.value:
             output_pixels = centrosome.smooth.fit_polynomial(pixel_data, mask)
-        elif self.smoothing_method == SM_GAUSSIAN_FILTER:
+        elif self.smoothing_method == SmoothingMethod.GAUSSIAN_FILTER.value:
             #
             # Smoothing with the mask is good, even if there's no mask
             # because the mechanism undoes the edge effects that are introduced
@@ -983,19 +1007,19 @@ fewer iterations, but less accuracy.
             output_pixels = centrosome.smooth.smooth_with_function_and_mask(
                 pixel_data, fn, mask
             )
-        elif self.smoothing_method == SM_MEDIAN_FILTER:
+        elif self.smoothing_method == SmoothingMethod.MEDIAN_FILTER.value:
             filter_sigma = max(1, int(sigma + 0.5))
             strel = centrosome.cpmorphology.strel_disk(filter_sigma)
             rescaled_pixel_data = pixel_data * 65535
             rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
             rescaled_pixel_data *= mask
             output_pixels = skimage.filters.median(rescaled_pixel_data, strel, behavior="rank")
-        elif self.smoothing_method == SM_TO_AVERAGE:
+        elif self.smoothing_method == SmoothingMethod.TO_AVERAGE.value:
             mean = numpy.mean(pixel_data[mask])
             output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
-        elif self.smoothing_method == SM_SPLINES:
+        elif self.smoothing_method == SmoothingMethod.SPLINES.value:
             output_pixels = self.smooth_with_splines(pixel_data, mask)
-        elif self.smoothing_method == SM_CONVEX_HULL:
+        elif self.smoothing_method == SmoothingMethod.CONVEX_HULL.value:
             output_pixels = self.smooth_with_convex_hull(pixel_data, mask)
         else:
             raise ValueError(
@@ -1071,7 +1095,7 @@ fewer iterations, but less accuracy.
                 robust_minimum = sorted_pixel_data[idx]
                 pixel_data = pixel_data.copy()
                 pixel_data[pixel_data < robust_minimum] = robust_minimum
-            elif self.rescale_option == RE_MEDIAN:
+            elif self.rescale_option == RescaleIlluminationFunction.MEDIAN.value:
                 idx = int(sorted_pixel_data.shape[0] / 2)
                 robust_minimum = sorted_pixel_data[idx]
             if robust_minimum == 0:
@@ -1091,7 +1115,7 @@ fewer iterations, but less accuracy.
         """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
         if (
             not pipeline.is_image_from_file(self.image_name.value)
-            and self.each_or_all == EA_ALL_FIRST
+            and self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value
         ):
             raise ValidationError(
                 "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
@@ -1100,17 +1124,17 @@ fewer iterations, but less accuracy.
 
         """Modify the image provider attributes based on other setttings"""
         d = self.illumination_image_name.provided_attributes
-        if self.each_or_all == EA_ALL_ACROSS:
+        if self.each_or_all == CalculateFunctionTarget.ALL_ACROSS.value:
             d["available_on_last"] = True
         elif "available_on_last" in d:
             del d["available_on_last"]
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
-        if self.each_or_all == EA_ALL_FIRST:
+        if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
             raise ValidationError(
                 "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead."
-                % EA_ALL_ACROSS,
+                % CalculateFunctionTarget.ALL_ACROSS.value,
                 self.each_or_all,
             )
 
@@ -1149,9 +1173,9 @@ fewer iterations, but less accuracy.
         """
         if self.each_or_all == EA_ALL:
             if pipeline.is_image_from_file(self.image_name.value):
-                self.each_or_all.value = EA_ALL_FIRST
+                self.each_or_all.value = CalculateFunctionTarget.ALL_FIRST.value
             else:
-                self.each_or_all.value = EA_ALL_ACROSS
+                self.each_or_all.value = CalculateFunctionTarget.ALL_ACROSS.value
 
 
 class CorrectIlluminationImageProvider(AbstractImage):

@@ -42,4 +42,8 @@ class SplineBackgroundMode(str, Enum):
     BRIGHT = MODE_BRIGHT
     GRAY = MODE_GRAY
 
+class StateKey(str, Enum):
+    """Keys for the illumination accumulation state dictionary"""
+    IMAGE_SUM = "image_sum"
+    MASK_COUNT = "mask_count"
 

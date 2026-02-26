@@ -78,12 +78,10 @@ from cellprofiler_library.modules._correctilluminationcalculate import (
     get_smoothing_filter_size, 
     preprocess_image_for_averaging, 
     smooth_plane,
-    apply_scaling
+    apply_scaling,
 )
 
 EA_ALL = "All"
-
-ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
 OUTPUT_IMAGE = "OutputImage"
 
@@ -1087,7 +1085,7 @@ fewer iterations, but less accuracy.
         #     output_pixels = numpy.dstack(
         #         [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
         #     )
-        output_pixels = apply_scaling(image, self.rescale_option.value, orig_image)
+        output_pixels = apply_scaling(image_pixel_data=image.pixel_data, image_mask=None if image.has_mask else image.mask, rescale_option=self.rescale_option.value)
         output_image = Image(output_pixels, parent_image=orig_image)
         return output_image
 

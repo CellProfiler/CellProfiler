@@ -78,9 +78,6 @@ def get_smoothing_filter_size(
         raise ValueError(f"Unknown smoothing filter size: {automatic_object_width}")
     return filter_size
 
-# intensity_choice = self.intensity_choice.value
-# smoothing_method = self.smoothing_method.value
-# block_size = self.block_size.value
 def preprocess_image_for_averaging(
         orig_image,
         intensity_choice: IntensityChoice,
@@ -124,8 +121,6 @@ def preprocess_image_for_averaging(
         avg_image = min_block
     return avg_image
 
-# image_pixel_data = image.pixel_data
-# image_mask = image.mask
 def apply_smoothing(
         image_pixel_data,
         image_mask,
@@ -151,8 +146,6 @@ def apply_smoothing(
     orig_image - the ancestor source image or None if ambiguous
     returns another instance of cpimage.Image
     """
-    # if self.smoothing_method == SmoothingMethod.NONE.value:
-    #     return image
     pixel_data = image_pixel_data
     if pixel_data.ndim == 3:
         output_pixels = numpy.zeros(pixel_data.shape, pixel_data.dtype)
@@ -190,7 +183,6 @@ def apply_smoothing(
             spline_maximum_iterations = spline_maximum_iterations,
             spline_rescale = spline_rescale,
         )
-    # output_image = Image(output_pixels, parent_image=orig_image)
     return output_pixels
 
 def smooth_plane(
@@ -269,13 +261,6 @@ def smooth_with_convex_hull(pixel_data, mask):
     image = centrosome.cpmorphology.grey_dilation(image, 2, mask)
     return image
 
-# automatic_splines = self.automatic_splines
-# spline_bg_mode = self.spline_bg_mode.value
-# spline_points = self.spline_points.value
-# spline_threshold = self.spline_threshold.value
-# spline_convergence = self.spline_convergence.value
-# spline_maximum_iterations = self.spline_maximum_iterations.value
-# spline_rescale = self.spline_rescale.value
 def smooth_with_splines(
         pixel_data, 
         mask,
@@ -327,8 +312,6 @@ def smooth_with_splines(
     result[mask] -= mean_intensity
     return result
 
-# rescale_option = self.rescale_option.value
-# image_mask = None if image.has_mask else image.mask
 def apply_scaling(
         image_pixel_data,
         image_mask, 

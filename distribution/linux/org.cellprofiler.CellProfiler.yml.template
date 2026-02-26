@@ -4,7 +4,7 @@ runtime: org.gnome.Platform
 sdk: org.gnome.Sdk
 runtime-version: '49'
 command: cellprofiler
-default-branch: 5.0.0
+default-branch: {{CP_VERSION_BASE}}
 modules:
   - name: pixi-install
     buildsystem: simple
@@ -37,14 +37,14 @@ modules:
       - cp distribution/linux/org.cellprofiler.CellProfiler.desktop /app/share/applications/org.cellprofiler.CellProfiler.desktop
     build-options:
       env:
-        - SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER=5.0.0.dev380
+        - SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER={{CP_VERSION}}
     sources:
       - type: git
         url: https://github.com/CellProfiler/CellProfiler.git
         #commit: f332f15a49287c053284b10f6ef35494607b436b
         #tag: v5.0.0
         # TODO: linux - update branch ref
-        branch: linux
+        branch: {{CP_BRANCH}}
       - type: file
         path: ./environment.sh
 finish-args:

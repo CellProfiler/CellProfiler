@@ -934,15 +934,6 @@ fewer iterations, but less accuracy.
         if self.smoothing_method == SmoothingMethod.NONE.value:
             return image
 
-        # pixel_data = image.pixel_data
-        # if pixel_data.ndim == 3:
-        #     output_pixels = numpy.zeros(pixel_data.shape, pixel_data.dtype)
-        #     for i in range(pixel_data.shape[2]):
-        #         output_pixels[:, :, i] = self.smooth_plane(
-        #             pixel_data[:, :, i], image.mask
-        #         )
-        # else:
-        #     output_pixels = self.smooth_plane(pixel_data, image.mask)
         output_pixels = apply_smoothing(
             image_pixel_data=image.pixel_data,
             image_mask=image.mask,
@@ -964,92 +955,6 @@ fewer iterations, but less accuracy.
         output_image = Image(output_pixels, parent_image=orig_image)
         return output_image
 
-    # def smooth_plane(self, pixel_data, mask):
-    #     """Smooth one 2-d color plane of an image"""
-
-    #     sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
-    #     if self.smoothing_method == SmoothingMethod.FIT_POLYNOMIAL.value:
-    #         output_pixels = centrosome.smooth.fit_polynomial(pixel_data, mask)
-    #     elif self.smoothing_method == SmoothingMethod.GAUSSIAN_FILTER.value:
-    #         #
-    #         # Smoothing with the mask is good, even if there's no mask
-    #         # because the mechanism undoes the edge effects that are introduced
-    #         # by any choice of how to deal with border effects.
-    #         #
-    #         def fn(image):
-    #             return scipy.ndimage.gaussian_filter(
-    #                 image, sigma, mode="constant", cval=0
-    #             )
-
-    #         output_pixels = centrosome.smooth.smooth_with_function_and_mask(
-    #             pixel_data, fn, mask
-    #         )
-    #     elif self.smoothing_method == SmoothingMethod.MEDIAN_FILTER.value:
-    #         filter_sigma = max(1, int(sigma + 0.5))
-    #         strel = centrosome.cpmorphology.strel_disk(filter_sigma)
-    #         rescaled_pixel_data = pixel_data * 65535
-    #         rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
-    #         rescaled_pixel_data *= mask
-    #         output_pixels = skimage.filters.median(rescaled_pixel_data, strel, behavior="rank")
-    #     elif self.smoothing_method == SmoothingMethod.TO_AVERAGE.value:
-    #         mean = numpy.mean(pixel_data[mask])
-    #         output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
-    #     elif self.smoothing_method == SmoothingMethod.SPLINES.value:
-    #         output_pixels = self.smooth_with_splines(pixel_data, mask)
-    #     elif self.smoothing_method == SmoothingMethod.CONVEX_HULL.value:
-    #         output_pixels = self.smooth_with_convex_hull(pixel_data, mask)
-    #     else:
-    #         raise ValueError(
-    #             "Unimplemented smoothing method: %s:" % self.smoothing_method.value
-    #         )
-    #     return output_pixels
-
-    # def smooth_with_convex_hull(self, pixel_data, mask):
-    #     """Use the convex hull transform to smooth the image"""
-    #     #
-    #     # Apply an erosion, then the transform, then a dilation, heuristically
-    #     # to ignore little spikey noisy things.
-    #     #
-    #     image = centrosome.cpmorphology.grey_erosion(pixel_data, 2, mask)
-    #     image = centrosome.filter.convex_hull_transform(image, mask=mask)
-    #     image = centrosome.cpmorphology.grey_dilation(image, 2, mask)
-    #     return image
-
-    # def smooth_with_splines(self, pixel_data, mask):
-    #     if self.automatic_splines:
-    #         # Make the image 200 pixels long on its shortest side
-    #         shortest_side = min(pixel_data.shape)
-    #         if shortest_side < 200:
-    #             scale = 1
-    #         else:
-    #             scale = float(shortest_side) / 200
-    #         result = centrosome.bg_compensate.backgr(pixel_data, mask, scale=scale)
-    #     else:
-    #         mode = self.spline_bg_mode.value
-    #         spline_points = self.spline_points.value
-    #         threshold = self.spline_threshold.value
-    #         convergence = self.spline_convergence.value
-    #         iterations = self.spline_maximum_iterations.value
-    #         rescale = self.spline_rescale.value
-    #         result = centrosome.bg_compensate.backgr(
-    #             pixel_data,
-    #             mask,
-    #             mode=mode,
-    #             thresh=threshold,
-    #             splinepoints=spline_points,
-    #             scale=rescale,
-    #             maxiter=iterations,
-    #             convergence=convergence,
-    #         )
-    #     #
-    #     # The result is a fit to the background intensity, but we
-    #     # want to normalize the intensity by subtraction, leaving
-    #     # the mean intensity alone.
-    #     #
-    #     mean_intensity = numpy.mean(result[mask])
-    #     result[mask] -= mean_intensity
-    #     return result
-
     def apply_scaling(self, image, orig_image=None):
         """Return an image that is rescaled according to the settings
 
@@ -1059,32 +964,6 @@ fewer iterations, but less accuracy.
         if self.rescale_option == "No":
             return image
 
-        # def scaling_fn_2d(pixel_data):
-        #     if image.has_mask:
-        #         sorted_pixel_data = pixel_data[(pixel_data > 0) & image.mask]
-        #     else:
-        #         sorted_pixel_data = pixel_data[pixel_data > 0]
-        #     if sorted_pixel_data.shape[0] == 0:
-        #         return pixel_data
-        #     sorted_pixel_data.sort()
-        #     if self.rescale_option == "Yes":
-        #         idx = int(sorted_pixel_data.shape[0] * ROBUST_FACTOR)
-        #         robust_minimum = sorted_pixel_data[idx]
-        #         pixel_data = pixel_data.copy()
-        #         pixel_data[pixel_data < robust_minimum] = robust_minimum
-        #     elif self.rescale_option == RescaleIlluminationFunction.MEDIAN.value:
-        #         idx = int(sorted_pixel_data.shape[0] / 2)
-        #         robust_minimum = sorted_pixel_data[idx]
-        #     if robust_minimum == 0:
-        #         return pixel_data
-        #     return pixel_data / robust_minimum
-
-        # if image.pixel_data.ndim == 2:
-        #     output_pixels = scaling_fn_2d(image.pixel_data)
-        # else:
-        #     output_pixels = numpy.dstack(
-        #         [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
-        #     )
         output_pixels = apply_scaling(image_pixel_data=image.pixel_data, image_mask=None if image.has_mask else image.mask, rescale_option=self.rescale_option.value)
         output_image = Image(output_pixels, parent_image=orig_image)
         return output_image

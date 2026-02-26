@@ -12,8 +12,10 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
     IntensityChoice,
     SmoothingMethod,
     SplineBackgroundMode,
-    RescaleIlluminationFunction
+    RescaleIlluminationFunction,
 )
+
+
 
 ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
@@ -136,12 +138,12 @@ def apply_smoothing(
         image_shape: Optional[Tuple[int, ...]],
         # spline args
         automatic_splines: bool,
-        spline_bg_mode: SplineBackgroundMode,
-        spline_points: int,
-        spline_threshold: float,
-        spline_convergence: float,
-        spline_maximum_iterations: int,
-        spline_rescale: float,
+        spline_bg_mode: Optional[SplineBackgroundMode],
+        spline_points: Optional[int],
+        spline_threshold: Optional[float],
+        spline_convergence: Optional[float],
+        spline_maximum_iterations: Optional[int],
+        spline_rescale: Optional[float],
     ):
     """Return an image that is smoothed according to the settings
 
@@ -200,12 +202,12 @@ def smooth_plane(
         object_width: Optional[int], # default to 10 
         image_shape: Optional[Tuple[int, ...]],
         automatic_splines: bool,
-        spline_bg_mode: SplineBackgroundMode,
-        spline_points: int,
-        spline_threshold: float,
-        spline_convergence: float,
-        spline_maximum_iterations: int,
-        spline_rescale: float,
+        spline_bg_mode: Optional[SplineBackgroundMode], 
+        spline_points: Optional[int],
+        spline_threshold: Optional[float],
+        spline_convergence: Optional[float],
+        spline_maximum_iterations: Optional[int],
+        spline_rescale: Optional[float],
     ):
     """Smooth one 2-d color plane of an image"""
 
@@ -238,15 +240,15 @@ def smooth_plane(
         output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
     elif smoothing_method == SmoothingMethod.SPLINES.value:
         output_pixels = smooth_with_splines(
-            pixel_data, 
-            mask,
-            automatic_splines,
-            spline_bg_mode,
-            spline_points,
-            spline_threshold,
-            spline_convergence,
-            spline_maximum_iterations,
-            spline_rescale,
+            pixel_data = pixel_data, 
+            mask = mask,
+            automatic_splines = automatic_splines,
+            spline_bg_mode = spline_bg_mode,
+            spline_points = spline_points,
+            spline_threshold = spline_threshold,
+            spline_convergence = spline_convergence,
+            spline_maximum_iterations = spline_maximum_iterations,
+            spline_rescale = spline_rescale,
         )
     elif smoothing_method == SmoothingMethod.CONVEX_HULL.value:
         output_pixels = smooth_with_convex_hull(pixel_data, mask)
@@ -278,13 +280,12 @@ def smooth_with_splines(
         pixel_data, 
         mask,
         automatic_splines: bool,
-        # centrosome.bg_compensate args
-        spline_bg_mode: SplineBackgroundMode,
-        spline_points: int,
-        spline_threshold: float,
-        spline_convergence: float,
-        spline_maximum_iterations: int,
-        spline_rescale: float,
+        spline_bg_mode: Optional[SplineBackgroundMode],
+        spline_points: Optional[int],
+        spline_threshold: Optional[float],
+        spline_convergence: Optional[float],
+        spline_maximum_iterations: Optional[int],
+        spline_rescale: Optional[float],
     ):
     if automatic_splines:
         # Make the image 200 pixels long on its shortest side
@@ -295,6 +296,12 @@ def smooth_with_splines(
             scale = float(shortest_side) / 200
         result = centrosome.bg_compensate.backgr(pixel_data, mask, scale=scale)
     else:
+        assert spline_bg_mode is not None, "spline_bg_mode must be provided for spline smoothing"
+        assert spline_points is not None, "spline_points must be provided for spline smoothing"
+        assert spline_threshold is not None, "spline_threshold must be provided for spline smoothing"
+        assert spline_convergence is not None, "spline_convergence must be provided for spline smoothing"
+        assert spline_maximum_iterations is not None, "spline_maximum_iterations must be provided for spline smoothing"
+        assert spline_rescale is not None, "spline_rescale must be provided for spline smoothing"
         mode = spline_bg_mode
         spline_points = spline_points
         threshold = spline_threshold
@@ -321,28 +328,29 @@ def smooth_with_splines(
     return result
 
 # rescale_option = self.rescale_option.value
+# image_mask = None if image.has_mask else image.mask
 def apply_scaling(
-        image, 
+        image_pixel_data,
+        image_mask, 
         rescale_option: RescaleIlluminationFunction,
-        orig_image=None
     ):
     """Return an image that is rescaled according to the settings
 
     image - an instance of cpimage.Image
     returns another instance of cpimage.Image
     """
-    if rescale_option == "No":
-        return image
+    if rescale_option == RescaleIlluminationFunction.NO.value:
+        return image_pixel_data
 
     def scaling_fn_2d(pixel_data):
-        if image.has_mask:
-            sorted_pixel_data = pixel_data[(pixel_data > 0) & image.mask]
+        if image_mask is not None:
+            sorted_pixel_data = pixel_data[(pixel_data > 0) & image_mask]
         else:
             sorted_pixel_data = pixel_data[pixel_data > 0]
         if sorted_pixel_data.shape[0] == 0:
             return pixel_data
         sorted_pixel_data.sort()
-        if rescale_option == "Yes":
+        if rescale_option == RescaleIlluminationFunction.YES.value:
             idx = int(sorted_pixel_data.shape[0] * ROBUST_FACTOR)
             robust_minimum = sorted_pixel_data[idx]
             pixel_data = pixel_data.copy()
@@ -350,14 +358,16 @@ def apply_scaling(
         elif rescale_option == RescaleIlluminationFunction.MEDIAN.value:
             idx = int(sorted_pixel_data.shape[0] / 2)
             robust_minimum = sorted_pixel_data[idx]
+        else: 
+            raise ValueError(f"Unknown rescale option: {rescale_option}")
         if robust_minimum == 0:
             return pixel_data
         return pixel_data / robust_minimum
 
-    if image.pixel_data.ndim == 2:
-        output_pixels = scaling_fn_2d(image.pixel_data)
+    if image_pixel_data.ndim == 2:
+        output_pixels = scaling_fn_2d(image_pixel_data)
     else:
         output_pixels = numpy.dstack(
-            [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
+            [scaling_fn_2d(x) for x in image_pixel_data.transpose(2, 0, 1)]
         )
     return output_pixels

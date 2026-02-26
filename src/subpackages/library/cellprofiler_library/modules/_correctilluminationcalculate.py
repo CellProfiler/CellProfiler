@@ -5,14 +5,15 @@ import numpy
 import skimage.filters
 import centrosome.bg_compensate
 import centrosome.filter
-from typing import Optional, Tuple
-
+from typing import Any, Dict, Optional, Tuple
+from cellprofiler_library.types import Image2D, Image2DMask
 from cellprofiler_library.opts.correctilluminationcalculate import (
     SmoothingFilterSize,
     IntensityChoice,
     SmoothingMethod,
     SplineBackgroundMode,
     RescaleIlluminationFunction,
+    StateKey,
 )
 
 
@@ -20,19 +21,22 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
 ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
 def apply_dilation(
-        image, 
-        object_dilation_radius,
-    ):
-    """Return an image that is dilated according to the settings
+        pixel_data: Image2D,
+        mask: Image2DMask,
+        object_dilation_radius: int,
+    ) -> Image2D:
+    """Return pixel data dilated with a circular Gaussian kernel.
 
-    image - an instance of cpimage.Image
+    This filter spreads the boundaries of cells, effectively "dilating" them.
 
-    returns another instance of cpimage.Image
+    Args:
+        pixel_data: 2-D or 3-D image array (H, W) or (H, W, C).
+        mask: Boolean mask array (H, W). True = valid pixel.
+        object_dilation_radius: Radius for the circular Gaussian kernel.
+
+    Returns:
+        Dilated pixel data array of the same shape as pixel_data.
     """
-    #
-    # This filter is designed to spread the boundaries of cells
-    # and this "dilates" the cells
-    #
     kernel = centrosome.smooth.circular_gaussian_kernel(
         object_dilation_radius, object_dilation_radius * 3
     )
@@ -40,17 +44,17 @@ def apply_dilation(
     def fn(image):
         return scipy.ndimage.convolve(image, kernel, mode="constant", cval=0)
 
-    if image.pixel_data.ndim == 2:
+    if pixel_data.ndim == 2:
         dilated_pixels = centrosome.smooth.smooth_with_function_and_mask(
-            image.pixel_data, fn, image.mask
+            pixel_data, fn, mask
         )
     else:
         dilated_pixels = numpy.dstack(
             [
                 centrosome.smooth.smooth_with_function_and_mask(
-                    x, fn, image.mask
+                    x, fn, mask
                 )
-                for x in image.pixel_data.transpose(2, 0, 1)
+                for x in pixel_data.transpose(2, 0, 1)
             ]
         )
     return dilated_pixels
@@ -79,47 +83,155 @@ def get_smoothing_filter_size(
     return filter_size
 
 def preprocess_image_for_averaging(
-        orig_image,
+        pixel_data: Image2D,
+        mask: Optional[Image2DMask],
         intensity_choice: IntensityChoice,
         smoothing_method: SmoothingMethod,
         block_size: int,
-    ):
-    """Create a version of the image appropriate for averaging
+    ) -> Image2D:
+    """Create a version of the image appropriate for averaging.
 
+    For Regular or Splines mode: zeros out masked pixels (if any) and
+    returns the result. For Background mode: finds the minimum pixel
+    intensity within blocks and returns a block-minimum image.
+
+    Args:
+        pixel_data: Image array (H, W) or (H, W, C).
+        has_mask: Whether a mask is present.
+        mask: Boolean mask array (H, W); True = valid. Required when
+            has_mask is True.
+        intensity_choice: Regular or Background illumination method.
+        smoothing_method: The smoothing method selected (affects whether
+            the Splines branch is used).
+        block_size: Side length in pixels of each background block
+            (Background mode only).
+
+    Returns:
+        Preprocessed image array suitable for accumulation.
     """
-    pixels = orig_image.pixel_data
     if intensity_choice == IntensityChoice.REGULAR.value or smoothing_method == SmoothingMethod.SPLINES.value:
-        if orig_image.has_mask:
+        if mask is not None:
+            pixels = pixel_data.copy()
             if pixels.ndim == 2:
-                pixels[~orig_image.mask] = 0
+                pixels[~mask] = 0
             else:
-                pixels[~orig_image.mask, :] = 0
-            avg_image = pixels
+                pixels[~mask, :] = 0
+            return pixels
         else:
-            avg_image = orig_image
+            return pixel_data
     else:
         # For background, we create a labels image using the block
         # size and find the minimum within each block.
         labels, indexes = centrosome.cpmorphology.block(
-            pixels.shape[:2], (block_size, block_size)
+            pixel_data.shape[:2], (block_size, block_size)
         )
-        if orig_image.has_mask:
-            labels[~orig_image.mask] = -1
+        if mask is not None:
+            labels[~mask] = -1
 
-        min_block = numpy.zeros(pixels.shape)
-        if pixels.ndim == 2:
+        min_block = numpy.zeros(pixel_data.shape)
+        if pixel_data.ndim == 2:
             minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                scipy.ndimage.minimum(pixels, labels, indexes)
+                scipy.ndimage.minimum(pixel_data, labels, indexes)
             )
             min_block[labels != -1] = minima[labels[labels != -1]]
         else:
-            for i in range(pixels.shape[2]):
+            for i in range(pixel_data.shape[2]):
                 minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                    scipy.ndimage.minimum(pixels[:, :, i], labels, indexes)
+                    scipy.ndimage.minimum(pixel_data[:, :, i], labels, indexes)
                 )
                 min_block[labels != -1, i] = minima[labels[labels != -1]]
-        avg_image = min_block
-    return avg_image
+        return min_block
+
+
+def initialize_illumination_accumulation(
+        preprocessed_pixel_data: numpy.ndarray,
+        mask: Optional[numpy.ndarray],
+) -> Dict[str, Any]:
+    """Initialize the illumination accumulation state from the first image.
+
+    Creates a zeroed image_sum and mask_count, then accumulates the
+    first (already preprocessed) image into them.
+
+    Args:
+        preprocessed_pixel_data: Output of preprocess_image_for_averaging
+            for the first image, shape (H, W) or (H, W, C).
+        has_mask: Whether the image has a mask.
+        mask: Boolean mask (H, W); True = valid. Required when has_mask
+            is True.
+
+    Returns:
+        Initial accumulation state dict with StateKey.IMAGE_SUM and
+        StateKey.MASK_COUNT entries.
+    """
+    state: Dict[str, Any] = {
+        StateKey.IMAGE_SUM.value: numpy.zeros(
+            preprocessed_pixel_data.shape, preprocessed_pixel_data.dtype
+        ),
+        StateKey.MASK_COUNT.value: numpy.zeros(
+            preprocessed_pixel_data.shape[:2], numpy.int32
+        ),
+    }
+    accumulate_illumination_image(preprocessed_pixel_data, mask, state)
+    return state
+
+
+def accumulate_illumination_image(
+        preprocessed_pixel_data: numpy.ndarray,
+        mask: Optional[numpy.ndarray],
+        state: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Accumulate a preprocessed image into the illumination state.
+
+    Args:
+        preprocessed_pixel_data: Output of preprocess_image_for_averaging,
+            shape (H, W) or (H, W, C).
+        has_mask: Whether the image has a mask.
+        mask: Boolean mask (H, W); True = valid. Required when has_mask
+            is True.
+        state: Existing accumulation state dict (mutated in place).
+
+    Returns:
+        The updated state dict (same object as input).
+    """
+    image_sum = state[StateKey.IMAGE_SUM.value]
+    mask_count = state[StateKey.MASK_COUNT.value]
+    if mask is not None:
+        if image_sum.ndim == 2:
+            image_sum[mask] += preprocessed_pixel_data[mask]
+        else:
+            image_sum[mask, :] += preprocessed_pixel_data[mask, :]
+        mask_count[mask] += 1
+    else:
+        image_sum += preprocessed_pixel_data
+        mask_count += 1
+    return state
+
+
+def calculate_average_from_state(
+        state: Dict[str, Any],
+) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    """Compute the average illumination image from the accumulated state.
+
+    Args:
+        state: Accumulation state dict produced by
+            initialize_illumination_accumulation /
+            accumulate_illumination_image.
+
+    Returns:
+        Tuple of (avg_pixel_data, mask) where avg_pixel_data contains
+        the per-pixel mean values and mask is a boolean array
+        (True where at least one image contributed).
+    """
+    image_sum = state[StateKey.IMAGE_SUM.value]
+    mask_count = state[StateKey.MASK_COUNT.value]
+    pixel_data = numpy.zeros(image_sum.shape, image_sum.dtype)
+    mask = mask_count > 0
+    if pixel_data.ndim == 2:
+        pixel_data[mask] = image_sum[mask] / mask_count[mask]
+    else:
+        for i in range(pixel_data.shape[2]):
+            pixel_data[mask, i] = image_sum[mask, i] / mask_count[mask]
+    return pixel_data, mask
 
 def apply_smoothing(
         image_pixel_data,
@@ -193,7 +305,7 @@ def smooth_plane(
         size_of_smoothing_filter: Optional[int], # default to 10
         object_width: Optional[int], # default to 10 
         image_shape: Optional[Tuple[int, ...]],
-        automatic_splines: bool,
+        automatic_splines: Optional[bool],
         spline_bg_mode: Optional[SplineBackgroundMode], 
         spline_points: Optional[int],
         spline_threshold: Optional[float],
@@ -231,6 +343,7 @@ def smooth_plane(
         mean = numpy.mean(pixel_data[mask])
         output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
     elif smoothing_method == SmoothingMethod.SPLINES.value:
+        assert automatic_splines is not None, "automatic_splines must be provided for spline smoothing"
         output_pixels = smooth_with_splines(
             pixel_data = pixel_data, 
             mask = mask,

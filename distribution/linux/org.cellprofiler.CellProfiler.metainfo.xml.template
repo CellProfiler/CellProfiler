@@ -13,7 +13,7 @@
   </developer>
 
   <releases>
-    <release version="5.0.0~dev380" type="development" date="2026-02-26" />
+    <release version="{{METAINFO_VERSION}}" type="{{METAINFO_TYPE}}" date="{{METAINFO_DATE}}" />
   </releases>
   
   <description>

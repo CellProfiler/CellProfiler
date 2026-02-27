@@ -16,7 +16,12 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
     StateKey,
 )
 
-
+from cellprofiler_library.functions.image_processing import (
+    smooth_with_convex_hull,
+    smooth_with_splines,
+    smooth_plane,
+    
+)
 
 ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
@@ -111,12 +116,11 @@ def preprocess_image_for_averaging(
     """
     if intensity_choice == IntensityChoice.REGULAR.value or smoothing_method == SmoothingMethod.SPLINES.value:
         if mask is not None:
-            pixels = pixel_data.copy()
-            if pixels.ndim == 2:
-                pixels[~mask] = 0
+            if pixel_data.ndim == 2:
+                pixel_data[~mask] = 0
             else:
-                pixels[~mask, :] = 0
-            return pixels
+                pixel_data[~mask, :] = 0
+            return pixel_data
         else:
             return pixel_data
     else:
@@ -234,16 +238,13 @@ def calculate_average_from_state(
     return pixel_data, mask
 
 def apply_smoothing(
-        image_pixel_data,
-        image_mask,
-        # smooth filter args
+        image_pixel_data: Image2D,
+        image_mask: Image2DMask,
         smoothing_method: SmoothingMethod,
-        # smooth filter size args
-        automatic_object_width: SmoothingFilterSize, 
+        automatic_object_width: Optional[SmoothingFilterSize], 
         size_of_smoothing_filter: Optional[int], # default to 10
         object_width: Optional[int], # default to 10 
         image_shape: Optional[Tuple[int, ...]],
-        # spline args
         automatic_splines: bool,
         spline_bg_mode: Optional[SplineBackgroundMode],
         spline_points: Optional[int],
@@ -297,133 +298,6 @@ def apply_smoothing(
         )
     return output_pixels
 
-def smooth_plane(
-        pixel_data, 
-        mask,
-        smoothing_method: SmoothingMethod,
-        automatic_object_width: SmoothingFilterSize, 
-        size_of_smoothing_filter: Optional[int], # default to 10
-        object_width: Optional[int], # default to 10 
-        image_shape: Optional[Tuple[int, ...]],
-        automatic_splines: Optional[bool],
-        spline_bg_mode: Optional[SplineBackgroundMode], 
-        spline_points: Optional[int],
-        spline_threshold: Optional[float],
-        spline_convergence: Optional[float],
-        spline_maximum_iterations: Optional[int],
-        spline_rescale: Optional[float],
-    ):
-    """Smooth one 2-d color plane of an image"""
-
-    sigma = get_smoothing_filter_size(automatic_object_width, size_of_smoothing_filter, object_width, image_shape) / 2.35 # What's up with 2.35?
-    if smoothing_method == SmoothingMethod.FIT_POLYNOMIAL.value:
-        output_pixels = centrosome.smooth.fit_polynomial(pixel_data, mask)
-    elif smoothing_method == SmoothingMethod.GAUSSIAN_FILTER.value:
-        #
-        # Smoothing with the mask is good, even if there's no mask
-        # because the mechanism undoes the edge effects that are introduced
-        # by any choice of how to deal with border effects.
-        #
-        def fn(image):
-            return scipy.ndimage.gaussian_filter(
-                image, sigma, mode="constant", cval=0
-            )
-
-        output_pixels = centrosome.smooth.smooth_with_function_and_mask(
-            pixel_data, fn, mask
-        )
-    elif smoothing_method == SmoothingMethod.MEDIAN_FILTER.value:
-        filter_sigma = max(1, int(sigma + 0.5))
-        strel = centrosome.cpmorphology.strel_disk(filter_sigma)
-        rescaled_pixel_data = pixel_data * 65535
-        rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
-        rescaled_pixel_data *= mask
-        output_pixels = skimage.filters.median(rescaled_pixel_data, strel, behavior="rank")
-    elif smoothing_method == SmoothingMethod.TO_AVERAGE.value:
-        mean = numpy.mean(pixel_data[mask])
-        output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
-    elif smoothing_method == SmoothingMethod.SPLINES.value:
-        assert automatic_splines is not None, "automatic_splines must be provided for spline smoothing"
-        output_pixels = smooth_with_splines(
-            pixel_data = pixel_data, 
-            mask = mask,
-            automatic_splines = automatic_splines,
-            spline_bg_mode = spline_bg_mode,
-            spline_points = spline_points,
-            spline_threshold = spline_threshold,
-            spline_convergence = spline_convergence,
-            spline_maximum_iterations = spline_maximum_iterations,
-            spline_rescale = spline_rescale,
-        )
-    elif smoothing_method == SmoothingMethod.CONVEX_HULL.value:
-        output_pixels = smooth_with_convex_hull(pixel_data, mask)
-    else:
-        raise ValueError(
-            "Unimplemented smoothing method: %s:" % smoothing_method.value
-        )
-    return output_pixels
-
-def smooth_with_convex_hull(pixel_data, mask):
-    """Use the convex hull transform to smooth the image"""
-    #
-    # Apply an erosion, then the transform, then a dilation, heuristically
-    # to ignore little spikey noisy things.
-    #
-    image = centrosome.cpmorphology.grey_erosion(pixel_data, 2, mask)
-    image = centrosome.filter.convex_hull_transform(image, mask=mask)
-    image = centrosome.cpmorphology.grey_dilation(image, 2, mask)
-    return image
-
-def smooth_with_splines(
-        pixel_data, 
-        mask,
-        automatic_splines: bool,
-        spline_bg_mode: Optional[SplineBackgroundMode],
-        spline_points: Optional[int],
-        spline_threshold: Optional[float],
-        spline_convergence: Optional[float],
-        spline_maximum_iterations: Optional[int],
-        spline_rescale: Optional[float],
-    ):
-    if automatic_splines:
-        # Make the image 200 pixels long on its shortest side
-        shortest_side = min(pixel_data.shape)
-        if shortest_side < 200:
-            scale = 1
-        else:
-            scale = float(shortest_side) / 200
-        result = centrosome.bg_compensate.backgr(pixel_data, mask, scale=scale)
-    else:
-        assert spline_bg_mode is not None, "spline_bg_mode must be provided for spline smoothing"
-        assert spline_points is not None, "spline_points must be provided for spline smoothing"
-        assert spline_threshold is not None, "spline_threshold must be provided for spline smoothing"
-        assert spline_convergence is not None, "spline_convergence must be provided for spline smoothing"
-        assert spline_maximum_iterations is not None, "spline_maximum_iterations must be provided for spline smoothing"
-        assert spline_rescale is not None, "spline_rescale must be provided for spline smoothing"
-        mode = spline_bg_mode
-        spline_points = spline_points
-        threshold = spline_threshold
-        convergence = spline_convergence
-        iterations = spline_maximum_iterations
-        rescale = spline_rescale
-        result = centrosome.bg_compensate.backgr(
-            pixel_data,
-            mask,
-            mode=mode,
-            thresh=threshold, # TODO: #5129 centrosome expects int but CellProfiler sends a float
-            splinepoints=spline_points,
-            scale=rescale, # TODO: #5129 centrosome expects int but CellProfiler sends a float
-            maxiter=iterations,
-            convergence=convergence,
-        )
-    #
-    # The result is a fit to the background intensity, but we
-    # want to normalize the intensity by subtraction, leaving
-    # the mean intensity alone.
-    #
-    mean_intensity = numpy.mean(result[mask])
-    result[mask] -= mean_intensity
-    return result
 
 def apply_scaling(
         image_pixel_data,

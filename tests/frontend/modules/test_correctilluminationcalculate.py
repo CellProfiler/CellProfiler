@@ -737,220 +737,81 @@ def test_smooth_to_average():
     image = image_set.get_image("OutputImage")
     numpy.testing.assert_almost_equal(image.pixel_data, expected_image)
 
-
-def test_splines():
-    for (
-        automatic,
-        bg_mode,
-        spline_points,
-        threshold,
-        convergence,
-        offset,
-        hi,
-        lo,
-        succeed,
-    ) in (
-        (
-            True,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            True,
-        ),
-        (
-            True,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0.7,
-            False,
-            True,
-            True,
-        ),
-        (
-            True,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0.5,
-            True,
-            True,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0.7,
-            False,
-            True,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.AUTO.value,
-            5,
-            2,
-            0.001,
-            0.5,
-            True,
-            True,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.BRIGHT.value,
-            5,
-            2,
-            0.001,
-            0.7,
-            False,
-            True,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.DARK.value,
-            5,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.GRAY.value,
-            5,
-            2,
-            0.001,
-            0.5,
-            True,
-            True,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.AUTO.value,
-            7,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.AUTO.value,
-            4,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            True,
-        ),
-        (
-            False,
-            SplineBackgroundMode.DARK.value,
-            5,
-            2,
-            0.001,
-            0.7,
-            False,
-            True,
-            False,
-        ),
-        (
-            False,
-            SplineBackgroundMode.BRIGHT.value,
-            5,
-            2,
-            0.001,
-            0,
-            True,
-            False,
-            False,
-        ),
-    ):
-
+@pytest.mark.parametrize(
+        "automatic, bg_mode, spline_points, threshold, convergence, offset, hi, lo, succeed",
+        [
+            (True, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0, True, False, True,),
+            (True, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0.7, False, True, True,),
+            (True, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0.5, True, True, True,),
+            (False, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0, True, False, True,),
+            (False, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0.7, False, True, True,),
+            (False, SplineBackgroundMode.AUTO.value, 5, 2, 0.001, 0.5, True, True, True,),
+            (False, SplineBackgroundMode.BRIGHT.value, 5, 2, 0.001, 0.7, False, True, True,),
+            (False, SplineBackgroundMode.DARK.value, 5, 2, 0.001, 0, True, False, True,),
+            (False, SplineBackgroundMode.GRAY.value, 5, 2, 0.001, 0.5, True, True, True,),
+            (False, SplineBackgroundMode.AUTO.value, 7, 2, 0.001, 0, True, False, True,),
+            (False, SplineBackgroundMode.AUTO.value, 4, 2, 0.001, 0, True, False, True,),
+            (False, SplineBackgroundMode.DARK.value, 5, 2, 0.001, 0.7, False, True, False,),
+            (False, SplineBackgroundMode.BRIGHT.value, 5, 2, 0.001, 0, True, False, False,),
+        ]
+)
+def test_splines(automatic, bg_mode, spline_points, threshold, convergence, offset, hi, lo, succeed):
+    #
+    # Make an image with a random background
+    #
+    numpy.random.seed(35)
+    image = numpy.random.uniform(size=(21, 31)) * 0.05 + offset
+    if hi:
         #
-        # Make an image with a random background
+        # Add some "foreground" pixels
         #
-        numpy.random.seed(35)
-        image = numpy.random.uniform(size=(21, 31)) * 0.05 + offset
-        if hi:
-            #
-            # Add some "foreground" pixels
-            #
-            fg = numpy.random.permutation(400)[:100]
-            image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 10
-        if lo:
-            #
-            # Add some "background" pixels
-            #
-            bg = numpy.random.permutation(400)[:100]
-            image[bg % image.shape[0], (bg / image.shape[0]).astype(int)] -= offset
+        fg = numpy.random.permutation(400)[:100]
+        image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 10
+    if lo:
+        #
+        # Add some "background" pixels
+        #
+        bg = numpy.random.permutation(400)[:100]
+        image[bg % image.shape[0], (bg / image.shape[0]).astype(int)] -= offset
 
-        #
-        # Make a background function
-        #
-        ii, jj = numpy.mgrid[-10:11, -15:16]
-        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
-        bg *= 0.2
-        image += bg
+    #
+    # Make a background function
+    #
+    ii, jj = numpy.mgrid[-10:11, -15:16]
+    bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+    bg *= 0.2
+    image += bg
 
-        workspaces, module = make_workspaces(((image, None),))
-        assert isinstance(
-            module,
-            cellprofiler.modules.correctilluminationcalculate.CorrectIlluminationCalculate,
-        )
-        module.intensity_choice.value = (
-            IntensityChoice.BACKGROUND.value
-        )
-        module.each_or_all.value = (
-            CalculateFunctionTarget.EACH.value
-        )
-        module.rescale_option.value = RescaleIlluminationFunction.NO.value
-        module.smoothing_method.value = (
-            SmoothingMethod.SPLINES.value
-        )
-        module.automatic_splines.value = automatic
-        module.spline_bg_mode.value = bg_mode
-        module.spline_convergence.value = convergence
-        module.spline_threshold.value = threshold
-        module.spline_points.value = spline_points
-        module.spline_rescale.value = 1
-        module.prepare_group(workspaces[0], {}, [1])
-        module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
-        diff = pixel_data - numpy.min(pixel_data) - bg
-        if succeed:
-            assert numpy.all(diff < 0.05)
-        else:
-            assert not numpy.all(diff < 0.05)
+    workspaces, module = make_workspaces(((image, None),))
+    assert isinstance(
+        module,
+        cellprofiler.modules.correctilluminationcalculate.CorrectIlluminationCalculate,
+    )
+    module.intensity_choice.value = (
+        IntensityChoice.BACKGROUND.value
+    )
+    module.each_or_all.value = (
+        CalculateFunctionTarget.EACH.value
+    )
+    module.rescale_option.value = RescaleIlluminationFunction.NO.value
+    module.smoothing_method.value = (
+        SmoothingMethod.SPLINES.value
+    )
+    module.automatic_splines.value = automatic
+    module.spline_bg_mode.value = bg_mode
+    module.spline_convergence.value = convergence
+    module.spline_threshold.value = threshold
+    module.spline_points.value = spline_points
+    module.spline_rescale.value = 1
+    module.prepare_group(workspaces[0], {}, [1])
+    module.run(workspaces[0])
+    img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+    pixel_data = img.pixel_data
+    diff = pixel_data - numpy.min(pixel_data) - bg
+    if succeed:
+        assert numpy.all(diff < 0.05)
+    else:
+        assert not numpy.all(diff < 0.05)
 
 
 def test_splines_scaled():

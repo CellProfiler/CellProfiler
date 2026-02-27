@@ -1184,7 +1184,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
             self.block_size,
         )
         accumulate_illumination_image(
-            preprocessed, image.has_mask, mask, self.library_state
+            preprocessed, mask, self.library_state
         )
 
     def provide_image(self, image_set):
@@ -1226,7 +1226,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
             dilated_image = self._cached_dilated_image
             smoothed_pixels = apply_smoothing(
                 image_pixel_data=dilated_image.pixel_data,
-                image_mask=dilated_image.mask,
+                image_mask = dilated_image.mask if dilated_image.has_mask else None,
                 smoothing_method=self.smoothing_method,
                 automatic_object_width=self.automatic_object_width,
                 size_of_smoothing_filter=self.size_of_smoothing_filter,
@@ -1248,7 +1248,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         if self.rescale_option != "No":
             output_pixels = apply_scaling(
                 image_pixel_data=smoothed_image.pixel_data,
-                image_mask=None if smoothed_image.has_mask else smoothed_image.mask,
+                image_mask=smoothed_image.mask if smoothed_image.has_mask else None,
                 rescale_option=self.rescale_option,
             )
             self._cached_image = Image(output_pixels, parent_image=self._cached_avg_image)

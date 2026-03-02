@@ -3117,14 +3117,39 @@ def apply_target_mask(x_data: ImageAny, masking_image: Union[ImageAny,ObjectSegm
 # CorrectIlluminationCalculate
 ###############################################################################
 
+
+def get_smoothing_filter_size(
+        automatic_object_width: SmoothingFilterSize, 
+        smoothing_filter_size: Optional[int], # default to 10
+        object_width: Optional[int], # default to 10 
+        image_shape: Optional[Tuple[int, ...]]
+    ) -> float:
+    """Return the smoothing filter size based on the settings and image size"""
+    filter_size = None
+    if automatic_object_width == SmoothingFilterSize.MANUALLY.value:
+        assert smoothing_filter_size is not None, "Manual smoothing filter size must be provided"
+        # Convert from full-width at half-maximum to standard deviation
+        # (or so says CPsmooth.m)
+        filter_size = smoothing_filter_size
+    elif automatic_object_width == SmoothingFilterSize.OBJECT_SIZE.value:
+        assert object_width is not None, "Object width must be provided"
+        filter_size =  object_width * 2.35 / 3.5
+    elif automatic_object_width == SmoothingFilterSize.AUTOMATIC.value:
+        assert image_shape is not None, "Image shape must be provided"
+        filter_size = min(30, float(numpy.max(image_shape)) / 40.0)
+    else:
+        raise ValueError(f"Unknown smoothing filter size: {automatic_object_width}")
+    return filter_size
+
+
 def smooth_plane(
         pixel_data: Image2D, 
         mask: Image2DMask,
         smoothing_method: SmoothingMethod,
-        automatic_object_width,
-        size_of_smoothing_filter,
-        object_width,
-        image_shape,
+        automatic_object_width: Optional[SmoothingFilterSize],
+        size_of_smoothing_filter: Optional[int],
+        object_width: Optional[int],
+        image_shape: Optional[Tuple[int, ...]],
         automatic_splines: Optional[bool],
         spline_bg_mode: Optional[SplineBackgroundMode], 
         spline_points: Optional[int],
@@ -3132,77 +3157,69 @@ def smooth_plane(
         spline_convergence: Optional[float],
         spline_maximum_iterations: Optional[int],
         spline_rescale: Optional[float],
-    ):
+    ) -> Image2D:
     """Smooth one 2-d color plane of an image"""
-    smoothing_dispatcher = {
-        SmoothingMethod.FIT_POLYNOMIAL.value: smooth_with_polynomial,
-        SmoothingMethod.GAUSSIAN_FILTER.value: smooth_with_gaussian,
-        SmoothingMethod.MEDIAN_FILTER.value: smooth_with_median,
-        SmoothingMethod.TO_AVERAGE.value: smooth_to_average,
-        SmoothingMethod.SPLINES.value: smooth_with_splines,
-        SmoothingMethod.CONVEX_HULL.value: smooth_with_convex_hull,
-    }
-    if smoothing_method not in smoothing_dispatcher:
+    if smoothing_method == SmoothingMethod.FIT_POLYNOMIAL.value:
+        output_pixels = smooth_with_polynomial(pixel_data, mask)
+    elif smoothing_method == SmoothingMethod.GAUSSIAN_FILTER.value:
+        sigma = _get_sigma(automatic_object_width, size_of_smoothing_filter, object_width, image_shape)
+        output_pixels = smooth_with_gaussian(pixel_data, mask, sigma)
+    elif smoothing_method == SmoothingMethod.MEDIAN_FILTER.value:
+        sigma = _get_sigma(automatic_object_width, size_of_smoothing_filter, object_width, image_shape)
+        output_pixels = smooth_with_median(pixel_data, mask, sigma)
+    elif smoothing_method == SmoothingMethod.TO_AVERAGE.value:
+        output_pixels = smooth_to_average(pixel_data, mask)
+    elif smoothing_method == SmoothingMethod.SPLINES.value:
+        assert automatic_splines is not None, "automatic_splines must be provided for spline smoothing"
+        output_pixels = smooth_with_splines(
+            pixel_data = pixel_data, 
+            mask = mask,
+            automatic_splines = automatic_splines,
+            spline_bg_mode = spline_bg_mode,
+            spline_points = spline_points,
+            spline_threshold = spline_threshold,
+            spline_convergence = spline_convergence,
+            spline_maximum_iterations = spline_maximum_iterations,
+            spline_rescale = spline_rescale,
+        )
+    elif smoothing_method == SmoothingMethod.CONVEX_HULL.value:
+        output_pixels = smooth_with_convex_hull(pixel_data, mask)
+    else:
         raise ValueError(
             "Unimplemented smoothing method: %s:" % smoothing_method.value
         )
-    output_pixels = smoothing_dispatcher[smoothing_method](
-        pixel_data, 
-        mask, 
-        automatic_object_width,
-        size_of_smoothing_filter,
-        object_width,
-        image_shape,
-        automatic_splines,
-        spline_bg_mode,
-        spline_points,
-        spline_threshold,
-        spline_convergence,
-        spline_maximum_iterations,
-        spline_rescale,
-    )
     return output_pixels
 
-    # if smoothing_method == SmoothingMethod.FIT_POLYNOMIAL.value:
-    #     output_pixels = smooth_with_polynomial(pixel_data, mask)
-    # elif smoothing_method == SmoothingMethod.GAUSSIAN_FILTER.value:
-    #     output_pixels = smooth_with_gaussian(pixel_data, mask, sigma)
-    # elif smoothing_method == SmoothingMethod.MEDIAN_FILTER.value:
-    #     output_pixels = smooth_with_median(pixel_data, mask, sigma)
-    # elif smoothing_method == SmoothingMethod.TO_AVERAGE.value:
-    #     output_pixels = smooth_to_average(pixel_data, mask)
-    # elif smoothing_method == SmoothingMethod.SPLINES.value:
-    #     output_pixels = smooth_with_splines(
-    #         pixel_data = pixel_data, 
-    #         mask = mask,
-    #         automatic_splines = automatic_splines,
-    #         spline_bg_mode = spline_bg_mode,
-    #         spline_points = spline_points,
-    #         spline_threshold = spline_threshold,
-    #         spline_convergence = spline_convergence,
-    #         spline_maximum_iterations = spline_maximum_iterations,
-    #         spline_rescale = spline_rescale,
-    #     )
-    # elif smoothing_method == SmoothingMethod.CONVEX_HULL.value:
-    #     output_pixels = smooth_with_convex_hull(pixel_data, mask)
-    # else:
-    #     raise ValueError(
-    #         "Unimplemented smoothing method: %s:" % smoothing_method.value
-    #     )
-    # return output_pixels
+def _get_sigma(
+        automatic_object_width: Optional[SmoothingFilterSize],
+        size_of_smoothing_filter: Optional[int],
+        object_width: Optional[int],
+        image_shape: Optional[Tuple[int, ...]],
+    ) -> float:
+    assert automatic_object_width is not None, "automatic_object_width must be provided for Gaussian or Median smoothing"
+    assert size_of_smoothing_filter is not None, "size_of_smoothing_filter must be provided for Gaussian or Median smoothing"
+    assert object_width is not None, "object_width must be provided for Gaussian or Median smoothing"
+    assert image_shape is not None, "image_shape must be provided for Gaussian or Median smoothing"
+    sigma = get_smoothing_filter_size(automatic_object_width, size_of_smoothing_filter, object_width, image_shape) / 2.35 # What's up with 2.35?
+    return sigma
 
 
-
-def smooth_with_polynomial(pixel_data, mask, *args, **kwargs):
+def smooth_with_polynomial(
+        pixel_data: Image2D, 
+        mask: Image2DMask
+    ) -> Image2D:
     return centrosome.smooth.fit_polynomial(pixel_data, mask)
 
-def smooth_with_gaussian(pixel_data, mask, sigma, *args, **kwargs):
+def smooth_with_gaussian(
+        pixel_data: Image2D,
+        mask: Image2DMask,
+        sigma: float
+    ) -> Image2D:
     #
     # Smoothing with the mask is good, even if there's no mask
     # because the mechanism undoes the edge effects that are introduced
     # by any choice of how to deal with border effects.
     #
-    assert sigma is not None, "sigma must be provided for Gaussian smoothing"
     def fn(image):
         return scipy.ndimage.gaussian_filter(
             image, sigma, mode="constant", cval=0
@@ -3213,8 +3230,11 @@ def smooth_with_gaussian(pixel_data, mask, sigma, *args, **kwargs):
     )
     return output_pixels
 
-def smooth_with_median(pixel_data, mask, sigma, *args, **kwargs):
-    assert sigma is not None, "sigma must be provided for median smoothing"
+def smooth_with_median(
+        pixel_data: Image2D, 
+        mask: Image2DMask,
+        sigma: float
+    ) -> Image2D:
     filter_sigma = max(1, int(sigma + 0.5))
     strel = centrosome.cpmorphology.strel_disk(filter_sigma)
     rescaled_pixel_data = pixel_data * 65535
@@ -3223,12 +3243,18 @@ def smooth_with_median(pixel_data, mask, sigma, *args, **kwargs):
     output_pixels = skimage.filters.median(rescaled_pixel_data, strel, behavior="rank")
     return output_pixels
 
-def smooth_to_average(pixel_data, mask, *args, **kwargs):
+def smooth_to_average(
+        pixel_data: Image2D, 
+        mask: Image2DMask
+    ) -> Image2D:
     mean = numpy.mean(pixel_data[mask])
     output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
     return output_pixels
 
-def smooth_with_convex_hull(pixel_data, mask, *args, **kwargs):
+def smooth_with_convex_hull(
+        pixel_data: Image2D, 
+        mask: Image2DMask
+    ) -> Image2D:
     """Use the convex hull transform to smooth the image"""
     #
     # Apply an erosion, then the transform, then a dilation, heuristically
@@ -3250,9 +3276,7 @@ def smooth_with_splines(
         spline_convergence: Optional[float],
         spline_maximum_iterations: Optional[int],
         spline_rescale: Optional[float],
-        *args,
-        **kwargs,
-    ):
+    ) -> Image2D:
     assert automatic_splines is not None, "automatic_splines must be provided for spline smoothing"
     if automatic_splines:
         # Make the image 200 pixels long on its shortest side

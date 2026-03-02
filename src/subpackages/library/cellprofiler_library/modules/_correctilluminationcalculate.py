@@ -2,10 +2,8 @@ import centrosome.smooth
 import centrosome.cpmorphology
 import scipy.ndimage
 import numpy
-import skimage.filters
-import centrosome.bg_compensate
-import centrosome.filter
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Annotated
+from pydantic import validate_call, ConfigDict
 from cellprofiler_library.types import Image2D, Image2DMask
 from cellprofiler_library.opts.correctilluminationcalculate import (
     SmoothingFilterSize,
@@ -16,15 +14,11 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
     StateKey,
 )
 
-from cellprofiler_library.functions.image_processing import (
-    smooth_with_convex_hull,
-    smooth_with_splines,
-    smooth_plane,
-    
-)
+from cellprofiler_library.functions.image_processing import smooth_plane
 
 ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_dilation(
         pixel_data: Image2D,
         mask: Image2DMask,
@@ -64,29 +58,7 @@ def apply_dilation(
         )
     return dilated_pixels
 
-def get_smoothing_filter_size(
-        automatic_object_width: SmoothingFilterSize, 
-        smoothing_filter_size: Optional[int], # default to 10
-        object_width: Optional[int], # default to 10 
-        image_shape: Optional[Tuple[int, ...]]
-    ) -> float:
-    """Return the smoothing filter size based on the settings and image size"""
-    filter_size = None
-    if automatic_object_width == SmoothingFilterSize.MANUALLY.value:
-        assert smoothing_filter_size is not None, "Manual smoothing filter size must be provided"
-        # Convert from full-width at half-maximum to standard deviation
-        # (or so says CPsmooth.m)
-        filter_size = smoothing_filter_size
-    elif automatic_object_width == SmoothingFilterSize.OBJECT_SIZE.value:
-        assert object_width is not None, "Object width must be provided"
-        filter_size =  object_width * 2.35 / 3.5
-    elif automatic_object_width == SmoothingFilterSize.AUTOMATIC.value:
-        assert image_shape is not None, "Image shape must be provided"
-        filter_size = min(30, float(numpy.max(image_shape)) / 40.0)
-    else:
-        raise ValueError(f"Unknown smoothing filter size: {automatic_object_width}")
-    return filter_size
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def preprocess_image_for_averaging(
         pixel_data: Image2D,
         mask: Optional[Image2DMask],
@@ -146,7 +118,7 @@ def preprocess_image_for_averaging(
                 min_block[labels != -1, i] = minima[labels[labels != -1]]
         return min_block
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def initialize_illumination_accumulation(
         preprocessed_pixel_data: numpy.ndarray,
         mask: Optional[numpy.ndarray],
@@ -178,7 +150,7 @@ def initialize_illumination_accumulation(
     accumulate_illumination_image(preprocessed_pixel_data, mask, state)
     return state
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def accumulate_illumination_image(
         preprocessed_pixel_data: numpy.ndarray,
         mask: Optional[numpy.ndarray],
@@ -210,7 +182,7 @@ def accumulate_illumination_image(
         mask_count += 1
     return state
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def calculate_average_from_state(
         state: Dict[str, Any],
 ) -> Tuple[numpy.ndarray, numpy.ndarray]:
@@ -237,6 +209,7 @@ def calculate_average_from_state(
             pixel_data[mask, i] = image_sum[mask, i] / mask_count[mask]
     return pixel_data, mask
 
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_smoothing(
         image_pixel_data: Image2D,
         image_mask: Image2DMask,
@@ -298,7 +271,7 @@ def apply_smoothing(
         )
     return output_pixels
 
-
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_scaling(
         image_pixel_data,
         image_mask, 

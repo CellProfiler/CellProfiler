@@ -29,7 +29,7 @@ class SmoothingMethod(str, Enum):
     TO_AVERAGE = "Smooth to Average"
     SPLINES = "Splines"
 
-class SmoothingFilterSize(Enum):
+class SmoothingFilterSize(str, Enum):
     """Smoothing filter size"""
     AUTOMATIC = "Automatic"
     OBJECT_SIZE = "Object size"

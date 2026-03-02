@@ -43,14 +43,7 @@ References
 .. _tutorials: https://tutorials.cellprofiler.org
 """
 
-import centrosome.bg_compensate
-import centrosome.cpmorphology
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.smooth
 import numpy
-import scipy.ndimage
-import skimage.filters
 from cellprofiler_core.image import AbstractImage
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
@@ -71,13 +64,12 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
     SmoothingMethod,
     SmoothingFilterSize,
     SplineBackgroundMode,
-    StateKey,
 )
+from cellprofiler_library.functions.image_processing import get_smoothing_filter_size
 from cellprofiler_library.modules._correctilluminationcalculate import (
     apply_smoothing,
     apply_dilation,
     apply_scaling,
-    get_smoothing_filter_size,
     preprocess_image_for_averaging,
     initialize_illumination_accumulation,
     accumulate_illumination_image,
@@ -941,7 +933,7 @@ fewer iterations, but less accuracy.
             # Added spline parameters
             setting_values = setting_values + [
                 "Yes",  # automatic_splines
-                centrosome.bg_compensate.MODE_AUTO,  # spline_bg_mode
+                SplineBackgroundMode.AUTO,  # spline_bg_mode
                 "5",  # spline points
                 "2",  # spline threshold
                 "2",  # spline rescale

@@ -3,7 +3,7 @@ import centrosome.cpmorphology
 import scipy.ndimage
 import numpy
 from typing import Any, Dict, Optional, Tuple, Annotated
-from pydantic import validate_call, ConfigDict
+from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.types import Image2D, Image2DMask
 from cellprofiler_library.opts.correctilluminationcalculate import (
     SmoothingFilterSize,
@@ -20,21 +20,21 @@ ROBUST_FACTOR = 0.02  # For rescaling, take 2nd percentile value
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_dilation(
-        pixel_data: Image2D,
-        mask: Image2DMask,
-        object_dilation_radius: int,
+        pixel_data:             Annotated[Image2D, Field(description="Input image for dilation")],
+        mask:                   Annotated[Image2DMask, Field(description="Input image mask")],
+        object_dilation_radius: Annotated[int, Field(description="Radius for the circular Gaussian dilation kernel")],
     ) -> Image2D:
     """Return pixel data dilated with a circular Gaussian kernel.
 
     This filter spreads the boundaries of cells, effectively "dilating" them.
 
     Args:
-        pixel_data: 2-D or 3-D image array (H, W) or (H, W, C).
-        mask: Boolean mask array (H, W). True = valid pixel.
-        object_dilation_radius: Radius for the circular Gaussian kernel.
+        pixel_data: Input image for dilation.
+        mask: Input image mask.
+        object_dilation_radius: Radius for the circular Gaussian dilation kernel.
 
     Returns:
-        Dilated pixel data array of the same shape as pixel_data.
+        Dilated pixel data of same shape as input.
     """
     kernel = centrosome.smooth.circular_gaussian_kernel(
         object_dilation_radius, object_dilation_radius * 3
@@ -60,11 +60,11 @@ def apply_dilation(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def preprocess_image_for_averaging(
-        pixel_data: Image2D,
-        mask: Optional[Image2DMask],
-        intensity_choice: IntensityChoice,
-        smoothing_method: SmoothingMethod,
-        block_size: int,
+        pixel_data:         Annotated[Image2D, Field(description="Input image for averaging")],
+        mask:               Annotated[Optional[Image2DMask], Field(description="Input image mask, or None if no mask")],
+        intensity_choice:   Annotated[IntensityChoice, Field(description="'Regular' uses per-pixel intensity; 'Background' finds block minima")],
+        smoothing_method:   Annotated[SmoothingMethod, Field(description="Smoothing method; Splines triggers the Regular code path")],
+        block_size:         Annotated[int, Field(description="Block side length in pixels for Background mode")],
     ) -> Image2D:
     """Create a version of the image appropriate for averaging.
 
@@ -73,18 +73,16 @@ def preprocess_image_for_averaging(
     intensity within blocks and returns a block-minimum image.
 
     Args:
-        pixel_data: Image array (H, W) or (H, W, C).
-        has_mask: Whether a mask is present.
-        mask: Boolean mask array (H, W); True = valid. Required when
-            has_mask is True.
-        intensity_choice: Regular or Background illumination method.
-        smoothing_method: The smoothing method selected (affects whether
-            the Splines branch is used).
-        block_size: Side length in pixels of each background block
-            (Background mode only).
+        pixel_data: Input image for averaging.
+        mask: Input image mask, or None if no mask.
+        intensity_choice: 'Regular' uses per-pixel intensity; 'Background'
+            finds block minima.
+        smoothing_method: Smoothing method; Splines triggers the Regular
+            code path.
+        block_size: Block side length in pixels for Background mode.
 
     Returns:
-        Preprocessed image array suitable for accumulation.
+        Preprocessed image suitable for accumulation.
     """
     if intensity_choice == IntensityChoice.REGULAR.value or smoothing_method == SmoothingMethod.SPLINES.value:
         if mask is not None:
@@ -120,8 +118,8 @@ def preprocess_image_for_averaging(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def initialize_illumination_accumulation(
-        preprocessed_pixel_data: numpy.ndarray,
-        mask: Optional[numpy.ndarray],
+        preprocessed_pixel_data:    Annotated[numpy.ndarray, Field(description="Preprocessed image from preprocess_image_for_averaging, shape (H, W) or (H, W, C)")],
+        mask:                       Annotated[Optional[numpy.ndarray], Field(description="Input image mask, or None if no mask")],
 ) -> Dict[str, Any]:
     """Initialize the illumination accumulation state from the first image.
 
@@ -129,15 +127,12 @@ def initialize_illumination_accumulation(
     first (already preprocessed) image into them.
 
     Args:
-        preprocessed_pixel_data: Output of preprocess_image_for_averaging
-            for the first image, shape (H, W) or (H, W, C).
-        has_mask: Whether the image has a mask.
-        mask: Boolean mask (H, W); True = valid. Required when has_mask
-            is True.
+        preprocessed_pixel_data: Preprocessed image from
+            preprocess_image_for_averaging, shape (H, W) or (H, W, C).
+        mask: Input image mask, or None if no mask.
 
     Returns:
-        Initial accumulation state dict with StateKey.IMAGE_SUM and
-        StateKey.MASK_COUNT entries.
+        Initial accumulation state with image_sum and mask_count.
     """
     state: Dict[str, Any] = {
         StateKey.IMAGE_SUM.value: numpy.zeros(
@@ -152,22 +147,20 @@ def initialize_illumination_accumulation(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def accumulate_illumination_image(
-        preprocessed_pixel_data: numpy.ndarray,
-        mask: Optional[numpy.ndarray],
-        state: Dict[str, Any],
+        preprocessed_pixel_data: Annotated[numpy.ndarray, Field(description="Preprocessed image from preprocess_image_for_averaging, shape (H, W) or (H, W, C)")],
+        mask:                   Annotated[Optional[numpy.ndarray], Field(description="Input image mask, or None if no mask")],
+        state:                  Annotated[Dict[str, Any], Field(description="Existing accumulation state dict (mutated in place)")],
 ) -> Dict[str, Any]:
     """Accumulate a preprocessed image into the illumination state.
 
     Args:
-        preprocessed_pixel_data: Output of preprocess_image_for_averaging,
-            shape (H, W) or (H, W, C).
-        has_mask: Whether the image has a mask.
-        mask: Boolean mask (H, W); True = valid. Required when has_mask
-            is True.
+        preprocessed_pixel_data: Preprocessed image from
+            preprocess_image_for_averaging, shape (H, W) or (H, W, C).
+        mask: Input image mask, or None if no mask.
         state: Existing accumulation state dict (mutated in place).
 
     Returns:
-        The updated state dict (same object as input).
+        Updated accumulation state (same object as input).
     """
     image_sum = state[StateKey.IMAGE_SUM.value]
     mask_count = state[StateKey.MASK_COUNT.value]
@@ -184,19 +177,16 @@ def accumulate_illumination_image(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def calculate_average_from_state(
-        state: Dict[str, Any],
-) -> Tuple[numpy.ndarray, numpy.ndarray]:
+        state: Annotated[Dict[str, Any], Field(description="Accumulation state from initialize/accumulate functions")],
+) -> Tuple[Image2D, Image2DMask]:
     """Compute the average illumination image from the accumulated state.
 
     Args:
-        state: Accumulation state dict produced by
-            initialize_illumination_accumulation /
-            accumulate_illumination_image.
+        state: Accumulation state from initialize/accumulate functions.
 
     Returns:
-        Tuple of (avg_pixel_data, mask) where avg_pixel_data contains
-        the per-pixel mean values and mask is a boolean array
-        (True where at least one image contributed).
+        Tuple of (average pixel data, boolean mask where at least one
+        image contributed).
     """
     image_sum = state[StateKey.IMAGE_SUM.value]
     mask_count = state[StateKey.MASK_COUNT.value]
@@ -211,26 +201,48 @@ def calculate_average_from_state(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_smoothing(
-        image_pixel_data: Image2D,
-        image_mask: Image2DMask,
-        smoothing_method: SmoothingMethod,
-        automatic_object_width: Optional[SmoothingFilterSize], 
-        size_of_smoothing_filter: Optional[int], # default to 10
-        object_width: Optional[int], # default to 10 
-        image_shape: Optional[Tuple[int, ...]],
-        automatic_splines: bool,
-        spline_bg_mode: Optional[SplineBackgroundMode],
-        spline_points: Optional[int],
-        spline_threshold: Optional[float],
-        spline_convergence: Optional[float],
-        spline_maximum_iterations: Optional[int],
-        spline_rescale: Optional[float],
-    ):
-    """Return an image that is smoothed according to the settings
+        image_pixel_data: Annotated[Image2D, Field(description="Pixel data of image to smooth")],
+        image_mask: Annotated[Image2DMask, Field(description="Input image mask; True = valid pixel")],
+        smoothing_method: Annotated[SmoothingMethod, Field(description="Smoothing method to apply")],
+        automatic_object_width: Annotated[Optional[SmoothingFilterSize], Field(description="Method to calculate smoothing filter size (Automatic, Object size, or Manually)")],
+        size_of_smoothing_filter: Annotated[Optional[int], Field(description="Manual smoothing filter size in pixels")],
+        object_width: Annotated[Optional[int], Field(description="Approximate object diameter in pixels for filter size calculation")],
+        image_shape: Annotated[Optional[Tuple[int, ...]], Field(description="Shape of the original image (H, W)")],
+        automatic_splines: Annotated[bool, Field(description="Whether to automatically calculate spline parameters")],
+        spline_bg_mode: Annotated[Optional[SplineBackgroundMode], Field(description="Background mode for spline fitting (auto, dark, bright, or gray)")],
+        spline_points: Annotated[Optional[int], Field(description="Number of spline control points in the grid")],
+        spline_threshold: Annotated[Optional[float], Field(description="Std-dev cutoff for background pixel classification")],
+        spline_convergence: Annotated[Optional[float], Field(description="Residual value fraction for convergence criterion")],
+        spline_maximum_iterations: Annotated[Optional[int], Field(description="Maximum number of spline fitting iterations")],
+        spline_rescale: Annotated[Optional[float], Field(description="Image resampling factor for spline computation")],
+    ) -> Image2D:
+    """Return an image that is smoothed according to the settings.
 
-    image - an instance of cpimage.Image containing the pixels to analyze
-    orig_image - the ancestor source image or None if ambiguous
-    returns another instance of cpimage.Image
+    Args:
+        image_pixel_data: Pixel data of image to smooth.
+        image_mask: Input image mask; True = valid pixel.
+        smoothing_method: Smoothing method to apply.
+        automatic_object_width: Method to calculate smoothing filter size
+            (Automatic, Object size, or Manually).
+        size_of_smoothing_filter: Manual smoothing filter size in pixels.
+        object_width: Approximate object diameter in pixels for filter
+            size calculation.
+        image_shape: Shape of the original image (H, W).
+        automatic_splines: Whether to automatically calculate spline
+            parameters.
+        spline_bg_mode: Background mode for spline fitting (auto, dark,
+            bright, or gray).
+        spline_points: Number of spline control points in the grid.
+        spline_threshold: Std-dev cutoff for background pixel
+            classification.
+        spline_convergence: Residual value fraction for convergence
+            criterion.
+        spline_maximum_iterations: Maximum number of spline fitting
+            iterations.
+        spline_rescale: Image resampling factor for spline computation.
+
+    Returns:
+        Smoothed pixel data.
     """
     pixel_data = image_pixel_data
     if pixel_data.ndim == 3:
@@ -273,14 +285,21 @@ def apply_smoothing(
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def apply_scaling(
-        image_pixel_data,
-        image_mask, 
-        rescale_option: RescaleIlluminationFunction,
-    ):
-    """Return an image that is rescaled according to the settings
+        image_pixel_data:   Annotated[Image2D, Field(description="Pixel data of the illumination function to rescale")],
+        image_mask:         Annotated[Optional[Image2DMask], Field(description="Input image mask, or None if no mask")],
+        rescale_option:     Annotated[RescaleIlluminationFunction, Field(description="Rescaling method: Yes (robust minimum), No (skip), or Median")],
+    ) -> Image2D:
+    """Return an image that is rescaled according to the settings.
 
-    image - an instance of cpimage.Image
-    returns another instance of cpimage.Image
+    Args:
+        image_pixel_data: Pixel data of the illumination function to
+            rescale.
+        image_mask: Input image mask, or None if no mask.
+        rescale_option: Rescaling method: Yes (robust minimum), No
+            (skip), or Median.
+
+    Returns:
+        Rescaled pixel data.
     """
     if rescale_option == RescaleIlluminationFunction.NO.value:
         return image_pixel_data

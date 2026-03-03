@@ -1179,33 +1179,23 @@ class CorrectIlluminationImageProvider(AbstractImage):
             preprocessed, mask, self.library_state
         )
 
-    def provide_image(self, image_set):
-        # TODO: Currently provide image is updating all caches. Is this necessary?
-        """Return the final illumination correction Image.
+    def _calculate_images(self):
+        """Compute and cache the averaged, dilated, and final illumination images.
 
-        Computes (and caches) the full average -> dilation -> smoothing ->
-        scaling pipeline on the first call; returns the cached result on
-        subsequent calls.
-
-        Args:
-            image_set: The current image set (may be None when called
-                internally to pre-compute intermediate images).
-
-        Returns:
-            cellprofiler_core.image.Image containing the illumination
-            function pixel data.
+        Mirrors the original calculate_image() pattern: each stage receives
+        the previous stage's output as an explicit argument, and all three
+        caches are populated in one pass.
         """
-        if self._cached_image is not None:
-            return self._cached_image
-
-        # --- Step 1: compute average ---
+        # Step 1: compute average from accumulated state
         avg_pixel_data, avg_mask = calculate_average_from_state(self.library_state)
         self._cached_avg_image = Image(avg_pixel_data, avg_mask)
 
-        # --- Step 2: apply dilation ---
+        # Step 2: apply dilation to the averaged image
         if self.dilate_objects:
             dilated_pixels = apply_dilation(
-                avg_pixel_data, avg_mask, self.object_dilation_radius
+                self._cached_avg_image.pixel_data,
+                self._cached_avg_image.mask,
+                self.object_dilation_radius,
             )
             self._cached_dilated_image = Image(
                 dilated_pixels, parent_image=self._cached_avg_image
@@ -1213,17 +1203,16 @@ class CorrectIlluminationImageProvider(AbstractImage):
         else:
             self._cached_dilated_image = self._cached_avg_image
 
-        # --- Step 3: apply smoothing ---
+        # Step 3: apply smoothing to the dilated image
         if self.smoothing_method != SmoothingMethod.NONE.value:
-            dilated_image = self._cached_dilated_image
             smoothed_pixels = apply_smoothing(
-                image_pixel_data=dilated_image.pixel_data,
-                image_mask = dilated_image.mask if dilated_image.has_mask else None,
+                image_pixel_data=self._cached_dilated_image.pixel_data,
+                image_mask=self._cached_dilated_image.mask if self._cached_dilated_image.has_mask else None,
                 smoothing_method=self.smoothing_method,
                 automatic_object_width=self.automatic_object_width,
                 size_of_smoothing_filter=self.size_of_smoothing_filter,
                 object_width=self.object_width,
-                image_shape=dilated_image.pixel_data.shape[:2],
+                image_shape=self._cached_dilated_image.pixel_data.shape[:2],
                 automatic_splines=self.automatic_splines,
                 spline_bg_mode=self.spline_bg_mode,
                 spline_points=self.spline_points,
@@ -1236,8 +1225,8 @@ class CorrectIlluminationImageProvider(AbstractImage):
         else:
             smoothed_image = self._cached_dilated_image
 
-        # --- Step 4: apply scaling ---
-        if self.rescale_option != "No":
+        # Step 4: apply scaling to the smoothed image
+        if self.rescale_option != RescaleIlluminationFunction.NO.value:
             output_pixels = apply_scaling(
                 image_pixel_data=smoothed_image.pixel_data,
                 image_mask=smoothed_image.mask if smoothed_image.has_mask else None,
@@ -1247,21 +1236,32 @@ class CorrectIlluminationImageProvider(AbstractImage):
         else:
             self._cached_image = smoothed_image
 
-        return self._cached_image
-
     def provide_avg_image(self):
         """Return the averaged image (before dilation and smoothing)."""
         if self._cached_avg_image is None:
-            # TODO: Function call below updates dilate as well and other caches too. Original code did not do this.
-            self.provide_image(None)
+            self._calculate_images()
         return self._cached_avg_image
 
     def provide_dilated_image(self):
         """Return the dilated image (after dilation, before smoothing)."""
         if self._cached_dilated_image is None:
-            # TODO: Function call below updates avg as well and other caches too. Original code did not do this.
-            self.provide_image(None)
+            self._calculate_images()
         return self._cached_dilated_image
+
+    def provide_image(self, image_set):
+        """Return the final illumination correction Image.
+
+        Args:
+            image_set: The current image set (may be None when called
+                internally to pre-compute intermediate images).
+
+        Returns:
+            cellprofiler_core.image.Image containing the illumination
+            function pixel data.
+        """
+        if self._cached_image is None:
+            self._calculate_images()
+        return self._cached_image
 
     def get_name(self):
         """Return the name of the output image."""

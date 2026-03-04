@@ -50,6 +50,13 @@ from cellprofiler_core.constants.measurement import (
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.segmentation import center_of_labels_mass
+from cellprofiler_library.opts.measurement import (
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    M_LOCATION_CENTER_Z,
+    C_LOCATION,
+    M_NUMBER_OBJECT_NUMBER,
+)
 
 ###############################################################################
 # MeasureImageOverlap
@@ -4215,9 +4222,48 @@ def find_parents_of(
 
     return parents_of
 
-def get_object_location_measurements(*args, **kwargs):
-    # TODO: #5117 implement add_object_location_measurements from src/subpackages/core/cellprofiler_core/utilities/core/module/identify.py
-    pass
+def get_object_location_measurements(object_name, labels, object_count=None):
+    measurements = LibraryMeasurements()
+    if object_count is None:
+        object_count = numpy.max(labels)
+    #
+    # Get the centers of each object - center_of_mass <- list of two-tuples.
+    #
+    if object_count:
+        centers = scipy.ndimage.center_of_mass(
+            numpy.ones(labels.shape), labels, list(range(1, object_count + 1))
+        )
+        centers = numpy.array(centers)
+        centers = centers.reshape((object_count, len(labels.shape)))
+        if centers.shape[1] != 3:
+            location_center_z = None
+            location_center_y = centers[:, 0]
+            location_center_x = centers[:, 1]
+        else:
+            location_center_z = centers[:, 0]
+            location_center_y = centers[:, 1]
+            location_center_x = centers[:, 2]
+        number = numpy.arange(1, object_count + 1)
+    else:
+        location_center_z = numpy.zeros((0,), dtype=float)
+        location_center_y = numpy.zeros((0,), dtype=float)
+        location_center_x = numpy.zeros((0,), dtype=float)
+        number = numpy.zeros((0,), dtype=int)
+    measurements.add_measurement(
+        object_name, M_LOCATION_CENTER_X, location_center_x,
+    )
+    measurements.add_measurement(
+        object_name, M_LOCATION_CENTER_Y, location_center_y,
+    )
+    if len(labels.shape) > 2:
+        measurements.add_measurement(
+            object_name, M_LOCATION_CENTER_Z, location_center_z,
+        )
+
+    measurements.add_measurement(
+        object_name, M_NUMBER_OBJECT_NUMBER, number,
+    )
+    return measurements
 
 def get_object_count_measurements(*args, **kwargs):
     # TODO: #5117 implement add_object_location_measurements from src/subpackages/core/cellprofiler_core/utilities/core/module/identify.py

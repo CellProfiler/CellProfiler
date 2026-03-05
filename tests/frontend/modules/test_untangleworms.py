@@ -21,6 +21,20 @@ import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
 
+from cellprofiler_library.modules._untangleworms import (
+    get_angles,
+    path_to_pixel_coords,
+    calculate_angle_shape_cost,
+    sample_control_points,
+    Path,
+    get_all_paths_recur,
+    calculate_path_length,
+    get_all_paths,
+    make_incidence_matrix,
+    trace_segments,
+    get_graph_from_branching_areas_and_segments,
+)
+
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
 IMAGE_NAME = "myimage"
@@ -1458,7 +1472,7 @@ def test_trace_segments_none():
     """Test the trace_segments function on a blank image"""
     image = numpy.zeros((10, 20), bool)
     module = cellprofiler.modules.untangleworms.UntangleWorms()
-    i, j, label, order, distance, count = module.trace_segments(image)
+    i, j, label, order, distance, count = trace_segments(image)
     assert count == 0
     for x in (i, j, label, order, distance):
         assert len(x) == 0
@@ -1471,7 +1485,7 @@ def test_trace_one_segment():
     image[5, 1:18] = True
     expected_order = numpy.zeros(image.shape, int)
     expected_order[image] = numpy.arange(numpy.sum(image))
-    i, j, label, order, distance, count = module.trace_segments(image)
+    i, j, label, order, distance, count = trace_segments(image)
     assert count == 1
     assert numpy.all(label == 1)
     for x in (i, j, order, distance):
@@ -1491,7 +1505,7 @@ def test_trace_short_segment():
         image[5, 10 : (10 + i)] = True
         expected_order = numpy.zeros(image.shape, int)
         expected_order[image] = numpy.arange(numpy.sum(image))
-        i, j, label, order, distance, count = module.trace_segments(image)
+        i, j, label, order, distance, count = trace_segments(image)
         assert count == 1
         assert numpy.all(label == 1)
         for x in (i, j, order, distance):
@@ -1526,7 +1540,7 @@ def test_trace_loop():
     ii = numpy.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
     jj = numpy.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
     expected_order[ii, jj] = numpy.arange(len(ii))
-    i, j, label, order, distance, count = module.trace_segments(image)
+    i, j, label, order, distance, count = trace_segments(image)
     result_order = numpy.zeros(image.shape, int)
     result_order[i, j] = order
     assert numpy.all(expected_order == result_order)
@@ -1538,7 +1552,7 @@ def test_trace_two():
     image = numpy.zeros((10, 20), bool)
     image[1:-1, 5] = True
     image[1:-1, 15] = True
-    i, j, label, order, distance, count = module.trace_segments(image)
+    i, j, label, order, distance, count = trace_segments(image)
     assert count == 2
     result_order = numpy.zeros(image.shape, int)
     result_order[i, j] = order
@@ -1550,7 +1564,7 @@ def test_make_incidence_matrix_of_nothing():
     """Make incidence matrix with two empty labels matrices"""
 
     module = cellprofiler.modules.untangleworms.UntangleWorms()
-    result = module.make_incidence_matrix(
+    result = make_incidence_matrix(
         numpy.zeros((10, 20), int), 0, numpy.zeros((10, 20), int), 0
     )
     assert tuple(result.shape) == (0, 0)
@@ -1562,7 +1576,7 @@ def test_make_incidence_matrix_of_things_that_do_not_touch():
     L2 = numpy.zeros((10, 20), int)
     L1[5, 5] = 1
     L2[5, 15] = 1
-    result = module.make_incidence_matrix(L1, 1, L2, 1)
+    result = make_incidence_matrix(L1, 1, L2, 1)
     assert tuple(result.shape) == (1, 1)
     assert numpy.all(~result)
 
@@ -1574,7 +1588,7 @@ def test_make_incidence_matrix_of_things_that_touch():
     L1[5, 5] = 1
     for i2, j2 in ((4, 4), (4, 5), (4, 6), (5, 4), (5, 6), (6, 4), (6, 5), (6, 6)):
         L2[i2, j2] = 1
-        result = module.make_incidence_matrix(L1, 1, L2, 1)
+        result = make_incidence_matrix(L1, 1, L2, 1)
         assert tuple(result.shape) == (1, 1)
         assert numpy.all(result)
 
@@ -1604,7 +1618,7 @@ def test_make_incidence_matrix_of_many_things():
     expected[3, 4] = True
     expected[4, 4] = True
     expected[4, 0] = True
-    result = module.make_incidence_matrix(L1, 5, L2, 5)
+    result = make_incidence_matrix(L1, 5, L2, 5)
     assert numpy.all(result == expected)
 
 
@@ -1618,7 +1632,7 @@ def test_get_all_paths_recur_none():
             self.incidence_matrix = numpy.zeros((0, 0), bool)
             self.segment_lengths = []
 
-    paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
+    paths_list = list(get_all_paths_recur(Result(), [], [], 0, 0, 1000))
     assert len(paths_list) == 0
 
 
@@ -1636,10 +1650,10 @@ def test_get_all_paths_recur_one():
             self.segment_lengths = [1, 1]
             self.incidence_directions = numpy.array([[False, True]])
 
-    paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    paths_list = list(get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
     assert len(paths_list) == 1
     path = paths_list[0]
-    assert isinstance(path, module.Path)
+    assert isinstance(path, Path)
     assert tuple(path.segments) == (0, 1)
     assert tuple(path.branch_areas) == (0,)
 
@@ -1661,7 +1675,7 @@ def test_get_all_paths_recur_depth_two():
                 [[False, True, False], [False, True, False]]
             )
 
-    paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    paths_list = list(get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
     assert len(paths_list) == 2
     expected = (((0, 1), (0,)), ((0, 1, 2), (0, 1)))
     sorted_list = tuple(
@@ -1686,7 +1700,7 @@ def test_get_all_paths_recur_many():
             self.segment_lengths = [1] * 4
             self.incidence_directions = numpy.ones((3, 4), bool)
 
-    paths_list = module.get_all_paths_recur(
+    paths_list = get_all_paths_recur(
         Result(), [0], [[i] for i in range(3)], 1, 0, 1000
     )
     sorted_list = tuple(
@@ -1769,7 +1783,7 @@ def test_get_all_paths_none():
             self.segments = []
             self.incidence_matrix = numpy.zeros((0, 0), bool)
 
-    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 0
 
 
@@ -1783,10 +1797,10 @@ def test_get_all_paths_one():
             self.incidence_matrix = numpy.zeros((0, 1), bool)
             self.incidence_directions = [[True, False]]
 
-    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 1
     path = path_list[0]
-    assert isinstance(path, module.Path)
+    assert isinstance(path, Path)
     assert tuple(path.segments) == (0,)
     assert len(path.branch_areas) == 0
 
@@ -1801,7 +1815,7 @@ def test_get_all_paths_two_segments():
             self.incidence_matrix = numpy.ones((1, 2), bool)
             self.incidence_directions = numpy.array([[True, False]])
 
-    path_list = list(module.get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 3
     sorted_list = tuple(
         sorted([(tuple(path.segments), tuple(path.branch_areas)) for path in path_list])
@@ -1824,7 +1838,7 @@ def test_get_all_paths_many():
             )
 
     graph = Result()
-    path_list = module.get_all_paths(graph, 0, 1000)
+    path_list = get_all_paths(graph, 0, 1000)
     for path in path_list:
         assert len(path.segments) == len(path.branch_areas) + 1
         if len(path.segments) > 1:
@@ -1840,7 +1854,7 @@ def test_sample_control_points():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     path_coords = numpy.random.randint(0, 20, size=(11, 2))
     distances = numpy.linspace(0.0, 10.0, 11)
-    result = module.sample_control_points(path_coords, distances, 6)
+    result = sample_control_points(path_coords, distances, 6)
     assert len(result) == 6
     assert tuple(path_coords[0]) == tuple(result[0])
     assert tuple(path_coords[-1]) == tuple(result[-1])
@@ -1852,7 +1866,7 @@ def test_sample_non_linear_control_points():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     path_coords = numpy.array([numpy.arange(11)] * 2).transpose()
     distances = numpy.sqrt(numpy.arange(11))
-    result = module.sample_control_points(path_coords, distances, 6)
+    result = sample_control_points(path_coords, distances, 6)
     assert numpy.all(result[:, 0] >= numpy.linspace(0.0, 1.0, 6) ** 2 * 10)
     assert numpy.all(result[:, 0] < numpy.linspace(0.0, 1.0, 6) ** 2 * 10 + 0.5)
 
@@ -1861,7 +1875,7 @@ def test_only_two_sample_points():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     path_coords = numpy.array([[0, 0], [1, 2]])
     distances = numpy.array([0, 5])
-    result = module.sample_control_points(path_coords, distances, 6)
+    result = sample_control_points(path_coords, distances, 6)
     numpy.testing.assert_almost_equal(result[:, 0], numpy.linspace(0, 1, 6))
     numpy.testing.assert_almost_equal(result[:, 1], numpy.linspace(0, 2, 6))
 
@@ -2102,7 +2116,7 @@ def test_trace_segments():
     # but segments_binary is
     #
     module = cellprofiler.modules.untangleworms.UntangleWorms()
-    i, j, labels, segment_order, distances, num_segments = module.trace_segments(
+    i, j, labels, segment_order, distances, num_segments = trace_segments(
         numpy.zeros((10, 13), bool)
     )
     assert len(i) == 0
@@ -2121,7 +2135,7 @@ def test_get_graph_from_branching_areas_and_segments():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     branch_areas = numpy.zeros((31, 15), bool)
     branch_areas[7:25, 7:10] = True
-    result = module.get_graph_from_branching_areas_and_segments(
+    result = get_graph_from_branching_areas_and_segments(
         branch_areas, numpy.zeros(branch_areas.shape, bool)
     )
     assert tuple(branch_areas.shape) == result.image_size

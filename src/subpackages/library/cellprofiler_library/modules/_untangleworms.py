@@ -921,3 +921,12 @@ def single_worm_filter(path_coords, params):
         params.inv_angles_covariance_matrix,
     )
     return cost < params.cost_threshold
+
+
+def cluster_graph_building(labels, i, skeleton, params):
+    binary_im = labels == i
+    skeleton = skeleton & binary_im
+
+    return get_graph_from_binary(
+        binary_im, skeleton, params.max_radius, params.max_skel_length
+    )

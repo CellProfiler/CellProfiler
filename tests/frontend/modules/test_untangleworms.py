@@ -35,6 +35,7 @@ from cellprofiler_library.modules._untangleworms import (
     get_graph_from_branching_areas_and_segments,
     single_worm_find_path,
     fast_selection,
+    worm_descriptor_building,
 )
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
@@ -1885,7 +1886,7 @@ def test_only_two_sample_points():
 def test_worm_descriptor_building_none():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     params = make_params(dict(worm_radius=5, num_control_points=20))
-    result, _, _, _, _ = module.worm_descriptor_building([], params, (0, 0))
+    result, _, _, _, _ = worm_descriptor_building([], params, (0, 0))
     assert len(result) == 0
 
 
@@ -1894,7 +1895,7 @@ def test_worm_descriptor_building_one():
     params = make_params(
         dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
     )
-    result, _, _, _, _ = module.worm_descriptor_building(
+    result, _, _, _, _ = worm_descriptor_building(
         [numpy.array([[10, 15], [20, 25]])], params, (40, 50)
     )
     expected = numpy.zeros((40, 50), bool)
@@ -1915,7 +1916,7 @@ def test_worm_descriptor_building_oob():
     params = make_params(
         dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
     )
-    result, _, _, _, _ = module.worm_descriptor_building(
+    result, _, _, _, _ = worm_descriptor_building(
         [numpy.array([[1, 15], [11, 25]])], params, (40, 27)
     )
     expected = numpy.zeros((40, 27), bool)
@@ -1937,7 +1938,7 @@ def test_worm_descriptor_building_two():
     params = make_params(
         dict(radii_from_training=numpy.array([5, 5, 5]), num_control_points=3)
     )
-    result, _, _, _, _ = module.worm_descriptor_building(
+    result, _, _, _, _ = worm_descriptor_building(
         [numpy.array([[10, 15], [20, 25]]), numpy.array([[10, 25], [20, 15]])],
         params,
         (40, 50),

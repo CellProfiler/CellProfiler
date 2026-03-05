@@ -23,6 +23,7 @@ from cellprofiler_library.modules._untangleworms import (
     worm_descriptor_building,
     get_overlap_weight,
     get_leftover_weight,
+    cluster_paths_selection,
 )
 """
 UntangleWorms
@@ -1163,7 +1164,7 @@ should be processed.
                     wants_training_set_weights = self.wants_training_set_weights
                     override_overlap_weight = self.override_overlap_weight.value
                     override_leftover_weight = self.override_leftover_weight.value
-                    paths_selected = self.cluster_paths_selection(
+                    paths_selected = cluster_paths_selection(
                         graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight
                     )
                     del graph
@@ -1363,191 +1364,6 @@ should be processed.
         angles[angles < -numpy.pi] += 2 * numpy.pi
         return angles
 
-
-    # wants_training_set_weights = self.wants_training_set_weights
-    # override_overlap_weight = self.override_overlap_weight.value
-    # override_leftover_weight = self.override_leftover_weight.value
-    def cluster_paths_selection(self, graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight):
-        """Select the best paths for worms from the graph
-
-        Given a graph representing a worm cluster, and a list of paths in the
-        graph, selects a subcollection of paths likely to represent the worms in
-        the cluster.
-
-        More specifically, finds (approximately, depending on parameters) a
-        subset K of the set P paths, minimising
-
-        Sum, over p in K, of shape_cost(K)
-        +  a * Sum, over p,q distinct in K, of overlap(p, q)
-        +  b * leftover(K)
-
-        Here, shape_cost is a function which calculates how unlikely it is that
-        the path represents a true worm.
-
-        overlap(p, q) indicates how much overlap there is between paths p and q
-        (we want to assign a cost to overlaps, to avoid picking out essentially
-        the same worm, but with small variations, twice in K)
-
-        leftover(K) is a measure of the amount of the cluster "unaccounted for"
-        after all of the paths of P have been chosen. We assign a cost to this to
-        make sure we pick out all the worms in the cluster.
-
-        Shape model:'angle_shape_model'. More information
-        can be found in calculate_angle_shape_cost(),
-
-        Selection method
-
-        'dfs_prune': searches
-        through all the combinations of paths (view this as picking out subsets
-        of P one element at a time, to make this a search tree) depth-first,
-        but by keeping track of the best solution so far (and noting that the
-        shape cost and overlap cost terms can only increase as paths are added
-        to K), it can prune away large branches of the search tree guaranteed
-        to be suboptimal.
-
-        Furthermore, by setting the approx_max_search_n parameter to a finite
-        value, this method adopts a "partially greedy" approach, at each step
-        searching through only a set number of branches. Setting this parameter
-        approx_max_search_n to 1 should in some sense give just the greedy
-        algorithm, with the difference that this takes the leftover cost term
-        into account in determining how many worms to find.
-
-        Input parameters:
-
-        graph_struct: A structure describing the graph. As returned from e.g.
-        get_graph_from_binary().
-
-        path_structs_list: A cell array of structures, each describing one path
-        through the graph. As returned by cluster_paths_finding().
-
-        params: The parameters structure. The parameters below should be
-        in params.cluster_paths_selection
-
-        min_path_length: Before performing the search, paths which are too
-        short or too long are filtered away. This is the minimum length, in
-        pixels.
-
-        max_path_length: Before performing the search, paths which are too
-        short or too long are filtered away. This is the maximum length, in
-        pixels.
-
-        shape_cost_method: 'angle_shape_cost'
-
-        num_control_points: All shape cost models samples equally spaced
-        control points along the paths whose shape cost are to be
-        calculated. This is the number of such control points to sample.
-
-        mean_angles: [Only for 'angle_shape_cost']
-
-        inv_angles_covariance_matrix: [Only for 'angle_shape_cost']
-
-        For these two parameters,  see calculate_angle_shape_cost().
-
-        overlap_leftover_method:
-        'skeleton_length'. The overlap/leftover calculation method to use.
-        Note that if selection_method is 'dfs_prune', then this must be
-        'skeleton_length'.
-
-        selection_method: 'dfs_prune'. The search method
-        to be used.
-
-        median_worm_area: Scalar double. The approximate area of a typical
-        worm.
-        This approximates the number of worms in the
-        cluster. Is only used to estimate the best branching factors in the
-        search tree. If approx_max_search_n is infinite, then this is in
-        fact not used at all.
-
-        overlap_weight: Scalar double. The weight factor assigned to
-        overlaps, i.e., the a in the formula of the cost to be minimised.
-        the unit is (shape cost unit)/(pixels as a unit of
-        skeleton length).
-
-        leftover_weight:  The
-        weight factor assigned to leftover pieces, i.e., the b in the
-        formula of the cost to be minimised. In units of (shape cost
-        unit)/(pixels of skeleton length).
-
-        approx_max_search_n: [Only used if selection_method is 'dfs_prune']
-
-        Outputs:
-
-        paths_coords_selected: A cell array of worms selected. Each worm is
-        represented as 2xm array of coordinates, specifying the skeleton of
-        the worm as a polyline path.
-"""
-        min_path_length = params.min_path_length
-        max_path_length = params.max_path_length
-        median_worm_area = params.median_worm_area
-        num_control_points = params.num_control_points
-
-        mean_angles = params.mean_angles
-        inv_angles_covariance_matrix = params.inv_angles_covariance_matrix
-
-        component = labels == i
-        max_num_worms = int(numpy.ceil(numpy.sum(component) / median_worm_area))
-
-        # First, filter out based on path length
-        # Simultaneously build a vector of shape costs and a vector of
-        # reconstructed binaries for each of the (accepted) paths.
-
-        #
-        # List of tuples of path structs that pass filter + cost of shape
-        #
-        paths_and_costs = []
-        for i, path in enumerate(paths):
-            current_path_coords = path_to_pixel_coords(graph, path)
-            cumul_lengths = calculate_cumulative_lengths(current_path_coords)
-            total_length = cumul_lengths[-1]
-            if total_length > max_path_length or total_length < min_path_length:
-                continue
-            control_coords = sample_control_points(
-                current_path_coords, cumul_lengths, num_control_points
-            )
-            #
-            # Calculate the shape cost
-            #
-            current_shape_cost = calculate_angle_shape_cost(
-                control_coords, total_length, mean_angles, inv_angles_covariance_matrix
-            )
-            if current_shape_cost < params.cost_threshold:
-                paths_and_costs.append((path, current_shape_cost))
-
-        if len(paths_and_costs) == 0:
-            return []
-
-        path_segment_matrix = numpy.zeros(
-            (len(graph.segments), len(paths_and_costs)), bool
-        )
-        for i, (path, cost) in enumerate(paths_and_costs):
-            path_segment_matrix[path.segments, i] = True
-    
-        
-        overlap_weight = get_overlap_weight(params, wants_training_set_weights, override_overlap_weight)
-        leftover_weight = get_leftover_weight(params, wants_training_set_weights, override_leftover_weight)
-        #
-        # Sort by increasing cost
-        #
-        costs = numpy.array([cost for path, cost in paths_and_costs])
-        order = numpy.lexsort([costs])
-        if len(order) > MAX_PATHS:
-            order = order[:MAX_PATHS]
-        costs = costs[order]
-        path_segment_matrix = path_segment_matrix[:, order]
-
-        current_best_subset, current_best_cost = fast_selection(
-            costs,
-            path_segment_matrix,
-            graph.segment_lengths,
-            overlap_weight,
-            leftover_weight,
-            max_num_worms,
-        )
-        selected_paths = [paths_and_costs[order[i]][0] for i in current_best_subset]
-        path_coords_selected = [
-            path_to_pixel_coords(graph, path) for path in selected_paths
-        ]
-        return path_coords_selected
 
 
 

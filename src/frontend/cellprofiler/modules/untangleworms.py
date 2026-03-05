@@ -16,6 +16,7 @@ from cellprofiler_library.modules._untangleworms import (
     get_graph_from_binary,
     single_worm_find_path,
     single_worm_filter,
+    cluster_graph_building,
 )
 """
 UntangleWorms
@@ -1141,8 +1142,8 @@ should be processed.
                     ):
                         all_path_coords.append(path_coords)
                 else:
-                    graph = self.cluster_graph_building(
-                        workspace, labels, i, skeleton, params
+                    graph = cluster_graph_building(
+                        labels, i, skeleton, params
                     )
                     if len(graph.segments) > self.max_complexity:
                         LOGGER.warning(
@@ -1352,14 +1353,6 @@ should be processed.
         angles[angles > numpy.pi] -= 2 * numpy.pi
         angles[angles < -numpy.pi] += 2 * numpy.pi
         return angles
-
-    def cluster_graph_building(self, workspace, labels, i, skeleton, params):
-        binary_im = labels == i
-        skeleton = skeleton & binary_im
-
-        return get_graph_from_binary(
-            binary_im, skeleton, params.max_radius, params.max_skel_length
-        )
 
 
     def cluster_paths_selection(self, graph, paths, labels, i, params):

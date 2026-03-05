@@ -25,6 +25,7 @@ from cellprofiler_library.modules._untangleworms import (
     get_leftover_weight,
     cluster_paths_selection,
 )
+from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 """
 UntangleWorms
 =============
@@ -219,33 +220,6 @@ F_CONTROL_POINT_X = "ControlPointX"
 """The Y coordinate of a control point (Worm_ControlPointY_14 for example)"""
 F_CONTROL_POINT_Y = "ControlPointY"
 
-######################################################
-#
-# Training file XML tags:
-#
-######################################################
-
-T_NAMESPACE = "http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
-T_TRAINING_DATA = "training-data"
-T_VERSION = "version"
-T_MIN_AREA = "min-area"
-T_MAX_AREA = "max-area"
-T_COST_THRESHOLD = "cost-threshold"
-T_NUM_CONTROL_POINTS = "num-control-points"
-T_MEAN_ANGLES = "mean-angles"
-T_INV_ANGLES_COVARIANCE_MATRIX = "inv-angles-covariance-matrix"
-T_MAX_SKEL_LENGTH = "max-skel-length"
-T_MAX_RADIUS = "max-radius"
-T_MIN_PATH_LENGTH = "min-path-length"
-T_MAX_PATH_LENGTH = "max-path-length"
-T_MEDIAN_WORM_AREA = "median-worm-area"
-T_OVERLAP_WEIGHT = "overlap-weight"
-T_LEFTOVER_WEIGHT = "leftover-weight"
-T_RADII_FROM_TRAINING = "radii-from-training"
-T_TRAINING_SET_SIZE = "training-set-size"
-T_VALUES = "values"
-T_VALUE = "value"
-
 C_ALL = "Process all clusters"
 C_ALL_VALUE = numpy.iinfo(int).max
 C_MEDIUM = "Medium"
@@ -262,6 +236,235 @@ complexity_limits = {
     C_HIGH: C_HIGH_VALUE,
     C_VERY_HIGH: C_VERY_HIGH_VALUE,
 }
+
+
+def read_params(training_set_directory, training_set_file_name, d):
+    """Read a training set parameters  file
+
+    training_set_directory - the training set directory setting
+
+    training_set_file_name - the training set file name setting
+
+    d - a dictionary that stores cached parameters
+    """
+
+    #
+    # The parameters file is a .xml file with the following structure:
+    #
+    # initial_filter
+    #     min_worm_area: float
+    # single_worm_determination
+    #     max_area: float
+    # single_worm_find_path
+    #     method: string (=? "dfs_longest_path")
+    # single_worm_filter
+    #     method: string (=? "angle_shape_cost")
+    #     cost_threshold: float
+    #     num_control_points: int
+    #     mean_angles: float vector (num_control_points -1 entries)
+    #     inv_angles_covariance_matrix: float matrix (num_control_points -1)**2
+    # cluster_graph_building
+    #     method: "large_branch_area_max_skel_length"
+    #     max_radius: float
+    #     max_skel_length: float
+    # cluster_paths_finding
+    #     method: string "dfs"
+    # cluster_paths_selection
+    #     shape_cost_method: "angle_shape_model"
+    #     selection_method: "dfs_prune"
+    #     overlap_leftover_method: "skeleton_length"
+    #     min_path_length: float
+    #     max_path_length: float
+    #     median_worm__area: float
+    #     worm_radius: float
+    #     overlap_weight: int
+    #     leftover_weight: int
+    #     ---- the following are the same as for the single worm filter ---
+    #     num_control_points: int
+    #     mean_angles: float vector (num_control_points-1)
+    #     inv_angles_covariance_matrix: (num_control_points-1)**2
+    #     ----
+    #     approx_max_search_n: int
+    # worm_descriptor_building
+    #     method: string = "default"
+    #     radii_from_training: vector ?of length num_control_points?
+    #
+    class X(object):
+        """This "class" is used as a vehicle for arbitrary dot notation
+
+        For instance:
+        > x = X()
+        > x.foo = 1
+        > x.foo
+        1
+        """
+
+        pass
+
+    path = training_set_directory.get_absolute_path()
+    file_name = training_set_file_name.value
+    if file_name in d:
+        result, timestamp = d[file_name]
+        if (
+            timestamp == "URL"
+            or timestamp == os.stat(os.path.join(path, file_name)).st_mtime
+        ):
+            return d[file_name][0]
+
+    if training_set_directory.dir_choice == URL_FOLDER_NAME:
+        url = file_name
+        fd_or_file = urlopen(url)
+        is_url = True
+        timestamp = "URL"
+    else:
+        fd_or_file = os.path.join(path, file_name)
+        is_url = False
+        timestamp = os.stat(fd_or_file).st_mtime
+    try:
+        from xml.dom.minidom import parse
+
+        doc = parse(fd_or_file)
+        result = X()
+
+        def f(tag, attribute, klass):
+            elements = doc.documentElement.getElementsByTagName(tag)
+            assert len(elements) == 1
+            element = elements[0]
+            text = "".join(
+                [
+                    text.data
+                    for text in element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
+            setattr(result, attribute, klass(text.strip()))
+
+        for tag, attribute, klass in (
+            (TrainingXMLTag.VERSION, "version", int),
+            (TrainingXMLTag.MIN_AREA, "min_worm_area", float),
+            (TrainingXMLTag.MAX_AREA, "max_area", float),
+            (TrainingXMLTag.COST_THRESHOLD, "cost_threshold", float),
+            (TrainingXMLTag.NUM_CONTROL_POINTS, "num_control_points", int),
+            (TrainingXMLTag.MAX_RADIUS, "max_radius", float),
+            (TrainingXMLTag.MAX_SKEL_LENGTH, "max_skel_length", float),
+            (TrainingXMLTag.MIN_PATH_LENGTH, "min_path_length", float),
+            (TrainingXMLTag.MAX_PATH_LENGTH, "max_path_length", float),
+            (TrainingXMLTag.MEDIAN_WORM_AREA, "median_worm_area", float),
+            (TrainingXMLTag.OVERLAP_WEIGHT, "overlap_weight", float),
+            (TrainingXMLTag.LEFTOVER_WEIGHT, "leftover_weight", float),
+        ):
+            f(tag, attribute, klass)
+        elements = doc.documentElement.getElementsByTagName(TrainingXMLTag.MEAN_ANGLES)
+        assert len(elements) == 1
+        element = elements[0]
+        result.mean_angles = numpy.zeros(result.num_control_points - 1)
+        for index, value_element in enumerate(element.getElementsByTagName(TrainingXMLTag.VALUE)):
+            text = "".join(
+                [
+                    text.data
+                    for text in value_element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
+            result.mean_angles[index] = float(text.strip())
+        elements = doc.documentElement.getElementsByTagName(TrainingXMLTag.RADII_FROM_TRAINING)
+        assert len(elements) == 1
+        element = elements[0]
+        result.radii_from_training = numpy.zeros(result.num_control_points)
+        for index, value_element in enumerate(element.getElementsByTagName(TrainingXMLTag.VALUE)):
+            text = "".join(
+                [
+                    text.data
+                    for text in value_element.childNodes
+                    if text.nodeType == doc.TEXT_NODE
+                ]
+            )
+            result.radii_from_training[index] = float(text.strip())
+        result.inv_angles_covariance_matrix = numpy.zeros(
+            [result.num_control_points - 1] * 2
+        )
+        elements = doc.documentElement.getElementsByTagName(
+            TrainingXMLTag.INV_ANGLES_COVARIANCE_MATRIX
+        )
+        assert len(elements) == 1
+        element = elements[0]
+        for i, values_element in enumerate(element.getElementsByTagName(TrainingXMLTag.VALUES)):
+            for j, value_element in enumerate(
+                values_element.getElementsByTagName(TrainingXMLTag.VALUE)
+            ):
+                text = "".join(
+                    [
+                        text.data
+                        for text in value_element.childNodes
+                        if text.nodeType == doc.TEXT_NODE
+                    ]
+                )
+                result.inv_angles_covariance_matrix[i, j] = float(text.strip())
+    except:
+        if is_url:
+            fd_or_file = urlopen(url)
+
+        mat_params = loadmat(fd_or_file)["params"][0, 0]
+        field_names = list(mat_params.dtype.fields.keys())
+
+        result = X()
+
+        CLUSTER_PATHS_SELECTION = "cluster_paths_selection"
+        CLUSTER_GRAPH_BUILDING = "cluster_graph_building"
+        SINGLE_WORM_FILTER = "single_worm_filter"
+        INITIAL_FILTER = "initial_filter"
+        SINGLE_WORM_DETERMINATION = "single_worm_determination"
+        CLUSTER_PATHS_FINDING = "cluster_paths_finding"
+        WORM_DESCRIPTOR_BUILDING = "worm_descriptor_building"
+        SINGLE_WORM_FIND_PATH = "single_worm_find_path"
+        METHOD = "method"
+
+        STRING = "string"
+        SCALAR = "scalar"
+        VECTOR = "vector"
+        MATRIX = "matrix"
+
+        def mp(*args, **kwargs):
+            """Look up a field from mat_params"""
+            x = mat_params
+            for arg in args[:-1]:
+                x = x[arg][0, 0]
+            x = x[args[-1]]
+            kind = kwargs.get("kind", SCALAR)
+            if kind == SCALAR:
+                return x[0, 0]
+            elif kind == STRING:
+                return x[0]
+            elif kind == VECTOR:
+                # Work-around for OS/X Numpy bug
+                # Copy a possibly mis-aligned buffer
+                b = numpy.array(
+                    [v for v in numpy.frombuffer(x.data, numpy.uint8)], numpy.uint8
+                )
+                return numpy.frombuffer(b, x.dtype)
+            return x
+
+        result.min_worm_area = mp(INITIAL_FILTER, "min_worm_area")
+        result.max_area = mp(SINGLE_WORM_DETERMINATION, "max_area")
+        result.cost_threshold = mp(SINGLE_WORM_FILTER, "cost_threshold")
+        result.num_control_points = mp(SINGLE_WORM_FILTER, "num_control_points")
+        result.mean_angles = mp(SINGLE_WORM_FILTER, "mean_angles", kind=VECTOR)
+        result.inv_angles_covariance_matrix = mp(
+            SINGLE_WORM_FILTER, "inv_angles_covariance_matrix", kind=MATRIX
+        )
+        result.max_radius = mp(CLUSTER_GRAPH_BUILDING, "max_radius")
+        result.max_skel_length = mp(CLUSTER_GRAPH_BUILDING, "max_skel_length")
+        result.min_path_length = mp(CLUSTER_PATHS_SELECTION, "min_path_length")
+        result.max_path_length = mp(CLUSTER_PATHS_SELECTION, "max_path_length")
+        result.median_worm_area = mp(CLUSTER_PATHS_SELECTION, "median_worm_area")
+        result.worm_radius = mp(CLUSTER_PATHS_SELECTION, "worm_radius")
+        result.overlap_weight = mp(CLUSTER_PATHS_SELECTION, "overlap_weight")
+        result.leftover_weight = mp(CLUSTER_PATHS_SELECTION, "leftover_weight")
+        result.radii_from_training = mp(
+            WORM_DESCRIPTOR_BUILDING, "radii_from_training", kind=VECTOR
+        )
+    d[file_name] = (result, timestamp)
+    return result
 
 
 class UntangleWorms(Module):
@@ -1046,48 +1249,48 @@ should be processed.
             file_name = m.apply_metadata(self.training_set_file_name.value)
             fd = open(os.path.join(path, file_name), "w")
             doc = DOM.getDOMImplementation().createDocument(
-                T_NAMESPACE, T_TRAINING_DATA, None
+                TrainingXMLTag.NAMESPACE, TrainingXMLTag.TRAINING_DATA, None
             )
             top = doc.documentElement
-            top.setAttribute("xmlns", T_NAMESPACE)
+            top.setAttribute("xmlns", TrainingXMLTag.NAMESPACE)
             ver = Version(cellprofiler_version)
             for tag, value in (
-                (T_VERSION, int(f"{ver.major}{ver.minor}{ver.micro}")),
-                (T_MIN_AREA, min_area),
-                (T_MAX_AREA, max_area),
-                (T_COST_THRESHOLD, max_cost),
-                (T_NUM_CONTROL_POINTS, num_control_points),
-                (T_MAX_SKEL_LENGTH, max_skel_length),
-                (T_MIN_PATH_LENGTH, min_length),
-                (T_MAX_PATH_LENGTH, max_length),
-                (T_MEDIAN_WORM_AREA, median_area),
-                (T_MAX_RADIUS, max_radius),
-                (T_OVERLAP_WEIGHT, this.override_overlap_weight.value),
-                (T_LEFTOVER_WEIGHT, this.override_leftover_weight.value),
-                (T_TRAINING_SET_SIZE, nworms),
+                (TrainingXMLTag.VERSION, int(f"{ver.major}{ver.minor}{ver.micro}")),
+                (TrainingXMLTag.MIN_AREA, min_area),
+                (TrainingXMLTag.MAX_AREA, max_area),
+                (TrainingXMLTag.COST_THRESHOLD, max_cost),
+                (TrainingXMLTag.NUM_CONTROL_POINTS, num_control_points),
+                (TrainingXMLTag.MAX_SKEL_LENGTH, max_skel_length),
+                (TrainingXMLTag.MIN_PATH_LENGTH, min_length),
+                (TrainingXMLTag.MAX_PATH_LENGTH, max_length),
+                (TrainingXMLTag.MEDIAN_WORM_AREA, median_area),
+                (TrainingXMLTag.MAX_RADIUS, max_radius),
+                (TrainingXMLTag.OVERLAP_WEIGHT, this.override_overlap_weight.value),
+                (TrainingXMLTag.LEFTOVER_WEIGHT, this.override_leftover_weight.value),
+                (TrainingXMLTag.TRAINING_SET_SIZE, nworms),
             ):
                 element = doc.createElement(tag)
                 content = doc.createTextNode(str(value))
                 element.appendChild(content)
                 top.appendChild(element)
             for tag, values in (
-                (T_MEAN_ANGLES, mean_angles_length),
-                (T_RADII_FROM_TRAINING, mean_radial_profile),
+                (TrainingXMLTag.MEAN_ANGLES, mean_angles_length),
+                (TrainingXMLTag.RADII_FROM_TRAINING, mean_radial_profile),
             ):
                 element = doc.createElement(tag)
                 top.appendChild(element)
                 for value in values:
-                    value_element = doc.createElement(T_VALUE)
+                    value_element = doc.createElement(TrainingXMLTag.VALUE)
                     content = doc.createTextNode(str(value))
                     value_element.appendChild(content)
                     element.appendChild(value_element)
-            element = doc.createElement(T_INV_ANGLES_COVARIANCE_MATRIX)
+            element = doc.createElement(TrainingXMLTag.INV_ANGLES_COVARIANCE_MATRIX)
             top.appendChild(element)
             for row in inv_angles_covariance_matrix:
-                values = doc.createElement(T_VALUES)
+                values = doc.createElement(TrainingXMLTag.VALUES)
                 element.appendChild(values)
                 for col in row:
-                    value = doc.createElement(T_VALUE)
+                    value = doc.createElement(TrainingXMLTag.VALUE)
                     content = doc.createTextNode(str(col))
                     value.appendChild(content)
                     values.appendChild(value)
@@ -1624,234 +1827,6 @@ should be processed.
             variable_revision_number = 2
         return setting_values, variable_revision_number
 
-
-def read_params(training_set_directory, training_set_file_name, d):
-    """Read a training set parameters  file
-
-    training_set_directory - the training set directory setting
-
-    training_set_file_name - the training set file name setting
-
-    d - a dictionary that stores cached parameters
-    """
-
-    #
-    # The parameters file is a .xml file with the following structure:
-    #
-    # initial_filter
-    #     min_worm_area: float
-    # single_worm_determination
-    #     max_area: float
-    # single_worm_find_path
-    #     method: string (=? "dfs_longest_path")
-    # single_worm_filter
-    #     method: string (=? "angle_shape_cost")
-    #     cost_threshold: float
-    #     num_control_points: int
-    #     mean_angles: float vector (num_control_points -1 entries)
-    #     inv_angles_covariance_matrix: float matrix (num_control_points -1)**2
-    # cluster_graph_building
-    #     method: "large_branch_area_max_skel_length"
-    #     max_radius: float
-    #     max_skel_length: float
-    # cluster_paths_finding
-    #     method: string "dfs"
-    # cluster_paths_selection
-    #     shape_cost_method: "angle_shape_model"
-    #     selection_method: "dfs_prune"
-    #     overlap_leftover_method: "skeleton_length"
-    #     min_path_length: float
-    #     max_path_length: float
-    #     median_worm__area: float
-    #     worm_radius: float
-    #     overlap_weight: int
-    #     leftover_weight: int
-    #     ---- the following are the same as for the single worm filter ---
-    #     num_control_points: int
-    #     mean_angles: float vector (num_control_points-1)
-    #     inv_angles_covariance_matrix: (num_control_points-1)**2
-    #     ----
-    #     approx_max_search_n: int
-    # worm_descriptor_building
-    #     method: string = "default"
-    #     radii_from_training: vector ?of length num_control_points?
-    #
-    class X(object):
-        """This "class" is used as a vehicle for arbitrary dot notation
-
-        For instance:
-        > x = X()
-        > x.foo = 1
-        > x.foo
-        1
-        """
-
-        pass
-
-    path = training_set_directory.get_absolute_path()
-    file_name = training_set_file_name.value
-    if file_name in d:
-        result, timestamp = d[file_name]
-        if (
-            timestamp == "URL"
-            or timestamp == os.stat(os.path.join(path, file_name)).st_mtime
-        ):
-            return d[file_name][0]
-
-    if training_set_directory.dir_choice == URL_FOLDER_NAME:
-        url = file_name
-        fd_or_file = urlopen(url)
-        is_url = True
-        timestamp = "URL"
-    else:
-        fd_or_file = os.path.join(path, file_name)
-        is_url = False
-        timestamp = os.stat(fd_or_file).st_mtime
-    try:
-        from xml.dom.minidom import parse
-
-        doc = parse(fd_or_file)
-        result = X()
-
-        def f(tag, attribute, klass):
-            elements = doc.documentElement.getElementsByTagName(tag)
-            assert len(elements) == 1
-            element = elements[0]
-            text = "".join(
-                [
-                    text.data
-                    for text in element.childNodes
-                    if text.nodeType == doc.TEXT_NODE
-                ]
-            )
-            setattr(result, attribute, klass(text.strip()))
-
-        for tag, attribute, klass in (
-            (T_VERSION, "version", int),
-            (T_MIN_AREA, "min_worm_area", float),
-            (T_MAX_AREA, "max_area", float),
-            (T_COST_THRESHOLD, "cost_threshold", float),
-            (T_NUM_CONTROL_POINTS, "num_control_points", int),
-            (T_MAX_RADIUS, "max_radius", float),
-            (T_MAX_SKEL_LENGTH, "max_skel_length", float),
-            (T_MIN_PATH_LENGTH, "min_path_length", float),
-            (T_MAX_PATH_LENGTH, "max_path_length", float),
-            (T_MEDIAN_WORM_AREA, "median_worm_area", float),
-            (T_OVERLAP_WEIGHT, "overlap_weight", float),
-            (T_LEFTOVER_WEIGHT, "leftover_weight", float),
-        ):
-            f(tag, attribute, klass)
-        elements = doc.documentElement.getElementsByTagName(T_MEAN_ANGLES)
-        assert len(elements) == 1
-        element = elements[0]
-        result.mean_angles = numpy.zeros(result.num_control_points - 1)
-        for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
-            text = "".join(
-                [
-                    text.data
-                    for text in value_element.childNodes
-                    if text.nodeType == doc.TEXT_NODE
-                ]
-            )
-            result.mean_angles[index] = float(text.strip())
-        elements = doc.documentElement.getElementsByTagName(T_RADII_FROM_TRAINING)
-        assert len(elements) == 1
-        element = elements[0]
-        result.radii_from_training = numpy.zeros(result.num_control_points)
-        for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
-            text = "".join(
-                [
-                    text.data
-                    for text in value_element.childNodes
-                    if text.nodeType == doc.TEXT_NODE
-                ]
-            )
-            result.radii_from_training[index] = float(text.strip())
-        result.inv_angles_covariance_matrix = numpy.zeros(
-            [result.num_control_points - 1] * 2
-        )
-        elements = doc.documentElement.getElementsByTagName(
-            T_INV_ANGLES_COVARIANCE_MATRIX
-        )
-        assert len(elements) == 1
-        element = elements[0]
-        for i, values_element in enumerate(element.getElementsByTagName(T_VALUES)):
-            for j, value_element in enumerate(
-                values_element.getElementsByTagName(T_VALUE)
-            ):
-                text = "".join(
-                    [
-                        text.data
-                        for text in value_element.childNodes
-                        if text.nodeType == doc.TEXT_NODE
-                    ]
-                )
-                result.inv_angles_covariance_matrix[i, j] = float(text.strip())
-    except:
-        if is_url:
-            fd_or_file = urlopen(url)
-
-        mat_params = loadmat(fd_or_file)["params"][0, 0]
-        field_names = list(mat_params.dtype.fields.keys())
-
-        result = X()
-
-        CLUSTER_PATHS_SELECTION = "cluster_paths_selection"
-        CLUSTER_GRAPH_BUILDING = "cluster_graph_building"
-        SINGLE_WORM_FILTER = "single_worm_filter"
-        INITIAL_FILTER = "initial_filter"
-        SINGLE_WORM_DETERMINATION = "single_worm_determination"
-        CLUSTER_PATHS_FINDING = "cluster_paths_finding"
-        WORM_DESCRIPTOR_BUILDING = "worm_descriptor_building"
-        SINGLE_WORM_FIND_PATH = "single_worm_find_path"
-        METHOD = "method"
-
-        STRING = "string"
-        SCALAR = "scalar"
-        VECTOR = "vector"
-        MATRIX = "matrix"
-
-        def mp(*args, **kwargs):
-            """Look up a field from mat_params"""
-            x = mat_params
-            for arg in args[:-1]:
-                x = x[arg][0, 0]
-            x = x[args[-1]]
-            kind = kwargs.get("kind", SCALAR)
-            if kind == SCALAR:
-                return x[0, 0]
-            elif kind == STRING:
-                return x[0]
-            elif kind == VECTOR:
-                # Work-around for OS/X Numpy bug
-                # Copy a possibly mis-aligned buffer
-                b = numpy.array(
-                    [v for v in numpy.frombuffer(x.data, numpy.uint8)], numpy.uint8
-                )
-                return numpy.frombuffer(b, x.dtype)
-            return x
-
-        result.min_worm_area = mp(INITIAL_FILTER, "min_worm_area")
-        result.max_area = mp(SINGLE_WORM_DETERMINATION, "max_area")
-        result.cost_threshold = mp(SINGLE_WORM_FILTER, "cost_threshold")
-        result.num_control_points = mp(SINGLE_WORM_FILTER, "num_control_points")
-        result.mean_angles = mp(SINGLE_WORM_FILTER, "mean_angles", kind=VECTOR)
-        result.inv_angles_covariance_matrix = mp(
-            SINGLE_WORM_FILTER, "inv_angles_covariance_matrix", kind=MATRIX
-        )
-        result.max_radius = mp(CLUSTER_GRAPH_BUILDING, "max_radius")
-        result.max_skel_length = mp(CLUSTER_GRAPH_BUILDING, "max_skel_length")
-        result.min_path_length = mp(CLUSTER_PATHS_SELECTION, "min_path_length")
-        result.max_path_length = mp(CLUSTER_PATHS_SELECTION, "max_path_length")
-        result.median_worm_area = mp(CLUSTER_PATHS_SELECTION, "median_worm_area")
-        result.worm_radius = mp(CLUSTER_PATHS_SELECTION, "worm_radius")
-        result.overlap_weight = mp(CLUSTER_PATHS_SELECTION, "overlap_weight")
-        result.leftover_weight = mp(CLUSTER_PATHS_SELECTION, "leftover_weight")
-        result.radii_from_training = mp(
-            WORM_DESCRIPTOR_BUILDING, "radii_from_training", kind=VECTOR
-        )
-    d[file_name] = (result, timestamp)
-    return result
 
 
 def recalculate_single_worm_control_points(all_labels, ncontrolpoints):

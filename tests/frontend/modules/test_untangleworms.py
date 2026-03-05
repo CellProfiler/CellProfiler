@@ -33,6 +33,7 @@ from cellprofiler_library.modules._untangleworms import (
     make_incidence_matrix,
     trace_segments,
     get_graph_from_branching_areas_and_segments,
+    single_worm_find_path,
 )
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False

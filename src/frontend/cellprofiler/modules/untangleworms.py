@@ -14,6 +14,7 @@ from cellprofiler_library.modules._untangleworms import (
     trace_segments,
     get_graph_from_branching_areas_and_segments,
     get_graph_from_binary,
+    single_worm_find_path,
 )
 """
 UntangleWorms
@@ -1131,8 +1132,8 @@ should be processed.
                     # Completely exclude the worm
                     continue
                 elif areas[i] <= params.max_area:
-                    path_coords, path_struct = self.single_worm_find_path(
-                        workspace, labels, i, skeleton, params
+                    path_coords, path_struct = single_worm_find_path(
+                        labels, i, skeleton, params
                     )
                     if len(path_coords) > 0 and self.single_worm_filter(
                         workspace, path_coords, params
@@ -1331,29 +1332,6 @@ should be processed.
             a.set_title("Covariance")
             f.canvas.draw()
             figure.Refresh()
-
-    def single_worm_find_path(self, workspace, labels, i, skeleton, params):
-        """Finds the worm's skeleton  as a path.
-
-        labels - the labels matrix, labeling single and clusters of worms
-
-        i - the labeling of the worm of interest
-
-        params - The parameter structure
-
-        returns:
-
-        path_coords: A 2 x n array, of coordinates for the path found. (Each
-              point along the polyline path is represented by a column,
-              i coordinates in the first row and j coordinates in the second.)
-
-        path_struct: a structure describing the path
-        """
-        binary_im = labels == i
-        skeleton = skeleton & binary_im
-        graph_struct = get_graph_from_binary(binary_im, skeleton)
-        return get_longest_path_coords(graph_struct, params.max_path_length)
-
 
     def single_worm_filter(self, workspace, path_coords, params):
         """Given a path representing a single worm, calculates its shape cost, and

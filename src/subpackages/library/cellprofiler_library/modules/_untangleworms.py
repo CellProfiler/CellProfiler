@@ -1260,3 +1260,24 @@ def worm_descriptor_building(all_path_coords, params, shape):
     all_control_coords_x = numpy.vstack(all_control_coords_x)
     all_control_coords_y = numpy.vstack(all_control_coords_y)
     return ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y
+
+# TODO: #5132 manage these more beautifully 
+def get_overlap_weight(params, wants_training_set_weights, override_overlap_weight):
+    """The overlap weight to use in the cost calculation"""
+    if not wants_training_set_weights:
+        return override_overlap_weight
+    elif params is None:
+        return 2
+    else:
+        return params.overlap_weight
+
+# TODO: #5132 manage these more beautifully 
+def get_leftover_weight(params, wants_training_set_weights, override_leftover_weight):
+    """The leftover weight to use in the cost calculation"""
+    if not wants_training_set_weights:
+        return override_leftover_weight
+    elif params is None:
+        return 10
+    else:
+        return params.leftover_weight
+    

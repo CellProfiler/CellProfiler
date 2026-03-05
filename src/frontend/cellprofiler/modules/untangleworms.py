@@ -21,6 +21,8 @@ from cellprofiler_library.modules._untangleworms import (
     fast_selection,
     rebuild_worm_from_control_points_approx,
     worm_descriptor_building,
+    get_overlap_weight,
+    get_leftover_weight,
 )
 """
 UntangleWorms
@@ -855,19 +857,19 @@ should be processed.
                 ]
         return result
 
-    def overlap_weight(self, params):
+    def overlap_weight(self, params, wants_training_set_weights, override_overlap_weight):
         """The overlap weight to use in the cost calculation"""
-        if not self.wants_training_set_weights:
-            return self.override_overlap_weight.value
+        if not wants_training_set_weights:
+            return override_overlap_weight
         elif params is None:
             return 2
         else:
             return params.overlap_weight
 
-    def leftover_weight(self, params):
+    def leftover_weight(self, params, wants_training_set_weights, override_leftover_weight):
         """The leftover weight to use in the cost calculation"""
-        if not self.wants_training_set_weights:
-            return self.override_leftover_weight.value
+        if not wants_training_set_weights:
+            return override_leftover_weight
         elif params is None:
             return 10
         else:
@@ -1158,8 +1160,11 @@ should be processed.
                     paths = get_all_paths(
                         graph, params.min_path_length, params.max_path_length
                     )
+                    wants_training_set_weights = self.wants_training_set_weights
+                    override_overlap_weight = self.override_overlap_weight.value
+                    override_leftover_weight = self.override_leftover_weight.value
                     paths_selected = self.cluster_paths_selection(
-                        graph, paths, labels, i, params
+                        graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight
                     )
                     del graph
                     del paths
@@ -1359,7 +1364,10 @@ should be processed.
         return angles
 
 
-    def cluster_paths_selection(self, graph, paths, labels, i, params):
+    # wants_training_set_weights = self.wants_training_set_weights
+    # override_overlap_weight = self.override_overlap_weight.value
+    # override_leftover_weight = self.override_leftover_weight.value
+    def cluster_paths_selection(self, graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight):
         """Select the best paths for worms from the graph
 
         Given a graph representing a worm cluster, and a list of paths in the
@@ -1513,8 +1521,10 @@ should be processed.
         )
         for i, (path, cost) in enumerate(paths_and_costs):
             path_segment_matrix[path.segments, i] = True
-        overlap_weight = self.overlap_weight(params)
-        leftover_weight = self.leftover_weight(params)
+    
+        
+        overlap_weight = get_overlap_weight(params, wants_training_set_weights, override_overlap_weight)
+        leftover_weight = get_leftover_weight(params, wants_training_set_weights, override_leftover_weight)
         #
         # Sort by increasing cost
         #

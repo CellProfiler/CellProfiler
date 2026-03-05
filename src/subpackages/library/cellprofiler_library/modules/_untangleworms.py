@@ -1106,3 +1106,157 @@ def fast_selection(
             break
     return current_best_subset, current_best_cost
 
+def rebuild_worm_from_control_points_approx(
+    control_coords, worm_radii, shape
+):
+    """Rebuild a worm from its control coordinates
+
+    Given a worm specified by some control points along its spline,
+    reconstructs an approximate binary image representing the worm.
+
+    Specifically, this function generates an image where successive control
+    points have been joined by line segments, and then dilates that by a
+    certain (specified) radius.
+
+    Inputs:
+
+    control_coords: A N x 2 double array, where each column contains the x
+    and y coordinates for a control point.
+
+    worm_radius: Scalar double. Approximate radius of a typical worm; the
+    radius by which the reconstructed worm spline is dilated to form the
+    final worm.
+
+    Outputs:
+    The coordinates of all pixels in the worm in an N x 2 array"""
+    index, count, i, j = centrosome.cpmorphology.get_line_pts(
+        control_coords[:-1, 0],
+        control_coords[:-1, 1],
+        control_coords[1:, 0],
+        control_coords[1:, 1],
+    )
+    #
+    # Get rid of the last point for the middle elements - these are
+    # duplicated by the first point in the next line
+    #
+    i = numpy.delete(i, index[1:])
+    j = numpy.delete(j, index[1:])
+    index = index - numpy.arange(len(index))
+    count -= 1
+    #
+    # Get rid of all segments that are 1 long. Those will be joined
+    # by the segments around them.
+    #
+    index, count = index[count != 0], count[count != 0]
+    #
+    # Find the control point and within-control-point index of each point
+    #
+    label = numpy.zeros(len(i), int)
+    label[index[1:]] = 1
+    label = numpy.cumsum(label)
+    order = numpy.arange(len(i)) - index[label]
+    frac = order.astype(float) / count[label].astype(float)
+    radius = worm_radii[label] * (1 - frac) + worm_radii[label + 1] * frac
+    iworm_radius = int(numpy.max(numpy.ceil(radius)))
+    #
+    # Get dilation coordinates
+    #
+    ii, jj = numpy.mgrid[
+        -iworm_radius : iworm_radius + 1, -iworm_radius : iworm_radius + 1
+    ]
+    dd = numpy.sqrt((ii * ii + jj * jj).astype(float))
+    mask = ii * ii + jj * jj <= iworm_radius * iworm_radius
+    ii = ii[mask]
+    jj = jj[mask]
+    dd = dd[mask]
+    #
+    # All points (with repeats)
+    #
+    i = (i[:, numpy.newaxis] + ii[numpy.newaxis, :]).flatten()
+    j = (j[:, numpy.newaxis] + jj[numpy.newaxis, :]).flatten()
+    #
+    # We further mask out any dilation coordinates outside of
+    # the radius at our point in question
+    #
+    m = (radius[:, numpy.newaxis] >= dd[numpy.newaxis, :]).flatten()
+    i = i[m]
+    j = j[m]
+    #
+    # Find repeats by sorting and comparing against next
+    #
+    order = numpy.lexsort((i, j))
+    i = i[order]
+    j = j[order]
+    mask = numpy.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
+    i = i[mask]
+    j = j[mask]
+    mask = (i >= 0) & (j >= 0) & (i < shape[0]) & (j < shape[1])
+    return i[mask], j[mask]
+
+def worm_descriptor_building(all_path_coords, params, shape):
+    """Return the coordinates of reconstructed worms in i,j,v form
+
+    Given a list of paths found in an image, reconstructs labeled
+    worms.
+
+    Inputs:
+
+    worm_paths: A list of worm paths, each entry an N x 2 array
+    containing the coordinates of the worm path.
+
+    params:  the params structure loaded using read_params()
+
+    Outputs:
+
+    * an Nx3 array where the first two indices are the i,j
+        coordinate and the third is the worm's label.
+
+    * the lengths of each worm
+    * the angles for control points other than the ends
+    * the coordinates of the control points
+    """
+    num_control_points = params.num_control_points
+    if len(all_path_coords) == 0:
+        return (
+            numpy.zeros((0, 3), int),
+            numpy.zeros(0),
+            numpy.zeros((0, num_control_points - 2)),
+            numpy.zeros((0, num_control_points)),
+            numpy.zeros((0, num_control_points)),
+        )
+
+    worm_radii = params.radii_from_training
+    all_i = []
+    all_j = []
+    all_lengths = []
+    all_angles = []
+    all_control_coords_x = []
+    all_control_coords_y = []
+    for path in all_path_coords:
+        cumul_lengths = calculate_cumulative_lengths(path)
+        control_coords = sample_control_points(
+            path, cumul_lengths, num_control_points
+        )
+        ii, jj = rebuild_worm_from_control_points_approx(
+            control_coords, worm_radii, shape
+        )
+        all_i.append(ii)
+        all_j.append(jj)
+        all_lengths.append(cumul_lengths[-1])
+        all_angles.append(get_angles(control_coords))
+        all_control_coords_x.append(control_coords[:, 1])
+        all_control_coords_y.append(control_coords[:, 0])
+    ijv = numpy.column_stack(
+        (
+            numpy.hstack(all_i),
+            numpy.hstack(all_j),
+            numpy.hstack(
+                [numpy.ones(len(ii), int) * (i + 1) for i, ii in enumerate(all_i)]
+            ),
+        )
+    )
+    all_lengths = numpy.array(all_lengths)
+    all_angles = numpy.vstack(all_angles)
+    all_control_coords_x = numpy.vstack(all_control_coords_x)
+    all_control_coords_y = numpy.vstack(all_control_coords_y)
+    return ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y

@@ -5,6 +5,9 @@ from scipy.sparse import coo
 from centrosome.propagate import propagate
 import scipy.ndimage
 
+# ------------------------------------------------------------------------------
+# Helper functions thare are common between run_train and run_untangle
+# ------------------------------------------------------------------------------
 
 def get_angles(control_coords):
     """Extract the angles at each interior control point
@@ -849,4 +852,31 @@ def get_graph_from_binary(
         branch_areas_binary, segments_binary
     )
 
+
+# ------------------------------------------------------------------------------
+# Functions that are specific to run_untangle
+# ------------------------------------------------------------------------------
+
+
+def single_worm_find_path(labels, i, skeleton, params):
+    """Finds the worm's skeleton  as a path.
+
+    labels - the labels matrix, labeling single and clusters of worms
+
+    i - the labeling of the worm of interest
+
+    params - The parameter structure
+
+    returns:
+
+    path_coords: A 2 x n array, of coordinates for the path found. (Each
+            point along the polyline path is represented by a column,
+            i coordinates in the first row and j coordinates in the second.)
+
+    path_struct: a structure describing the path
+    """
+    binary_im = labels == i
+    skeleton = skeleton & binary_im
+    graph_struct = get_graph_from_binary(binary_im, skeleton)
+    return get_longest_path_coords(graph_struct, params.max_path_length)
 

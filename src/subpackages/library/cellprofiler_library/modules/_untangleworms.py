@@ -880,3 +880,44 @@ def single_worm_find_path(labels, i, skeleton, params):
     graph_struct = get_graph_from_binary(binary_im, skeleton)
     return get_longest_path_coords(graph_struct, params.max_path_length)
 
+def single_worm_filter(path_coords, params):
+    """Given a path representing a single worm, calculates its shape cost, and
+    either accepts it as a worm or rejects it, depending on whether or not
+    the shape cost is higher than some threshold.
+
+    Inputs:
+
+    path_coords:  A N x 2 array giving the coordinates of the path.
+
+    params: the parameters structure from which we use
+
+        cost_theshold: Scalar double. The maximum cost possible for a worm;
+        paths of shape cost higher than this are rejected.
+
+        num_control_points. Scalar positive integer. The shape cost
+        model uses control points sampled at equal intervals along the
+        path.
+
+        mean_angles: A (num_control_points-1) x
+        1 double array. See calculate_angle_shape_cost() for how this is
+        used.
+
+        inv_angles_covariance_matrix: A
+        (num_control_points-1)x(num_control_points-1) double matrix. See
+        calculate_angle_shape_cost() for how this is used.
+
+        Returns true if worm passes filter"""
+    if len(path_coords) < 2:
+        return False
+    cumul_lengths = calculate_cumulative_lengths(path_coords)
+    total_length = cumul_lengths[-1]
+    control_coords = sample_control_points(
+        path_coords, cumul_lengths, params.num_control_points
+    )
+    cost = calculate_angle_shape_cost(
+        control_coords,
+        total_length,
+        params.mean_angles,
+        params.inv_angles_covariance_matrix,
+    )
+    return cost < params.cost_threshold

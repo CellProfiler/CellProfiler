@@ -34,6 +34,7 @@ from cellprofiler_library.modules._untangleworms import (
     trace_segments,
     get_graph_from_branching_areas_and_segments,
     single_worm_find_path,
+    fast_selection,
 )
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
@@ -1966,7 +1967,7 @@ def test_fast_selection_two():
     costs = numpy.array([1, 1])
     path_segment_matrix = numpy.array([[True, False], [False, True]])
     segment_lengths = numpy.array([5, 5])
-    best_paths, best_cost = module.fast_selection(
+    best_paths, best_cost = fast_selection(
         costs, path_segment_matrix, segment_lengths, 1, 1, 10000
     )
     assert tuple(best_paths) == (0, 1)
@@ -1980,7 +1981,7 @@ def test_fast_selection_overlap():
         [[True, False, True], [True, True, True], [False, True, True]]
     )
     segment_lengths = numpy.array([5, 3, 5])
-    best_paths, best_cost = module.fast_selection(
+    best_paths, best_cost = fast_selection(
         costs, path_segment_matrix, segment_lengths, 2, 5, 10000
     )
     assert tuple(best_paths) == (0, 1)
@@ -1994,7 +1995,7 @@ def test_fast_selection_gap():
         [[True, False, True], [False, False, True], [False, True, True]]
     )
     segment_lengths = numpy.array([5, 3, 5])
-    best_paths, best_cost = module.fast_selection(
+    best_paths, best_cost = fast_selection(
         costs, path_segment_matrix, segment_lengths, 5, 2, 10000
     )
     assert tuple(best_paths) == (0, 1)
@@ -2008,7 +2009,7 @@ def test_fast_selection_no_overlap():
         [[True, False, True], [True, True, True], [False, True, True]]
     )
     segment_lengths = numpy.array([5, 3, 5])
-    best_paths, best_cost = module.fast_selection(
+    best_paths, best_cost = fast_selection(
         costs, path_segment_matrix, segment_lengths, 2, 5, 10000
     )
     assert tuple(best_paths) == (2,)
@@ -2022,7 +2023,7 @@ def test_fast_selection_no_gap():
         [[True, False, True], [False, False, True], [False, True, True]]
     )
     segment_lengths = numpy.array([5, 3, 5])
-    best_paths, best_cost = module.fast_selection(
+    best_paths, best_cost = fast_selection(
         costs, path_segment_matrix, segment_lengths, 5, 2, 10000
     )
     assert tuple(best_paths) == (2,)

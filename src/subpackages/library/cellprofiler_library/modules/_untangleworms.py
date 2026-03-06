@@ -11,6 +11,8 @@ from urllib.request import urlopen
 
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
 """Maximum # of sets of paths considered at any level"""
 MAX_CONSIDERED = 50000
@@ -1701,4 +1703,83 @@ def read_params(training_set_directory, training_set_file_name, d, URL_FOLDER_NA
         )
     d[file_name] = (result, timestamp)
     return result
+
+
+def run_untangle(image_pixel_data, params, max_complexity, wants_training_set_weights, override_overlap_weight, override_leftover_weight):
+    #
+    # Skeletonize once, then remove any points in the skeleton
+    # that are adjacent to the edge of the image, then skeletonize again.
+    #
+    # This gets rid of artifacts that cause combinatoric explosions:
+    #
+    #    * * * * * * * *
+    #      *   *   *
+    #    * * * * * * * *
+    #
+    labels, count = scipy.ndimage.label(
+        image_pixel_data, centrosome.cpmorphology.eight_connect
+    )
+    skeleton = centrosome.cpmorphology.skeletonize(image_pixel_data)
+    eroded = scipy.ndimage.binary_erosion(
+        image_pixel_data, centrosome.cpmorphology.eight_connect
+    )
+    skeleton = centrosome.cpmorphology.skeletonize(skeleton & eroded)
+    #
+    # The path skeletons
+    #
+    all_path_coords = []
+    if count != 0 and numpy.sum(skeleton) != 0:
+        areas = numpy.bincount(labels.flatten())
+        skeleton_areas = numpy.bincount(labels[skeleton])
+        current_index = 1
+        for i in range(1, count + 1):
+            if (
+                areas[i] < params.min_worm_area
+                or i >= skeleton_areas.shape[0]
+                or skeleton_areas[i] == 0
+            ):
+                # Completely exclude the worm
+                continue
+            elif areas[i] <= params.max_area:
+                path_coords, path_struct = single_worm_find_path(
+                    labels, i, skeleton, params
+                )
+                if len(path_coords) > 0 and single_worm_filter(
+                    path_coords, params
+                ):
+                    all_path_coords.append(path_coords)
+            else:
+                graph = cluster_graph_building(
+                    labels, i, skeleton, params
+                )
+                if len(graph.segments) > max_complexity:
+                    LOGGER.warning(
+                        "Warning: rejecting cluster of %d segments.\n"
+                        % len(graph.segments)
+                    )
+                    continue
+                paths = get_all_paths(
+                    graph, params.min_path_length, params.max_path_length
+                )
+                
+                paths_selected = cluster_paths_selection(
+                    graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight
+                )
+                del graph
+                del paths
+                all_path_coords += paths_selected
+    (
+        ijv,
+        all_lengths,
+        all_angles,
+        all_control_coords_x,
+        all_control_coords_y,
+    ) = worm_descriptor_building(all_path_coords, params, labels.shape)
+    return (
+        ijv, 
+        all_lengths, 
+        all_angles, 
+        all_control_coords_x, 
+        all_control_coords_y
+    )
 

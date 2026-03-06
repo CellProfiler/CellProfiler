@@ -1783,3 +1783,68 @@ def run_untangle(image_pixel_data, params, max_complexity, wants_training_set_we
         all_control_coords_y
     )
 
+
+class TrainingData(object):
+    """One worm's training data"""
+
+    def __init__(self, area, skel_length, angles, radial_profile):
+        self.area = area
+        self.skel_length = skel_length
+        self.angles = angles
+        self.radial_profile = radial_profile
+
+def run_train(
+        image_pixel_data,
+        num_control_points,
+        worms_shared_list, # this is stored in a shared dictionary
+        get_dworms = False, # for displaying results    
+
+    ):
+    labels, count = scipy.ndimage.label(
+        image_pixel_data, centrosome.cpmorphology.eight_connect
+    )
+    skeleton = centrosome.cpmorphology.skeletonize(image_pixel_data)
+    distances = scipy.ndimage.distance_transform_edt(image_pixel_data)
+    areas = numpy.bincount(labels.ravel())
+
+    dworms = [] # used only for displaying results. Uses get_dworms flag
+    for i in range(1, count + 1):
+        mask = labels == i
+        graph = get_graph_from_binary(image_pixel_data & mask, skeleton & mask)
+        path_coords, path = get_longest_path_coords(
+            graph, numpy.iinfo(int).max
+        )
+        if len(path_coords) == 0:
+            continue
+        cumul_lengths = calculate_cumulative_lengths(path_coords)
+        if cumul_lengths[-1] == 0:
+            continue
+        control_points = sample_control_points(
+            path_coords, cumul_lengths, num_control_points
+        )
+        angles = get_angles(control_points)
+        #
+        # Interpolate in 2-d when looking up the distances
+        #
+        fi, fj = (control_points - numpy.floor(control_points)).transpose()
+        ci, cj = control_points.astype(int).transpose()
+        ci1 = numpy.minimum(ci + 1, labels.shape[0] - 1)
+        cj1 = numpy.minimum(cj + 1, labels.shape[1] - 1)
+        radial_profile = numpy.zeros(num_control_points)
+        for ii, jj, f in (
+            (ci, cj, (1 - fi) * (1 - fj)),
+            (ci1, cj, fi * (1 - fj)),
+            (ci, cj1, (1 - fi) * fj),
+            (ci1, cj1, fi * fj),
+        ):
+            radial_profile += distances[ii, jj] * f
+        worms_shared_list.append(
+            TrainingData(areas[i], cumul_lengths[-1], angles, radial_profile)
+        )
+        if get_dworms:
+            dworms.append(control_points)
+
+    if get_dworms:
+        return worms_shared_list, dworms
+    
+    return worms_shared_list

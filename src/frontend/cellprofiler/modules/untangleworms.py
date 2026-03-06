@@ -26,6 +26,7 @@ from cellprofiler_library.modules._untangleworms import (
     cluster_paths_selection,
     read_params,
     run_untangle,
+    run_train,
 )
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 """
@@ -888,67 +889,29 @@ should be processed.
         else:
             raise ValueError(f"Unknown mode: {self.mode}")
 
-    class TrainingData(object):
-        """One worm's training data"""
-
-        def __init__(self, area, skel_length, angles, radial_profile):
-            self.area = area
-            self.skel_length = skel_length
-            self.angles = angles
-            self.radial_profile = radial_profile
-
     def run_train(self, workspace):
         """Train based on the current image set"""
 
         image_name = self.image_name.value
         image_set = workspace.image_set
         image = image_set.get_image(image_name, must_be_binary=True)
-        num_control_points = self.ncontrol_points()
-        labels, count = scipy.ndimage.label(
-            image.pixel_data, centrosome.cpmorphology.eight_connect
-        )
-        skeleton = centrosome.cpmorphology.skeletonize(image.pixel_data)
-        distances = scipy.ndimage.distance_transform_edt(image.pixel_data)
+        num_control_points = self.ncontrol_points()            
         worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
-        areas = numpy.bincount(labels.ravel())
+        
+        result = run_train(
+                image_pixel_data = image.pixel_data,
+                num_control_points = num_control_points,
+                worms_shared_list = worms,
+                get_dworms = self.show_window,
+            )
         if self.show_window:
+            _worms, _dworms = result
             dworms = workspace.display_data.worms = []
             workspace.display_data.input_image = image.pixel_data
-        for i in range(1, count + 1):
-            mask = labels == i
-            graph = get_graph_from_binary(image.pixel_data & mask, skeleton & mask)
-            path_coords, path = get_longest_path_coords(
-                graph, numpy.iinfo(int).max
-            )
-            if len(path_coords) == 0:
-                continue
-            cumul_lengths = calculate_cumulative_lengths(path_coords)
-            if cumul_lengths[-1] == 0:
-                continue
-            control_points = sample_control_points(
-                path_coords, cumul_lengths, num_control_points
-            )
-            angles = get_angles(control_points)
-            #
-            # Interpolate in 2-d when looking up the distances
-            #
-            fi, fj = (control_points - numpy.floor(control_points)).transpose()
-            ci, cj = control_points.astype(int).transpose()
-            ci1 = numpy.minimum(ci + 1, labels.shape[0] - 1)
-            cj1 = numpy.minimum(cj + 1, labels.shape[1] - 1)
-            radial_profile = numpy.zeros(num_control_points)
-            for ii, jj, f in (
-                (ci, cj, (1 - fi) * (1 - fj)),
-                (ci1, cj, fi * (1 - fj)),
-                (ci, cj1, (1 - fi) * fj),
-                (ci1, cj1, fi * fj),
-            ):
-                radial_profile += distances[ii, jj] * f
-            worms.append(
-                self.TrainingData(areas[i], cumul_lengths[-1], angles, radial_profile)
-            )
-            if self.show_window:
-                dworms.append(control_points)
+            dworms.extend(_dworms)
+        else:
+            _worms = result
+        worms.extend(_worms)
 
     def is_aggregation_module(self):
         """Building the model requires aggregation across image sets"""

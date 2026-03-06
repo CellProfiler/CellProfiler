@@ -1,34 +1,3 @@
-from cellprofiler_library.modules._untangleworms import (
-    get_angles,
-    path_to_pixel_coords,
-    calculate_angle_shape_cost,
-    sample_control_points,
-    calculate_cumulative_lengths,
-    Path,
-    get_all_paths_recur,
-    build_incidence_lists,
-    calculate_path_length,
-    get_all_paths,
-    get_longest_path_coords,
-    make_incidence_matrix,
-    trace_segments,
-    get_graph_from_branching_areas_and_segments,
-    get_graph_from_binary,
-    single_worm_find_path,
-    single_worm_filter,
-    cluster_graph_building,
-    select_one_level,
-    fast_selection,
-    rebuild_worm_from_control_points_approx,
-    worm_descriptor_building,
-    get_overlap_weight,
-    get_leftover_weight,
-    cluster_paths_selection,
-    read_params,
-    run_untangle,
-    run_train,
-)
-from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 """
 UntangleWorms
 =============
@@ -122,15 +91,12 @@ References
 import logging
 import os
 import xml.dom.minidom as DOM
-from urllib.request import urlopen
 from packaging.version import Version
 
 import numpy
-import scipy.ndimage
-from scipy.io import loadmat
+
 from scipy.sparse import coo
 from centrosome.outline import outline
-from centrosome.propagate import propagate
 import centrosome.cpmorphology
 
 from cellprofiler_core.constants.measurement import C_LOCATION
@@ -169,6 +135,16 @@ from cellprofiler_core.utilities.core.module.identify import (
 )
 
 from cellprofiler import __version__ as cellprofiler_version
+from cellprofiler_library.modules._untangleworms import (
+    sample_control_points,
+    calculate_cumulative_lengths,
+    get_longest_path_coords,
+    get_graph_from_binary,
+    read_params,
+    run_untangle,
+    run_train,
+)
+from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1119,6 +1095,7 @@ should be processed.
                 outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.overlapping_outlines_name.value, outline_image)
 
+        # TODO: #5132 move these measurements to library
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #
             # Sum up the number of overlaps using a sparse matrix

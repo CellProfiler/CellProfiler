@@ -1,11 +1,11 @@
 import numpy 
-from scipy.interpolate import interp1d
+import os
 import centrosome.cpmorphology
-from scipy.sparse import coo
-from centrosome.propagate import propagate
 import scipy.ndimage
 
-import os
+from scipy.sparse import coo
+from centrosome.propagate import propagate
+from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from urllib.request import urlopen
 

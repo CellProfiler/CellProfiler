@@ -22,18 +22,13 @@ import cellprofiler_core.workspace
 import tests.frontend.modules
 
 from cellprofiler_library.modules._untangleworms import (
-    get_angles,
-    path_to_pixel_coords,
-    calculate_angle_shape_cost,
     sample_control_points,
     Path,
     get_all_paths_recur,
-    calculate_path_length,
     get_all_paths,
     make_incidence_matrix,
     trace_segments,
     get_graph_from_branching_areas_and_segments,
-    single_worm_find_path,
     fast_selection,
     worm_descriptor_building,
 )

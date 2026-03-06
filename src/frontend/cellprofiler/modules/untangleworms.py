@@ -25,6 +25,7 @@ from cellprofiler_library.modules._untangleworms import (
     get_leftover_weight,
     cluster_paths_selection,
     read_params,
+    run_untangle,
 )
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
 """
@@ -882,8 +883,10 @@ should be processed.
         """Run the module on the current image set"""
         if self.mode == MODE_TRAIN:
             self.run_train(workspace)
-        else:
+        elif self.mode == MODE_UNTANGLE:
             self.run_untangle(workspace)
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
 
     class TrainingData(object):
         """One worm's training data"""
@@ -1083,77 +1086,25 @@ should be processed.
         image_name = self.image_name.value
         image_set = workspace.image_set
         image = image_set.get_image(image_name, must_be_binary=True)
-        labels, count = scipy.ndimage.label(
-            image.pixel_data, centrosome.cpmorphology.eight_connect
-        )
-        #
-        # Skeletonize once, then remove any points in the skeleton
-        # that are adjacent to the edge of the image, then skeletonize again.
-        #
-        # This gets rid of artifacts that cause combinatoric explosions:
-        #
-        #    * * * * * * * *
-        #      *   *   *
-        #    * * * * * * * *
-        #
-        skeleton = centrosome.cpmorphology.skeletonize(image.pixel_data)
-        eroded = scipy.ndimage.binary_erosion(
-            image.pixel_data, centrosome.cpmorphology.eight_connect
-        )
-        skeleton = centrosome.cpmorphology.skeletonize(skeleton & eroded)
-        #
-        # The path skeletons
-        #
-        all_path_coords = []
-        if count != 0 and numpy.sum(skeleton) != 0:
-            areas = numpy.bincount(labels.flatten())
-            skeleton_areas = numpy.bincount(labels[skeleton])
-            current_index = 1
-            for i in range(1, count + 1):
-                if (
-                    areas[i] < params.min_worm_area
-                    or i >= skeleton_areas.shape[0]
-                    or skeleton_areas[i] == 0
-                ):
-                    # Completely exclude the worm
-                    continue
-                elif areas[i] <= params.max_area:
-                    path_coords, path_struct = single_worm_find_path(
-                        labels, i, skeleton, params
-                    )
-                    if len(path_coords) > 0 and single_worm_filter(
-                        path_coords, params
-                    ):
-                        all_path_coords.append(path_coords)
-                else:
-                    graph = cluster_graph_building(
-                        labels, i, skeleton, params
-                    )
-                    if len(graph.segments) > self.max_complexity:
-                        LOGGER.warning(
-                            "Warning: rejecting cluster of %d segments.\n"
-                            % len(graph.segments)
-                        )
-                        continue
-                    paths = get_all_paths(
-                        graph, params.min_path_length, params.max_path_length
-                    )
-                    wants_training_set_weights = self.wants_training_set_weights
-                    override_overlap_weight = self.override_overlap_weight.value
-                    override_leftover_weight = self.override_leftover_weight.value
-                    paths_selected = cluster_paths_selection(
-                        graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight
-                    )
-                    del graph
-                    del paths
-                    all_path_coords += paths_selected
+        image_pixel_data = image.pixel_data
+        wants_training_set_weights = self.wants_training_set_weights
+        override_overlap_weight = self.override_overlap_weight.value
+        override_leftover_weight = self.override_leftover_weight.value
         (
             ijv,
             all_lengths,
             all_angles,
             all_control_coords_x,
             all_control_coords_y,
-        ) = worm_descriptor_building(all_path_coords, params, labels.shape)
+        ) = run_untangle(
+            image_pixel_data = image_pixel_data,
+            params = params,
+            max_complexity = self.max_complexity,
+            wants_training_set_weights = wants_training_set_weights,
+            override_overlap_weight = override_overlap_weight,
+            override_leftover_weight = override_leftover_weight,
+        )
+        
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
         object_set = workspace.object_set
@@ -1175,6 +1126,8 @@ should be processed.
                     l for l, idx in o.get_labels()
                 ]
 
+            # TODO: #5132 are these measurements different from src/subpackages/library/cellprofiler_library/functions/measurement.py's `get_object_location_measurements`? If so add documentation or update the measurement name
+            # TODO: #5132 move these measurements to library
             if o.count == 0:
                 center_x = numpy.zeros(0)
                 center_y = numpy.zeros(0)

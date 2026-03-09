@@ -34,6 +34,7 @@ from cellprofiler_library.modules._untangleworms import (
 )
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
+from cellprofiler_library.opts.untangleworms import OverlapStyle, Mode, Complexity
 
 IMAGE_NAME = "myimage"
 OVERLAP_OBJECTS_NAME = "overlapobjects"
@@ -298,23 +299,23 @@ def test_load_v1():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
     assert module.image_name == "BinaryWorms"
-    assert module.overlap == cellprofiler.modules.untangleworms.OO_BOTH
+    assert module.overlap == OverlapStyle.BOTH.value
     assert module.overlap_objects == "OverlappingWorms"
     assert module.nonoverlapping_objects == "NonOverlappingWorms"
     assert not module.wants_training_set_weights
     assert module.override_overlap_weight.value == 3
     assert module.override_leftover_weight.value == 5
-    assert module.mode == cellprofiler.modules.untangleworms.MODE_TRAIN
+    assert module.mode == Mode.TRAIN.value
     module = pipeline.modules()[1]
     assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
-    assert module.overlap == cellprofiler.modules.untangleworms.OO_WITH_OVERLAP
+    assert module.overlap == OverlapStyle.WITH_OVERLAP.value
     assert module.wants_training_set_weights
-    assert module.mode == cellprofiler.modules.untangleworms.MODE_UNTANGLE
+    assert module.mode == Mode.UNTANGLE.value
     module = pipeline.modules()[2]
     assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
-    assert module.overlap == cellprofiler.modules.untangleworms.OO_WITHOUT_OVERLAP
-    assert module.mode == cellprofiler.modules.untangleworms.MODE_UNTANGLE
-    assert module.complexity == cellprofiler.modules.untangleworms.C_ALL
+    assert module.overlap == OverlapStyle.WITHOUT_OVERLAP.value
+    assert module.mode == Mode.UNTANGLE.value
+    assert module.complexity == Complexity.ALL.value
     assert module.custom_complexity == 400
 
 
@@ -334,7 +335,7 @@ def test_load_v2():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
     assert module.image_name == "BinaryWorms"
-    assert module.overlap == cellprofiler.modules.untangleworms.OO_BOTH
+    assert module.overlap == OverlapStyle.BOTH.value
     assert module.overlap_objects == "OverlappingWorms"
     assert module.nonoverlapping_objects == "NonOverlappingWorms"
     assert not module.wants_training_set_weights
@@ -345,11 +346,11 @@ def test_load_v2():
     for module, complexity in zip(
         pipeline.modules(),
         (
-            cellprofiler.modules.untangleworms.C_ALL,
-            cellprofiler.modules.untangleworms.C_MEDIUM,
-            cellprofiler.modules.untangleworms.C_HIGH,
-            cellprofiler.modules.untangleworms.C_VERY_HIGH,
-            cellprofiler.modules.untangleworms.C_CUSTOM,
+            Complexity.ALL.value,
+            Complexity.MEDIUM.value,
+            Complexity.HIGH.value,
+            Complexity.VERY_HIGH.value,
+            Complexity.CUSTOM.value,
         ),
     ):
         assert module.complexity == complexity
@@ -946,6 +947,10 @@ def test_load_params():
 
 
 def test_load_xml_params():
+    # 
+    # Note: If you ever come across this test failing like `ValueError: Unknown mat file type, version 49, 48``
+    #       it's because your XML tags are not set properly. For example if I comment out one of the tags
+    #       in cellprofiler_library/opts/untangleworms.py, the test will fail with the value error above.
     file = tests.frontend.modules.get_test_resources_directory("untangleworms/parameters.xml")
     with open(file, "r") as fd:
         data = fd.read()
@@ -2103,7 +2108,7 @@ def test_train_dot():
     image[5, 10] = True
     workspace, module = make_workspace(image)
     assert isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms)
-    module.mode.value = cellprofiler.modules.untangleworms.MODE_TRAIN
+    module.mode.value = Mode.TRAIN.value
     module.prepare_group(workspace, None, None)
     module.run(workspace)
 

@@ -1,4 +1,6 @@
-
+from enum import Enum
+import numpy as np
+C_WORM = "Worm"
 class TrainingXMLTag:
     ######################################################
     #
@@ -26,3 +28,55 @@ class TrainingXMLTag:
     TRAINING_SET_SIZE = "training-set-size"
     VALUES = "values"
     VALUE = "value"
+
+class Feature(str):
+    LENGTH = "Length"
+    ANGLE = "Angle"
+    CONTROL_POINT_X = "ControlPointX"
+    CONTROL_POINT_Y = "ControlPointY"
+
+######################################################
+#
+# Features measured
+#
+######################################################
+class TemplateMeasurementFormat(str):
+    """The length of the worm skeleton"""
+    LENGTH = f"%s_{Feature.LENGTH}" 
+
+    """The angle at each of the control points (Worm_Angle_1 for example)"""
+    ANGLE = f"%s_{Feature.ANGLE}_%s"
+
+    """The X coordinate of a control point (Worm_ControlPointX_14 for example)"""
+    CONTROL_POINT_X = f"%s_{Feature.CONTROL_POINT_X}_%s"
+
+    """The Y coordinate of a control point (Worm_ControlPointY_14 for example)"""
+    CONTROL_POINT_Y = f"%s_{Feature.CONTROL_POINT_Y}_%s"
+
+class OverlapStyle(str, Enum):
+    WITH_OVERLAP = "With overlap"
+    WITHOUT_OVERLAP = "Without overlap"
+    BOTH = "Both"
+
+class Mode(str, Enum):
+    TRAIN = "Train"
+    UNTANGLE = "Untangle"
+
+class Complexity(str, Enum):
+    ALL = "Process all clusters"
+    MEDIUM = "Medium"
+    HIGH = "High"
+    VERY_HIGH = "Very high"
+    CUSTOM = "Custom"
+
+ALL_VALUE = np.iinfo(int).max
+MEDIUM_VALUE = 200
+HIGH_VALUE = 600
+VERY_HIGH_VALUE = 1000
+
+complexity_limits = {
+    Complexity.ALL: ALL_VALUE,
+    Complexity.MEDIUM: MEDIUM_VALUE,
+    Complexity.HIGH: HIGH_VALUE,
+    Complexity.VERY_HIGH: VERY_HIGH_VALUE,
+}

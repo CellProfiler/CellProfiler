@@ -1407,23 +1407,3 @@ def merge_unify_parent(
     output_labels = label_indexes[output_labels]
     return output_labels
 
-###############################################################################
-# UntangleWorms
-###############################################################################
-# image_shape = image.pixel_data.shape
-def remove_overlapping_labels(
-    ijv: ObjectSegmentationIJV,
-    image_shape: Tuple[int, int]
-    ):  
-    #
-    # Sum up the number of overlaps using a sparse matrix
-    #
-    overlap_hits = scipy.sparse.coo_matrix(
-        (numpy.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image_shape
-    )
-    overlap_hits = overlap_hits.toarray()
-    mask = overlap_hits == 1
-    labels = scipy.sparse.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
-    labels = labels.toarray()
-    labels[~mask] = 0
-    return labels

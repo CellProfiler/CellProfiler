@@ -147,8 +147,7 @@ from cellprofiler_library.modules._untangleworms import (
     run_train,
 )
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
-from cellprofiler_library.functions.measurement import get_object_location_measurements_ijv_include_overlap
-from cellprofiler_library.functions.object_processing import remove_overlapping_labels
+from cellprofiler_library.opts.untangleworms import OverlapStyle, Mode, Complexity, C_WORM, TemplateMeasurementFormat, complexity_limits, Feature
 
 LOGGER = logging.getLogger(__name__)
 
@@ -162,65 +161,11 @@ purposes by overlaying them on your image of choice using the
     **{"YES": "Yes"}
 )
 
-OO_WITH_OVERLAP = "With overlap"
-OO_WITHOUT_OVERLAP = "Without overlap"
-OO_BOTH = "Both"
-
-MODE_TRAIN = "Train"
-MODE_UNTANGLE = "Untangle"
-
-"""Shape cost method = angle shape model for cluster paths selection"""
-SCM_ANGLE_SHAPE_MODEL = "angle_shape_model"
-
-"""Maximum # of sets of paths considered at any level"""
-MAX_CONSIDERED = 50000
-"""Maximum # of different paths considered for input"""
-MAX_PATHS = 400
-
 """Name of the worm training data list inside the image set"""
 TRAINING_DATA = "TrainingData"
 
 """An attribute on the object names that tags them as worm objects"""
 ATTR_WORM_MEASUREMENTS = "WormMeasurements"
-######################################################
-#
-# Features measured
-#
-######################################################
-
-"""Worm untangling measurement category"""
-C_WORM = "Worm"
-
-"""The length of the worm skeleton"""
-F_LENGTH = "Length"
-
-"""The angle at each of the control points (Worm_Angle_1 for example)"""
-F_ANGLE = "Angle"
-
-"""The X coordinate of a control point (Worm_ControlPointX_14 for example)"""
-F_CONTROL_POINT_X = "ControlPointX"
-
-"""The Y coordinate of a control point (Worm_ControlPointY_14 for example)"""
-F_CONTROL_POINT_Y = "ControlPointY"
-
-C_ALL = "Process all clusters"
-C_ALL_VALUE = numpy.iinfo(int).max
-C_MEDIUM = "Medium"
-C_MEDIUM_VALUE = 200
-C_HIGH = "High"
-C_HIGH_VALUE = 600
-C_VERY_HIGH = "Very high"
-C_VERY_HIGH_VALUE = 1000
-C_CUSTOM = "Custom"
-
-complexity_limits = {
-    C_ALL: C_ALL_VALUE,
-    C_MEDIUM: C_MEDIUM_VALUE,
-    C_HIGH: C_HIGH_VALUE,
-    C_VERY_HIGH: C_VERY_HIGH_VALUE,
-}
-
-
 
 
 class UntangleWorms(Module):
@@ -232,21 +177,21 @@ class UntangleWorms(Module):
         """Create the settings that parameterize the module"""
         self.mode = Choice(
             "Train or untangle worms?",
-            [MODE_UNTANGLE, MODE_TRAIN],
+            [Mode.UNTANGLE.value, Mode.TRAIN.value],
             doc="""\
 **UntangleWorms** has two modes:
 
--  *%(MODE_TRAIN)s* creates one training set per image group, using all
+-  *{MODE_TRAIN}* creates one training set per image group, using all
    of the worms in the training set as examples. It then writes the
    training file at the end of each image group.
--  *%(MODE_UNTANGLE)s* uses the training file to untangle images of
+-  *{MODE_UNTANGLE}* uses the training file to untangle images of
    worms.
 
 {grouping}
 """.format(
-                grouping=USING_METADATA_GROUPING_HELP_REF
-            )
-            % globals(),
+                grouping=USING_METADATA_GROUPING_HELP_REF,
+                **{"MODE_TRAIN": Mode.TRAIN.value, "MODE_UNTANGLE": Mode.UNTANGLE.value}
+            ),
         )
 
         self.image_name = ImageName(
@@ -260,18 +205,23 @@ module.""",
 
         self.overlap = Choice(
             "Overlap style",
-            [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP],
+            [OverlapStyle.BOTH.value, OverlapStyle.WITH_OVERLAP.value, OverlapStyle.WITHOUT_OVERLAP.value],
             doc="""\
 This setting determines which style objects are output. If two worms
 overlap, you have a choice of including the overlapping regions in both
 worms or excluding the overlapping regions from both worms.
 
--  *%(OO_WITH_OVERLAP)s:* Save objects including overlapping regions.
--  *%(OO_WITHOUT_OVERLAP)s:* Save only the portions of objects that do
+-  *{OO_WITH_OVERLAP}:* Save objects including overlapping regions.
+-  *{OO_WITHOUT_OVERLAP}:* Save only the portions of objects that do
    not overlap.
--  *%(OO_BOTH)s:* Save two versions: with and without overlap.
-"""
-            % globals(),
+-  *{OO_BOTH}:* Save two versions: with and without overlap.
+""".format(
+    **{
+        "OO_BOTH": OverlapStyle.BOTH.value,
+        "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value, 
+        "OO_WITHOUT_OVERLAP": OverlapStyle.WITHOUT_OVERLAP.value
+    }
+),
         )
 
         self.overlap_objects = LabelName(
@@ -279,54 +229,58 @@ worms or excluding the overlapping regions from both worms.
             "OverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
 This setting names the objects representing the overlapping worms. When
 worms cross, they overlap and pixels are shared by both of the
 overlapping worms. The overlapping worm objects share these pixels and
 measurements of both overlapping worms will include these pixels in the
 measurements of both worms.
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value}
+),
         )
 
         self.wants_overlapping_outlines = Binary(
             "Retain outlines of the overlapping objects?",
             False,
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
-%(RETAINING_OUTLINES_HELP)s
-"""
-            % globals(),
+{RETAINING_OUTLINES_HELP}
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value, "RETAINING_OUTLINES_HELP": RETAINING_OUTLINES_HELP}
+),
         )
 
         self.overlapping_outlines_colormap = Colormap(
             "Outline colormap?",
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode, “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style and retaining outlines are
+*(Used only if “{MODE_UNTANGLE}” mode, “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style and retaining outlines are
 selected )*
 
 This setting controls the colormap used when drawing outlines. The
 outlines are drawn in color to highlight the shapes of each worm in a
 group of overlapping worms
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value}
+),
         )
 
         self.overlapping_outlines_name = OutlineImageName(
             "Name the overlapped outline image",
             "OverlappedWormOutlines",
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
 This is the name of the outlines of the overlapped worms.
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value}
+),
         )
 
         self.nonoverlapping_objects = LabelName(
@@ -334,41 +288,44 @@ This is the name of the outlines of the overlapped worms.
             "NonOverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
 This setting names the objects representing the worms, excluding those
 regions where the worms overlap. When worms cross, there are pixels that
 cannot be unambiguously assigned to one worm or the other. These pixels
 are excluded from both worms in the non-overlapping objects and will not
 be a part of the measurements of either worm.
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value}
+),
         )
 
         self.wants_nonoverlapping_outlines = Binary(
             "Retain outlines of the non-overlapping worms?",
             False,
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
-%(RETAINING_OUTLINES_HELP)s
-"""
-            % globals(),
+{RETAINING_OUTLINES_HELP}
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value, "RETAINING_OUTLINES_HELP": RETAINING_OUTLINES_HELP}
+),
         )
 
         self.nonoverlapping_outlines_name = OutlineImageName(
             "Name the non-overlapped outlines image",
             "NonoverlappedWormOutlines",
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(OO_BOTH)s” or
-“%(OO_WITH_OVERLAP)s” overlap style are selected)*
+*(Used only if “{MODE_UNTANGLE}” mode and “{OO_BOTH}” or
+“{OO_WITH_OVERLAP}” overlap style are selected)*
 
 This is the name of the of the outlines of the worms with the
 overlapping sections removed.
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "OO_BOTH": OverlapStyle.BOTH.value, "OO_WITH_OVERLAP": OverlapStyle.WITH_OVERLAP.value}
+),
         )
 
         self.training_set_directory = Directory(
@@ -470,14 +427,15 @@ times the leftover weight.
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** will discard single worms whose area is less than a
 certain minimum. It ranks all worms in the training set according to
 area and then picks the worm at this percentile. It then computes the
 minimum area allowed as this worm’s area times the minimum area factor.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.min_area_factor = Float(
@@ -485,13 +443,14 @@ minimum area allowed as this worm’s area times the minimum area factor.
             0.85,
             0,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 This setting is a multiplier that is applied to the area of the worm,
 selected as described in the documentation for *Minimum area
 percentile*.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_area_percentile = Float(
@@ -500,7 +459,7 @@ percentile*.
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses a maximum area to distinguish between single
 worms and clumps of worms. Any blob whose area is less than the maximum
@@ -509,8 +468,9 @@ greater is considered to be two or more worms. **UntangleWorms** orders
 all worms in the training set by area and picks the worm at the
 percentile given by this setting. It then multiplies this worm’s area by
 the *Maximum area factor* (see below) to get the maximum area
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_area_factor = Float(
@@ -518,12 +478,13 @@ the *Maximum area factor* (see below) to get the maximum area
             1.0,
             0,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 The *Maximum area factor* setting is used to compute the maximum area as
 described above in *Maximum area percentile*.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.min_length_percentile = Float(
@@ -532,7 +493,7 @@ described above in *Maximum area percentile*.
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses the minimum length to restrict its search for
 worms in a clump to worms of at least the minimum length.
@@ -540,8 +501,9 @@ worms in a clump to worms of at least the minimum length.
 percentile indicated by this setting. It then multiplies the length of
 this worm by the *Minimum length factor* (see below) to get the minimum
 length.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.min_length_factor = Float(
@@ -549,13 +511,14 @@ length.
             0.9,
             0,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses the *Minimum length factor* to compute the
 minimum length from the training set as described in the documentation
 above for *Minimum length percentile*
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_length_percentile = Float(
@@ -564,15 +527,16 @@ above for *Minimum length percentile*
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses the maximum length to restrict its search for
 worms in a clump to worms of at least the maximum length. It computes
 this length by sorting all of the training worms by length. It then
 selects the worm at the *Maximum length percentile* and multiplies that
 worm’s length by the *Maximum length factor* to get the maximum length
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_length_factor = Float(
@@ -580,12 +544,13 @@ worm’s length by the *Maximum length factor* to get the maximum length
             1.1,
             0,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the maximum length as
 described in *Maximum length percentile* above
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_cost_percentile = Float(
@@ -594,7 +559,7 @@ described in *Maximum length percentile* above
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** computes a shape-based cost for each worm it
 considers. It will restrict the allowed cost to less than the cost
@@ -603,8 +568,9 @@ every worm in the training set. It then orders them by cost and uses
 *Maximum cost percentile* to pick the worm at the given percentile. It
 them multiplies this worm’s cost by the *Maximum cost factor* to compute
 the cost threshold.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_cost_factor = Float(
@@ -612,12 +578,13 @@ the cost threshold.
             1.9,
             0,
             doc="""\
-*(Used only “%(MODE_TRAIN)s” mode is selected)*
+*(Used only “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the cost threshold as
 described in *Maximum cost percentile* above.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.num_control_points = Integer(
@@ -626,12 +593,13 @@ described in *Maximum cost percentile* above.
             3,
             50,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 This setting controls the number of control points that will be sampled
 when constructing a worm shape from its skeleton.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_radius_percentile = Float(
@@ -640,15 +608,16 @@ when constructing a worm shape from its skeleton.
             0,
             100,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses the maximum worm radius during worm
 skeletonization. **UntangleWorms** sorts the radii of worms in
 increasing size and selects the worm at this percentile. It then
 multiplies this worm’s radius by the *Maximum radius factor* (see below)
 to compute the maximum radius.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.max_radius_factor = Float(
@@ -656,20 +625,21 @@ to compute the maximum radius.
             1,
             0,
             doc="""\
-*(Used only if “%(MODE_TRAIN)s” mode is selected)*
+*(Used only if “{MODE_TRAIN}” mode is selected)*
 
 **UntangleWorms** uses this setting to compute the maximum radius as
 described in *Maximum radius percentile* above.
-"""
-            % globals(),
+""".format(
+    **{"MODE_TRAIN": Mode.TRAIN.value}
+),
         )
 
         self.complexity = Choice(
             "Maximum complexity",
-            [C_MEDIUM, C_HIGH, C_VERY_HIGH, C_ALL, C_CUSTOM],
-            value=C_HIGH,
+            [Complexity.MEDIUM.value, Complexity.HIGH.value, Complexity.VERY_HIGH.value, Complexity.ALL.value, Complexity.CUSTOM.value],
+            value=Complexity.HIGH.value,
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode is selected)*
+*(Used only if “{MODE_UNTANGLE}” mode is selected)*
 
 This setting controls which clusters of worms are rejected as being
 too time-consuming to process. **UntangleWorms** judges complexity
@@ -677,16 +647,27 @@ based on the number of segments in a cluster where a segment is the
 piece of a worm between crossing points or from the head or tail to
 the first or last crossing point. The choices are:
 
--  *%(C_MEDIUM)s*: %(C_MEDIUM_VALUE)d segments (takes up to several
+-  *{C_MEDIUM}*: {C_MEDIUM_VALUE} segments (takes up to several
    minutes to process)
--  *%(C_HIGH)s*: %(C_HIGH_VALUE)d segments (takes up to a
+-  *{C_HIGH}*: {C_HIGH_VALUE} segments (takes up to a
    quarter-hour to process)
--  *%(C_VERY_HIGH)s*: %(C_VERY_HIGH_VALUE)d segments (can take
+-  *{C_VERY_HIGH}*: {C_VERY_HIGH_VALUE} segments (can take
    hours to process)
--  *%(C_CUSTOM)s*: allows you to enter a custom number of segments.
--  *%(C_ALL)s*: Process all worms, regardless of complexity
-"""
-            % globals(),
+-  *{C_CUSTOM}*: allows you to enter a custom number of segments.
+-  *{C_ALL}*: Process all worms, regardless of complexity
+""".format(
+    **{
+        "MODE_UNTANGLE": Mode.UNTANGLE.value,
+        "C_MEDIUM": Complexity.MEDIUM.value,
+        "C_MEDIUM_VALUE": complexity_limits[Complexity.MEDIUM],
+        "C_HIGH": Complexity.HIGH.value,
+        "C_HIGH_VALUE": complexity_limits[Complexity.HIGH],
+        "C_VERY_HIGH": Complexity.VERY_HIGH.value,
+        "C_VERY_HIGH_VALUE": complexity_limits[Complexity.VERY_HIGH],
+        "C_CUSTOM": Complexity.CUSTOM.value,
+        "C_ALL": Complexity.ALL.value,
+    }
+),
         )
 
         self.custom_complexity = Integer(
@@ -694,13 +675,14 @@ the first or last crossing point. The choices are:
             400,
             20,
             doc="""\
-*(Used only if “%(MODE_UNTANGLE)s” mode and “%(C_CUSTOM)s” complexity
+*(Used only if “{MODE_UNTANGLE}” mode and “{C_CUSTOM}” complexity
 are selected )*
 
 Enter the maximum number of segments of any cluster that
 should be processed.
-"""
-            % globals(),
+""".format(
+    **{"MODE_UNTANGLE": Mode.UNTANGLE.value, "C_CUSTOM": Complexity.CUSTOM.value}
+),
         )
 
     def settings(self):
@@ -773,16 +755,16 @@ should be processed.
 
     def visible_settings(self):
         result = [self.mode, self.image_name]
-        if self.mode == MODE_UNTANGLE:
+        if self.mode == Mode.UNTANGLE.value:
             result += [self.overlap]
-            if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
+            if self.overlap in (OverlapStyle.WITH_OVERLAP.value, OverlapStyle.BOTH.value):
                 result += [self.overlap_objects, self.wants_overlapping_outlines]
                 if self.wants_overlapping_outlines:
                     result += [
                         self.overlapping_outlines_colormap,
                         self.overlapping_outlines_name,
                     ]
-            if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
+            if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value):
                 result += [
                     self.nonoverlapping_objects,
                     self.wants_nonoverlapping_outlines,
@@ -790,7 +772,7 @@ should be processed.
                 if self.wants_nonoverlapping_outlines:
                     result += [self.nonoverlapping_outlines_name]
                 result += [self.complexity]
-                if self.complexity == C_CUSTOM:
+                if self.complexity == Complexity.CUSTOM.value:
                     result += [self.custom_complexity]
         result += [
             self.training_set_directory,
@@ -799,7 +781,7 @@ should be processed.
         ]
         if not self.wants_training_set_weights:
             result += [self.override_overlap_weight, self.override_leftover_weight]
-            if self.mode == MODE_TRAIN:
+            if self.mode == Mode.TRAIN.value:
                 result += [
                     self.min_area_percentile,
                     self.min_area_factor,
@@ -837,7 +819,7 @@ should be processed.
 
     def ncontrol_points(self):
         """# of control points when making a training set"""
-        if self.mode == MODE_UNTANGLE:
+        if self.mode == Mode.UNTANGLE.value:
             params = self.read_params()
             return params.num_control_points
         if not self.wants_training_set_weights:
@@ -847,7 +829,7 @@ should be processed.
 
     @property
     def max_complexity(self):
-        if self.complexity != C_CUSTOM:
+        if self.complexity != Complexity.CUSTOM.value:
             return complexity_limits[self.complexity.value]
         return self.custom_complexity.value
 
@@ -862,9 +844,9 @@ should be processed.
 
     def run(self, workspace):
         """Run the module on the current image set"""
-        if self.mode == MODE_TRAIN:
+        if self.mode == Mode.TRAIN.value:
             self.run_train(workspace)
-        elif self.mode == MODE_UNTANGLE:
+        elif self.mode == Mode.UNTANGLE.value:
             self.run_untangle(workspace)
         else:
             raise ValueError(f"Unknown mode: {self.mode}")
@@ -895,11 +877,11 @@ should be processed.
 
     def is_aggregation_module(self):
         """Building the model requires aggregation across image sets"""
-        return self.mode == MODE_TRAIN
+        return self.mode == Mode.TRAIN.value
 
     def post_group(self, workspace, grouping):
         """Write the training data file as we finish grouping."""
-        if self.mode == MODE_TRAIN:
+        if self.mode == Mode.TRAIN.value:
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
             # Either get weights from our instance or instantiate
@@ -1033,12 +1015,13 @@ should be processed.
         wants_training_set_weights = self.wants_training_set_weights
         override_overlap_weight = self.override_overlap_weight.value
         override_leftover_weight = self.override_leftover_weight.value
+        #
+        # Run untangle
+        #
         (
             ijv,
-            all_lengths,
-            all_angles,
-            all_control_coords_x,
-            all_control_coords_y,
+            labels,
+            lib_measurements,
         ) = run_untangle(
             image_pixel_data = image_pixel_data,
             params = params,
@@ -1046,32 +1029,34 @@ should be processed.
             wants_training_set_weights = wants_training_set_weights,
             override_overlap_weight = override_overlap_weight,
             override_leftover_weight = override_leftover_weight,
+            return_measurements=True,
+            overlap_style = self.overlap.value,
+            image_shape = image.pixel_data.shape,
+            nonoverlapping_objects_name = self.nonoverlapping_objects.value if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value) else None,
+            overlap_objects_name = self.overlap_objects.value if self.overlap in (OverlapStyle.WITH_OVERLAP.value, OverlapStyle.BOTH.value) else None,
         )
+        add_library_measurements_to_workspace_measurements(workspace.measurements, lib_measurements)
         
+        #
+        # Display results, create objects and record measurements
+        #
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
         object_set = workspace.object_set
         assert isinstance(object_set, ObjectSet)
         measurements = workspace.measurements
         assert isinstance(measurements, Measurements)
-
-        object_names = []
-        if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
+        
+        if self.overlap in (OverlapStyle.WITH_OVERLAP.value, OverlapStyle.BOTH.value):
             o = Objects()
             o.ijv = ijv
             o.parent_image = image
             name = self.overlap_objects.value
-            object_names.append(name)
             object_set.add_objects(o, name)
-            add_object_count_measurements(measurements, name, o.count)
             if self.show_window:
                 workspace.display_data.overlapping_labels = [
                     l for l, idx in o.get_labels()
                 ]
-
-            lib_measurements = get_object_location_measurements_ijv_include_overlap(name, ijv, o.count, o.indices, o.areas)
-            add_library_measurements_to_workspace_measurements(measurements, lib_measurements)
-            
             #
             # Save outlines
             #
@@ -1091,24 +1076,15 @@ should be processed.
                 outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.overlapping_outlines_name.value, outline_image)
 
-        # TODO: #5132 move these measurements to library
-        if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
+        if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value):
             #
             # Prepare labels for measurements
             #
-            labels = remove_overlapping_labels(ijv, image.pixel_data.shape)
             o = Objects()
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value
-            object_names.append(name)
             object_set.add_objects(o, name)
-
-            #
-            # Perform measurements
-            #
-            add_object_count_measurements(measurements, name, o.count)
-            add_object_location_measurements(measurements, name, labels, o.count)
 
             #
             # Display results
@@ -1122,28 +1098,17 @@ should be processed.
                 outline_pixels = outline(labels) > 0
                 outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.nonoverlapping_outlines_name.value, outline_image)
+        
 
-        # TODO: #5132 ideally, this should be done in the library
-        for name in object_names:
-            measurements.add_measurement(
-                name, "_".join((C_WORM, F_LENGTH)), all_lengths
-            )
-            for values, ftr in (
-                (all_angles, F_ANGLE),
-                (all_control_coords_x, F_CONTROL_POINT_X),
-                (all_control_coords_y, F_CONTROL_POINT_Y),
-            ):
-                for i in range(values.shape[1]):
-                    feature = "_".join((C_WORM, ftr, str(i + 1)))
-                    measurements.add_measurement(name, feature, values[:, i])
+
 
     def display(self, workspace, figure):
         from cellprofiler.gui.constants.figure import CPLDM_ALPHA
 
-        if self.mode == MODE_UNTANGLE:
+        if self.mode == Mode.UNTANGLE.value:
             figure.set_subplots((1, 1))
             cplabels = []
-            if self.overlap in (OO_BOTH, OO_WITH_OVERLAP):
+            if self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITH_OVERLAP.value):
                 title = self.overlap_objects.value
                 cplabels.append(
                     dict(
@@ -1154,7 +1119,7 @@ should be processed.
                 )
             else:
                 title = self.nonoverlapping_objects.value
-            if self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP):
+            if self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITHOUT_OVERLAP.value):
                 cplabels.append(
                     dict(
                         name=self.nonoverlapping_objects.value,
@@ -1184,7 +1149,7 @@ should be processed.
 
         figure - the module's figure.
         """
-        if self.mode == MODE_TRAIN:
+        if self.mode == Mode.TRAIN.value:
             from matplotlib.transforms import Bbox
 
             angle_costs = workspace.display_data.angle_costs
@@ -1338,7 +1303,7 @@ should be processed.
         )
 
     def validate_module(self, pipeline):
-        if self.mode == MODE_UNTANGLE:
+        if self.mode == Mode.UNTANGLE.value:
             if self.training_set_directory.dir_choice != URL_FOLDER_NAME:
                 path = os.path.join(
                     self.training_set_directory.get_absolute_path(),
@@ -1352,7 +1317,7 @@ should be processed.
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
-        if pipeline.test_mode and self.mode == MODE_TRAIN:
+        if pipeline.test_mode and self.mode == Mode.TRAIN.value:
             raise ValidationError(
                 "UntangleWorms will not produce training set output in Test Mode",
                 self.training_set_file_name,
@@ -1361,16 +1326,16 @@ should be processed.
     def get_measurement_columns(self, pipeline):
         """Return a column of information for each measurement feature"""
         result = []
-        if self.mode == MODE_UNTANGLE:
+        if self.mode == Mode.UNTANGLE.value:
             object_names = []
-            if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
+            if self.overlap in (OverlapStyle.WITH_OVERLAP.value, OverlapStyle.BOTH.value):
                 object_names.append(self.overlap_objects.value)
-            if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
+            if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value):
                 object_names.append(self.nonoverlapping_objects.value)
             for object_name in object_names:
                 result += get_object_measurement_columns(object_name)
                 all_features = (
-                    [F_LENGTH]
+                    [Feature.LENGTH]
                     + self.angle_features()
                     + self.control_point_features(True)
                     + self.control_point_features(False)
@@ -1385,7 +1350,7 @@ should be processed.
         """Return a list of angle feature names"""
         try:
             return [
-                "_".join((F_ANGLE, str(n)))
+                "_".join((Feature.ANGLE, str(n)))
                 for n in range(1, self.ncontrol_points() - 1)
             ]
         except:
@@ -1402,7 +1367,7 @@ should be processed.
         """
         try:
             return [
-                "_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
+                "_".join((Feature.CONTROL_POINT_X if get_x else Feature.CONTROL_POINT_Y, str(n)))
                 for n in range(1, self.ncontrol_points() + 1)
             ]
         except:
@@ -1417,10 +1382,10 @@ should be processed.
             return [C_COUNT]
         if (
             object_name == self.overlap_objects.value
-            and self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
+            and self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITH_OVERLAP.value)
         ) or (
             object_name == self.nonoverlapping_objects.value
-            and self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+            and self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITHOUT_OVERLAP.value)
         ):
             return [
                 C_LOCATION,
@@ -1430,8 +1395,8 @@ should be processed.
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
-        wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+        wants_overlapping = self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITH_OVERLAP.value)
+        wants_nonoverlapping = self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITHOUT_OVERLAP.value)
         result = []
         if object_name == IMAGE and category == C_COUNT:
             if wants_overlapping:
@@ -1449,22 +1414,22 @@ should be processed.
             elif category == C_NUMBER:
                 result += [FTR_OBJECT_NUMBER]
             elif category == C_WORM:
-                result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
+                result += [Feature.LENGTH, Feature.ANGLE, Feature.CONTROL_POINT_X, Feature.CONTROL_POINT_Y]
         return result
 
     def get_measurement_scales(
         self, pipeline, object_name, category, measurement, image_name
     ):
-        wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
-        wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
+        wants_overlapping = self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITH_OVERLAP.value)
+        wants_nonoverlapping = self.overlap in (OverlapStyle.BOTH.value, OverlapStyle.WITHOUT_OVERLAP.value)
         scales = []
         if (
             (wants_overlapping and object_name == self.overlap_objects)
             or (wants_nonoverlapping and object_name == self.nonoverlapping_objects)
         ) and (category == C_WORM):
-            if measurement == F_ANGLE:
+            if measurement == Feature.ANGLE:
                 scales += [str(n) for n in range(1, self.ncontrol_points() - 1)]
-            elif measurement in [F_CONTROL_POINT_X, F_CONTROL_POINT_Y]:
+            elif measurement in [Feature.CONTROL_POINT_X, Feature.CONTROL_POINT_Y]:
                 scales += [str(n) for n in range(1, self.ncontrol_points() + 1)]
         return scales
 
@@ -1490,7 +1455,7 @@ should be processed.
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added complexity
-            setting_values = setting_values + [C_ALL, "400"]
+            setting_values = setting_values + [Complexity.ALL.value, "400"]
             variable_revision_number = 2
         return setting_values, variable_revision_number
 
@@ -1528,7 +1493,7 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     # Put the module in training mode - assumes that the training file is
     # not present.
     #
-    module.mode.value = MODE_TRAIN
+    module.mode.value = Mode.TRAIN.value
 
     nobjects = numpy.max(numpy.hstack(all_object_numbers))
     result = numpy.ones((nobjects, ncontrolpoints, 2)) * numpy.nan

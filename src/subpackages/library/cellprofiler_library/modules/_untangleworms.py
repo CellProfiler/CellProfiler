@@ -9,8 +9,10 @@ from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from urllib.request import urlopen
 
-from cellprofiler_library.opts.untangleworms import TrainingXMLTag
-
+from cellprofiler_library.opts.untangleworms import TrainingXMLTag, TemplateMeasurementFormat, OverlapStyle, C_WORM
+from cellprofiler_library.functions.measurement import get_object_location_measurements, get_object_count_measurements, get_object_location_measurements_ijv_include_overlap
+from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.functions.segmentation import count_from_ijv, indices_from_ijv, areas_from_ijv, remove_overlapping_labels
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -1705,7 +1707,20 @@ def read_params(training_set_directory, training_set_file_name, d, URL_FOLDER_NA
     return result
 
 
-def run_untangle(image_pixel_data, params, max_complexity, wants_training_set_weights, override_overlap_weight, override_leftover_weight):
+def run_untangle(
+        image_pixel_data, 
+        params, 
+        max_complexity, 
+        wants_training_set_weights, 
+        override_overlap_weight, 
+        override_leftover_weight,
+        return_measurements = True,
+        overlap_style = None,
+        image_shape = None,
+        overlap_objects_name = None,
+        nonoverlapping_objects_name = None,
+
+    ):
     #
     # Skeletonize once, then remove any points in the skeleton
     # that are adjacent to the edge of the image, then skeletonize again.
@@ -1775,13 +1790,26 @@ def run_untangle(image_pixel_data, params, max_complexity, wants_training_set_we
         all_control_coords_x,
         all_control_coords_y,
     ) = worm_descriptor_building(all_path_coords, params, labels.shape)
-    return (
-        ijv, 
-        all_lengths, 
-        all_angles, 
-        all_control_coords_x, 
-        all_control_coords_y
-    )
+    if not return_measurements:
+        return (ijv, labels)
+    else:
+        lib_measurements = get_untangle_worms_measurements(
+            ijv=ijv,
+            all_lengths=all_lengths, 
+            all_angles=all_angles, 
+            all_control_coords_x=all_control_coords_x, 
+            all_control_coords_y=all_control_coords_y,
+            overlap_objects_name=overlap_objects_name,
+            overlap_selection=overlap_style, 
+            image_shape=image_shape, 
+            nonoverlapping_objects_name=nonoverlapping_objects_name, 
+        )
+        return (
+            ijv, 
+            labels,
+            lib_measurements
+        )
+
 
 
 class TrainingData(object):
@@ -1848,3 +1876,73 @@ def run_train(
         return worms_shared_list, dworms
     
     return worms_shared_list
+
+# overlap_objects_name = name = self.overlap_objects.value
+
+def get_untangle_worms_measurements(
+        ijv,
+        all_lengths,
+        all_angles,
+        all_control_coords_x,
+        all_control_coords_y,
+        overlap_objects_name,
+        overlap_selection,
+        image_shape, # this is needed for OverlapStyle.WITHOUT_OVERLAP because the logic for remove overlapping labels returns a labels matrix which should match the image shape. IJV format does not have this information.
+        nonoverlapping_objects_name,
+):
+    lib_measurements = LibraryMeasurements()
+    o_count = count_from_ijv(ijv)
+    object_names = []
+    if overlap_selection in (OverlapStyle.WITH_OVERLAP, OverlapStyle.BOTH):
+        object_names.append(overlap_objects_name)
+        #
+        # OverlapStyle.WITH_OVERLAP
+        #
+        #
+        # Count measurments
+        # 
+        object_count_measurements = get_object_count_measurements(overlap_objects_name, o_count)
+        lib_measurements = lib_measurements.merge(object_count_measurements)
+        #
+        # Object location measurements
+        #
+        o_indices = indices_from_ijv(ijv)
+        o_areas = areas_from_ijv(ijv)
+        object_location_with_overlap_measurements = get_object_location_measurements_ijv_include_overlap(overlap_objects_name, ijv, o_count, o_indices, o_areas)
+        lib_measurements = lib_measurements.merge(object_location_with_overlap_measurements)
+    
+    if overlap_selection in (OverlapStyle.WITHOUT_OVERLAP, OverlapStyle.BOTH):
+        object_names.append(nonoverlapping_objects_name)
+        #
+        # OverlapStyle.WITHOUT_OVERLAP
+        #
+        #
+        # Prepare labels for measurements
+        #
+        labels = remove_overlapping_labels(ijv, image_shape)
+        #
+        # Perform measurements
+        #
+        # Count measurements
+        object_count_measurements = get_object_count_measurements(nonoverlapping_objects_name, o_count)
+        lib_measurements = lib_measurements.merge(object_count_measurements)
+        #
+        # Object location measurements
+        #
+        object_location_measurements = get_object_location_measurements(nonoverlapping_objects_name, labels, o_count)
+        lib_measurements = lib_measurements.merge(object_location_measurements)
+
+    for name in object_names:
+        lib_measurements.add_measurement(
+            name, TemplateMeasurementFormat.LENGTH % (C_WORM), all_lengths
+        )
+        for values, ftr in (
+            (all_angles, TemplateMeasurementFormat.ANGLE),
+            (all_control_coords_x, TemplateMeasurementFormat.CONTROL_POINT_X),
+            (all_control_coords_y, TemplateMeasurementFormat.CONTROL_POINT_Y),
+        ):
+            for i in range(values.shape[1]):
+                feature = ftr % (C_WORM, str(i + 1))
+                lib_measurements.add_measurement(name, feature, values[:, i])
+    return lib_measurements
+                

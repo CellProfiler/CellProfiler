@@ -51,7 +51,10 @@ from cellprofiler_core.constants.measurement import (
 )
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
 from cellprofiler_library.measurement_model import LibraryMeasurements
-from cellprofiler_library.functions.segmentation import center_of_labels_mass
+from cellprofiler_library.functions.segmentation import (
+    center_of_labels_mass,
+    areas_from_ijv
+    )
 from cellprofiler_library.opts.measurement import (
     M_LOCATION_CENTER_X,
     M_LOCATION_CENTER_Y,

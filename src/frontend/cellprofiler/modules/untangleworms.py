@@ -128,6 +128,8 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
+
 from cellprofiler_core.utilities.core.module.identify import (
     add_object_count_measurements,
     add_object_location_measurements,
@@ -145,6 +147,8 @@ from cellprofiler_library.modules._untangleworms import (
     run_train,
 )
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
+from cellprofiler_library.functions.measurement import get_object_location_measurements_ijv_include_overlap
+from cellprofiler_library.functions.object_processing import remove_overlapping_labels
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1065,17 +1069,9 @@ should be processed.
                     l for l, idx in o.get_labels()
                 ]
 
-            # TODO: #5132 are these measurements different from src/subpackages/library/cellprofiler_library/functions/measurement.py's `get_object_location_measurements`? If so add documentation or update the measurement name
-            # TODO: #5132 move these measurements to library
-            if o.count == 0:
-                center_x = numpy.zeros(0)
-                center_y = numpy.zeros(0)
-            else:
-                center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
-                center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(name, M_LOCATION_CENTER_X, center_x)
-            measurements.add_measurement(name, M_LOCATION_CENTER_Y, center_y)
-            measurements.add_measurement(name, M_NUMBER_OBJECT_NUMBER, o.indices)
+            lib_measurements = get_object_location_measurements_ijv_include_overlap(name, ijv, o.count, o.indices, o.areas)
+            add_library_measurements_to_workspace_measurements(measurements, lib_measurements)
+            
             #
             # Save outlines
             #
@@ -1098,24 +1094,25 @@ should be processed.
         # TODO: #5132 move these measurements to library
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #
-            # Sum up the number of overlaps using a sparse matrix
+            # Prepare labels for measurements
             #
-            overlap_hits = coo.coo_matrix(
-                (numpy.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image.pixel_data.shape
-            )
-            overlap_hits = overlap_hits.toarray()
-            mask = overlap_hits == 1
-            labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
-            labels = labels.toarray()
-            labels[~mask] = 0
+            labels = remove_overlapping_labels(ijv, image.pixel_data.shape)
             o = Objects()
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value
             object_names.append(name)
             object_set.add_objects(o, name)
+
+            #
+            # Perform measurements
+            #
             add_object_count_measurements(measurements, name, o.count)
             add_object_location_measurements(measurements, name, labels, o.count)
+
+            #
+            # Display results
+            #
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
                     l for l, idx in o.get_labels()
@@ -1125,6 +1122,8 @@ should be processed.
                 outline_pixels = outline(labels) > 0
                 outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.nonoverlapping_outlines_name.value, outline_image)
+
+        # TODO: #5132 ideally, this should be done in the library
         for name in object_names:
             measurements.add_measurement(
                 name, "_".join((C_WORM, F_LENGTH)), all_lengths

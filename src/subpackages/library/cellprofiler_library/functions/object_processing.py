@@ -6,7 +6,7 @@ import matplotlib.cm
 import mahotas
 import centrosome.cpmorphology
 from typing import Optional, Literal, Tuple, Union
-from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny, Image2DBinary
+from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny, Image2DBinary, ObjectSegmentationIJV
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 from cellprofiler_library.opts.splitormergeobjects import MergingMethod, ObjectIntensityMethod
@@ -1407,3 +1407,23 @@ def merge_unify_parent(
     output_labels = label_indexes[output_labels]
     return output_labels
 
+###############################################################################
+# UntangleWorms
+###############################################################################
+# image_shape = image.pixel_data.shape
+def remove_overlapping_labels(
+    ijv: ObjectSegmentationIJV,
+    image_shape: Tuple[int, int]
+    ):  
+    #
+    # Sum up the number of overlaps using a sparse matrix
+    #
+    overlap_hits = scipy.sparse.coo_matrix(
+        (numpy.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image_shape
+    )
+    overlap_hits = overlap_hits.toarray()
+    mask = overlap_hits == 1
+    labels = scipy.sparse.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
+    labels = labels.toarray()
+    labels[~mask] = 0
+    return labels

@@ -139,8 +139,8 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     m = cellprofiler_core.measurement.Measurements()
     for i, (y, x) in enumerate(control_points):
         for v, f in (
-            (x, cellprofiler.modules.straightenworms.F_CONTROL_POINT_X),
-            (y, cellprofiler.modules.straightenworms.F_CONTROL_POINT_Y),
+            (x, cellprofiler.modules.straightenworms.Feature.CONTROL_POINT_X),
+            (y, cellprofiler.modules.straightenworms.Feature.CONTROL_POINT_Y),
         ):
             feature = "_".join(
                 (cellprofiler.modules.straightenworms.C_WORM, f, str(i + 1))
@@ -149,7 +149,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
     feature = "_".join(
         (
             cellprofiler.modules.straightenworms.C_WORM,
-            cellprofiler.modules.straightenworms.F_LENGTH,
+            cellprofiler.modules.straightenworms.Feature.LENGTH,
         )
     )
     m.add_measurement(OBJECTS_NAME, feature, lengths)

@@ -708,6 +708,7 @@ of the straightened worms.""",
             self.training_set_directory,
             self.training_set_file_name,
             self.training_params,
+            URL_FOLDER_NAME,
         )
         return params
 

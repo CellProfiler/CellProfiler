@@ -50,7 +50,7 @@ CP_VERSION_BASE := $(shell \
 
 CP_VERSION_DEV_TAG := $(shell \
   if [[ "$(CP_VERSION)" =~ ^.+\.(dev[0-9]+)$$ ]]; then \
-    echo "$${BASH_REMATCH[1]}"; \
+    echo "~$${BASH_REMATCH[1]}"; \
   fi)
 
 CP_VERSION_TYPE := $(shell \
@@ -76,7 +76,7 @@ CellProfiler:
 metadata: org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.yml
 
 org.cellprofiler.CellProfiler.metainfo.xml: org.cellprofiler.CellProfiler.metainfo.xml.template
-	sed -e 's/{{METAINFO_VERSION}}/$(CP_VERSION_BASE)~$(CP_VERSION_DEV_TAG)/g' \
+	sed -e 's/{{METAINFO_VERSION}}/$(CP_VERSION_BASE)$(CP_VERSION_DEV_TAG)/g' \
 	    -e 's/{{METAINFO_TYPE}}/$(CP_VERSION_TYPE)/g' \
 	    -e 's/{{METAINFO_DATE}}/$(MANIFEST_DATE)/g' \
 	    $< > $(CP_DIST)/org.cellprofiler.CellProfiler.metainfo.xml

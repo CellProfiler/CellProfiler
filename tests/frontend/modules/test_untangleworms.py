@@ -1628,14 +1628,14 @@ def test_make_incidence_matrix_of_many_things():
 def test_get_all_paths_recur_none():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
 
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.branch_areas = []
             self.segments = []
             self.incidence_matrix = numpy.zeros((0, 0), bool)
             self.segment_lengths = []
 
-    paths_list = list(get_all_paths_recur(Result(), [], [], 0, 0, 1000))
+    paths_list = list(get_all_paths_recur(ResultGraph(), [], [], 0, 0, 1000))
     assert len(paths_list) == 0
 
 
@@ -1645,7 +1645,7 @@ def test_get_all_paths_recur_one():
     #
     # Branch # 0 connects segment 0 and segment 1
     #
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.incident_branch_areas = [[0], [0]]
             self.incident_segments = [[0, 1]]
@@ -1653,7 +1653,7 @@ def test_get_all_paths_recur_one():
             self.segment_lengths = [1, 1]
             self.incidence_directions = numpy.array([[False, True]])
 
-    paths_list = list(get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    paths_list = list(get_all_paths_recur(ResultGraph(), [0], [[0]], 1, 0, 1000))
     assert len(paths_list) == 1
     path = paths_list[0]
     assert isinstance(path, Path)
@@ -1668,7 +1668,7 @@ def test_get_all_paths_recur_depth_two():
     # Branch # 0 connects segment 0 and segment 1
     # Branch # 1 connects segment 1 and 2
     #
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.incident_branch_areas = [[0], [0, 1], [1]]
             self.incident_segments = [[0, 1], [1, 2]]
@@ -1678,7 +1678,7 @@ def test_get_all_paths_recur_depth_two():
                 [[False, True, False], [False, True, False]]
             )
 
-    paths_list = list(get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
+    paths_list = list(get_all_paths_recur(ResultGraph(), [0], [[0]], 1, 0, 1000))
     assert len(paths_list) == 2
     expected = (((0, 1), (0,)), ((0, 1, 2), (0, 1)))
     sorted_list = tuple(
@@ -1695,7 +1695,7 @@ def test_get_all_paths_recur_many():
     #
     # A hopeless tangle where all branches connect to all segments
     #
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.incident_branch_areas = [list(range(3))] * 4
             self.incident_segments = [list(range(4))] * 3
@@ -1704,7 +1704,7 @@ def test_get_all_paths_recur_many():
             self.incidence_directions = numpy.ones((3, 4), bool)
 
     paths_list = get_all_paths_recur(
-        Result(), [0], [[i] for i in range(3)], 1, 0, 1000
+        ResultGraph(), [0], [[i] for i in range(3)], 1, 0, 1000
     )
     sorted_list = tuple(
         sorted(
@@ -1780,27 +1780,27 @@ def test_get_all_paths_recur_many():
 def test_get_all_paths_none():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
 
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.branch_areas = []
             self.segments = []
             self.incidence_matrix = numpy.zeros((0, 0), bool)
 
-    path_list = list(get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(ResultGraph(), 0, 1000))
     assert len(path_list) == 0
 
 
 def test_get_all_paths_one():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
 
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.branch_areas = []
             self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]]
             self.incidence_matrix = numpy.zeros((0, 1), bool)
             self.incidence_directions = [[True, False]]
 
-    path_list = list(get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(ResultGraph(), 0, 1000))
     assert len(path_list) == 1
     path = path_list[0]
     assert isinstance(path, Path)
@@ -1811,14 +1811,14 @@ def test_get_all_paths_one():
 def test_get_all_paths_two_segments():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
 
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.branch_areas = [1]
             self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 2
             self.incidence_matrix = numpy.ones((1, 2), bool)
             self.incidence_directions = numpy.array([[True, False]])
 
-    path_list = list(get_all_paths(Result(), 0, 1000))
+    path_list = list(get_all_paths(ResultGraph(), 0, 1000))
     assert len(path_list) == 3
     sorted_list = tuple(
         sorted([(tuple(path.segments), tuple(path.branch_areas)) for path in path_list])
@@ -1831,7 +1831,7 @@ def test_get_all_paths_many():
     module = cellprofiler.modules.untangleworms.UntangleWorms()
     numpy.random.seed(63)
 
-    class Result(object):
+    class ResultGraph(object):
         def __init__(self):
             self.branch_areas = [0, 1, 2]
             self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 4
@@ -1840,7 +1840,7 @@ def test_get_all_paths_many():
                 numpy.random.uniform(size=(3, 4)) > 0.25
             )
 
-    graph = Result()
+    graph = ResultGraph()
     path_list = get_all_paths(graph, 0, 1000)
     for path in path_list:
         assert len(path.segments) == len(path.branch_areas) + 1

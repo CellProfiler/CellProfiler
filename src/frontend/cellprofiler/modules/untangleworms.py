@@ -1032,8 +1032,8 @@ should be processed.
             return_measurements=True,
             overlap_style = self.overlap.value,
             image_shape = image.pixel_data.shape,
-            nonoverlapping_objects_name = self.nonoverlapping_objects.value if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value) else None,
             overlap_objects_name = self.overlap_objects.value if self.overlap in (OverlapStyle.WITH_OVERLAP.value, OverlapStyle.BOTH.value) else None,
+            nonoverlapping_objects_name = self.nonoverlapping_objects.value if self.overlap in (OverlapStyle.WITHOUT_OVERLAP.value, OverlapStyle.BOTH.value) else None,
         )
         add_library_measurements_to_workspace_measurements(workspace.measurements, lib_measurements)
         

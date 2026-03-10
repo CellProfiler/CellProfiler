@@ -95,7 +95,6 @@ from packaging.version import Version
 
 import numpy
 
-from scipy.sparse import coo
 from centrosome.outline import outline
 import centrosome.cpmorphology
 
@@ -105,9 +104,6 @@ from cellprofiler_core.constants.measurement import FTR_CENTER_X
 from cellprofiler_core.constants.measurement import FTR_CENTER_Y
 from cellprofiler_core.constants.measurement import FTR_OBJECT_NUMBER
 from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUNT
-from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
-from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
-from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler_core.constants.module import (
     USING_METADATA_GROUPING_HELP_REF,
     IO_FOLDER_CHOICE_HELP_TEXT,
@@ -130,11 +126,7 @@ from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
-from cellprofiler_core.utilities.core.module.identify import (
-    add_object_count_measurements,
-    add_object_location_measurements,
-    get_object_measurement_columns,
-)
+from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
 
 from cellprofiler import __version__ as cellprofiler_version
 from cellprofiler_library.modules._untangleworms import (
@@ -147,7 +139,7 @@ from cellprofiler_library.modules._untangleworms import (
     run_train,
 )
 from cellprofiler_library.opts.untangleworms import TrainingXMLTag
-from cellprofiler_library.opts.untangleworms import OverlapStyle, Mode, Complexity, C_WORM, TemplateMeasurementFormat, complexity_limits, Feature
+from cellprofiler_library.opts.untangleworms import OverlapStyle, Mode, Complexity, C_WORM, complexity_limits, Feature
 
 LOGGER = logging.getLogger(__name__)
 

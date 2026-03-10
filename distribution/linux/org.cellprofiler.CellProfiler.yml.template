@@ -23,7 +23,7 @@ modules:
       # script to provide the command to passthrough
       - echo "${FLATPAK_DEST}/activate.sh python -m cellprofiler -L 10" > cellprofiler
       - install -Dm0755 cellprofiler ${FLATPAK_DEST}/bin/cellprofiler
-      # pip install the source only, the deps are already installed in the unpacked enviornment above
+      # pip install the sources only, the deps are already installed in the unpacked enviornment above
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/library
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/frontend
@@ -41,17 +41,13 @@ modules:
     sources:
       - type: git
         url: https://github.com/CellProfiler/CellProfiler.git
-        #commit: f332f15a49287c053284b10f6ef35494607b436b
-        #tag: v5.0.0
-        # TODO: linux - update branch ref
         branch: {{CP_BRANCH}}
       - type: file
-        path: ./environment.sh
+        path: environment.sh
+        dest: .
 finish-args:
-  # TODO: linux - wayland support
-  #- --socket=wayland
-  #- --socket=fallback-x11
-  - --socket=x11
+  - --socket=wayland
+  - --socket=fallback-x11
   - --device=dri
   - --share=ipc
   - --share=network
@@ -64,6 +60,6 @@ finish-args:
   # find pixi provided libs, like libjpeg.so.8
   - --env=LD_LIBRARY_PATH=/app/env/lib
   # prevent direct memory access buffer protocol, to stop webkit from sharing graphics buffer with main UI process
-  # especially for Ubuntu with X11 and NVIDIA drivers, or older version of Meson on the host, the "handshake" required fails
+  # especially for Ubuntu with X11 and NVIDIA drivers, or older version of Mesa on the host, the "handshake" required fails
   # don't use shared-memory buffer protocol and fallback to traditional texture-sharing or software-fallback path
   - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1

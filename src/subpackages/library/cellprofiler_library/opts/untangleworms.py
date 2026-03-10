@@ -1,6 +1,10 @@
 from enum import Enum
 import numpy as np
 C_WORM = "Worm"
+"""Maximum # of sets of paths considered at any level"""
+MAX_CONSIDERED = 50000
+"""Maximum # of different paths considered for input"""
+MAX_PATHS = 400
 class TrainingXMLTag:
     ######################################################
     #

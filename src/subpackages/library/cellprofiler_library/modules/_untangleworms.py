@@ -9,22 +9,101 @@ from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from urllib.request import urlopen
 
-from cellprofiler_library.opts.untangleworms import TrainingXMLTag, TemplateMeasurementFormat, OverlapStyle, C_WORM
+from cellprofiler_library.opts.untangleworms import TrainingXMLTag, TemplateMeasurementFormat, OverlapStyle, C_WORM, MAX_CONSIDERED, MAX_PATHS
 from cellprofiler_library.functions.measurement import get_object_location_measurements, get_object_count_measurements, get_object_location_measurements_ijv_include_overlap
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.segmentation import count_from_ijv, indices_from_ijv, areas_from_ijv, remove_overlapping_labels
 import logging
+
+from numpy.typing import NDArray
+from cellprofiler_library.types import ObjectSegmentation, Image2DBinary, ObjectSegmentationIJV
+from typing import Tuple, List, Any, Generator, Dict, Optional
 LOGGER = logging.getLogger(__name__)
 
-"""Maximum # of sets of paths considered at any level"""
-MAX_CONSIDERED = 50000
-"""Maximum # of different paths considered for input"""
-MAX_PATHS = 400
 # ------------------------------------------------------------------------------
 # Helper functions thare are common between run_train and run_untangle
 # ------------------------------------------------------------------------------
 
-def get_angles(control_coords):
+class ResultGraph(object):
+    """A result graph:
+
+    image_size: size of input image
+
+    segments: a list for each segment of a forward (index = 0) and
+                reverse N x 2 array of coordinates of pixels in a segment
+
+    segment_indexes: the index of label X into segments
+
+    segment_counts: # of points per segment
+
+    segment_order: for each pixel, its order when tracing
+
+    branch_areas: an N x 2 array of branch point coordinates
+
+    branch_area_indexes: index into the branch areas per branchpoint
+
+    branch_area_counts: # of points in each branch
+
+    incidence_matrix: matrix of areas x segments indicating connections
+
+    incidence_directions: direction of each connection
+    """
+
+    def __init__(
+        self,
+        branch_areas_binary,
+        counts: NDArray[numpy.int64],
+        i: NDArray[numpy.int64],
+        j: NDArray[numpy.int64],
+        branch_ij: NDArray[numpy.int64],
+        branch_counts: NDArray[numpy.int64],
+        incidence_matrix: NDArray[numpy.bool_],
+        incidence_directions: NDArray[numpy.bool_],
+        order: NDArray[numpy.int64],
+    ):
+        self.image_size = tuple(branch_areas_binary.shape)
+        self.segment_coords: NDArray[numpy.int64] = numpy.column_stack((i, j))
+        self.segment_indexes: NDArray[numpy.int64] = numpy.cumsum(counts) - counts
+        self.segment_counts: NDArray[numpy.int64] = counts
+        self.segment_order: NDArray[numpy.int64] = order
+        self.segments: List[Tuple[NDArray[numpy.int64], NDArray[numpy.int64]]] = [
+            (
+                self.segment_coords[
+                    self.segment_indexes[i] : (
+                        self.segment_indexes[i] + self.segment_counts[i]
+                    )
+                ],
+                self.segment_coords[
+                    self.segment_indexes[i] : (
+                        self.segment_indexes[i] + self.segment_counts[i]
+                    )
+                ][::-1],
+            )
+            for i in range(len(counts))
+        ]
+
+        self.branch_areas: NDArray[numpy.int64] = branch_ij
+        self.branch_area_indexes: NDArray[numpy.int64] = numpy.cumsum(branch_counts) - branch_counts
+        self.branch_area_counts: NDArray[numpy.int64] = branch_counts
+        self.incidence_matrix: NDArray[numpy.bool_] = incidence_matrix
+        self.incidence_directions: NDArray[numpy.bool_] = incidence_directions
+
+class Path(object):
+    def __init__(self, segments: List[int], branch_areas: List[int]):
+        self.segments = segments
+        self.branch_areas = branch_areas
+
+    def __repr__(self):
+        return (
+            "{ segments="
+            + repr(self.segments)
+            + " branch_areas="
+            + repr(self.branch_areas)
+            + " }"
+        )
+    
+
+def get_angles(control_coords: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
     """Extract the angles at each interior control point
 
     control_coords - an Nx2 array of coordinates of control points
@@ -42,7 +121,10 @@ def get_angles(control_coords):
     return angles
 
 
-def path_to_pixel_coords(graph_struct, path):
+def path_to_pixel_coords(
+        graph_struct: ResultGraph, 
+        path: Path
+    ) -> NDArray[numpy.int64]:
     """Given a structure describing paths in a graph, converts those to a
     polyline (i.e., successive coordinates) representation of the same graph.
 
@@ -84,8 +166,11 @@ def path_to_pixel_coords(graph_struct, path):
     return numpy.vstack(result)
 
 def calculate_angle_shape_cost(
-    control_coords, total_length, mean_angles, inv_angles_covariance_matrix
-):
+    control_coords: NDArray[numpy.float64], 
+    total_length: numpy.float64, 
+    mean_angles: NDArray[numpy.float64], 
+    inv_angles_covariance_matrix: NDArray[numpy.float64],
+) -> numpy.float64:
     """% Calculates a shape cost based on the angle shape cost model.
 
     Given a set of N control points, calculates the N-2 angles between
@@ -140,7 +225,11 @@ def calculate_angle_shape_cost(
     feat_vec = numpy.hstack((angles, [total_length])) - mean_angles
     return numpy.dot(numpy.dot(feat_vec, inv_angles_covariance_matrix), feat_vec)
 
-def sample_control_points(path_coords, cumul_lengths, num_control_points):
+def sample_control_points(
+        path_coords: NDArray[numpy.float64],
+        cumul_lengths: NDArray[numpy.float64], 
+        num_control_points: int
+    ) -> NDArray[numpy.float64]:
     """Sample equally-spaced control points from the Nx2 path coordinates
 
     Inputs:
@@ -196,7 +285,7 @@ def sample_control_points(path_coords, cumul_lengths, num_control_points):
     sampled = numpy.vstack((path_coords[:1, :], sampled, path_coords[-1:, :]))
     return sampled
 
-def calculate_cumulative_lengths(path_coords):
+def calculate_cumulative_lengths(path_coords: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
     """return a cumulative length vector given Nx2 path coordinates"""
     if len(path_coords) < 2:
         return numpy.array([0] * len(path_coords))
@@ -209,29 +298,16 @@ def calculate_cumulative_lengths(path_coords):
         )
     )
 
-class Path(object):
-    def __init__(self, segments, branch_areas):
-        self.segments = segments
-        self.branch_areas = branch_areas
 
-    def __repr__(self):
-        return (
-            "{ segments="
-            + repr(self.segments)
-            + " branch_areas="
-            + repr(self.branch_areas)
-            + " }"
-        )
-    
 
 def get_all_paths_recur(
-    graph,
-    unfinished_segment,
-    unfinished_branch_areas,
-    current_length,
-    min_length,
-    max_length,
-):
+    graph: ResultGraph,
+    unfinished_segment: List[int],
+    unfinished_branch_areas: List[int],
+    current_length: numpy.float64,
+    min_length: int,
+    max_length: int,
+    ) -> Generator[Path, None, None]:
     """Recursively find paths
 
     incident_branch_areas - list of all branch areas incident on a segment
@@ -282,7 +358,7 @@ def get_all_paths_recur(
                 yield path
 
 
-def build_incidence_lists(graph_struct):
+def build_incidence_lists(graph_struct: Any) -> Tuple[List[Any], List[Any]]:
     """Return a list of all branch areas incident to j for each segment
 
     incident_branch_areas{j} is a row array containing a list of all those
@@ -300,7 +376,7 @@ def build_incidence_lists(graph_struct):
     return incident_branch_areas, incident_segments
 
 
-def calculate_path_length(path_coords):
+def calculate_path_length(path_coords: NDArray[numpy.int64]) -> numpy.float64:
     """Return the path length, given path coordinates as Nx2"""
     if len(path_coords) < 2:
         return 0
@@ -309,7 +385,11 @@ def calculate_path_length(path_coords):
     )
 
 
-def get_all_paths(graph_struct, min_length, max_length):
+def get_all_paths(
+        graph_struct: ResultGraph, 
+        min_length: int, 
+        max_length: int
+    ) -> Generator[Path, None, None]:
     """Given a structure describing a graph, returns a cell array containing
     a list of all paths through the graph.
 
@@ -401,7 +481,10 @@ def get_all_paths(graph_struct, min_length, max_length):
         for path in paths_list:
             yield path
 
-def get_longest_path_coords(graph_struct, max_length):
+def get_longest_path_coords(
+        graph_struct: ResultGraph, 
+        max_length: numpy.float64
+    ) -> Tuple[NDArray[numpy.int64], Path]:
     """Given a graph describing the structure of the skeleton of an image,
     returns the longest non-self-intersecting (with some caveats, see
     get_all_paths.m) path through that graph, specified as a polyline.
@@ -435,7 +518,12 @@ def get_longest_path_coords(graph_struct, max_length):
     return current_longest_path_coords, current_path
 
 
-def make_incidence_matrix(L1, N1, L2, N2):
+def make_incidence_matrix(
+        L1: ObjectSegmentation, 
+        N1: int, 
+        L2: ObjectSegmentation, 
+        N2: int
+    ) -> NDArray[numpy.int_]:
         """Return an N1+1 x N2+1 matrix that marks all L1 and L2 that are 8-connected
 
         L1 - a labels matrix
@@ -486,7 +574,7 @@ def make_incidence_matrix(L1, N1, L2, N2):
         return incidence != 0
 
 
-def trace_segments(segments_binary):
+def trace_segments(segments_binary: Image2DBinary) -> Tuple[NDArray[numpy.int_], NDArray[numpy.int_], ObjectSegmentation, NDArray[numpy.int_], NDArray[numpy.float64], int]:
     """Find distance of every point in a segment from a segment endpoint
 
     segments_binary - a binary mask of the segments in an image.
@@ -593,8 +681,9 @@ def trace_segments(segments_binary):
 
 
 def get_graph_from_branching_areas_and_segments(
-    branch_areas_binary, segments_binary
-):
+    branch_areas_binary: Image2DBinary, 
+    segments_binary: Image2DBinary
+) -> ResultGraph:
     """Turn branches + segments into a graph
 
     branch_areas_binary - binary mask of branch areas
@@ -666,70 +755,8 @@ def get_graph_from_branching_areas_and_segments(
     )
     incidence_matrix |= incidence_directions
 
-    class Result(object):
-        """A result graph:
-
-        image_size: size of input image
-
-        segments: a list for each segment of a forward (index = 0) and
-                    reverse N x 2 array of coordinates of pixels in a segment
-
-        segment_indexes: the index of label X into segments
-
-        segment_counts: # of points per segment
-
-        segment_order: for each pixel, its order when tracing
-
-        branch_areas: an N x 2 array of branch point coordinates
-
-        branch_area_indexes: index into the branch areas per branchpoint
-
-        branch_area_counts: # of points in each branch
-
-        incidence_matrix: matrix of areas x segments indicating connections
-
-        incidence_directions: direction of each connection
-        """
-
-        def __init__(
-            self,
-            branch_areas_binary,
-            counts,
-            i,
-            j,
-            branch_ij,
-            branch_counts,
-            incidence_matrix,
-            incidence_directions,
-        ):
-            self.image_size = tuple(branch_areas_binary.shape)
-            self.segment_coords = numpy.column_stack((i, j))
-            self.segment_indexes = numpy.cumsum(counts) - counts
-            self.segment_counts = counts
-            self.segment_order = order
-            self.segments = [
-                (
-                    self.segment_coords[
-                        self.segment_indexes[i] : (
-                            self.segment_indexes[i] + self.segment_counts[i]
-                        )
-                    ],
-                    self.segment_coords[
-                        self.segment_indexes[i] : (
-                            self.segment_indexes[i] + self.segment_counts[i]
-                        )
-                    ][::-1],
-                )
-                for i in range(len(counts))
-            ]
-
-            self.branch_areas = branch_ij
-            self.branch_area_indexes = numpy.cumsum(branch_counts) - branch_counts
-            self.branch_area_counts = branch_counts
-            self.incidence_matrix = incidence_matrix
-            self.incidence_directions = incidence_directions
-
-    return Result(
+    
+    return ResultGraph(
         branch_areas_binary,
         counts,
         i,
@@ -738,12 +765,16 @@ def get_graph_from_branching_areas_and_segments(
         branch_counts,
         incidence_matrix,
         incidence_directions,
+        order
     )
 
 
 def get_graph_from_binary(
-    binary_im, skeleton, max_radius=None, max_skel_length=None
-):
+    binary_im: Image2DBinary, 
+    skeleton: Image2DBinary, 
+    max_radius: Optional[numpy.float64]=None, 
+    max_skel_length: Optional[numpy.float64]=None
+) -> ResultGraph:
     """Manufacture a graph of the skeleton of the worm
 
     Given a binary image containing a cluster of worms, returns a structure
@@ -873,7 +904,12 @@ def get_graph_from_binary(
 # ------------------------------------------------------------------------------
 
 
-def single_worm_find_path(labels, i, skeleton, params):
+def single_worm_find_path(
+        labels: ObjectSegmentation, 
+        i: int, 
+        skeleton: Image2DBinary, 
+        params
+    ) -> Tuple[NDArray[numpy.int64], Path]:
     """Finds the worm's skeleton  as a path.
 
     labels - the labels matrix, labeling single and clusters of worms
@@ -895,7 +931,10 @@ def single_worm_find_path(labels, i, skeleton, params):
     graph_struct = get_graph_from_binary(binary_im, skeleton)
     return get_longest_path_coords(graph_struct, params.max_path_length)
 
-def single_worm_filter(path_coords, params):
+def single_worm_filter(
+        path_coords: NDArray[numpy.int64], 
+        params
+    ) -> numpy.bool_:
     """Given a path representing a single worm, calculates its shape cost, and
     either accepts it as a worm or rejects it, depending on whether or not
     the shape cost is higher than some threshold.
@@ -938,7 +977,12 @@ def single_worm_filter(path_coords, params):
     return cost < params.cost_threshold
 
 
-def cluster_graph_building(labels, i, skeleton, params):
+def cluster_graph_building(
+        labels: ObjectSegmentation, 
+        i: int, 
+        skeleton: Image2DBinary, 
+        params
+    ) -> ResultGraph:
     binary_im = labels == i
     skeleton = skeleton & binary_im
 
@@ -947,16 +991,21 @@ def cluster_graph_building(labels, i, skeleton, params):
     )
 
 def select_one_level(
-    costs,
-    path_segment_matrix,
-    segment_lengths,
-    current_best_subset,
-    current_best_cost,
-    current_path_segment_matrix,
-    current_path_choices,
-    overlap_weight,
-    leftover_weight,
-):
+    costs: NDArray[numpy.int64],
+    path_segment_matrix: NDArray[numpy.bool_],
+    segment_lengths: NDArray[numpy.int64],
+    current_best_subset: List[int],
+    current_best_cost: numpy.int64,
+    current_path_segment_matrix: NDArray[numpy.int64],
+    current_path_choices: NDArray[numpy.bool_],
+    overlap_weight: int,
+    leftover_weight: int,
+) -> Tuple[
+        List[int],
+        numpy.int64,
+        NDArray[numpy.int64],
+        NDArray[numpy.bool_],
+    ]:
     """Select from among sets of N paths
 
     Select the best subset from among all possible sets of N paths,
@@ -1119,8 +1168,10 @@ def fast_selection(
     return current_best_subset, current_best_cost
 
 def rebuild_worm_from_control_points_approx(
-    control_coords, worm_radii, shape
-):
+    control_coords: NDArray[numpy.float64], 
+    worm_radii: NDArray[numpy.float64],
+    shape: Tuple[int, int]
+) -> Tuple[NDArray[numpy.int64], NDArray[numpy.int64]]:
     """Rebuild a worm from its control coordinates
 
     Given a worm specified by some control points along its spline,
@@ -1205,7 +1256,11 @@ def rebuild_worm_from_control_points_approx(
     mask = (i >= 0) & (j >= 0) & (i < shape[0]) & (j < shape[1])
     return i[mask], j[mask]
 
-def worm_descriptor_building(all_path_coords, params, shape):
+def worm_descriptor_building(
+        all_path_coords: List[NDArray[numpy.int64]], 
+        params, 
+        shape: Tuple[int, int]
+    ) -> Tuple[ObjectSegmentationIJV, NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]]:
     """Return the coordinates of reconstructed worms in i,j,v form
 
     Given a list of paths found in an image, reconstructs labeled
@@ -1293,7 +1348,16 @@ def get_leftover_weight(params, wants_training_set_weights, override_leftover_we
     else:
         return params.leftover_weight
     
-def cluster_paths_selection(graph, paths, labels, i, params, wants_training_set_weights, override_overlap_weight, override_leftover_weight):
+def cluster_paths_selection(
+        graph: ResultGraph, 
+        paths, 
+        labels, 
+        i, 
+        params, 
+        wants_training_set_weights, 
+        override_overlap_weight, 
+        override_leftover_weight
+    ):
     """Select the best paths for worms from the graph
 
     Given a graph representing a worm cluster, and a list of paths in the
@@ -1476,7 +1540,12 @@ def cluster_paths_selection(graph, paths, labels, i, params, wants_training_set_
     return path_coords_selected
 
 
-def read_params(training_set_directory, training_set_file_name, d, URL_FOLDER_NAME):
+def read_params(
+        training_set_directory, 
+        training_set_file_name, 
+        d, 
+        URL_FOLDER_NAME
+    ):
     """Read a training set parameters  file
 
     training_set_directory - the training set directory setting
@@ -1708,17 +1777,17 @@ def read_params(training_set_directory, training_set_file_name, d, URL_FOLDER_NA
 
 
 def run_untangle(
-        image_pixel_data, 
+        image_pixel_data: Image2DBinary, 
         params, 
-        max_complexity, 
-        wants_training_set_weights, 
-        override_overlap_weight, 
-        override_leftover_weight,
+        max_complexity: int, 
+        wants_training_set_weights: bool, 
+        override_overlap_weight: float, 
+        override_leftover_weight: float,
         return_measurements = True,
-        overlap_style = None,
-        image_shape = None,
-        overlap_objects_name = None,
-        nonoverlapping_objects_name = None,
+        overlap_style: Optional[OverlapStyle] = None,
+        image_shape: Optional[Tuple[int, int]] = None,
+        overlap_objects_name: Optional[str] = None,
+        nonoverlapping_objects_name: Optional[str] = None,
 
     ):
     #
@@ -1822,10 +1891,10 @@ class TrainingData(object):
         self.radial_profile = radial_profile
 
 def run_train(
-        image_pixel_data,
-        num_control_points,
-        worms_shared_list, # this is stored in a shared dictionary
-        get_dworms = False, # for displaying results    
+        image_pixel_data: Image2DBinary,
+        num_control_points: int,
+        worms_shared_list: List[TrainingData], # this is stored in a shared dictionary
+        get_dworms: bool = False, # for displaying results    
 
     ):
     labels, count = scipy.ndimage.label(
@@ -1877,18 +1946,17 @@ def run_train(
     
     return worms_shared_list
 
-# overlap_objects_name = name = self.overlap_objects.value
 
 def get_untangle_worms_measurements(
-        ijv,
+        ijv: ObjectSegmentationIJV,
         all_lengths,
         all_angles,
         all_control_coords_x,
         all_control_coords_y,
-        overlap_objects_name,
-        overlap_selection,
-        image_shape, # this is needed for OverlapStyle.WITHOUT_OVERLAP because the logic for remove overlapping labels returns a labels matrix which should match the image shape. IJV format does not have this information.
-        nonoverlapping_objects_name,
+        overlap_objects_name: str,
+        overlap_selection: OverlapStyle,
+        image_shape: Tuple[int, int], # this is needed for OverlapStyle.WITHOUT_OVERLAP because the logic for remove overlapping labels returns a labels matrix which should match the image shape. IJV format does not have this information.
+        nonoverlapping_objects_name: str,
 ):
     lib_measurements = LibraryMeasurements()
     o_count = count_from_ijv(ijv)

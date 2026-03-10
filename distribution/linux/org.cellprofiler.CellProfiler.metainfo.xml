@@ -13,7 +13,7 @@
   </developer>
 
   <releases>
-    <release version="5.0.0~dev380" type="development" date="2026-02-26" />
+    <release version="5.0.0~dev379" type="development" date="2026-03-10" />
   </releases>
   
   <description>
@@ -28,15 +28,15 @@
     </p>
     <p>
       In summary, CellProfiler contains:
-      <ul>
-        <li>Advanced algorithms for image analysis that are able to accurately identify crowded cells and non-mammalian cell types.</li>
-        <li>A modular, flexible design allowing analysis of new assays and phenotypes.</li>
-        <li>Open-source code so the underlying methodology is known and can be modified or improved by others.</li>
-        <li>A user-friendly interface.</li>
-        <li>The ability to use high-throughput computing (clusters, cloud).</li>
-        <li>A design that eliminates the tedium of the many steps typically involved in image analysis, many of which are not easily transferable from one project to another (for example, image formatting, combining several image analysis steps, or repeating the analysis with slightly different parameters).</li>
-      </ul>
     </p>
+    <ul>
+      <li>Advanced algorithms for image analysis that are able to accurately identify crowded cells and non-mammalian cell types.</li>
+      <li>A modular, flexible design allowing analysis of new assays and phenotypes.</li>
+      <li>Open-source code so the underlying methodology is known and can be modified or improved by others.</li>
+      <li>A user-friendly interface.</li>
+      <li>The ability to use high-throughput computing (clusters, cloud).</li>
+      <li>A design that eliminates the tedium of the many steps typically involved in image analysis, many of which are not easily transferable from one project to another (for example, image formatting, combining several image analysis steps, or repeating the analysis with slightly different parameters).</li>
+    </ul>
   </description>
 
   <url type="homepage">https://cellprofiler.org</url>

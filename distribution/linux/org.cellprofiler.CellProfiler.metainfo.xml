@@ -45,19 +45,18 @@
   
   <launchable type="desktop-id">org.cellprofiler.CellProfiler.desktop</launchable>
 
-  <!-- TODO: linux - update branch refs -->
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/main_window.png</image>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/main/distribution/linux/screenshots/main_window.png</image>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/welcome.png</image>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/main/distribution/linux/screenshots/welcome.png</image>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/id_primary.png</image>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/main/distribution/linux/screenshots/id_primary.png</image>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/linux/distribution/linux/screenshots/workspace.png</image>
+      <image>https://raw.githubusercontent.com/CellProfiler/CellProfiler/refs/heads/main/distribution/linux/screenshots/workspace.png</image>
     </screenshot>
   </screenshots>
   

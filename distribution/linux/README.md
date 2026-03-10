@@ -2,6 +2,40 @@
 
 Linux distributions of CellProfiler are done via Flatpak.
 
+## Building
+
+### Building Locally
+
+A `Makefile` is provided for building. The `Makefile` takes several optional arguments (read the comment in the `Makefile`). The one you'll most likely want to provide is `CP_VERSION`. For example:
+
+```sh
+make CP_VERSION="$(python -m setuptools_scm -c ../../src/frontend/pyproject.toml)" CP_BRANCH=""
+```
+
+The manifest and metainfo file (both explained below in the "Flatpak Manifest" section) are generated from templates:
+
+```
+org.cellprofiler.CellProfiler.yml.template -> org.cellprofiler.CellProfiler.yml
+org.cellprofiler.CellProfiler.metainfo.xml.template -> org.cellprofiler.CellProfiler.metainfo.xml
+```
+
+To generate just those two files, use the `metadata` target. Fore example:
+
+```sh
+make CP_VERSION="$(python -m setuptools_scm -c ../../src/frontend/pyproject.toml)" CP_BRANCH="" metadata
+```
+
+Otherwise, the default target is `build-local`, which will do the above as well as run `flatpak-builder` (explained below in the "Flatpak Manifest" section). Before running `make` or `make build-local`, make sure to pack the environment in `environment.sh`, as expalined in the "Pixi Pack" section below.
+
+To clean out the previously generated manifest and metainfo files run `make clean`.
+
+To clean out the flatpak build artifacts run `make clean-build`.
+
+### Building on CI/CD
+
+The `.github/workflows/release.yml` GitHub actions workflow file contains the scripts to automatically build the flatpak artifacts on pushes to `main`. See that file for details.
+
+
 ## Flatpak Manifest
 
 The [manifest](https://docs.flatpak.org/en/latest/flatpak-builder-command-reference.html#flatpak-manifest) file, `org.cellprofiler.CellProfiler.yml`, contains the instructions to build the Flatpak with `flatpak-builder`. It is fairly typical other than the usage of `pixi` explained below. Refer to the [Flatpak docs](https://docs.flatpak.org/en/latest/introduction.html) to understand its contents.

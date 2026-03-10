@@ -7,7 +7,7 @@ import mahotas
 import centrosome.cpmorphology
 import cellprofiler.utilities.morphology
 from typing import Optional, Literal, Tuple, Union
-from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny
+from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny, ObjectSegmentationIJV
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 from cellprofiler_library.opts.splitormergeobjects import MergingMethod, ObjectIntensityMethod

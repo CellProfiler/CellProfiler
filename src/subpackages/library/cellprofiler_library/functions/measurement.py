@@ -51,7 +51,10 @@ from cellprofiler_core.constants.measurement import (
 )
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
 from cellprofiler_library.measurement_model import LibraryMeasurements
-from cellprofiler_library.functions.segmentation import center_of_labels_mass
+from cellprofiler_library.functions.segmentation import (
+    center_of_labels_mass,
+    areas_from_ijv
+    )
 from cellprofiler_library.opts.measurement import (
     M_LOCATION_CENTER_X,
     M_LOCATION_CENTER_Y,
@@ -4357,5 +4360,35 @@ def get_image_segmentation_measurements(
     lib_measurements.add_image_measurement( 
         FF_COUNT % object_name, numpy.array([objects_count], dtype=float),
     )
+    return lib_measurements
+
+###############################################################################
+# UntangleWorms
+###############################################################################
+
+def get_object_location_measurements_ijv_include_overlap(
+        object_name: str, 
+        ijv: ObjectSegmentationIJV, 
+        object_count: int, 
+        object_indices: NDArray[numpy.int32], 
+        object_areas: NDArray[numpy.int32]
+    ) -> LibraryMeasurements:
+    #
+    # These object location measurements are not the same as 
+    # `get_object_location_measurements()`.
+    # Key difference is that this function works on the ijv labels whereas the other function works on the
+    #  `labels` attribute of the object which is a 2D array of object numbers. Unlike the dense label format,
+    #  IJV representation can be used to store overlapping objects
+    #  
+    lib_measurements = LibraryMeasurements()
+    if object_count == 0:
+        center_x = numpy.zeros(0)
+        center_y = numpy.zeros(0)
+    else:
+        center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[object_indices] / object_areas
+        center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[object_indices] / object_areas
+    lib_measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
+    lib_measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
+    lib_measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, object_indices)
     return lib_measurements
 

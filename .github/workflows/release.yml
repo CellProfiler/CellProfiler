@@ -9,31 +9,31 @@ jobs:
         # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
         # macos-14 (and macos-latest) point to arm architecture, which is incompatible with setup-python + pythonv version 3.9
         # https://github.com/actions/setup-python/issues/808
-        os: [macos-15-intel, windows-2019]
+        os: [macos-15-intel, windows-2022, ubuntu-latest]
         python-version: ["3.9"]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     outputs:
-      cp-version: ${{ steps.get-cp-version-mac.outputs.CP_VERSION }}
+      cp-version: ${{ steps.get-cp-version-unix.outputs.CP_VERSION }}
     steps:
-      - name: Windows - Cache pip
+      - name: Cache pip - Windows
         if: startsWith(matrix.os, 'windows')
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Mac - Cache pip
+      - name: Cache pip - Mac
         if: startsWith(matrix.os, 'macos')
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
@@ -42,9 +42,9 @@ jobs:
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
-      - name: Get CellProfiler Version - Mac
-        if: startsWith(matrix.os, 'macos')
-        id: get-cp-version-mac
+      - name: Get CellProfiler Version - Mac & Linux
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        id: get-cp-version-unix
         run: |
           pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
           # reference with ${{ env.CP_VERSION }}
@@ -59,27 +59,29 @@ jobs:
           # reference with ${{ env.CP_VERSION }}
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> $env:GITHUB_ENV
-      - name: Setup java
-        uses: actions/setup-java@v4
+      - name: Setup Java - Mac & Windows
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "11" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - name: Mac - Build
+      - name: Build - Mac
         if: startsWith(matrix.os, 'macos')
         working-directory: ${{ github.workspace }}/distribution/macos
         env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
+          JDK_HOME: ${{ env.JAVA_HOME }}
         run: |
-          brew install mysql pkg-config
+          brew install mysql
           make CP_VERSION=${{ env.CP_VERSION }} CP_BRANCH="" CP_DIR=${{ github.workspace }}
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-      - name: Windows - Build
+      - name: Build - Windows
         if: startsWith(matrix.os, 'windows')
         env:
           JDK_HOME: ${{ env.JAVA_HOME }}
@@ -94,22 +96,110 @@ jobs:
           cd ${{ github.workspace }}/distribution/windows
           pyinstaller cellprofiler.spec
           iscc cellprofiler.iss
-      - name: Mac - Create Actions Artifact
+      - name: Setup Pixi - Linux
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.62.2
+          #cache: true
+          #cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          #locked: true
+          #environments: prod
+          run-install: false
+          global-environments: pixi-pack
+      - name: Pack Environment - Linux
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          pixi-pack --environment prod --platform linux-64 --use-cache .pixi_pack/cache --ignore-pypi-non-wheel --create-executable pixi.toml
+          ls -Al .
+      - name: Create Actions Artifact - Mac
         if: startsWith(matrix.os, 'macos')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
           path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-      - name: Windows - Create Actions Artifact
+      - name: Create Actions Artifact - Windows
         if: startsWith(matrix.os, 'windows')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
           path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+      - name: Upload environment artifact - Linux
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v6
+        with:
+          name: packed-linux-environment
+          path: ${{ github.workspace }}/environment.sh
+          compression-level: 0
+          overwrite: true
+
+  create-flatpak-repo:
+    name: Build CellProfiler Flatpak
+    needs: build-cp
+    runs-on: ubuntu-latest
+    env:
+      CP_VERSION: ${{ needs.build-cp.outputs.cp-version }}
+    container:
+      image: ghcr.io/andyholmes/flatter/gnome:49
+      options: --privileged
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Download environment artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: packed-linux-environment
+          path: ${{ github.workspace }}/distribution/linux
+      - name: Set exec bit
+        run: |
+          chmod +x distribution/linux/environment.sh
+      - name: Make manifest
+        working-directory: ${{ github.workspace }}/distribution/linux
+        run: |
+          # remove prviously generated manifest files
+          make clean
+          # generate updated manifest files
+          make CP_VERSION="${{ env.CP_VERSION }}" CP_BRANCH="main" metadata
+      - name: Setup GPG
+        if: ${{ github.triggering_actor == github.repository_owner }}
+        id: gpg
+        uses: crazy-max/ghaction-import-gpg@v7
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      #- name: Generate CNAME
+      #  run: |
+      #    echo "flatpak.cellprofiler.org" > CNAME
+      - name: Build
+        # generated flatpak build-bundle artifact (org.cellprofiler.CellProfiller.flatpak)
+        #     is a zip named: org.cellprofiler.CellProfiler-x86_64
+        #     link to latest build can be generated with: https://nightly.link/
+        # generated flatpak repo artifact for gh pages is
+        #     a zip named: github-pages unzipping to artifact.tar then untarring to artifact/
+        # artifact/ contains index.flatpakrepo
+        # see: https://github.com/andyholmes/flatter?tab=readme-ov-file#github-pages
+        uses: andyholmes/flatter@main
+        with:
+          files: distribution/linux/org.cellprofiler.CellProfiler.yml
+          arch: x86_64
+          gpg-sign: ${{ steps.gpg.outputs.fingerprint }}
+          # build-bundle
+          upload-bundles: true
+          # repo
+          upload-pages-artifact: false
+          upload-pages-includes: |
+            distribution/linux/index.html
+          #  CNAME
+      - name: Inspect Outputs
+        run: |
+          ls -al .
 
   upload-cp:
     name: Upload CellProfiler
-    needs: build-cp
+    needs: [build-cp, create-flatpak-repo]
     runs-on: ubuntu-latest
     env:
       CP_VERSION: ${{ needs.build-cp.outputs.cp-version }}
@@ -119,20 +209,29 @@ jobs:
       actions: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Download Mac Actions Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
           path: ./
       - name: Download Windows Actions Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
           path: ./
+      - name: Download Linux Actions Artifact
+        uses: actions/download-artifact@v8
+        with:
+          skip-decompress: true
+          name: org.cellprofiler.CellProfiler-x86_64
+          path: ./
+      - name: Rename Linux Artifact
+        run: |
+          mv org.cellprofiler.CellProfiler-x86_64.zip CellProfiler-Linux-${{ env.CP_VERSION }}.zip
       - name: Upload Release Artifacts
         id: upload-artifacts
         uses: softprops/action-gh-release@v1
@@ -143,8 +242,9 @@ jobs:
           name: ${{ env.CP_VERSION }}
           tag_name: ${{ env.CP_VERSION }}
           files: |
-            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+            ${{ github.workspace }}/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+            ${{ github.workspace }}/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+            ${{ github.workspace }}/CellProfiler-Linux-${{ env.CP_VERSION }}.zip
       - name: Display Upload Info
         run: |
           echo "url: ${{ steps.upload-artifacts.outputs.url }}"
@@ -157,9 +257,11 @@ jobs:
         id: delete-artifacts
         uses: geekyeggo/delete-artifact@v4
         with:
-            name: |
-              CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-              CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          name: |
+            CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+            CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+            packed-linux-environment
+            org.cellprofiler.CellProfiler-x86_64
 
 on:
   push:

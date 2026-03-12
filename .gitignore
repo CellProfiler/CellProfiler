@@ -9,6 +9,7 @@
 venv/
 .idea/
 .vscode/
+*.vscode
 settings.json
 build/
 dist/

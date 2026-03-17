@@ -29,7 +29,7 @@ def resize_image(
     reference_image_shape:  Annotated[Optional[Tuple[int, ...]], Field(description="Shape of reference image for dimensions")],
     interpolation_method:   Annotated[InterpolationMethod, Field(description="Interpolation method for resizing")],
 ) -> Tuple[ImageAny, ImageGrayscaleMask, Optional[ImageBinary]]:
-    # Apply the resize operation using the library function with enum integration
+    # Apply the resize operation using library
     return apply_resize(
         im_pixel_data,
         im_mask,

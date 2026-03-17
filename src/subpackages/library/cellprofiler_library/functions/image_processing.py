@@ -255,6 +255,7 @@ def resized_shape(
         factor_y = resizing_factor_y
 
         if im_volumetric:
+            assert resizing_factor_z is not None, "Z-axis scaling factor must be specified when resizing by factor"
             factor_z = resizing_factor_z
             height, width = shape[1:3]
             planes = shape[0]
@@ -267,13 +268,15 @@ def resized_shape(
 
     else:
         if use_manual_or_image == DimensionMethod.MANUAL:
+            assert specific_height is not None, "Specific height must be specified when using manual dimensions"
+            assert specific_width is not None, "Specific width must be specified when using manual dimensions"
             height = specific_height
             width = specific_width
             if im_volumetric:
+                assert specific_planes is not None, "Specific planes must be specified when using manual dimensions"
                 planes = specific_planes
         else:
-            if reference_image_shape is None:
-                raise ValueError("Reference image shape must be provided when using image-based dimensions")
+            assert reference_image_shape is not None, "Reference image shape must be provided when using image-based dimensions"
 
             if im_volumetric:
                 planes, height, width = reference_image_shape[:3]

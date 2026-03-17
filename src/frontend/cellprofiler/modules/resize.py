@@ -306,11 +306,9 @@ resized with the same settings as the first image.""",
         # Extract raw data from Image object
         pixel_data = image.pixel_data
         mask = image.mask
-        volumetric = image.volumetric
         multichannel = image.multichannel
         dimensions = image.dimensions
-        has_crop_mask = image.has_crop_mask
-        crop_mask = image.crop_mask
+        crop_mask = image.crop_mask if image.has_crop_mask else None
         
         # Call library dispatcher with raw data
         output_pixels, output_mask, output_crop_mask = resize_image(

@@ -26,7 +26,7 @@ import numpy
 import skimage.morphology
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Float
-from cellprofiler_library.modules._removeholes import fill_holes
+from cellprofiler_library.modules._removeholes import remove_holes
 
 
 class RemoveHoles(ImageProcessing):
@@ -57,23 +57,7 @@ class RemoveHoles(ImageProcessing):
         return __settings__ + [self.size]
 
     def run(self, workspace):
-        # self.function = lambda image, diameter: fill_holes(image, diameter)
-        self.function = fill_holes
+        self.function = remove_holes
 
         super(RemoveHoles, self).run(workspace)
 
-
-def fill_holes(image, diameter):
-    radius = diameter / 2.0
-
-    if image.dtype.kind == "f":
-        image = skimage.img_as_bool(image)
-
-    if image.ndim == 2 or image.shape[-1] in (3, 4):
-        factor = radius ** 2
-    else:
-        factor = (4.0 / 3.0) * (radius ** 3)
-
-    size = numpy.pi * factor
-
-    return skimage.morphology.remove_small_holes(image, size)

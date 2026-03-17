@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Options and enums for DilateImage module
 """

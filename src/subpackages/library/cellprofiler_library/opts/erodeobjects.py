@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Options and enums for ErodeObjects module
 """
@@ -12,4 +10,3 @@ Options and enums for ErodeObjects module
 # Currently no custom enums needed for ErodeObjects as it uses standard
 # StructuringElement configuration from cellprofiler_core. For structuring element shapes,
 # see cellprofiler_library.opts.structuring_elements
-

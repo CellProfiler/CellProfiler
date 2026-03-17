@@ -25,10 +25,8 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscribe
 from cellprofiler_core.setting.text import ImageName
 
 from cellprofiler_library.modules._overlayoutlines import overlay_outlines
-from cellprofiler_library.opts.overlayoutlines import BrightnessMode, OutlineMode, COLOR_ORDER
+from cellprofiler_library.opts.overlayoutlines import BrightnessMode, OutlineMode, COLOR_ORDER, SourceMode
 
-FROM_IMAGES = "Image"
-FROM_OBJECTS = "Objects"
 
 NUM_FIXED_SETTINGS_V1 = 5
 NUM_FIXED_SETTINGS_V2 = 6
@@ -225,16 +223,14 @@ maximal brightness already occurring in the image.
         result += [self.add_outline_button]
         return result
 
-    def run(self, workspace):
-        # Parameter extraction for dispatcher call
-        
+    def run(self, workspace):        
         # Extract base image parameters
         if self.blank_image.value:
-            outline = self.outlines[0]
-            objects = workspace.object_set.get_objects(outline.objects_name.value)
+            _outline = self.outlines[0]
+            _objects = workspace.object_set.get_objects(_outline.objects_name.value)
 
-            obj_shape = objects.shape
-            obj_dimensions = objects.dimensions
+            obj_shape = _objects.shape
+            obj_dimensions = _objects.dimensions
             im_pixel_data = None
             im_multichannel = False
             im_dimensions = None
@@ -360,7 +356,7 @@ maximal brightness already occurring in the image.
                 NUM_FIXED_SETTINGS_V2, len(setting_values), NUM_OUTLINE_SETTINGS_V2
             ):
                 new_setting_values += setting_values[i : (i + NUM_OUTLINE_SETTINGS_V2)]
-                new_setting_values += [FROM_IMAGES, "None"]
+                new_setting_values += [SourceMode.FROM_IMAGES, "None"]
             setting_values = new_setting_values
             variable_revision_number = 3
 

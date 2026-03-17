@@ -55,6 +55,7 @@ def test_run_label_image(module):
 
     module.x_name.value = "example"
     module.y_name.value = "output"
+    module.size.value = 3.0
     module.run(workspace)
 
     actual = workspace.image_set.get_image("output").pixel_data

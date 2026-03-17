@@ -14,8 +14,4 @@ def remove_holes(
         image: Annotated[Union[ImageAny, NDArray[np.uint8]], Field(description="Image to fill holes in")],
         diameter: Annotated[float, Field(description="Diameter of holes to fill")],
     ) -> Union[ImageAny, NDArray[np.uint8]]:
-    # TODO: #5056 I'm very puzzled as to why the fn call below suddenly broke.
-    # I've checked the pre-refactor commit to see if it works there, but it doesn't.
-    # Has the underlying dependency changed? skimage.morphology.remove_small_holes
-    # Should we upgrade our deps to the latest version?
     return fill_holes(image, diameter)

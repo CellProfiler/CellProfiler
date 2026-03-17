@@ -78,7 +78,13 @@ dependencies = [
     "scikit-image>=0.20.0",
     "scikit-learn>=1.3.0",
     "scipy>=1.9.1,<1.11",
-    "scyjava>=1.9.1",
+    # 1.12.3 upgrades to jgo 2, see below
+    "scyjava>=1.9.1,<1.12.3",
+    # jgo is a dep of scyjava
+    # v2 is back compat, but does extra (installs java, moves cache dir)
+    # https://jgo.apposed.org/en/latest/migration.html#backward-compatibility
+    # remove jgo dep if upgrading scyjava version
+    "jgo<2.0.0",
     "six>=1.16.0",
     "tifffile>=2022.4.8",
     "wxPython>=4.2.0",

@@ -70,7 +70,13 @@ dependencies = [
     "pyzmq>=22.3.0",
     "scikit-image>=0.20.0",
     "scipy>=1.9.1,<1.11",
-    "scyjava>=1.9.1",
+    # 1.12.3 upgrades to jgo 2, see below
+    "scyjava>=1.9.1,<1.12.3",
+    # jgo is a dep of scyjava
+    # v2 is back compat, but does extra (installs java, moves cache dir)
+    # https://jgo.apposed.org/en/latest/migration.html#backward-compatibility
+    # remove jgo dep if upgrading scyjava version
+    "jgo<2.0.0",
     "zarr>=2.16.1",
     "google-cloud-storage~=2.10.0",
     "packaging>=20.0",

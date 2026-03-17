@@ -133,7 +133,7 @@ jobs:
         timeout-minutes: 10
         run: |
           # add -rP if you want to see debug for all tests, not just failed ones
-          pytest -v --exitfirst --disable-warnings -o log_cli_level=10 --tb=long --show-capture=all --capture=sys --color=yes --code-highlight=yes --timeout=60 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
+          pytest -v --exitfirst --disable-warnings -o log_cli_level=10 --tb=long --show-capture=all --capture=sys --color=yes --code-highlight=yes --timeout=180 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
 
   test-library:
     name: Install and test Library

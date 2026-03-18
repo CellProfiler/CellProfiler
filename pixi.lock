@@ -3332,8 +3332,8 @@ packages:
   timestamp: 1741554591855
 - pypi: ./src/frontend
   name: cellprofiler
-  version: 5.0.0.dev405
-  sha256: a9a00b2f26923c17ae04892ca418dc75c6cf9c1f9c37c2d18e6fbd85815ccd80
+  version: 5.0.0.dev410
+  sha256: 609df776f7037574b442139ce7b1af9be6b3d811389a1e2470db11b8066acfbb
   requires_dist:
   - cellprofiler-library>=5.dev0
   - cellprofiler-core>=5.dev0
@@ -3353,7 +3353,6 @@ packages:
   - sentry-sdk~=2.8.0
   - requests>=2.31.0
   - scikit-image>=0.20.0
-  - scikit-learn>=1.3.0
   - scipy>=1.9.1,<1.11
   - scyjava>=1.9.1,<1.12.3
   - jgo<2.0.0
@@ -3373,8 +3372,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
-  version: 5.0.0.dev405
-  sha256: 559447432a8988558c838f70f4d9703b6f25486e693bdd4b6e7e936b6365231f
+  version: 5.0.0.dev410
+  sha256: dc7638b7feaa8da375eb4c8b5aed49ba9782dd76af75b63a119bda3affe9e1a9
   requires_dist:
   - cellprofiler-library>=5.dev0
   - boto3>=1.12.28
@@ -3390,7 +3389,8 @@ packages:
   - pyzmq>=22.3.0
   - scikit-image>=0.20.0
   - scipy>=1.9.1,<1.11
-  - scyjava>=1.9.1
+  - scyjava>=1.9.1,<1.12.3
+  - jgo<2.0.0
   - zarr>=2.16.1
   - google-cloud-storage~=2.10.0
   - packaging>=20.0
@@ -3406,11 +3406,12 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./src/subpackages/library
   name: cellprofiler-library
-  version: 5.0.0.dev405
-  sha256: 15052b24f56addc4f5716ac44323b34ff1a0f91935045c353b3dd28ba8f667ba
+  version: 5.0.0.dev410
+  sha256: a885160da05644f851cbbf541bdbc8579c70332f68d9eba5c83d9356debc25e1
   requires_dist:
   - numpy>=1.26.4,<2
   - scikit-image>=0.20.0
+  - scikit-learn>=1.3.0
   - scipy>=1.9.1,<1.11
   - mahotas>=1.4.13
   - centrosome>=1.3.0

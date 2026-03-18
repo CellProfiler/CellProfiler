@@ -449,7 +449,7 @@ of interest. To decide between these methods, you can run Test mode to
 see the results of each.
 
    +--------------------------------------+--------------------------------------+
-   | *{UN_INTENSITY}:* For objects that        | |image1|                             |
+   | *{UN_INTENSITY}:* For objects that   | |image1|                             |
    | tend to have only a single peak of   |                                      |
    | brightness (e.g., objects that are   |                                      |
    | brighter towards their interiors and |                                      |
@@ -458,7 +458,7 @@ see the results of each.
    | a separate object. The objects can   |                                      |
    | be any shape, so they need not be    |                                      |
    | round and uniform in size as would   |                                      |
-   | be required for the *{UN_SHAPE}*          |                                      |
+   | be required for the *{UN_SHAPE}*     |                                      |
    | option.                              |                                      |
    |                                      |                                      |
    | |image0|  This choice is more        |                                      |
@@ -475,7 +475,7 @@ see the results of each.
    | defined as local intensity maxima in |                                      |
    | the smoothed image.                  |                                      |
    +--------------------------------------+--------------------------------------+
-   | *{UN_SHAPE}:* For cases when there        | |image4|                             |
+   | *{UN_SHAPE}:* For cases when there   | |image4|                             |
    | are definite indentations separating |                                      |
    | objects. The image is converted to   |                                      |
    | black and white (binary) and the     |                                      |
@@ -493,7 +493,7 @@ see the results of each.
    | irrelevant. Therefore, the cells     |                                      |
    | need not be brighter towards the     |                                      |
    | interior as is required for the      |                                      |
-   | *{UN_INTENSITY}* option.                  |                                      |
+   | *{UN_INTENSITY}* option.             |                                      |
    |                                      |                                      |
    | |image5|  The binary thresholded     |                                      |
    | image is distance-transformed and    |                                      |
@@ -502,11 +502,11 @@ see the results of each.
    | gives each pixel a value equal to    |                                      |
    | the nearest pixel below a certain    |                                      |
    | threshold, so it indicates the       |                                      |
-   | *{UN_SHAPE}* of the object.               |                                      |
+   | *{UN_SHAPE}* of the object.          |                                      |
    +--------------------------------------+--------------------------------------+
-   | *{UN_NONE}:* If objects are well separated and bright relative to the            |
+   | *{UN_NONE}:* If objects are well separated and bright relative to the       |
    | background, it may be unnecessary to attempt to separate clumped objects.   |
-   | Using the very fast *{UN_NONE}* option, a simple threshold will be used to       |
+   | Using the very fast *{UN_NONE}* option, a simple threshold will be used to  |
    | identify objects.                                                           |
    +--------------------------------------+--------------------------------------+
 
@@ -722,7 +722,7 @@ checking this box will have no effect.""".format(
             FH_ALL,
             value=FH_THRESHOLDING,
             doc="""\
-This option controls how holes (regions    f of background surrounded by one
+This option controls how holes (regions of background surrounded by one
 or more objects) are filled in:
 
 -  *{FH_THRESHOLDING}:* Fill in holes that are smaller than
@@ -806,7 +806,7 @@ If obvious intensity peaks are missing they were probably removed by the filters
             value=1,
             minval=1,
             doc="Radius of the visible marker for each maxima."
-            "You may want to increase this when working with large images.",
+            "   You may want to increase this when working with large images.",
         )
 
         self.use_advanced = Binary(
@@ -1063,17 +1063,6 @@ If "*{NO}*" is selected, the following settings are used:
     def basic(self):
         return not self.advanced
 
-    def convert_setting(self, gui_setting_str):
-        """
-        Convert GUI setting strings to something cellprofiler
-        library compatible. That is, remove spaces and hyphens.
-        """
-        rep_list = ((" ", "_"), ("-", "_"))
-        converted_str = gui_setting_str
-        for replacement in rep_list:
-            converted_str = converted_str.replace(*replacement)
-        return converted_str
-
     def run(self, workspace):
         workspace.display_data.statistics = []
         input_image = workspace.image_set.get_image(
@@ -1082,7 +1071,6 @@ If "*{NO}*" is selected, the following settings are used:
 
         if self.threshold.threshold_operation == ThresholdOpts.Method.MANUAL:
             predefined_threshold = self.threshold.manual_threshold.value
-            predefined_threshold = predefined_threshold
         elif self.threshold.threshold_operation == ThresholdOpts.Method.MEASUREMENT:
             predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(

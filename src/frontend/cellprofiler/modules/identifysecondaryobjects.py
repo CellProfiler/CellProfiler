@@ -542,7 +542,6 @@ segmentation.""",
         # Get the threshold settings
         if self.threshold.threshold_operation == threshold.TM_MANUAL:
             predefined_threshold = self.threshold.manual_threshold.value
-            predefined_threshold = predefined_threshold
         elif self.threshold.threshold_operation == threshold.TM_MEASUREMENT:
             predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
@@ -783,20 +782,6 @@ segmentation.""",
             row_labels=[x[0] for x in workspace.display_data.statistics],
         )
 
-    def convert_setting(self, gui_setting_str):
-        """
-        Convert GUI setting strings to something cellprofiler
-        library compatible. That is, remove spaces and hyphens.
-        """
-        rep_list = (
-            (" - ", "_"), 
-            (" ", "_"), 
-            ("-", "_")
-            )
-        converted_str = gui_setting_str
-        for replacement in rep_list:
-            converted_str = converted_str.replace(*replacement)
-        return converted_str
 
     def is_object_identification_module(self):
         return True

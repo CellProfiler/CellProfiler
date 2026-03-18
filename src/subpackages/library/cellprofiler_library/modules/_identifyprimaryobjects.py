@@ -2,7 +2,6 @@ from centrosome import cpmorphology
 import numpy
 import scipy
 from typing import Annotated, Optional, Union, Tuple
-# from cellprofiler_library.functions.object_processing import identify_primary_objects
 from cellprofiler_library.modules import threshold
 from cellprofiler_library.functions.object_processing import (
     separate_neighboring_objects,

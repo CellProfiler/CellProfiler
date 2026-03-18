@@ -816,18 +816,6 @@ staining.
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
 
-
-    def convert_setting(self, gui_setting_str):
-        """
-        Convert GUI setting strings to something cellprofiler
-        library compatible. That is, remove spaces and hyphens.
-        """
-        rep_list = ((" ", "_"), ("-", "_"))
-        converted_str = gui_setting_str
-        for replacement in rep_list:
-            converted_str = converted_str.replace(*replacement)
-        return converted_str
-
     def get_threshold(self, input_image, workspace, automatic=False):
         """
         Get manual, measurement or other thresholds
@@ -895,23 +883,6 @@ staining.
             )
 
         return self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma
-
-
-
-
-
-
-    def convert_setting(self, gui_setting_str):
-        """
-        Convert GUI setting strings to something cellprofiler
-        library compatible. That is, remove spaces and hyphens.
-        """
-        rep_list = ((" ", "_"), ("-", "_"))
-        converted_str = gui_setting_str
-        for replacement in rep_list:
-            converted_str = converted_str.replace(*replacement)
-        return converted_str.lower()
-
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions
 

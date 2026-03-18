@@ -4,6 +4,7 @@ import cellprofiler_core.module.image_segmentation
 import cellprofiler_core.object
 import numpy
 import scipy.ndimage
+import skimage
 from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
@@ -1104,7 +1105,7 @@ If "*{NO}*" is selected, the following settings are used:
             small_removed_labels,
             size_excluded_labeled_image,
             border_excluded_labeled_image,
-            self.labeled_maxima, # Added to class for access in display method
+            labeled_maxima,
             maxima_suppression_size,
             object_count,
             final_threshold,
@@ -1213,6 +1214,7 @@ If "*{NO}*" is selected, the following settings are used:
             workspace.display_data.border_excluded_labels = (
                 border_excluded_labeled_image
             )
+            workspace.display_data.labeled_maxima = labeled_maxima
 
         # Add image measurements
         objname = self.y_name.value
@@ -1245,6 +1247,7 @@ If "*{NO}*" is selected, the following settings are used:
             border_excluded_labeled_image = (
                 workspace.display_data.border_excluded_labels
             )
+            labeled_maxima = workspace.display_data.labeled_maxima
 
             ax = figure.subplot_imshow_grayscale(0, 0, image, title)
             figure.subplot_imshow_labels(
@@ -1274,10 +1277,10 @@ If "*{NO}*" is selected, the following settings are used:
                 if self.maxima_size.value > 1:
                     strel = skimage.morphology.disk(self.maxima_size.value - 1)
                     labels = skimage.morphology.dilation(
-                        self.labeled_maxima, footprint=strel
+                        labeled_maxima, footprint=strel
                     )
                 else:
-                    labels = self.labeled_maxima
+                    labels = labeled_maxima
                 cplabels.append(
                     dict(
                         name="Detected maxima",

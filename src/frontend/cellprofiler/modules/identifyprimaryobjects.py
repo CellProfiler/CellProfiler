@@ -278,28 +278,10 @@ OFF_N_SETTINGS = 16
 """The number of settings, exclusive of threshold settings"""
 N_SETTINGS = 16
 
-# UnclumpMethod.INTENSITY.value = "Intensity"
-# UnclumpMethod.SHAPE.value = "Shape"
-UN_LOG = "Laplacian of Gaussian" # deprecated
-# UnclumpMethod.NONE.value = "None"
-
-# WatershedMethod.INTENSITY.value = "Intensity"
-# WatershedMethod.SHAPE.value = "Shape"
-# WatershedMethod.PROPAGATE.value = "Propagate"
-# WatershedMethod.NONE.value = "None"
-
-# LimitObjects.NONE.value = "Continue"
-LIMIT_TRUNCATE = "Truncate" # deprecated
-# LimitObjects.ERASE.value = "Erase"
+UN_LOG = "Laplacian of Gaussian" # Used to upgrade old versions
+LIMIT_TRUNCATE = "Truncate" # Used to upgrade old versions
 
 DEFAULT_MAXIMA_COLOR = "Blue"
-
-"""Never fill holes"""
-# FillHolesMethod.NEVER.value = "Never"
-# FillHolesMethod.THRESHOLDING.value = "After both thresholding and declumping"
-# FillHolesMethod.DECLUMP.value = "After declumping only"
-
-# FH_ALL = (FillHolesMethod.NEVER.value, FillHolesMethod.THRESHOLDING.value, FillHolesMethod.DECLUMP.value)
 
 # Settings text which is referenced in various places in the help
 SIZE_RANGE_SETTING_TEXT = "Typical diameter of objects, in pixel units (Min,Max)"

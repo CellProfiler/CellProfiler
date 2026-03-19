@@ -48,7 +48,7 @@ def identifyprimaryobjects(
     upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
     averaging_method:           Annotated[ThresholdOpts.AveragingMethod, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN,
     variance_method:            Annotated[ThresholdOpts.VarianceMethod, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
-    number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
+    number_of_deviations:       Annotated[float, Field(description="Number of deviations for thresholding")] = 2.0,
     automatic:                  Annotated[bool, Field(description="Automatically determine thresholding parameters")] = False,
     exclude_size:               Annotated[bool, Field(description="Exclude objects smaller than this size")] = True,
     min_size:                   Annotated[int, Field(description="Minimum object size")] = 10,

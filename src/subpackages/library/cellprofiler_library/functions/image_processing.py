@@ -382,7 +382,7 @@ def get_threshold_robust_background(
     upper_outlier_fraction: float = 0.05,
     averaging_method:       Threshold.AveragingMethod = Threshold.AveragingMethod.MEAN,
     variance_method:        Threshold.VarianceMethod = Threshold.VarianceMethod.STANDARD_DEVIATION,
-    number_of_deviations:   int = 2,
+    number_of_deviations:   float = 2.0,
 ) -> float:
     """Calculate threshold based on mean & standard deviation.
     The threshold is calculated by trimming the top and bottom 5% of

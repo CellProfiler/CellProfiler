@@ -15,7 +15,6 @@ from ..opts.threshold import (
 )
 from ..types import ImageGrayscale, ImageGrayscaleMask
 
-
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def threshold(
     image:                      Annotated[ImageGrayscale, Field(description="Image to threshold")],
@@ -33,7 +32,7 @@ def threshold(
     upper_outlier_fraction:     Annotated[float, Field(description="Upper outlier fraction")] = Field(default=0.05),
     averaging_method:           Annotated[AveragingMethod, Field(description="Averaging method")] = Field(default=AveragingMethod.MEAN),
     variance_method:            Annotated[VarianceMethod, Field(description="Variance method")] = Field(default=VarianceMethod.STANDARD_DEVIATION),
-    number_of_deviations:       Annotated[int, Field(description="Number of deviations")] = Field(default=2),
+    number_of_deviations:       Annotated[float, Field(description="Number of deviations")] = Field(default=2.0),
     predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = Field(default=None),
     volumetric:                 Annotated[bool, Field(description="Volumetric thresholding")] = Field(default=False),
     automatic:                  Annotated[bool, Field(description="Automatic thresholding")] = Field(default=False),

@@ -779,7 +779,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
+        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, _ = self.get_threshold(
             input_image,
             workspace
         )
@@ -810,7 +810,7 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == ThresholdOpts.Scope.ADAPTIVE:
-                workspace.display_data.threshold_image = final_threshold
+                workspace.display_data.threshold_image = self.final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
@@ -824,7 +824,7 @@ staining.
         # by cellprofiler_library
         if self.threshold_operation == ThresholdOpts.Method.MANUAL:
             # Thresholds added to class so they are accessible in tests
-            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=self.manual_threshold.value,
@@ -839,7 +839,7 @@ staining.
                     self.thresholding_measurement.value
                 )
             )
-            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=predefined_threshold,
@@ -862,7 +862,7 @@ staining.
                     threshold_method = ThresholdOpts.Method(self.local_operation.value)
             else:
                 raise NotImplementedError(f"Threshold scope {self.threshold_scope.value} is not supported.")
-            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     threshold_scope=self.threshold_scope.value,
@@ -882,7 +882,8 @@ staining.
                     volumetric=input_image.volumetric,  
             )
 
-        return self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
+    
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions
 

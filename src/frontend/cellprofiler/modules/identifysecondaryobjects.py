@@ -15,6 +15,7 @@ from cellprofiler_core.constants.measurement import (
     C_PARENT,
     C_CHILDREN,
     C_COUNT,
+    R_PARENT
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.object import Objects
@@ -25,6 +26,7 @@ from cellprofiler_core.setting.text import Integer, Float, LabelName
 
 from cellprofiler_library.modules import identifysecondaryobjects
 import cellprofiler_library.opts.threshold as ThresholdOpts
+from  cellprofiler_library.opts.identifysecondaryobjects import SecondaryObjectMethod
 
 
 __doc__ = """\
@@ -168,17 +170,8 @@ Measurements made by this module
     }
 )
 
-M_PROPAGATION = "Propagation"
-M_WATERSHED_G = "Watershed - Gradient"
-M_WATERSHED_I = "Watershed - Image"
-M_DISTANCE_N = "Distance - N"
-M_DISTANCE_B = "Distance - B"
-
 """# of setting values other than thresholding ones"""
 N_SETTING_VALUES = 10
-
-"""Parent (seed) relationship of input objects to output objects"""
-R_PARENT = "Parent"
 
 
 class IdentifySecondaryObjects(ObjectProcessing):
@@ -212,8 +205,8 @@ secondary object and completely contained within it."""
 
         self.method = Choice(
             "Select the method to identify the secondary objects",
-            [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
-            M_PROPAGATION,
+            [SecondaryObjectMethod.PROPAGATION.value, SecondaryObjectMethod.WATERSHED_GRADIENT.value, SecondaryObjectMethod.WATERSHED_IMAGE.value, SecondaryObjectMethod.DISTANCE_N.value, SecondaryObjectMethod.DISTANCE_B.value],
+            SecondaryObjectMethod.PROPAGATION.value,
             doc="""\
 There are several methods available to find the dividing lines between
 secondary objects that touch each other:
@@ -287,11 +280,11 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
 .. |image0| image:: {TECH_NOTE_ICON}
 """.format(
                 **{
-                    "M_PROPAGATION": M_PROPAGATION,
-                    "M_WATERSHED_G": M_WATERSHED_G,
-                    "M_WATERSHED_I": M_WATERSHED_I,
-                    "M_DISTANCE_N": M_DISTANCE_N,
-                    "M_DISTANCE_B": M_DISTANCE_B,
+                    "M_PROPAGATION": SecondaryObjectMethod.PROPAGATION.value,
+                    "M_WATERSHED_G": SecondaryObjectMethod.WATERSHED_GRADIENT.value,
+                    "M_WATERSHED_I": SecondaryObjectMethod.WATERSHED_IMAGE.value,
+                    "M_DISTANCE_N": SecondaryObjectMethod.DISTANCE_N.value,
+                    "M_DISTANCE_B": SecondaryObjectMethod.DISTANCE_B.value,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                 }
             ),
@@ -305,7 +298,7 @@ The selected image will be used to find the edges of the secondary
 objects. For *{M_DISTANCE_N:s}* this will not affect object
 identification, only the module's display.
 """.format(
-                **{"M_DISTANCE_N": M_DISTANCE_N}
+                **{"M_DISTANCE_N": SecondaryObjectMethod.DISTANCE_N.value}
             ),
         )
 
@@ -321,7 +314,7 @@ will be expanded. This option becomes useful in situations when no staining was
 used to define cell cytoplasm but the cell edges must be defined for further
 measurements.
 """.format(
-                **{"M_DISTANCE_N": M_DISTANCE_N, "M_DISTANCE_B": M_DISTANCE_B}
+                **{"M_DISTANCE_N": SecondaryObjectMethod.DISTANCE_N.value, "M_DISTANCE_B": SecondaryObjectMethod.DISTANCE_B.value}
             ),
         )
 
@@ -350,7 +343,7 @@ balance between these two considerations:
 -  At infinity, the result will look like {M_DISTANCE_B:s}, masked to
    the secondary staining image.
 """.format(
-                **{"M_PROPAGATION": M_PROPAGATION, "M_DISTANCE_B": M_DISTANCE_B}
+                **{"M_PROPAGATION": SecondaryObjectMethod.PROPAGATION.value, "M_DISTANCE_B": SecondaryObjectMethod.DISTANCE_B.value}
             ),
         )
 
@@ -450,12 +443,12 @@ segmentation.""",
 
         visible_settings += [self.method]
 
-        if self.method != M_DISTANCE_N:
+        if self.method != SecondaryObjectMethod.DISTANCE_N.value:
             visible_settings += self.threshold.visible_settings()[2:]
 
-        if self.method in (M_DISTANCE_B, M_DISTANCE_N):
+        if self.method in (SecondaryObjectMethod.DISTANCE_B.value, SecondaryObjectMethod.DISTANCE_N.value):
             visible_settings += [self.distance_to_dilate]
-        elif self.method == M_PROPAGATION:
+        elif self.method == SecondaryObjectMethod.PROPAGATION.value:
             visible_settings += [self.regularization_factor]
 
         visible_settings += [self.fill_holes, self.wants_discard_edge]
@@ -631,7 +624,7 @@ segmentation.""",
         object_count = numpy.max(segmented_out)
 
 
-        if self.method == M_DISTANCE_N:
+        if self.method == SecondaryObjectMethod.DISTANCE_N.value:
             workspace.display_data.global_threshold = None
         else:
             workspace.display_data.global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
@@ -746,7 +739,7 @@ segmentation.""",
             statistics.append(["10th pctile diameter", "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter", "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter", "%.1f pixels" % high_diameter])
-            if self.method != M_DISTANCE_N:
+            if self.method != SecondaryObjectMethod.DISTANCE_N.value:
                 statistics.append(
                     [
                         "Thresholding filter size",
@@ -812,7 +805,7 @@ segmentation.""",
                 pipeline
             )
 
-        if self.method != M_DISTANCE_N:
+        if self.method != SecondaryObjectMethod.DISTANCE_N.value:
             columns += self.threshold.get_measurement_columns(
                 pipeline, object_name=self.y_name.value
             )
@@ -824,7 +817,7 @@ segmentation.""",
             pipeline, object_name
         )
 
-        if self.method != M_DISTANCE_N:
+        if self.method != SecondaryObjectMethod.DISTANCE_N.value:
             categories += self.threshold.get_categories(pipeline, object_name)
 
         if self.wants_discard_edge and self.wants_discard_primary:
@@ -843,7 +836,7 @@ segmentation.""",
             pipeline, object_name, category
         )
 
-        if self.method.value != M_DISTANCE_N:
+        if self.method.value != SecondaryObjectMethod.DISTANCE_N.value:
             measurements += self.threshold.get_measurements(
                 pipeline, object_name, category
             )
@@ -883,7 +876,7 @@ segmentation.""",
             pipeline, object_name, category
         )
 
-        if self.method != M_DISTANCE_N and measurement in threshold_measurements:
+        if self.method != SecondaryObjectMethod.DISTANCE_N.value and measurement in threshold_measurements:
             return [self.y_name.value]
 
         return []

@@ -5,6 +5,7 @@ import numpy
 from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_FLOAT, COLTYPE_INTEGER, R_FIRST_IMAGE_NUMBER, \
     R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
 from cellprofiler_core.constants.module._identify import TS_GLOBAL, O_TWO_CLASS, O_FOREGROUND
+from cellprofiler_library.opts.identifysecondaryobjects import SecondaryObjectMethod
 
 
 import tests.frontend.modules
@@ -44,7 +45,7 @@ def test_load_v9():
     assert module.x_name == "ChocolateChips"
     assert module.y_name == "Cookies"
     assert module.image_name == "BakingSheet"
-    assert module.method == cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    assert module.method == SecondaryObjectMethod.PROPAGATION.value
     assert module.distance_to_dilate == 11
     assert module.regularization_factor == 0.125
     assert module.wants_discard_edge
@@ -138,7 +139,7 @@ def test_zeros_propagation():
     workspace, module = make_workspace(
         numpy.zeros((10, 10)), numpy.zeros((10, 10), int)
     )
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.run(workspace)
     m = workspace.measurements
     assert OUTPUT_OBJECTS_NAME in m.get_object_names()
@@ -166,7 +167,7 @@ def test_one_object_propagation():
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.25
@@ -202,7 +203,7 @@ def test_two_objects_propagation_image():
     labels[3:6, 3:6] = 1
     labels[3:6, 13:16] = 2
     workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.regularization_factor.value = 0  # propagate by image
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
@@ -247,7 +248,7 @@ def test_two_objects_propagation_distance():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.regularization_factor.value = 1000  # propagate by distance
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
@@ -288,7 +289,7 @@ def test_zeros_watershed_gradient():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
+    module.method.value = SecondaryObjectMethod.WATERSHED_GRADIENT.value
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -322,7 +323,7 @@ def test_one_object_watershed_gradient():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
+    module.method.value = SecondaryObjectMethod.WATERSHED_GRADIENT.value
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
     )
@@ -376,7 +377,7 @@ def test_two_objects_watershed_gradient():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
+    module.method.value = SecondaryObjectMethod.WATERSHED_GRADIENT.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.2
@@ -416,7 +417,7 @@ def test_zeros_watershed_image():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
+    module.method.value = SecondaryObjectMethod.WATERSHED_IMAGE.value
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -450,7 +451,7 @@ def test_one_object_watershed_image():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
+    module.method.value = SecondaryObjectMethod.WATERSHED_IMAGE.value
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
@@ -497,7 +498,7 @@ def test_two_objects_watershed_image():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
+    module.method.value = SecondaryObjectMethod.WATERSHED_IMAGE.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.01
@@ -537,7 +538,7 @@ def test_zeros_distance_n():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
+    module.method.value = SecondaryObjectMethod.DISTANCE_N.value
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -570,7 +571,7 @@ def test_one_object_distance_n():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
+    module.method.value = SecondaryObjectMethod.DISTANCE_N.value
     module.distance_to_dilate.value = 1
     module.set_module_num(1)
     p.add_module(module)
@@ -612,7 +613,7 @@ def test_two_objects_distance_n():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
+    module.method.value = SecondaryObjectMethod.DISTANCE_N.value
     module.distance_to_dilate.value = 100
     module.set_module_num(1)
     p.add_module(module)
@@ -946,7 +947,7 @@ def test_filter_edge():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.wants_discard_edge.value = True
     module.wants_discard_primary.value = True
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
@@ -1031,7 +1032,7 @@ def test_filter_unedited():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.wants_discard_edge.value = True
     module.wants_discard_primary.value = True
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
@@ -1110,7 +1111,7 @@ def test_small():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.5
@@ -1179,7 +1180,7 @@ def test_small_touching():
     module.x_name.value = INPUT_OBJECTS_NAME
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.5
@@ -1197,10 +1198,10 @@ def test_small_touching():
 def test_holes_no_holes():
     for wants_fill_holes in (True, False):
         for method in (
-            cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_B,
-            cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION,
-            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G,
-            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I,
+            SecondaryObjectMethod.DISTANCE_B.value,
+            SecondaryObjectMethod.PROPAGATION.value,
+            SecondaryObjectMethod.WATERSHED_GRADIENT.value,
+            SecondaryObjectMethod.WATERSHED_IMAGE.value,
         ):
             labels = numpy.zeros((20, 10), int)
             labels[5, 5] = 1
@@ -1268,7 +1269,7 @@ def test_relationships_one():
     labels = numpy.zeros((10, 10), int)
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+    module.method.value = SecondaryObjectMethod.PROPAGATION.value
     module.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     module.threshold.manual_threshold.value = 0.25
@@ -1306,7 +1307,7 @@ def test_relationships_missing():
             cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects,
         )
         module.method.value = (
-            cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
+            SecondaryObjectMethod.PROPAGATION.value
         )
         module.threshold.threshold_scope.value = (
             cellprofiler.modules.threshold.TS_GLOBAL

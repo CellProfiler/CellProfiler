@@ -43,7 +43,7 @@ def identifysecondaryobjects(
     upper_outlier_fraction:     Annotated[float, Field(description="Fraction of pixels to use for upper outlier detection")] = 0.05,
     averaging_method:           Annotated[ThresholdOpts.AveragingMethod, Field(description="Averaging method for thresholding")] = ThresholdOpts.AveragingMethod.MEAN, 
     variance_method:            Annotated[ThresholdOpts.VarianceMethod, Field(description="Variance method for thresholding")] = ThresholdOpts.VarianceMethod.STANDARD_DEVIATION, 
-    number_of_deviations:       Annotated[int, Field(description="Number of deviations for thresholding")] = 2,
+    number_of_deviations:       Annotated[float, Field(description="Number of deviations for thresholding")] = 2.0,
     predefined_threshold:       Annotated[Optional[float], Field(description="Predefined threshold value")] = None,
     distance_to_dilate:         Annotated[int, Field(description="Number of pixels by which to expand the primary objects")] = 10,
     fill_holes:                 Annotated[bool, Field(description="Fill holes in identified objects?")] = True,

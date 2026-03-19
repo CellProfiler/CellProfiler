@@ -8,6 +8,7 @@ import centrosome.cpmorphology
 import cellprofiler.utilities.morphology
 from typing import Optional, Literal, Tuple, Union
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ObjectSegmentation, StructuringElement
+from cellprofiler_library.types import Image2DBinary
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
 
@@ -463,14 +464,17 @@ def fill_convex_hulls(labels):
             ] = label
     return output
 
+################################################################################
+# IdentifyPrimaryObjects IdentifySecondaryObjects IdentifyTertiaryObjects
+################################################################################
 
 # Rename to get_maxima_from_foreground?
 def get_maxima(
-    image,
-    labeled_image=None,
-    maxima_mask=None,  # This should be renamed to footprint
-    image_resize_factor=1.0,
-):
+    image:          Image2DGrayscale,
+    labeled_image:  Optional[ObjectSegmentation]=None,
+    footprint:      Optional[StructuringElement]=None,
+    image_resize_factor:float=1.0,
+    ) -> Image2DBinary:
     """_summary_
 
     Parameters
@@ -495,9 +499,9 @@ def get_maxima(
     #
     # find local maxima
     #
-    if maxima_mask is not None:
+    if footprint is not None:
         binary_maxima_image = centrosome.cpmorphology.is_local_maximum(
-            resized_image, resized_labels, maxima_mask
+            resized_image, resized_labels, footprint
         )
         binary_maxima_image[resized_image <= 0] = 0
     else:
@@ -521,7 +525,12 @@ def get_maxima(
     return shrunk_image
 
 
-def smooth_image(image, mask=None, filter_size=None, min_obj_size=10):
+def smooth_image(
+        image: Image2DGrayscale, 
+        mask: Optional[Image2DGrayscaleMask]=None, 
+        filter_size: Optional[float]=None, 
+        min_obj_size: Optional[int]=10
+    ) -> Image2DGrayscale:
     """Apply the smoothing filter to the image"""
 
     if mask is None:
@@ -565,7 +574,12 @@ def smooth_image(image, mask=None, filter_size=None, min_obj_size=10):
     return masked_image
 
 
-def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
+def filter_on_size(
+    labeled_image: ObjectSegmentation, 
+    min_size: int, 
+    max_size: int, 
+    return_only_small: bool=False
+    ) -> ObjectSegmentation:
     """Filter the labeled image based on the size range
 
     labeled_image - pixel image labels
@@ -608,7 +622,10 @@ def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
             return labeled_image
 
 
-def filter_on_border(labeled_image, mask=None):
+def filter_on_border(
+    labeled_image: ObjectSegmentation, 
+    mask: Optional[Image2DGrayscaleMask]=None
+    ) -> ObjectSegmentation:
     """Filter out objects touching the border
 
     In addition, if the image has a mask, filter out objects
@@ -707,7 +724,7 @@ def separate_neighboring_objects(
         if automatic_suppression:
             maxima_suppression_size = min_size / 1.5
 
-    maxima_mask = centrosome.cpmorphology.strel_disk(
+    footprint = centrosome.cpmorphology.strel_disk(
         max(1, maxima_suppression_size - 0.5)
     )
 
@@ -716,7 +733,7 @@ def separate_neighboring_objects(
     if unclump_method == UnclumpMethod.INTENSITY:
         # Remove dim maxima
         maxima_image = get_maxima(
-            blurred_image, labeled_image, maxima_mask, image_resize_factor
+            blurred_image, labeled_image, footprint, image_resize_factor
         )
     elif unclump_method == UnclumpMethod.SHAPE:
         if fill_holes_method == FillHolesMethod.NEVER:
@@ -735,7 +752,7 @@ def separate_neighboring_objects(
         maxima_image = get_maxima(
             distance_transformed_image,
             labeled_image,
-            maxima_mask,
+            footprint,
             image_resize_factor,
         )
     else:
@@ -802,7 +819,12 @@ def separate_neighboring_objects(
         return watershed_boundaries
     
     
-def filter_labels(labels_out, objects, mask=None, discard_edge=False):
+def filter_labels(
+        labels_out: ObjectSegmentation, 
+        objects: ObjectSegmentation, 
+        mask: Optional[Image2DGrayscaleMask]=None, 
+        discard_edge: bool=False
+    ) -> ObjectSegmentation:
     """Filter labels out of the output
 
     Filter labels that are not in the segmented input labels. Optionally

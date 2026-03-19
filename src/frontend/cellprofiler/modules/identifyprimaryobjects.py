@@ -279,7 +279,7 @@ N_SETTINGS = 16
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
-UN_LOG = "Laplacian of Gaussian"
+UN_LOG = "Laplacian of Gaussian" # deprecated
 UN_NONE = "None"
 
 WA_INTENSITY = "Intensity"
@@ -288,7 +288,7 @@ WA_PROPAGATE = "Propagate"
 WA_NONE = "None"
 
 LIMIT_NONE = "Continue"
-LIMIT_TRUNCATE = "Truncate"
+LIMIT_TRUNCATE = "Truncate" # deprecated
 LIMIT_ERASE = "Erase"
 
 DEFAULT_MAXIMA_COLOR = "Blue"
@@ -1216,10 +1216,6 @@ If "*{NO}*" is selected, the following settings are used:
             )
             workspace.display_data.labeled_maxima = labeled_maxima
 
-        # Add image measurements
-        objname = self.y_name.value
-        measurements = workspace.measurements
-
         # Add label matrices to the object set
         objects = cellprofiler_core.object.Objects()
         objects.segmented = labeled_image
@@ -1235,10 +1231,6 @@ If "*{NO}*" is selected, the following settings are used:
         if self.show_window:
             """Display the image and labeling"""
             figure.set_subplots((2, 2))
-
-            orig_axes = figure.subplot(0, 0)
-            label_axes = figure.subplot(1, 0, sharexy=orig_axes)
-            outlined_axes = figure.subplot(0, 1, sharexy=orig_axes)
 
             title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
             image = workspace.display_data.image

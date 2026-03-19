@@ -16,6 +16,7 @@ from cellprofiler.modules import _help, threshold
 
 from cellprofiler_library.modules import identifyprimaryobjects
 import cellprofiler_library.opts.threshold as ThresholdOpts
+from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod, LimitObjects, FH_ALL
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -277,28 +278,28 @@ OFF_N_SETTINGS = 16
 """The number of settings, exclusive of threshold settings"""
 N_SETTINGS = 16
 
-UN_INTENSITY = "Intensity"
-UN_SHAPE = "Shape"
+# UnclumpMethod.INTENSITY.value = "Intensity"
+# UnclumpMethod.SHAPE.value = "Shape"
 UN_LOG = "Laplacian of Gaussian" # deprecated
-UN_NONE = "None"
+# UnclumpMethod.NONE.value = "None"
 
-WA_INTENSITY = "Intensity"
-WA_SHAPE = "Shape"
-WA_PROPAGATE = "Propagate"
-WA_NONE = "None"
+# WatershedMethod.INTENSITY.value = "Intensity"
+# WatershedMethod.SHAPE.value = "Shape"
+# WatershedMethod.PROPAGATE.value = "Propagate"
+# WatershedMethod.NONE.value = "None"
 
-LIMIT_NONE = "Continue"
+# LimitObjects.NONE.value = "Continue"
 LIMIT_TRUNCATE = "Truncate" # deprecated
-LIMIT_ERASE = "Erase"
+# LimitObjects.ERASE.value = "Erase"
 
 DEFAULT_MAXIMA_COLOR = "Blue"
 
 """Never fill holes"""
-FH_NEVER = "Never"
-FH_THRESHOLDING = "After both thresholding and declumping"
-FH_DECLUMP = "After declumping only"
+# FillHolesMethod.NEVER.value = "Never"
+# FillHolesMethod.THRESHOLDING.value = "After both thresholding and declumping"
+# FillHolesMethod.DECLUMP.value = "After declumping only"
 
-FH_ALL = (FH_NEVER, FH_THRESHOLDING, FH_DECLUMP)
+# FH_ALL = (FillHolesMethod.NEVER.value, FillHolesMethod.THRESHOLDING.value, FillHolesMethod.DECLUMP.value)
 
 # Settings text which is referenced in various places in the help
 SIZE_RANGE_SETTING_TEXT = "Typical diameter of objects, in pixel units (Min,Max)"
@@ -440,7 +441,7 @@ partial object would not be accurate.
 
         self.unclump_method = Choice(
             "Method to distinguish clumped objects",
-            [UN_INTENSITY, UN_SHAPE, UN_NONE],
+            [UnclumpMethod.INTENSITY.value, UnclumpMethod.SHAPE.value, UnclumpMethod.NONE.value],
             doc="""\
 This setting allows you to choose the method that is used to distinguish
 between individual objects that are touching each other (and not properly
@@ -519,20 +520,20 @@ see the results of each.
 .. |image5| image:: {TECH_NOTE_ICON}
             """.format(
                 **{
-                    "UN_INTENSITY": UN_INTENSITY,
-                    "UN_SHAPE": UN_SHAPE,
+                    "UN_INTENSITY": UnclumpMethod.INTENSITY.value,
+                    "UN_SHAPE": UnclumpMethod.SHAPE.value,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "INTENSITY_DECLUMPING_ICON": INTENSITY_DECLUMPING_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                     "SHAPE_DECLUMPING_ICON": SHAPE_DECLUMPING_ICON,
-                    "UN_NONE": UN_NONE,
+                    "UN_NONE": UnclumpMethod.NONE.value,
                 }
             ),
         )
 
         self.watershed_method = Choice(
             "Method to draw dividing lines between clumped objects",
-            [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE],
+            [WatershedMethod.INTENSITY.value, WatershedMethod.SHAPE.value, WatershedMethod.PROPAGATE.value, WatershedMethod.NONE.value],
             doc="""\
 This setting allows you to choose the method that is used to draw the
 line between segmented objects, provided that you have chosen to declump
@@ -569,10 +570,10 @@ see the results of each.
    will be used to identify objects.
 """.format(
                 **{
-                    "WA_INTENSITY": WA_INTENSITY,
-                    "WA_SHAPE": WA_SHAPE,
-                    "WA_PROPAGATE": WA_PROPAGATE,
-                    "WA_NONE": WA_NONE,
+                    "WA_INTENSITY": WatershedMethod.INTENSITY.value,
+                    "WA_SHAPE": WatershedMethod.SHAPE.value,
+                    "WA_PROPAGATE": WatershedMethod.PROPAGATE.value,
+                    "WA_NONE": WatershedMethod.NONE.value,
                 }
             ),
         )
@@ -721,7 +722,7 @@ checking this box will have no effect.""".format(
         self.fill_holes = Choice(
             "Fill holes in identified objects?",
             FH_ALL,
-            value=FH_THRESHOLDING,
+            value=FillHolesMethod.THRESHOLDING.value,
             doc="""\
 This option controls how holes (regions of background surrounded by one
 or more objects) are filled in:
@@ -736,16 +737,16 @@ or more objects) are filled in:
    this option is enabled, the object will be lost when the hole is
    filled in.""".format(
                 **{
-                    "FH_THRESHOLDING": FH_THRESHOLDING,
-                    "FH_DECLUMP": FH_DECLUMP,
-                    "FH_NEVER": FH_NEVER,
+                    "FH_THRESHOLDING": FillHolesMethod.THRESHOLDING.value,
+                    "FH_DECLUMP": FillHolesMethod.DECLUMP.value,
+                    "FH_NEVER": FillHolesMethod.NEVER.value,
                 }
             ),
         )
 
         self.limit_choice = Choice(
             "Handling of objects if excessive number of objects identified",
-            [LIMIT_NONE, LIMIT_ERASE],
+            [LimitObjects.NONE.value, LimitObjects.ERASE.value],
             doc="""\
 This setting deals with images that are segmented into an unreasonable
 number of objects. This might happen if the module calculates a low
@@ -760,7 +761,7 @@ ways:
    option is a good choice if a large number of objects indicates that
    the image should not be processed; it can save a lot of time in
    subsequent **Measure** modules.""".format(
-                **{"LIMIT_NONE": LIMIT_NONE, "LIMIT_ERASE": LIMIT_ERASE}
+                **{"LIMIT_NONE": LimitObjects.NONE.value, "LIMIT_ERASE": LimitObjects.ERASE.value}
             ),
         )
 
@@ -836,9 +837,9 @@ If "*{NO}*" is selected, the following settings are used:
                     "AUTOMATIC_SMOOTHING_TEXT": self.automatic_smoothing.get_text(),
                     "AUTOMATIC_SUPPRESSION_TEXT": self.automatic_suppression.get_text(),
                     "FILL_HOLES_TEXT": self.fill_holes.get_text(),
-                    "FILL_HOLES_VALUE": FH_THRESHOLDING,
+                    "FILL_HOLES_VALUE": FillHolesMethod.THRESHOLDING.value,
                     "LIMIT_CHOICE_TEXT": self.limit_choice.get_text(),
-                    "LIMIT_CHOICE_VALUE": LIMIT_NONE,
+                    "LIMIT_CHOICE_VALUE": LimitObjects.NONE.value,
                     "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
                     "NO": "No",
                     "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold.threshold_correction_factor.get_text(),
@@ -853,9 +854,9 @@ If "*{NO}*" is selected, the following settings are used:
                     "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold.threshold_smoothing_scale.get_text(),
                     "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                     "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
-                    "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
+                    "UNCLUMP_METHOD_VALUE": UnclumpMethod.INTENSITY.value,
                     "WATERSHED_METHOD_TEXT": self.watershed_method.get_text(),
-                    "WATERSHED_METHOD_VALUE": WA_INTENSITY,
+                    "WATERSHED_METHOD_VALUE": WatershedMethod.INTENSITY.value,
                     "YES": "Yes",
                 }
             ),
@@ -902,14 +903,14 @@ If "*{NO}*" is selected, the following settings are used:
         if variable_revision_number == 10:
             setting_values = list(setting_values)
             if setting_values[OFF_FILL_HOLES_V10] == "No":
-                setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
+                setting_values[OFF_FILL_HOLES_V10] = FillHolesMethod.NEVER.value
             elif setting_values[OFF_FILL_HOLES_V10] == "Yes":
-                setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
+                setting_values[OFF_FILL_HOLES_V10] = FillHolesMethod.THRESHOLDING.value
             variable_revision_number = 11
 
         if variable_revision_number == 11:
             if setting_values[6] == UN_LOG:
-                setting_values[6] = UN_INTENSITY
+                setting_values[6] = UnclumpMethod.INTENSITY.value
 
             if setting_values[20] == LIMIT_TRUNCATE:
                 setting_values[20] = "None"
@@ -1025,7 +1026,7 @@ If "*{NO}*" is selected, the following settings are used:
 
             visible_settings += [self.unclump_method, self.watershed_method]
 
-            if self.unclump_method != UN_NONE and self.watershed_method != WA_NONE:
+            if self.unclump_method != UnclumpMethod.NONE.value and self.watershed_method != WatershedMethod.NONE.value:
                 visible_settings += [self.automatic_smoothing]
 
                 if not self.automatic_smoothing.value:
@@ -1044,14 +1045,14 @@ If "*{NO}*" is selected, the following settings are used:
             else:  # self.unclump_method == UN_NONE or self.watershed_method == WA_NONE
                 visible_settings = visible_settings[:-2]
 
-                if self.unclump_method == UN_NONE:
+                if self.unclump_method == UnclumpMethod.NONE.value:
                     visible_settings += [self.unclump_method]
                 else:  # self.watershed_method == WA_NONE
                     visible_settings += [self.watershed_method]
 
             visible_settings += [self.fill_holes, self.limit_choice]
 
-            if self.limit_choice != LIMIT_NONE:
+            if self.limit_choice != LimitObjects.NONE.value:
                 visible_settings += [self.maximum_object_count]
 
         return visible_settings
@@ -1143,7 +1144,7 @@ If "*{NO}*" is selected, the following settings are used:
             low_res_maxima=self.low_res_maxima.value,
             maxima_suppression_size=self.maxima_suppression_size.value,
             automatic_suppression=self.automatic_suppression.value,
-            maximum_object_count=self.maximum_object_count.value if self.limit_choice != LIMIT_NONE else None,
+            maximum_object_count=self.maximum_object_count.value if self.limit_choice != LimitObjects.NONE.value else None,
             predefined_threshold=predefined_threshold,
             return_cp_output=True,
         )
@@ -1196,7 +1197,7 @@ If "*{NO}*" is selected, the following settings are used:
                 )
                 statistics.append(["Thresholding filter size", "%.1f" % sigma])
                 statistics.append(["Threshold", "%0.3g" % global_threshold])
-                if self.basic or self.unclump_method != UN_NONE:
+                if self.basic or self.unclump_method != UnclumpMethod.NONE.value:
                     statistics.append(
                         [
                             "Declumping smoothing filter size",
@@ -1258,8 +1259,8 @@ If "*{NO}*" is selected, the following settings are used:
                 ),
             ]
             if (
-                self.unclump_method != UN_NONE
-                and self.watershed_method != WA_NONE
+                self.unclump_method != UnclumpMethod.NONE.value
+                and self.watershed_method != WatershedMethod.NONE.value
                 and self.want_plot_maxima
             ):
                 # Generate static colormap for alpha overlay

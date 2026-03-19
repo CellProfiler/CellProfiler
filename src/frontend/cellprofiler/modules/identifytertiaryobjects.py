@@ -4,6 +4,7 @@ from cellprofiler_core.constants.measurement import (
     FF_CHILDREN_COUNT,
     IMAGE,
     COLTYPE_INTEGER,
+    R_PARENT,
 )
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
@@ -113,8 +114,6 @@ Measurements made by this module
     }
 )
 
-"""The parent object relationship points to the secondary / larger objects"""
-R_PARENT = "Parent"
 """The removed object relationship points to the primary / smaller objects"""
 R_REMOVED = "Removed"
 

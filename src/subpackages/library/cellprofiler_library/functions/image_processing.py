@@ -17,7 +17,6 @@ import matplotlib
 import math
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
-from typing import Any, Optional, Tuple, Callable, Union, List, TypeVar
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
@@ -26,6 +25,8 @@ from cellprofiler_library.opts.crop import RemovalMethod
 from cellprofiler_library.opts.structuring_elements import StructuringElementShape2D, StructuringElementShape3D
 from cellprofiler_library.opts.resize import ResizingMethod, DimensionMethod, InterpolationMethod
 from cellprofiler_library.opts.imagemath import Operator
+
+# TODO: python_latest - remove this if later skimage versions update types
 invert = cast(Callable[[ImageAny], ImageAny], _invert)
 isscalar = cast(Callable[[Optional[ImageAny]], bool], _isscalar)
 

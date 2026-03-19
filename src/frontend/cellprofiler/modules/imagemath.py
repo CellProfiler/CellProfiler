@@ -528,7 +528,7 @@ is applied before other operations.""",
         if not self.ignore_mask:
             if type(output_mask) == numpy.ndarray:
                 output_pixel_data = output_pixel_data * output_mask
-        output_pixel_data, output_mask
+
         output_image = Image(
             output_pixel_data,
             mask=output_mask,

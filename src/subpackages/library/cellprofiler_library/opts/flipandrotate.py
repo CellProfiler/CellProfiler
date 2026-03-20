@@ -10,7 +10,6 @@ class RotateMethod(str, Enum):
     NONE = "Do not rotate"
     ANGLE = "Enter angle"
     COORDINATES = "Enter coordinates"
-    MOUSE = "Use mouse"
 
 class RotationCoordinateAlignmnet(str, Enum):
     HORIZONTALLY = "Horizontally"
@@ -25,6 +24,6 @@ M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 FLIP_ALL = [FlipDirection.NONE, FlipDirection.LEFT_TO_RIGHT, FlipDirection.TOP_TO_BOTTOM, FlipDirection.BOTH]
 
-ROTATE_ALL = [RotateMethod.NONE, RotateMethod.ANGLE, RotateMethod.COORDINATES, RotateMethod.MOUSE]
+ROTATE_ALL = [RotateMethod.NONE, RotateMethod.ANGLE, RotateMethod.COORDINATES]
 
 C_ALL = [RotationCoordinateAlignmnet.HORIZONTALLY, RotationCoordinateAlignmnet.VERTICALLY]

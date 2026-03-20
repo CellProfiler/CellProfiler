@@ -33,6 +33,11 @@ from cellprofiler_library.modules._flipandrotate import flip_and_rotate, flip_im
 from cellprofiler_library.opts.flipandrotate import RotateMethod, D_ANGLE, M_ROTATION_CATEGORY, M_ROTATION_F, FLIP_ALL, ROTATE_ALL, C_ALL
 
 
+class GUIRotateMethod(str, Enum):
+    MOUSE = "Use mouse"
+
+GUI_ROTATE_ALL = ROTATE_ALL + [GUIRotateMethod.MOUSE]
+
 class RotationCycle(str, Enum):
     INDIVIDUALLY = "Individually"
     ONCE = "Only Once"
@@ -66,7 +71,7 @@ Select how the image is to be flipped.""",
 
         self.rotate_choice = Choice(
             "Select method to rotate image",
-            ROTATE_ALL,
+            GUI_ROTATE_ALL,
             doc="""\
 -  *{ROTATE_NONE}:* Leave the image unrotated. This should be used if
    you want to flip the image only.
@@ -85,7 +90,7 @@ Select how the image is to be flipped.""",
         "ROTATE_NONE": RotateMethod.NONE.value,
         "ROTATE_ANGLE": RotateMethod.ANGLE.value,
         "ROTATE_COORDINATES": RotateMethod.COORDINATES.value,
-        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
+        "ROTATE_MOUSE": GUIRotateMethod.MOUSE.value,
     }
 ),
         )
@@ -118,7 +123,7 @@ calculated.
 -  *{IO_ONCE}:* Define the rotation only once (on the first image), then apply it to all images.
 """.format(
     **{
-        "ROTATE_MOUSE": RotateMethod.MOUSE.value,
+        "ROTATE_MOUSE": GUIRotateMethod.MOUSE.value,
         "IO_INDIVIDUALLY": RotationCycle.INDIVIDUALLY.value,
         "IO_ONCE": RotationCycle.ONCE.value,
     }
@@ -210,7 +215,7 @@ negative as clockwise.""".format(
                 self.second_pixel,
                 self.horiz_or_vert,
             ]
-        elif self.rotate_choice == RotateMethod.MOUSE:
+        elif self.rotate_choice == GUIRotateMethod.MOUSE:
             result += [self.wants_crop, self.how_often]
         else:
             raise NotImplementedError(
@@ -220,7 +225,7 @@ negative as clockwise.""".format(
 
     def prepare_group(self, workspace, grouping, image_numbers):
         """Initialize the angle if appropriate"""
-        if self.rotate_choice == RotateMethod.MOUSE and self.how_often == RotationCycle.ONCE:
+        if self.rotate_choice == GUIRotateMethod.MOUSE and self.how_often == RotationCycle.ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
     def run(self, workspace):
@@ -235,12 +240,12 @@ negative as clockwise.""".format(
         state_dict_for_mouse_mode = self.get_dictionary()
         mouse_mode_cycle = self.how_often.value
         
-        if self.rotate_choice == RotateMethod.MOUSE:
+        if self.rotate_choice == GUIRotateMethod.MOUSE:
             # perform flip and rotate separately
             pixel_data, mask = flip_image(pixel_data, mask, self.flip_choice.value)
             # state_dict_for_mouse_mode = self.get_dictionary()
-            assert state_dict_for_mouse_mode is not None, "state_dict_for_mouse_mode must be provided for rotate_choice == RotateMethod.MOUSE"
-            assert mouse_mode_cycle is not None, "mouse_mode_cycle must be provided for rotate_choice == RotateMethod.MOUSE"
+            assert state_dict_for_mouse_mode is not None, "state_dict_for_mouse_mode must be provided for rotate_choice == GUIRotateMethod.MOUSE"
+            assert mouse_mode_cycle is not None, "mouse_mode_cycle must be provided for rotate_choice == GUIRotateMethod.MOUSE"
             if (
                 mouse_mode_cycle == RotationCycle.ONCE
                 and D_ANGLE in state_dict_for_mouse_mode
@@ -500,7 +505,7 @@ negative as clockwise.""".format(
         if variable_revision_number == 1:
             # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
             if setting_values[3] == "Mouse":
-                setting_values[3] = RotateMethod.MOUSE
+                setting_values[3] = GUIRotateMethod.MOUSE
             elif setting_values[3] == "None":
                 setting_values[3] = RotateMethod.NONE
             elif setting_values[3] == "Coordinates":

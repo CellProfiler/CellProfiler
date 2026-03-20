@@ -36,7 +36,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Float
-from cellprofiler_library.modules._graytocolor import gray_to_rgb, gray_to_stacked_color, gray_to_composite_color, gray_to_color
+from cellprofiler_library.modules._graytocolor import gray_to_color
 from cellprofiler_library.types import Image2DGrayscale
 from cellprofiler_library.opts.graytocolor import Scheme
 
@@ -52,10 +52,6 @@ OFF_STACK_CHANNELS_V2 = 16
 OFF_STACK_CHANNEL_COUNT_V3 = 16
 OFF_STACK_CHANNEL_COUNT = 17
 
-# Scheme.RGB = "RGB"
-# Scheme.CMYK = "CMYK"
-# Scheme.STACK = "Stack"
-# Scheme.COMPOSITE = "Composite"
 LEAVE_THIS_BLACK = "Leave this black"
 
 DEFAULT_COLORS = [
@@ -532,7 +528,6 @@ pixel values are multiplied by this weight before assigning the color.
 
     def run(self, workspace):
         parent_image = None
-        parent_image_name = None
         imgset = workspace.image_set
         rgb_pixel_data = None
         input_image_names = []
@@ -556,14 +551,13 @@ pixel values are multiplied by this weight before assigning the color.
                     (0.0, 0.0, 1.0),
                 ]
                 rgb_pixel_data = gray_to_color(
-                # rgb_pixel_data = gray_to_rgb(
                     pixel_data_arr = image_arr, 
                     scheme = self.scheme_choice.value,
                     adjustment_factor_array = adjustment_factor_array, 
                     intensities = intensities, 
                     wants_rescale = self.wants_rescale.value
                     )
-                # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
+                # First non-blank image is considered to be the parent image
                 non_blank_image_names = [i for i in [self.red_image_name.value, self.green_image_name.value, self.blue_image_name.value] if i != LEAVE_THIS_BLACK]
                 assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
                 parent_image = imgset.get_image(non_blank_image_names[0], must_be_grayscale=True)
@@ -594,12 +588,13 @@ pixel values are multiplied by this weight before assigning the color.
                     intensities = intensities, 
                     wants_rescale = self.wants_rescale.value
                     )
-                # TODO: is it okay to use the first image as the parent image? I think that's what the original code is doing.
+
                 non_blank_image_names = [i for i in [self.cyan_image_name, self.magenta_image_name, self.yellow_image_name, self.gray_image_name] if i != LEAVE_THIS_BLACK]
                 assert len(non_blank_image_names) != 0, "At least one of the images must not be blank"
+                # First non-blank image is considered to be the parent image
                 parent_image = imgset.get_image(non_blank_image_names[0], must_be_grayscale=True)
             else:
-                raise ValueError(f"Unimplemented scheme?: {self.scheme_choice}")
+                raise ValueError(f"Unimplemented scheme: {self.scheme_choice}")
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
             channel_names = input_image_names
@@ -607,11 +602,13 @@ pixel values are multiplied by this weight before assigning the color.
                 imgset.get_image(name, must_be_grayscale=True).pixel_data
                 for name in input_image_names
             ]
+            parent_image = imgset.get_image(input_image_names[0])
             if self.scheme_choice.value == Scheme.STACK:
-                rgb_pixel_data = gray_to_stacked_color(source_channels)
-                parent_image = imgset.get_image(input_image_names[0])
+                rgb_pixel_data = gray_to_color(
+                    pixel_data_arr=source_channels,
+                    scheme=self.scheme_choice.value,
+                )
             elif self.scheme_choice.value == Scheme.COMPOSITE:
-                parent_image = imgset.get_image(input_image_names[0])
                 color_array = []
                 weight_array = []
                 for sc in self.stack_channels:
@@ -627,11 +624,6 @@ pixel values are multiplied by this weight before assigning the color.
             )
             else:
                 raise ValueError(f"Unimplemented scheme: {self.scheme_choice}")
-            
-        # TODO move this to library/module
-        if self.scheme_choice.value != Scheme.STACK and self.wants_rescale.value:
-            # If we rescaled, clip values that went out of range after multiplication
-            rgb_pixel_data[rgb_pixel_data > 1] = 1
 
         ##############
         # Save image #

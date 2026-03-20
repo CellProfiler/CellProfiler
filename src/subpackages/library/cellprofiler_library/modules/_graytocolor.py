@@ -16,10 +16,11 @@ def gray_to_color(
     intensities: List[Tuple[float, ...]]=[(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)],
     wants_rescale: bool=True,
 ) -> Image2DColor:
+    rgb_pixel_data = None
     if scheme == Scheme.RGB:
         assert adjustment_factor_array is not None, "adjustment_factor_array must be provided for RGB mode"
         assert intensities is not None, "intensities must be provided for RGB mode"
-        return gray_to_rgb(
+        rgb_pixel_data = gray_to_rgb(
             pixel_data_arr = pixel_data_arr,
             adjustment_factor_array = adjustment_factor_array,
             intensities = intensities,
@@ -28,7 +29,7 @@ def gray_to_color(
     elif scheme == Scheme.CMYK:
         assert adjustment_factor_array is not None, "adjustment_factor_array must be provided for CMYK mode"
         assert intensities is not None, "intensities must be provided for CMYK mode"
-        return gray_to_cmyk(
+        rgb_pixel_data = gray_to_cmyk(
             pixel_data_arr = pixel_data_arr,
             adjustment_factor_array = adjustment_factor_array,
             intensities = intensities,
@@ -37,7 +38,7 @@ def gray_to_color(
     elif scheme == Scheme.COMPOSITE:
         assert color_array is not None, "color_array must be provided for composite mode"
         assert weight_array is not None, "weight_array must be provided for composite mode"
-        return gray_to_composite_color(
+        rgb_pixel_data = gray_to_composite_color(
             pixel_data_arr = pixel_data_arr,
             color_array = color_array,
             weight_array = weight_array,
@@ -45,9 +46,13 @@ def gray_to_color(
         )
     elif scheme == Scheme.STACK:
         assert pixel_data_arr is not None, "pixel_data_arr must be provided for stack mode"
-        return gray_to_stacked_color(
+        rgb_pixel_data = gray_to_stacked_color(
             pixel_data_arr = pixel_data_arr,
         )
     else:
         raise ValueError(f"Unimplemented scheme: {scheme}")
+    if scheme.value != Scheme.STACK and wants_rescale:
+        # If we rescaled, clip values that went out of range after multiplication
+        rgb_pixel_data[rgb_pixel_data > 1] = 1
+    return rgb_pixel_data
 

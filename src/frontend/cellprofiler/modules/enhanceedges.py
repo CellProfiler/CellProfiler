@@ -34,10 +34,7 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_library.modules import enhanceedges
 from cellprofiler_library.opts.enhanceedges import EdgeFindingMethod, EdgeDirection
-
-O_BINARY = "Binary"
-O_GRAYSCALE = "Grayscale"
-
+from cellprofiler_library.functions.image_processing import stretched_rgb_from_components
 
 class EnhanceEdges(Module):
     module_name = "EnhanceEdges"
@@ -320,9 +317,8 @@ values below this threshold as not being edges.
                 self.output_image_name.value,
                 sharexy=figure.subplot(0, 0),
             )
-        color_image = numpy.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
-        color_image[:, :, 0] = centrosome.filter.stretch(orig_pixels)
-        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels)
+        
+        color_image = stretched_rgb_from_components(r=orig_pixels, g=output_pixels)
         figure.subplot_imshow(
             1, 0, color_image, "Composite image", sharexy=figure.subplot(0, 0)
         )

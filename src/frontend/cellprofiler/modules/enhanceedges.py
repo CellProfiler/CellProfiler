@@ -23,7 +23,6 @@ YES          NO           YES
 
 """
 
-import centrosome.filter
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module

@@ -1487,15 +1487,13 @@ def get_control_point_normals(center_i, center_j):
     # Find the normals at each point by taking the derivative,
     # and twisting by 90 degrees.
     #
-    normal_i = _get_control_point_normals(center_i) * -1
-    normal_j = _get_control_point_normals(center_j)
+    di = center_i[1:] - center_i[:-1]
+    di = numpy.hstack([[di[0]], di])
+    dj = center_j[1:] - center_j[:-1]
+    dj = numpy.hstack([[dj[0]], dj])
+    normal_i = -dj / numpy.sqrt(di ** 2 + dj ** 2)
+    normal_j = di / numpy.sqrt(di ** 2 + dj ** 2)
     return normal_i, normal_j
-
-def _get_control_point_normals(points):
-    d_points = points[1:, 0] - points[:-1, 0]
-    d_points = numpy.hstack([[d_points[0]], d_points])
-    normal_points = points[1:, 1] / numpy.sqrt(d_points ** 2 + points[1:, 1] ** 2)
-    return normal_points
 
 
 def extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width):
@@ -1532,8 +1530,21 @@ def extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width):
             numpy.arange(1, half_width + 1) * (-norm_i[-1]) + center_j[-1],
         ]
     )
-    norm_i = numpy.hstack([[norm_i[0]] * half_width, norm_i, [norm_i[-1]] * half_width])
-    norm_j = numpy.hstack([[norm_j[0]] * half_width, norm_j, [norm_j[-1]] * half_width])
+    norm_i = numpy.hstack(
+        [
+            [norm_i[0]] * half_width, 
+            norm_i,
+            [norm_i[-1]] * half_width
+        ]
+    )
+    norm_j = numpy.hstack(
+        [
+            [norm_j[0]] * half_width, 
+            norm_j, 
+            [norm_j[-1]] * half_width
+        ]
+    )
+    
     return center_i, center_j, norm_i, norm_j
 
 
@@ -1623,6 +1634,25 @@ def get_straightened_image(image_pixel_data, image_mask, map_i, map_j):
     return straightened_pixel_data, straightened_mask
 
 
+def interpolate_centerline(control_point_coords, length, ncontrolpoints):
+    """Interpolate one axis of control points to evenly spaced centerline coordinates.
+
+    Args:
+        control_point_coords: 1D array of control point positions along one axis
+        length: the length of the worm
+        ncontrolpoints: number of control points
+
+    Returns:
+        1D array of interpolated coordinates, one per unit length.
+    """
+    interp = interp1d(
+        numpy.linspace(0, length, ncontrolpoints), 
+        control_point_coords
+    )
+    center = interp(numpy.arange(0, int(length) + 1))
+    return center
+
+
 def compute_straightened_worm_coordinates(
     lengths,
     width,
@@ -1690,16 +1720,8 @@ def compute_straightened_worm_coordinates(
             continue
         orig_labels = orig_labels[0]
 
-        cp_i = control_points[0, :, i]
-        cp_j = control_points[1, :, i]
-
-        interp_i = interp1d(numpy.linspace(0, lengths[i], ncontrolpoints), cp_i)
-        interp_j = interp1d(numpy.linspace(0, lengths[i], ncontrolpoints), cp_j)
-        #
-        # The coordinates of "length" points along the worm
-        #
-        center_i = interp_i(numpy.arange(0, int(lengths[i]) + 1))
-        center_j = interp_j(numpy.arange(0, int(lengths[i]) + 1))
+        center_i = interpolate_centerline(control_points[0, :, i], lengths[i], ncontrolpoints)
+        center_j = interpolate_centerline(control_points[1, :, i], lengths[i], ncontrolpoints)
         #
         # Compute normals and extend the worm endpoints
         #

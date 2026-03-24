@@ -1,7 +1,7 @@
 import math
 import numpy
 
-from cellprofiler_library.functions.image_processing import crop_image, crop_image_similarly
+from cellprofiler_library.functions.image_processing import crop_image_similarly
 
 class Image:
     """

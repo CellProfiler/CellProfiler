@@ -94,8 +94,7 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.utilities.core.object import size_similarly
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.image import Image
-from cellprofiler_library.functions.image_processing import apply_threshold_to_objects
-from cellprofiler_library.functions.image_processing import apply_threshold, get_global_threshold
+from cellprofiler_library.functions.image_processing import apply_threshold_to_objects, apply_threshold, get_global_threshold
 import cellprofiler_library.opts.threshold as Threshold
 from cellprofiler_library.opts.measurecolocalization import MeasurementType, TemplateMeasurementFormat, Target, CostesMethod
 from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects, crop_image_pair_similarly, crop_image_pair_and_object_similarly

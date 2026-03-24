@@ -5,7 +5,6 @@ import skimage.morphology
 import matplotlib.cm
 import mahotas
 import centrosome.cpmorphology
-import cellprofiler.utilities.morphology
 from typing import Optional, Literal, Tuple, Union
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny, Image2DBinary
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement

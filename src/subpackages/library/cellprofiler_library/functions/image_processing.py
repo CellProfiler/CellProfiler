@@ -49,6 +49,10 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
+###############################################################################
+# EnhanceEdges
+###############################################################################
+
 def enhance_edges_sobel(
         image: Image2DGrayscale, 
         mask: Optional[Image2DGrayscaleMask]=None, 
@@ -115,6 +119,26 @@ def enhance_edges_canny(
 
     output_pixels = centrosome.filter.canny(image, mask, sigma, low_th, high_th)
     return output_pixels
+
+def stretched_rgb_from_components(
+        r: Image2DGrayscale, 
+        g: Optional[Image2DGrayscale]=None, 
+        b: Optional[Image2DGrayscale]=None
+    ):
+    if g:
+        assert r.shape == g.shape
+    if b:
+        assert r.shape == b.shape
+
+    color_image = numpy.zeros((r.shape[0], r.shape[1], 3))
+    color_image[:, :, 0] = centrosome.filter.stretch(r)
+    
+    if g:
+        color_image[:, :, 1] = centrosome.filter.stretch(g)
+    if b:
+        color_image[:, :, 2] = centrosome.filter.stretch(b)
+
+    return color_image
 
 
 def morphology_closing(image, structuring_element=skimage.morphology.disk(1)):

@@ -18,10 +18,6 @@ import math
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from numpy.typing import NDArray
 from skimage.restoration import denoise_bilateral
-from centrosome.filter import median_filter as _median_filter
-from centrosome.filter import circular_average_filter as _circular_average_filter
-from centrosome.smooth import fit_polynomial as _fit_polynomial
-from centrosome.smooth import smooth_with_function_and_mask as _smooth_with_function_and_mask
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Image2DColor, Image2DGrayscale, Image2DGrayscaleMask, ImageAny, ImageAnyMask, ObjectSegmentation, Image2D, Image2DMask, StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
@@ -35,10 +31,6 @@ from cellprofiler_library.opts.enhanceedges import EdgeDirection
 
 invert = cast(Callable[[ImageAny], ImageAny], _invert)
 isscalar = cast(Callable[[Optional[ImageAny]], bool], _isscalar)
-median_filter_centrosome = cast(Callable[[Image2D, Optional[Image2DMask], float], Image2D], _median_filter)
-circular_average_filter = cast(Callable[[Image2D, float, Optional[Image2DMask]], Image2D], _circular_average_filter)
-smooth_with_function_and_mask = cast(Callable[[Image2D, Callable[[Image2D], Image2D], Optional[Image2DMask]], Image2D], _smooth_with_function_and_mask)
-fit_polynomial = cast(Callable[[Image2D, Optional[Image2DMask], bool], Image2D], _fit_polynomial)
 
 T = TypeVar("T", bound=ImageAny)
 MorphImageT = TypeVar("Union[ImageGrayscale, ImageGrayscaleMask]", bound=Union[ImageGrayscale, ImageGrayscaleMask])
@@ -2089,11 +2081,11 @@ def smoothing_gaussian(pixel_data: Image2D, mask: Optional[Image2DMask], sigma: 
             return scipy.ndimage.gaussian_filter(
                 image, sigma, mode="constant", cval=0
             )
-    return smooth_with_function_and_mask(pixel_data, fn, mask)
+    return centrosome.smooth.smooth_with_function_and_mask(pixel_data, fn, mask)
      
 
 def smoothing_median(pixel_data: Image2D, mask: Optional[Image2DMask], obj_size: float) -> Image2D:
-    return median_filter_centrosome(pixel_data, mask, obj_size / 2 + 1)
+    return centrosome.filter.median_filter(pixel_data, mask, obj_size / 2 + 1)
 
 
 def smoothing_keeping_edges(pixel_data: Image2D, multichannel: bool, sigma_range: float, sigma: float) -> Image2D:
@@ -2107,11 +2099,11 @@ def smoothing_keeping_edges(pixel_data: Image2D, multichannel: bool, sigma_range
 
 
 def smoothing_fit_polynomial(pixel_data: Image2D, mask: Optional[Image2DMask], clip: bool) -> Image2D:
-    return fit_polynomial(pixel_data, mask, clip)
+    return centrosome.smooth.fit_polynomial(pixel_data, mask, clip)
 
 
 def smoothing_circular_average(pixel_data: Image2D, mask: Optional[Image2DMask], obj_size: float) -> Image2D:
-    return circular_average_filter(pixel_data, obj_size / 2 + 1, mask)
+    return centrosome.filter.circular_average_filter(pixel_data, obj_size / 2 + 1, mask)
 
 def smoothing_smooth_to_average(pixel_data: Image2D, mask: Optional[Image2DMask]) -> Image2D:
     if mask is not None:

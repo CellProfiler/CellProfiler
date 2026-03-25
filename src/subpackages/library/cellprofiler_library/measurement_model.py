@@ -14,14 +14,14 @@ class LibraryMeasurements(BaseModel):
     )
 
     # Primary data structures matching the MDC contract
-    image: Dict[str, Any] = Field(default_factory=dict, alias="Image")
-    objects: Dict[str, Dict[str, Any]] = Field(default_factory=dict, alias="Object")
+    image: Dict[str, Any] = Field(default_factory=dict)
+    objects: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     
     # Additional storage for full Measurements compatibility (e.g. Experiment metadata)
-    experiment: Dict[str, Any] = Field(default_factory=dict, alias="Experiment")
+    experiment: Dict[str, Any] = Field(default_factory=dict)
     
     # Placeholder for relationships if needed in the future
-    relationships: List[Dict[str, Any]] = Field(default_factory=list, alias="Relationship")
+    relationships: List[Dict[str, Any]] = Field(default_factory=list)
 
     def add_measurement(self, object_name: str, feature_name: str, data: Any):
         """
@@ -110,7 +110,7 @@ class LibraryMeasurements(BaseModel):
         """
         Serialize to the primitive dictionary format required by the refactoring contract.
         """
-        return self.model_dump(by_alias=True, exclude_none=True)
+        return self.model_dump(exclude_none=True)
 
     def merge(self, other: 'LibraryMeasurements') -> 'LibraryMeasurements':
         """

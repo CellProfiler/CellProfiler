@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import List, Tuple, Annotated, Optional, Dict, Union, Any
+from typing import List, Tuple, Annotated, Optional, Union
 from pydantic import validate_call, ConfigDict, BeforeValidator, Field
 from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
 from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType

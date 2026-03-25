@@ -18,7 +18,6 @@ import math
 from numpy.typing import NDArray
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
-from numpy.typing import NDArray
 from skimage.restoration import denoise_bilateral
 from cellprofiler_library.types import (
     ImageGrayscale, ImageGrayscaleMask, 

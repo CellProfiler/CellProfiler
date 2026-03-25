@@ -8,8 +8,6 @@ from cellprofiler_library.measurement_model import (
     LibraryMeasurements,
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
-    IMAGE_NUMBER,
-    OBJECT_NUMBER
 )
 
 class TestRelationshipBase:
@@ -271,9 +269,9 @@ class TestLibraryMeasurements:
         lm.add_measurement("Nuclei", "Area", 100)
         d = lm.to_dict()
         assert isinstance(d, dict)
-        assert "Object" in d
-        assert "Nuclei" in d["Object"]
-        assert d["Object"]["Nuclei"]["Area"] == 100
+        assert "objects" in d
+        assert "Nuclei" in d["objects"]
+        assert d["objects"]["Nuclei"]["Area"] == 100
 
     def test_merge(self):
         lm1 = LibraryMeasurements()

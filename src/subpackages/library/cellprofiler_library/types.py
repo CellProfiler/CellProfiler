@@ -104,7 +104,7 @@ Image3DInt =            Annotated[NDArray[np.int32],    Field(description="3D in
 # see cellprofiler_library.functions.segmentation._validate_<type> for more details 
 ObjectLabelsDense =     Annotated[NDArray[ObjectLabel], Field(description="Dense array of object labels"), AfterValidator(validate_object_labels_dense)]
 ObjectLabelSet =        Annotated[Sequence[Tuple[NDArray[ObjectLabel], NDArray[np.int32]]], Field(description="List of Tuples of object labels and object numbers in each label matrix"), AfterValidator(validate_object_label_set)]
-ObjectSegmentation =    Annotated[NDArray[ObjectLabel], Field(description="Object segmentation")]
+ObjectSegmentation =    Annotated[NDArray[ObjectLabel], Field(description="Object segmentation. Label numbers are contiguous and start at 1. Use `skimage.segmentation.relabel_sequential` to convert non-contiguous labels.")]
 ObjectSegmentationIJV = Annotated[NDArray[ObjectLabel], Field(description="Object segmentation in IJV format"), AfterValidator(validate_object_segmentation_ijv)]
 
 ImageGrayscale =        Union[Image2DGrayscale, Image3DGrayscale]

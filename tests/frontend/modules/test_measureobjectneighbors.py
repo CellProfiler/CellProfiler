@@ -12,6 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, M_ALL, D_ALL
 
 OBJECTS_NAME = "objectsname"
 NEIGHBORS_NAME = "neighborsname"
@@ -68,7 +69,7 @@ def test_load_v2():
     assert module.object_name == "glia"
     assert module.neighbors_name == "neurites"
     assert (
-        module.distance_method == cellprofiler.modules.measureobjectneighbors.D_EXPAND
+        module.distance_method == DistanceMethod.EXPAND
     )
     assert module.distance == 2
     assert not module.wants_count_image
@@ -83,7 +84,7 @@ def test_empty():
     """Test a labels matrix with no objects"""
     workspace, module = make_workspace(
         numpy.zeros((10, 10), int),
-        cellprofiler.modules.measureobjectneighbors.D_EXPAND,
+        DistanceMethod.EXPAND,
         5,
     )
     module.run(workspace)
@@ -110,7 +111,7 @@ def test_one():
     labels = numpy.zeros((10, 10), int)
     labels[3:5, 4:6] = 1
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_EXPAND, 5
+        labels, DistanceMethod.EXPAND, 5
     )
     module.run(workspace)
     m = workspace.measurements
@@ -130,12 +131,12 @@ def test_two_expand():
     labels[2, 2] = 1
     labels[8, 7] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_EXPAND, 5
+        labels, DistanceMethod.EXPAND, 5
     )
     module.run(workspace)
     assert tuple(module.get_categories(None, OBJECTS_NAME)) == ("Neighbors",)
     assert tuple(module.get_measurements(None, OBJECTS_NAME, "Neighbors")) == tuple(
-        cellprofiler.modules.measureobjectneighbors.M_ALL
+        M_ALL
     )
     assert tuple(
         module.get_measurement_scales(
@@ -192,7 +193,7 @@ def test_two_not_adjacent():
     labels[2, 2] = 1
     labels[8, 7] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
+        labels, DistanceMethod.ADJACENT, 5
     )
     module.run(workspace)
     assert tuple(
@@ -217,7 +218,7 @@ def test_adjacent():
     labels[2, 2] = 1
     labels[2, 3] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
+        labels, DistanceMethod.ADJACENT, 5
     )
     module.run(workspace)
     m = workspace.measurements
@@ -243,7 +244,7 @@ def test_manual_not_touching():
     labels[2, 2] = 1  # Pythagoras triangle 3-4-5
     labels[5, 6] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 4
+        labels, DistanceMethod.WITHIN, 4
     )
     module.run(workspace)
     assert tuple(
@@ -266,7 +267,7 @@ def test_manual_touching():
     labels[2, 2] = 1  # Pythagoras triangle 3-4-5
     labels[5, 6] = 2
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 5
+        labels, DistanceMethod.WITHIN, 5
     )
     module.run(workspace)
     m = workspace.measurements
@@ -290,7 +291,7 @@ def test_three():
     labels[2, 5] = 2
     labels[6, 2] = 3
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 5
+        labels, DistanceMethod.WITHIN, 5
     )
     module.run(workspace)
     m = workspace.measurements
@@ -327,7 +328,7 @@ def test_touching_discarded():
     labels = numpy.zeros((10, 10), int)
     labels[2, 3] = 1
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
+        labels, DistanceMethod.ADJACENT, 5
     )
     object_set = workspace.object_set
     assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
@@ -368,7 +369,7 @@ def test_all_discarded():
     """
     labels = numpy.zeros((10, 10), int)
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
+        labels, DistanceMethod.ADJACENT, 5
     )
     object_set = workspace.object_set
     assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
@@ -401,7 +402,7 @@ def test_NeighborCountImage():
     labels[2, 5] = 2
     labels[6, 2] = 3
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 4
+        labels, DistanceMethod.WITHIN, 4
     )
     module.wants_count_image.value = True
     module.count_image_name.value = "my_image"
@@ -425,7 +426,7 @@ def test_PercentTouchingImage():
     labels[6, 2] = 3
     labels[7, 2] = 3
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 4
+        labels, DistanceMethod.WITHIN, 4
     )
     module.wants_percent_touching_image.value = True
     module.touching_image_name.value = "my_image"
@@ -449,21 +450,21 @@ def test_get_measurement_columns():
     module.distance.value = 5
     for distance_method, scale in (
         (
-            cellprofiler.modules.measureobjectneighbors.D_EXPAND,
-            cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
+            DistanceMethod.EXPAND.value,
+            MeasurementScale.EXPANDED.value,
         ),
         (
-            cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
-            cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
+            DistanceMethod.ADJACENT.value,
+            MeasurementScale.ADJACENT.value,
         ),
-        (cellprofiler.modules.measureobjectneighbors.D_WITHIN, "5"),
+        (DistanceMethod.WITHIN.value, "5"),
     ):
         module.distance_method.value = distance_method
         columns = module.get_measurement_columns(None)
         features = [
             "%s_%s_%s"
             % (cellprofiler.modules.measureobjectneighbors.C_NEIGHBORS, feature, scale)
-            for feature in cellprofiler.modules.measureobjectneighbors.M_ALL
+            for feature in M_ALL
         ]
         assert len(columns) == len(features)
         for column in columns:
@@ -477,14 +478,14 @@ def test_get_measurement_columns_neighbors():
     module.distance.value = 5
     for distance_method, scale in (
         (
-            cellprofiler.modules.measureobjectneighbors.D_EXPAND,
-            cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
+            DistanceMethod.EXPAND.value,
+            MeasurementScale.EXPANDED.value,
         ),
         (
-            cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
-            cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
+            DistanceMethod.ADJACENT.value,
+            MeasurementScale.ADJACENT.value,
         ),
-        (cellprofiler.modules.measureobjectneighbors.D_WITHIN, "5"),
+        (DistanceMethod.WITHIN.value, "5"),
     ):
         module.distance_method.value = distance_method
         columns = module.get_measurement_columns(None)
@@ -496,7 +497,7 @@ def test_get_measurement_columns_neighbors():
                 NEIGHBORS_NAME,
                 scale,
             )
-            for feature in cellprofiler.modules.measureobjectneighbors.M_ALL
+            for feature in M_ALL
         ]
         assert len(columns) == len(features)
         for column in columns:
@@ -514,7 +515,7 @@ def test_neighbors_zeros():
         (one_object, blank_labels, 1, 0),
     )
     for olabels, nlabels, ocount, ncount in cases:
-        for mode in cellprofiler.modules.measureobjectneighbors.D_ALL:
+        for mode in D_ALL:
             workspace, module = make_workspace(olabels, mode, neighbors_labels=nlabels)
             assert isinstance(
                 module,
@@ -535,7 +536,7 @@ def test_one_neighbor():
     olabels[2, 2] = 1
     nlabels = numpy.zeros((20, 10), int)
     nlabels[-2, -2] = 1
-    for mode in cellprofiler.modules.measureobjectneighbors.D_ALL:
+    for mode in D_ALL:
         workspace, module = make_workspace(
             olabels, mode, distance=20, neighbors_labels=nlabels
         )
@@ -548,7 +549,7 @@ def test_one_neighbor():
         v = m.get_current_measurement(
             OBJECTS_NAME,
             module.get_measurement_name(
-                cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
+                Measurement.FIRST_CLOSEST_OBJECT_NUMBER
             ),
         )
         assert len(v) == 1
@@ -556,7 +557,7 @@ def test_one_neighbor():
         v = m.get_current_measurement(
             OBJECTS_NAME,
             module.get_measurement_name(
-                cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_OBJECT_NUMBER
+                Measurement.SECOND_CLOSEST_OBJECT_NUMBER
             ),
         )
         assert len(v) == 1
@@ -564,7 +565,7 @@ def test_one_neighbor():
         v = m.get_current_measurement(
             OBJECTS_NAME,
             module.get_measurement_name(
-                cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_DISTANCE
+                Measurement.FIRST_CLOSEST_DISTANCE
             ),
         )
         assert len(v) == 1
@@ -572,12 +573,12 @@ def test_one_neighbor():
         v = m.get_current_measurement(
             OBJECTS_NAME,
             module.get_measurement_name(
-                cellprofiler.modules.measureobjectneighbors.M_NUMBER_OF_NEIGHBORS
+                Measurement.NUMBER_OF_NEIGHBORS
             ),
         )
         assert len(v) == 1
         assert v[0] == (
-            0 if mode == cellprofiler.modules.measureobjectneighbors.D_ADJACENT else 1
+            0 if mode == DistanceMethod.ADJACENT else 1
         )
 
 
@@ -589,7 +590,7 @@ def test_two_neighbors():
     nlabels[2, 6] = 1
     workspace, module = make_workspace(
         olabels,
-        cellprofiler.modules.measureobjectneighbors.D_EXPAND,
+        DistanceMethod.EXPAND,
         distance=20,
         neighbors_labels=nlabels,
     )
@@ -602,7 +603,7 @@ def test_two_neighbors():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
+            Measurement.FIRST_CLOSEST_OBJECT_NUMBER
         ),
     )
     assert len(v) == 1
@@ -610,7 +611,7 @@ def test_two_neighbors():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_OBJECT_NUMBER
+            Measurement.SECOND_CLOSEST_OBJECT_NUMBER
         ),
     )
     assert len(v) == 1
@@ -618,7 +619,7 @@ def test_two_neighbors():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_DISTANCE
+            Measurement.FIRST_CLOSEST_DISTANCE
         ),
     )
     assert len(v) == 1
@@ -626,7 +627,7 @@ def test_two_neighbors():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_DISTANCE
+            Measurement.SECOND_CLOSEST_DISTANCE
         ),
     )
     assert len(v) == 1
@@ -634,7 +635,7 @@ def test_two_neighbors():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_ANGLE_BETWEEN_NEIGHBORS
+            Measurement.ANGLE_BETWEEN_NEIGHBORS
         ),
     )
     assert len(v) == 1
@@ -649,7 +650,7 @@ def test_different_neighbors_touching():
     nlabels[5, 2] = 1
     workspace, module = make_workspace(
         olabels,
-        cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
+        DistanceMethod.ADJACENT,
         distance=0,
         neighbors_labels=nlabels,
     )
@@ -662,7 +663,7 @@ def test_different_neighbors_touching():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
+            Measurement.FIRST_CLOSEST_OBJECT_NUMBER
         ),
     )
     assert len(v) == 1
@@ -670,7 +671,7 @@ def test_different_neighbors_touching():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_OBJECT_NUMBER
+            Measurement.SECOND_CLOSEST_OBJECT_NUMBER
         ),
     )
     assert len(v) == 1
@@ -678,7 +679,7 @@ def test_different_neighbors_touching():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_DISTANCE
+            Measurement.FIRST_CLOSEST_DISTANCE
         ),
     )
     assert len(v) == 1
@@ -686,7 +687,7 @@ def test_different_neighbors_touching():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_SECOND_CLOSEST_DISTANCE
+            Measurement.SECOND_CLOSEST_DISTANCE
         ),
     )
     assert len(v) == 1
@@ -694,7 +695,7 @@ def test_different_neighbors_touching():
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_PERCENT_TOUCHING
+            Measurement.PERCENT_TOUCHING
         ),
     )
     assert len(v) == 1
@@ -719,7 +720,7 @@ def test_relationships():
     )
 
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 2
+        labels, DistanceMethod.WITHIN, 2
     )
     module.run(workspace)
     m = workspace.measurements
@@ -780,7 +781,7 @@ def test_neighbors():
     )
 
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_WITHIN, 2, nlabels
+        labels, DistanceMethod.WITHIN, 2, nlabels
     )
     module.run(workspace)
     m = workspace.measurements
@@ -812,7 +813,7 @@ def test_missing_object():
     labels[2, 2] = 1
     labels[2, 3] = 3
     workspace, module = make_workspace(
-        labels, cellprofiler.modules.measureobjectneighbors.D_ADJACENT, 5
+        labels, DistanceMethod.ADJACENT, 5
     )
     module.run(workspace)
     m = workspace.measurements
@@ -845,7 +846,7 @@ def test_small_removed():
 
     workspace, module = make_workspace(
         objects,
-        cellprofiler.modules.measureobjectneighbors.D_WITHIN,
+        DistanceMethod.WITHIN,
         neighbors_labels=neighbors,
     )
     no = workspace.object_set.get_objects(NEIGHBORS_NAME)
@@ -856,7 +857,7 @@ def test_small_removed():
     v = m[
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_NUMBER_OF_NEIGHBORS
+            Measurement.NUMBER_OF_NEIGHBORS
         ),
         1,
     ]
@@ -877,7 +878,7 @@ def test_object_is_missing():
     nlabels[5, 2] = 2
     workspace, module = make_workspace(
         olabels,
-        cellprofiler.modules.measureobjectneighbors.D_EXPAND,
+        DistanceMethod.EXPAND,
         distance=20,
         neighbors_labels=nlabels,
     )
@@ -888,7 +889,7 @@ def test_object_is_missing():
     m = workspace.measurements
     assert isinstance(m,cellprofiler_core.measurement.Measurements)
     ftr = module.get_measurement_name(
-        cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
+        Measurement.FIRST_CLOSEST_OBJECT_NUMBER
     )
     values = m[OBJECTS_NAME, ftr]
     assert values[1] == 1
@@ -906,7 +907,7 @@ def test_small_removed_same():
     objects_unedited[0:2, 0:2] = 3
 
     workspace, module = make_workspace(
-        objects, cellprofiler.modules.measureobjectneighbors.D_EXPAND, distance=1
+        objects, DistanceMethod.EXPAND, distance=1
     )
     no = workspace.object_set.get_objects(OBJECTS_NAME)
     no.unedited_segmented = objects_unedited
@@ -916,7 +917,7 @@ def test_small_removed_same():
     v = m[
         OBJECTS_NAME,
         module.get_measurement_name(
-            cellprofiler.modules.measureobjectneighbors.M_NUMBER_OF_NEIGHBORS
+            Measurement.NUMBER_OF_NEIGHBORS
         ),
         1,
     ]

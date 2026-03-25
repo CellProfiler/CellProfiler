@@ -11,7 +11,7 @@ import centrosome.fastemd
 
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List, Any
+from typing import Tuple, Optional, Dict, Callable, List, Union
 from scipy.linalg import lstsq
 from numpy.typing import NDArray
 
@@ -1419,8 +1419,7 @@ def get_granularity_measurements(
         granular_spectrum_length: int,
         dimensions: int,
         object_records: List[ObjectRecord]
-        ) -> Tuple[List[List[Any]], List[float]]:
-    # TODO: PR #5034 update the return types of this funciton
+        ) -> Tuple[List[List[List[Union[str, NDArray[numpy.float64]]]]], List[float]]:
     # Transcribed from the Matlab module: granspectr function
     #
     # CALCULATES GRANULAR SPECTRUM, ALSO KNOWN AS SIZE DISTRIBUTION,

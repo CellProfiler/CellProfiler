@@ -1207,18 +1207,75 @@ of the straightened worms.""",
             return straightened_images, labels
 
 
+def _forward_diff_with_leading_repeat(arr):
+    """Compute forward differences, repeating the first diff at the start.
+
+    Equivalent to ``numpy.diff`` but with the first element replicated so
+    the output length matches the input length.
+
+    Args:
+        arr: 1D array of values.
+
+    Returns:
+        1D array of the same length as *arr*.
+    """
+    d = arr[1:] - arr[:-1]
+    return numpy.hstack([[d[0]], d])
+
+
 def get_control_point_normals(center_i, center_j):
     #
     # Find the normals at each point by taking the derivative,
     # and twisting by 90 degrees.
     #
-    di = center_i[1:] - center_i[:-1]
-    di = numpy.hstack([[di[0]], di])
-    dj = center_j[1:] - center_j[:-1]
-    dj = numpy.hstack([[dj[0]], dj])
+    di = _forward_diff_with_leading_repeat(center_i)
+    dj = _forward_diff_with_leading_repeat(center_j)
     normal_i = -dj / numpy.sqrt(di ** 2 + dj ** 2)
     normal_j = di / numpy.sqrt(di ** 2 + dj ** 2)
     return normal_i, normal_j
+
+
+def _extend_centerline_axis(center, tangent_start, tangent_end, half_width):
+    """Extend one axis of a worm centerline along the tangent direction.
+
+    The centerline is extended by *half_width* pixels from each endpoint,
+    following the local tangent direction (perpendicular to the normal).
+
+    Args:
+        center: 1D array of coordinates along one axis
+        tangent_start: tangent component at the head endpoint
+        tangent_end: tangent component at the tail endpoint
+        half_width: number of pixels to extend from each end
+
+    Returns:
+        Extended 1D coordinate array.
+    """
+    return numpy.hstack(
+        [
+            numpy.arange(-half_width, 0) * tangent_start + center[0],
+            center,
+            numpy.arange(1, half_width + 1) * tangent_end + center[-1],
+        ]
+    )
+
+
+def _replicate_endpoints(arr, half_width):
+    """Extend an array by replicating its first and last values.
+
+    Args:
+        arr: 1D array to extend
+        half_width: number of replicated values to add at each end
+
+    Returns:
+        Extended 1D array.
+    """
+    return numpy.hstack(
+        [
+            [arr[0]] * half_width, 
+            arr, 
+            [arr[-1]] * half_width
+        ]
+    )
 
 
 def extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width):
@@ -1241,34 +1298,10 @@ def extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width):
     Returns:
         Tuple of extended (center_i, center_j, norm_i, norm_j) arrays.
     """
-    center_i = numpy.hstack(
-        [
-            numpy.arange(-half_width, 0) * norm_j[0] + center_i[0],
-            center_i,
-            numpy.arange(1, half_width + 1) * norm_j[-1] + center_i[-1],
-        ]
-    )
-    center_j = numpy.hstack(
-        [
-            numpy.arange(-half_width, 0) * (-norm_i[0]) + center_j[0],
-            center_j,
-            numpy.arange(1, half_width + 1) * (-norm_i[-1]) + center_j[-1],
-        ]
-    )
-    norm_i = numpy.hstack(
-        [
-            [norm_i[0]] * half_width, 
-            norm_i,
-            [norm_i[-1]] * half_width
-        ]
-    )
-    norm_j = numpy.hstack(
-        [
-            [norm_j[0]] * half_width, 
-            norm_j, 
-            [norm_j[-1]] * half_width
-        ]
-    )
+    center_i = _extend_centerline_axis(center_i, norm_j[0], norm_j[-1], half_width)
+    center_j = _extend_centerline_axis(center_j, -norm_i[0], -norm_i[-1], half_width)
+    norm_i = _replicate_endpoints(norm_i, half_width)
+    norm_j = _replicate_endpoints(norm_j, half_width)
     
     return center_i, center_j, norm_i, norm_j
 
@@ -1739,6 +1772,22 @@ def compute_worm_pixel_fractions(labels, min_i, heights, width, radii):
     return labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end
 
 
+def _scale_and_clamp_to_grid(frac, frac_end, dim):
+    """Scale fractional coordinates to grid dimensions and clamp to bounds.
+
+    Args:
+        frac: array of fractional start coordinates in [0, 1]
+        frac_end: array of fractional end coordinates in [0, 1]
+        dim: grid dimension to scale to
+
+    Returns:
+        Tuple of (mapping, mapping_end) clamped to [0, dim].
+    """
+    mapping = numpy.maximum(frac * dim, 0)
+    mapping_end = numpy.minimum(frac_end * dim, dim)
+    return mapping, mapping_end
+
+
 def map_fractions_to_grid(
     labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end, i_dim, j_dim,
 ):
@@ -1764,10 +1813,8 @@ def map_fractions_to_grid(
     #
     # Map the worms onto the gridding.
     #
-    i_mapping = numpy.maximum(i_frac * i_dim, 0)
-    i_mapping_end = numpy.minimum(i_frac_end * i_dim, i_dim)
-    j_mapping = numpy.maximum(j_frac * j_dim, 0)
-    j_mapping_end = numpy.minimum(j_frac_end * j_dim, j_dim)
+    i_mapping, i_mapping_end = _scale_and_clamp_to_grid(i_frac, i_frac_end, i_dim)
+    j_mapping, j_mapping_end = _scale_and_clamp_to_grid(j_frac, j_frac_end, j_dim)
     # TODO: can we do mask = labels1 > 0 and re-use it below?
     i_mapping = i_mapping[labels1 > 0]
     i_mapping_end = i_mapping_end[labels1 > 0]
@@ -1786,6 +1833,7 @@ def map_fractions_to_grid(
         i_filtered,
         j_filtered,
     )
+
 
 
 def compute_hard_case_bin_assignments(
@@ -1814,88 +1862,9 @@ def compute_hard_case_bin_assignments(
     # or straddle two and span one or more. It can do different
     # things in the I and J direction.
     #
-    # --- The number of pixels wholly spanned ---
-    #
-    i_span = numpy.maximum(
-        numpy.floor(i_mapping_end) - numpy.ceil(i_mapping), 0
-    )
-    j_span = numpy.maximum(
-        numpy.floor(j_mapping_end) - numpy.ceil(j_mapping), 0
-    )
-    #
-    # --- The fraction of a pixel covered by the lower straddle
-    #
-    i_low_straddle = i_mapping.astype(int) + 1 - i_mapping
-    j_low_straddle = j_mapping.astype(int) + 1 - j_mapping
-    #
-    # Segments that start at exact pixel boundaries and span
-    # whole pixels have low fractions that are 1. The span
-    # length needs to have these subtracted from it.
-    #
-    i_span[i_low_straddle == 1] -= 1
-    j_span[j_low_straddle == 1] -= 1
-    #
-    # --- the fraction covered by the upper straddle
-    #
-    i_high_straddle = i_mapping_end - i_mapping_end.astype(int)
-    j_high_straddle = j_mapping_end - j_mapping_end.astype(int)
-    #
-    # --- the total distance across the binning space
-    #
-    i_total = i_low_straddle + i_span + i_high_straddle
-    j_total = j_low_straddle + j_span + j_high_straddle
-    #
-    # --- The fraction in the lower straddle
-    #
-    i_low_frac = i_low_straddle / i_total
-    j_low_frac = j_low_straddle / j_total
-    #
-    # --- The fraction in the upper straddle
-    #
-    i_high_frac = i_high_straddle / i_total
-    j_high_frac = j_high_straddle / j_total
-    #
-    # later on, the high fraction will overwrite the low fraction
-    # for i and j hitting on a single pixel in the bin space
-    #
-    i_high_frac[
-        (i_mapping.astype(int) == i_mapping_end.astype(int))
-    ] = 1
-    j_high_frac[
-        (j_mapping.astype(int) == j_mapping_end.astype(int))
-    ] = 1
-    #
-    # --- The fraction in spans
-    #
-    i_span_frac = i_span / i_total
-    j_span_frac = j_span / j_total
-    #
-    # --- The number of bins touched by each pixel
-    #
-    i_count = (
-        numpy.ceil(i_mapping_end) - numpy.floor(i_mapping)
-    ).astype(int)
-    j_count = (
-        numpy.ceil(j_mapping_end) - numpy.floor(j_mapping)
-    ).astype(int)
-    #
-    # --- For I and J, calculate the weights for each pixel
-    #     along each axis.
-    #
-    i_idx = centrosome.index.Indexes([i_count])
-    j_idx = centrosome.index.Indexes([j_count])
-    i_weights = i_span_frac[i_idx.rev_idx]
-    j_weights = j_span_frac[j_idx.rev_idx]
-    i_weights[i_idx.fwd_idx] = i_low_frac
-    j_weights[j_idx.fwd_idx] = j_low_frac
-    mask = i_high_frac > 0
-    i_weights[i_idx.fwd_idx[mask] + i_count[mask] - 1] = i_high_frac[
-        mask
-    ]
-    mask = j_high_frac > 0
-    j_weights[j_idx.fwd_idx[mask] + j_count[mask] - 1] = j_high_frac[
-        mask
-    ]
+    # Compute per-axis bin overlap weights independently for i and j.
+    i_weights, i_idx, i_count = _compute_axis_bin_weights(i_mapping, i_mapping_end)
+    j_weights, j_idx, j_count = _compute_axis_bin_weights(j_mapping, j_mapping_end)
     #
     # Get indexes for the 2-d array, i_count x j_count
     #
@@ -1929,6 +1898,80 @@ def compute_hard_case_bin_assignments(
     labels_hard = labels_1d[idx.rev_idx]
 
     return i_src_hard, j_src_hard, i_dest_hard, j_dest_hard, weight_hard, labels_hard
+
+
+def _compute_axis_bin_weights(mapping, mapping_end):
+    """Compute bin overlap weights for one axis of the mapping.
+
+    For each pixel, determines how much of its extent falls in each bin
+    along a single axis.  A pixel may fall wholly within a bin, straddle
+    two bins, or span one or more intermediate bins.
+
+    Args:
+        mapping: 1D array of start positions in bin space
+        mapping_end: 1D array of end positions in bin space
+
+    Returns:
+        Tuple of (weights, idx, count) where:
+        - weights: per-bin fractional area weights
+        - idx: ``centrosome.index.Indexes`` object for this axis
+        - count: 1D array of the number of bins touched by each pixel
+    """
+    #
+    # --- The number of pixels wholly spanned ---
+    #
+    span = numpy.maximum(numpy.floor(mapping_end) - numpy.ceil(mapping), 0)
+    #
+    # --- The fraction of a pixel covered by the lower straddle
+    #
+    low_straddle = mapping.astype(int) + 1 - mapping
+    #
+    # Segments that start at exact pixel boundaries and span
+    # whole pixels have low fractions that are 1. The span
+    # length needs to have these subtracted from it.
+    #
+    span[low_straddle == 1] -= 1
+    #
+    # --- the fraction covered by the upper straddle
+    #
+    high_straddle = mapping_end - mapping_end.astype(int)
+    #
+    # --- the total distance across the binning space
+    #
+    total = low_straddle + span + high_straddle
+    #
+    # --- The fraction in the lower straddle
+    #
+    low_frac = low_straddle / total
+    #
+    # --- The fraction in the upper straddle
+    #
+    high_frac = high_straddle / total
+    #
+    # later on, the high fraction will overwrite the low fraction
+    # for i and j hitting on a single pixel in the bin space
+    #
+    high_frac[(mapping.astype(int) == mapping_end.astype(int))] = 1
+    #
+    # --- The fraction in spans
+    #
+    span_frac = span / total
+    #
+    # --- The number of bins touched by each pixel
+    #
+    count = (
+        numpy.ceil(mapping_end) - numpy.floor(mapping)
+        ).astype(int)
+    #
+    # --- Calculate the weights for each pixel
+    #     along each axis.
+    #
+    idx = centrosome.index.Indexes([count])
+    weights = span_frac[idx.rev_idx]
+    weights[idx.fwd_idx] = low_frac
+    mask = high_frac > 0
+    weights[idx.fwd_idx[mask] + count[mask] - 1] = high_frac[mask]
+    return weights, idx, count
 
 
 def compute_bin_pixel_assignments(
@@ -2005,6 +2048,22 @@ def compute_bin_pixel_assignments(
     return i_src, j_src, i_dest, j_dest, weight, labels_src
 
 
+def _pad_and_reshape_bins(values, nexpected, shape):
+    """Pad a 1D array with NaN to *nexpected* length, then reshape.
+
+    Args:
+        values: 1D array of computed bin values
+        nexpected: total number of elements expected after padding
+        shape: target shape for the reshaped array
+
+    Returns:
+        Reshaped array of the given *shape*.
+    """
+    result = numpy.hstack((values, [numpy.nan] * (nexpected - len(values))))
+    result.shape = shape
+    return result
+
+
 def compute_bin_statistics(pixel_values, bin_number, weight, nworms, scales_shape):
     """Compute mean and standard deviation of intensity per measurement bin.
 
@@ -2047,12 +2106,7 @@ def compute_bin_statistics(pixel_values, bin_number, weight, nworms, scales_shap
     )
     bin_stds = numpy.sqrt(bin_vars)
     nexpected = numpy.prod(scales_shape) * nworms
-    bin_means = numpy.hstack(
-        (bin_means, [numpy.nan] * (nexpected - len(bin_means)))
-    )
-    bin_means.shape = (scales_shape[0], scales_shape[1], nworms)
-    bin_stds = numpy.hstack(
-        (bin_stds, [numpy.nan] * (nexpected - len(bin_stds)))
-    )
-    bin_stds.shape = (scales_shape[0], scales_shape[1], nworms)
+    target_shape = (scales_shape[0], scales_shape[1], nworms)
+    bin_means = _pad_and_reshape_bins(bin_means, nexpected, target_shape)
+    bin_stds = _pad_and_reshape_bins(bin_stds, nexpected, target_shape)
     return bin_means, bin_stds

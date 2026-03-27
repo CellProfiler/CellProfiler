@@ -11,7 +11,7 @@ from cellprofiler_core.setting.subscriber import (
 )
 
 from cellprofiler.modules import _help
-from cellprofiler_library.opts.measureimageintensity import IntensityMeasurementFormat, ALL_MEASUREMENTS
+from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, ALL_MEASUREMENTS
 from cellprofiler_library.modules._measureimageintensity import measure_image_intensity
 LOGGER = logging.getLogger(__name__)
 
@@ -264,17 +264,17 @@ class MeasureImageIntensity(Module):
             return lib_measurements.image.get(key, 0)
             
         all_features = [
-                ("Total intensity", get_val(IntensityMeasurementFormat.TOTAL_INTENSITY)),
-                ("Mean intensity", get_val(IntensityMeasurementFormat.MEAN_INTENSITY)),
-                ("Median intensity", get_val(IntensityMeasurementFormat.MEDIAN_INTENSITY)),
-                ("Std intensity", get_val(IntensityMeasurementFormat.STD_INTENSITY)),
-                ("MAD intensity", get_val(IntensityMeasurementFormat.MAD_INTENSITY)),
-                ("Min intensity", get_val(IntensityMeasurementFormat.MIN_INTENSITY)),
-                ("Max intensity", get_val(IntensityMeasurementFormat.MAX_INTENSITY)),
-                ("Pct maximal", get_val(IntensityMeasurementFormat.PERCENT_MAXIMAL)),
-                ("Lower quartile", get_val(IntensityMeasurementFormat.LOWER_QUARTILE)),
-                ("Upper quartile", get_val(IntensityMeasurementFormat.UPPER_QUARTILE)),
-                ("Total area", get_val(IntensityMeasurementFormat.TOTAL_AREA)),
+                ("Total intensity", get_val(TemplateMeasurementFormat.TOTAL_INTENSITY)),
+                ("Mean intensity", get_val(TemplateMeasurementFormat.MEAN_INTENSITY)),
+                ("Median intensity", get_val(TemplateMeasurementFormat.MEDIAN_INTENSITY)),
+                ("Std intensity", get_val(TemplateMeasurementFormat.STD_INTENSITY)),
+                ("MAD intensity", get_val(TemplateMeasurementFormat.MAD_INTENSITY)),
+                ("Min intensity", get_val(TemplateMeasurementFormat.MIN_INTENSITY)),
+                ("Max intensity", get_val(TemplateMeasurementFormat.MAX_INTENSITY)),
+                ("Pct maximal", get_val(TemplateMeasurementFormat.PERCENT_MAXIMAL)),
+                ("Lower quartile", get_val(TemplateMeasurementFormat.LOWER_QUARTILE)),
+                ("Upper quartile", get_val(TemplateMeasurementFormat.UPPER_QUARTILE)),
+                ("Total area", get_val(TemplateMeasurementFormat.TOTAL_AREA)),
         ]
         
         prefix = f"Intensity_Percentile_"
@@ -307,17 +307,17 @@ class MeasureImageIntensity(Module):
         """Return column definitions for measurements made by this module"""
         columns = []
         col_defs = [
-            (IntensityMeasurementFormat.TOTAL_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.MEAN_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.MEDIAN_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.STD_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.MAD_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.MIN_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.MAX_INTENSITY, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.TOTAL_AREA, COLTYPE_INTEGER),
-            (IntensityMeasurementFormat.PERCENT_MAXIMAL, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.LOWER_QUARTILE, COLTYPE_FLOAT),
-            (IntensityMeasurementFormat.UPPER_QUARTILE, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.TOTAL_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.MEAN_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.MEDIAN_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.STD_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.MAD_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.MIN_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.MAX_INTENSITY, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.TOTAL_AREA, COLTYPE_INTEGER),
+            (TemplateMeasurementFormat.PERCENT_MAXIMAL, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.LOWER_QUARTILE, COLTYPE_FLOAT),
+            (TemplateMeasurementFormat.UPPER_QUARTILE, COLTYPE_FLOAT),
         ]
         if self.wants_percentiles:
             percentiles = self.get_percentiles(self.percentiles.value, stop=False)

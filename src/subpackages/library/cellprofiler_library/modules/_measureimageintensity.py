@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import List, Annotated, Optional
 from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.functions.measurement import measure_image_intensities
-from cellprofiler_library.opts.measureimageintensity import IntensityMeasurementFormat
+from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat
 from cellprofiler_library.measurement_model import LibraryMeasurements
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -39,17 +39,17 @@ def measure_image_intensity(
     measurements = LibraryMeasurements()
     
     # Add measurements
-    measurements.add_image_measurement(IntensityMeasurementFormat.TOTAL_INTENSITY % measurement_name, pixel_sum)
-    measurements.add_image_measurement(IntensityMeasurementFormat.MEAN_INTENSITY % measurement_name, pixel_mean)
-    measurements.add_image_measurement(IntensityMeasurementFormat.MEDIAN_INTENSITY % measurement_name, pixel_median)
-    measurements.add_image_measurement(IntensityMeasurementFormat.STD_INTENSITY % measurement_name, pixel_std)
-    measurements.add_image_measurement(IntensityMeasurementFormat.MAD_INTENSITY % measurement_name, pixel_mad)
-    measurements.add_image_measurement(IntensityMeasurementFormat.MAX_INTENSITY % measurement_name, pixel_max)
-    measurements.add_image_measurement(IntensityMeasurementFormat.MIN_INTENSITY % measurement_name, pixel_min)
-    measurements.add_image_measurement(IntensityMeasurementFormat.TOTAL_AREA % measurement_name, pixel_count)
-    measurements.add_image_measurement(IntensityMeasurementFormat.PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
-    measurements.add_image_measurement(IntensityMeasurementFormat.LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
-    measurements.add_image_measurement(IntensityMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
+    measurements.add_image_measurement(TemplateMeasurementFormat.TOTAL_INTENSITY % measurement_name, pixel_sum)
+    measurements.add_image_measurement(TemplateMeasurementFormat.MEAN_INTENSITY % measurement_name, pixel_mean)
+    measurements.add_image_measurement(TemplateMeasurementFormat.MEDIAN_INTENSITY % measurement_name, pixel_median)
+    measurements.add_image_measurement(TemplateMeasurementFormat.STD_INTENSITY % measurement_name, pixel_std)
+    measurements.add_image_measurement(TemplateMeasurementFormat.MAD_INTENSITY % measurement_name, pixel_mad)
+    measurements.add_image_measurement(TemplateMeasurementFormat.MAX_INTENSITY % measurement_name, pixel_max)
+    measurements.add_image_measurement(TemplateMeasurementFormat.MIN_INTENSITY % measurement_name, pixel_min)
+    measurements.add_image_measurement(TemplateMeasurementFormat.TOTAL_AREA % measurement_name, pixel_count)
+    measurements.add_image_measurement(TemplateMeasurementFormat.PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
+    measurements.add_image_measurement(TemplateMeasurementFormat.LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
+    measurements.add_image_measurement(TemplateMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
     
     for percentile, value in percentile_measures.items():
         measurements.add_image_measurement(f"Intensity_Percentile_{percentile}_{measurement_name}", value)

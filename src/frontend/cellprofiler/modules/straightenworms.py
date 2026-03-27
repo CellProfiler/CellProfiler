@@ -134,6 +134,8 @@ from scipy.interpolate import interp1d
 from cellprofiler_library.opts.untangleworms import TemplateMeasurementFormat, Feature, C_WORM
 from cellprofiler_library.modules._untangleworms import read_params as _read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
+from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -468,6 +470,7 @@ of the straightened worms.""",
         assert isinstance(orig_objects, Objects)
         meas = workspace.measurements
         assert isinstance(meas, Measurements)
+        meas = meas.to_library_measurements()
         #
         # Sort the features by control point number:
         # Worm_ControlPointX_2 < Worm_ControlPointX_10
@@ -479,6 +482,7 @@ of the straightened worms.""",
         cp_y_feats = [
             f for f in features if f.startswith("_".join((C_WORM, Feature.CONTROL_POINT_Y)))
         ]
+        # TODO: convert these measurements to LibraryMeasurements before passing to library?
         ncontrolpoints = len(cp_x_feats)
         if ncontrolpoints == 0:
             #
@@ -502,15 +506,14 @@ of the straightened worms.""",
 
             cp_x_feats.sort(key=functools.cmp_to_key(sort_fn))
             cp_y_feats.sort(key=functools.cmp_to_key(sort_fn))
-
             control_points = numpy.array(
                 [
-                    [meas.get_current_measurement(objects_name, f) for f in cp]
+                    [meas.get_measurement(objects_name, f) for f in cp]
                     for cp in (cp_y_feats, cp_x_feats)
                 ]
             )
             m_length = TemplateMeasurementFormat.LENGTH % C_WORM
-            lengths = numpy.ceil(meas.get_current_measurement(objects_name, m_length))
+            lengths = numpy.ceil(meas.get_measurement(objects_name, m_length))
         
         #
         # This is a list of tuples - first element in the tuples is
@@ -655,9 +658,7 @@ of the straightened worms.""",
             )
             # TODO: Add comment in PR about this: It was moved from inside the loop to outside. params.radii_from_training likely doesn't change during the loop.
             radii = numpy.array(params.radii_from_training)
-
             for i_dim, j_dim, scales in griddings:
-                # assert j_center, i_index, i_index_frac, r not used below
                 labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end = (
                     compute_worm_pixel_fractions(
                         labels, min_i, heights, width, radii,

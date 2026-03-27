@@ -1,19 +1,34 @@
 from enum import Enum
 
+C_INTENSITY = "Intensity"
 
-class IntensityMeasurementFormat(str, Enum):
-    TOTAL_INTENSITY = "Intensity_TotalIntensity_%s"
-    MEAN_INTENSITY = "Intensity_MeanIntensity_%s"
-    MEDIAN_INTENSITY = "Intensity_MedianIntensity_%s"
-    STD_INTENSITY = "Intensity_StdIntensity_%s"
-    MAD_INTENSITY = "Intensity_MADIntensity_%s"
-    MAX_INTENSITY = "Intensity_MaxIntensity_%s"
-    MIN_INTENSITY = "Intensity_MinIntensity_%s"
-    TOTAL_AREA = "Intensity_TotalArea_%s"
-    PERCENT_MAXIMAL = "Intensity_PercentMaximal_%s"
-    LOWER_QUARTILE = "Intensity_LowerQuartileIntensity_%s"
-    UPPER_QUARTILE  = "Intensity_UpperQuartileIntensity_%s"
+class Feature(str, Enum):
+    """Enumeration of raw intensity measurement features."""
+    TOTAL_INTENSITY  = "TotalIntensity"
+    MEAN_INTENSITY   = "MeanIntensity"
+    MEDIAN_INTENSITY = "MedianIntensity"
+    STD_INTENSITY    = "StdIntensity"
+    MAD_INTENSITY    = "MADIntensity"
+    MAX_INTENSITY    = "MaxIntensity"
+    MIN_INTENSITY    = "MinIntensity"
+    TOTAL_AREA       = "TotalArea"
+    PERCENT_MAXIMAL  = "PercentMaximal"
+    LOWER_QUARTILE   = "LowerQuartileIntensity"
+    UPPER_QUARTILE   = "UpperQuartileIntensity"
 
-ALL_MEASUREMENTS = [
-    x.value.split("_")[1] for x in IntensityMeasurementFormat
-]
+class TemplateMeasurementFormat(str):
+    """A string subclass for measurement formatting."""
+    TOTAL_INTENSITY = f"{C_INTENSITY}_{Feature.TOTAL_INTENSITY.value}_%s"
+    MEAN_INTENSITY  = f"{C_INTENSITY}_{Feature.MEAN_INTENSITY.value}_%s"
+    MEDIAN_INTENSITY = f"{C_INTENSITY}_{Feature.MEDIAN_INTENSITY.value}_%s"
+    STD_INTENSITY   = f"{C_INTENSITY}_{Feature.STD_INTENSITY.value}_%s"
+    MAD_INTENSITY   = f"{C_INTENSITY}_{Feature.MAD_INTENSITY.value}_%s"
+    MAX_INTENSITY   = f"{C_INTENSITY}_{Feature.MAX_INTENSITY.value}_%s"
+    MIN_INTENSITY   = f"{C_INTENSITY}_{Feature.MIN_INTENSITY.value}_%s"
+    TOTAL_AREA      = f"{C_INTENSITY}_{Feature.TOTAL_AREA.value}_%s"
+    PERCENT_MAXIMAL = f"{C_INTENSITY}_{Feature.PERCENT_MAXIMAL.value}_%s"
+    LOWER_QUARTILE  = f"{C_INTENSITY}_{Feature.LOWER_QUARTILE.value}_%s"
+    UPPER_QUARTILE  = f"{C_INTENSITY}_{Feature.UPPER_QUARTILE.value}_%s"
+
+# Iterates over the Enum to get the list of raw strings
+ALL_MEASUREMENTS = [x.value for x in Feature]

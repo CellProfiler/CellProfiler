@@ -16,6 +16,7 @@ import cellprofiler.modules.measureobjectintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.measureobjectintensity import C_INTENSITY, ALL_LOCATION_MEASUREMENTS, ALL_MEASUREMENTS, IntensityFeature
 
 IMAGE_NAME = "MyImage"
 OBJECT_NAME = "MyObjects"
@@ -131,7 +132,7 @@ def test_supplied_measurements(module):
     expected_categories = tuple(
         sorted(
             [
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
+                C_INTENSITY,
                 C_LOCATION,
             ]
         )
@@ -144,11 +145,11 @@ def test_supplied_measurements(module):
     assert module.get_categories(None, "Foo") == []
 
     measurements = module.get_measurements(
-        None, "MyObjects1", cellprofiler.modules.measureobjectintensity.INTENSITY
+        None, "MyObjects1", C_INTENSITY
     )
 
     assert len(measurements) == len(
-        cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS
+        ALL_MEASUREMENTS
     )
 
     measurements = module.get_measurements(
@@ -156,12 +157,12 @@ def test_supplied_measurements(module):
     )
 
     assert len(measurements) == len(
-        cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+        ALL_LOCATION_MEASUREMENTS
     )
 
     assert all(
         [
-            m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+            m in ALL_LOCATION_MEASUREMENTS
             for m in measurements
         ]
     )
@@ -169,8 +170,8 @@ def test_supplied_measurements(module):
     assert module.get_measurement_images(
         None,
         "MyObjects1",
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.MAX_INTENSITY.value,
     ) == ["MyImage"]
 
 
@@ -183,8 +184,8 @@ def test_get_measurement_columns(module):
     columns = module.get_measurement_columns(None)
 
     assert len(columns) == 2 * (
-        len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS)
-        + len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)
+        len(ALL_MEASUREMENTS)
+        + len(ALL_LOCATION_MEASUREMENTS)
     )
 
     for column in columns:
@@ -195,19 +196,19 @@ def test_get_measurement_columns(module):
         category = column[1].split("_")[0]
 
         assert category in (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            C_INTENSITY,
             C_LOCATION,
         )
 
-        if category == cellprofiler.modules.measureobjectintensity.INTENSITY:
+        if category == C_INTENSITY:
             assert column[1][column[1].find("_") + 1 :] in [
                 m + "_MyImage"
-                for m in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS
+                for m in ALL_MEASUREMENTS
             ]
         else:
             assert column[1][column[1].find("_") + 1 :] in [
                 m + "_MyImage"
-                for m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS
+                for m in ALL_LOCATION_MEASUREMENTS
             ]
 
 
@@ -221,12 +222,12 @@ def test_zero(image, measurements, module, objects, workspace):
 
     for category, features in (
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+            C_INTENSITY,
+            ALL_MEASUREMENTS,
         ),
         (
             C_LOCATION,
-            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+            ALL_LOCATION_MEASUREMENTS,
         ),
     ):
         for meas_name in features:
@@ -254,9 +255,9 @@ def test_masked(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    for meas_name in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS:
+    for meas_name in ALL_MEASUREMENTS:
         feature_name = "%s_%s_%s" % (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            C_INTENSITY,
             meas_name,
             "MyImage",
         )
@@ -290,83 +291,83 @@ def test_one(image, measurements, module, objects, workspace):
 
     for category, meas_name, value in (
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.INTEGRATED_INTENSITY.value,
             9,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.MEAN_INTENSITY.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.STD_INTENSITY.value,
             0,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.MIN_INTENSITY.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.MAX_INTENSITY.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE,
+            C_INTENSITY,
+            IntensityFeature.INTEGRATED_INTENSITY_EDGE.value,
             8,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE,
+            C_INTENSITY,
+            IntensityFeature.MEAN_INTENSITY_EDGE.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
+            C_INTENSITY,
+            IntensityFeature.STD_INTENSITY_EDGE.value,
             0,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE,
+            C_INTENSITY,
+            IntensityFeature.MIN_INTENSITY_EDGE.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE,
+            C_INTENSITY,
+            IntensityFeature.MAX_INTENSITY_EDGE.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+            C_INTENSITY,
+            IntensityFeature.MASS_DISPLACEMENT.value,
             0,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.LOWER_QUARTILE_INTENSITY.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.MEDIAN_INTENSITY.value,
             1,
         ),
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+            C_INTENSITY,
+            IntensityFeature.UPPER_QUARTILE_INTENSITY.value,
             1,
         ),
         (
             C_LOCATION,
-            cellprofiler.modules.measureobjectintensity.LOC_CMI_X,
+            IntensityFeature.LOC_CMI_X.value,
             3,
         ),
         (
             C_LOCATION,
-            cellprofiler.modules.measureobjectintensity.LOC_CMI_Y,
+            IntensityFeature.LOC_CMI_Y.value,
             2,
         ),
     ):
@@ -406,24 +407,24 @@ def test_one_masked(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     for meas_name, value in (
-        (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
-        (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
-        (cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
-        (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
-        (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
-        (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
-        (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
-        (cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
-        (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
-        (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
-        (cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
-        (cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
-        (cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
-        (cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 0),
-        (cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1),
+        (IntensityFeature.INTEGRATED_INTENSITY.value, 9),
+        (IntensityFeature.MEAN_INTENSITY.value, 1),
+        (IntensityFeature.STD_INTENSITY.value, 0),
+        (IntensityFeature.MIN_INTENSITY.value, 1),
+        (IntensityFeature.MAX_INTENSITY.value, 1),
+        (IntensityFeature.INTEGRATED_INTENSITY_EDGE.value, 8),
+        (IntensityFeature.MEAN_INTENSITY_EDGE.value, 1),
+        (IntensityFeature.STD_INTENSITY_EDGE.value, 0),
+        (IntensityFeature.MIN_INTENSITY_EDGE.value, 1),
+        (IntensityFeature.MAX_INTENSITY_EDGE.value, 1),
+        (IntensityFeature.MASS_DISPLACEMENT.value, 0),
+        (IntensityFeature.LOWER_QUARTILE_INTENSITY.value, 1),
+        (IntensityFeature.MEDIAN_INTENSITY.value, 1),
+        (IntensityFeature.MAD_INTENSITY.value, 0),
+        (IntensityFeature.UPPER_QUARTILE_INTENSITY.value, 1),
     ):
         feature_name = "%s_%s_%s" % (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            C_INTENSITY,
             meas_name,
             "MyImage",
         )
@@ -464,8 +465,8 @@ def test_intensity_location(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     for feature, value in (
-        (cellprofiler.modules.measureobjectintensity.LOC_MAX_X, 5),
-        (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2),
+        (IntensityFeature.LOC_MAX_X.value, 5),
+        (IntensityFeature.LOC_MAX_Y.value, 2),
     ):
         feature_name = "%s_%s_%s" % (
             C_LOCATION,
@@ -530,8 +531,8 @@ def test_mass_displacement(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+        C_INTENSITY,
+        IntensityFeature.MASS_DISPLACEMENT.value,
         "MyImage",
     )
 
@@ -602,8 +603,8 @@ def test_mass_displacement_masked(image, measurements, module, objects, workspac
     module.run(workspace)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+        C_INTENSITY,
+        IntensityFeature.MASS_DISPLACEMENT.value,
         "MyImage",
     )
 
@@ -633,8 +634,8 @@ def test_quartiles_uniform(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.LOWER_QUARTILE_INTENSITY.value,
         "MyImage",
     )
 
@@ -643,8 +644,8 @@ def test_quartiles_uniform(image, measurements, module, objects, workspace):
     numpy.testing.assert_almost_equal(data[0], 0.25, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.MEDIAN_INTENSITY.value,
         "MyImage",
     )
 
@@ -653,8 +654,8 @@ def test_quartiles_uniform(image, measurements, module, objects, workspace):
     numpy.testing.assert_almost_equal(data[0], 0.50, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MAD_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.MAD_INTENSITY.value,
         "MyImage",
     )
 
@@ -663,8 +664,8 @@ def test_quartiles_uniform(image, measurements, module, objects, workspace):
     numpy.testing.assert_almost_equal(data[0], 0.25, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.UPPER_QUARTILE_INTENSITY.value,
         "MyImage",
     )
 
@@ -717,8 +718,8 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
     module.run(workspace)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.LOWER_QUARTILE_INTENSITY.value,
         "MyImage",
     )
 
@@ -733,8 +734,8 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
     numpy.testing.assert_almost_equal(data[3], 1.0 / 16.0, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.MEDIAN_INTENSITY.value,
         "MyImage",
     )
 
@@ -749,8 +750,8 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
     numpy.testing.assert_almost_equal(data[3], 1.0 / 8.0, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.UPPER_QUARTILE_INTENSITY.value,
         "MyImage",
     )
 
@@ -765,8 +766,8 @@ def test_quartiles_four_objects(image, measurements, module, objects, workspace)
     numpy.testing.assert_almost_equal(data[3], 3.0 / 16.0, 2)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.MAD_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.MAD_INTENSITY.value,
         "MyImage",
     )
 
@@ -812,8 +813,8 @@ def test_median_intensity_masked(image, measurements, module, objects, workspace
         OBJECT_NAME,
         "_".join(
             (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+                C_INTENSITY,
+                IntensityFeature.MEDIAN_INTENSITY.value,
                 IMAGE_NAME,
             )
         ),
@@ -845,8 +846,8 @@ def test_std_intensity(image, measurements, module, objects, workspace):
         OBJECT_NAME,
         "_".join(
             (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
+                C_INTENSITY,
+                IntensityFeature.STD_INTENSITY.value,
                 IMAGE_NAME,
             )
         ),
@@ -885,8 +886,8 @@ def test_std_intensity_edge(image, measurements, module, objects, workspace):
         OBJECT_NAME,
         "_".join(
             (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
+                C_INTENSITY,
+                IntensityFeature.STD_INTENSITY_EDGE.value,
                 IMAGE_NAME,
             )
         ),
@@ -935,12 +936,12 @@ def test_ijv(image, module, objects, workspace):
 
     for cname, fnames in (
         (
-            cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+            C_INTENSITY,
+            ALL_MEASUREMENTS,
         ),
         (
             C_LOCATION,
-            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+            ALL_LOCATION_MEASUREMENTS,
         ),
     ):
         for fname in fnames:
@@ -994,8 +995,8 @@ def test_wrong_image_size(image, measurements, module, objects, workspace):
     module.run(workspace)
 
     feature_name = "%s_%s_%s" % (
-        cellprofiler.modules.measureobjectintensity.INTENSITY,
-        cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
+        C_INTENSITY,
+        IntensityFeature.INTEGRATED_INTENSITY.value,
         "MyImage",
     )
 

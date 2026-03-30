@@ -1,9 +1,4 @@
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.outline
 import numpy
-import scipy.ndimage
-import skimage.segmentation
 from cellprofiler_core.constants.measurement import C_LOCATION, COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, ValidationError
@@ -11,12 +6,9 @@ from cellprofiler_core.setting.subscriber import (
     ImageListSubscriber,
     LabelListSubscriber,
 )
-from cellprofiler_core.utilities.core.object import crop_labels_and_image
-from typing import Tuple
 from cellprofiler.modules import _help
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
-from numpy.typing import NDArray
 from cellprofiler_library.modules._measureobjectintensity import measure_object_intensity
+from cellprofiler_library.opts.measureobjectintensity import ALL_MEASUREMENTS, ALL_LOCATION_MEASUREMENTS, IntensityFeature, C_INTENSITY
 
 __doc__ = """
 MeasureObjectIntensity
@@ -88,56 +80,6 @@ Measurements made by this module
 """.format(
     **{"HELP_ON_MEASURING_INTENSITIES": _help.HELP_ON_MEASURING_INTENSITIES}
 )
-
-INTENSITY = "Intensity"
-INTEGRATED_INTENSITY = "IntegratedIntensity"
-MEAN_INTENSITY = "MeanIntensity"
-STD_INTENSITY = "StdIntensity"
-MIN_INTENSITY = "MinIntensity"
-MAX_INTENSITY = "MaxIntensity"
-INTEGRATED_INTENSITY_EDGE = "IntegratedIntensityEdge"
-MEAN_INTENSITY_EDGE = "MeanIntensityEdge"
-STD_INTENSITY_EDGE = "StdIntensityEdge"
-MIN_INTENSITY_EDGE = "MinIntensityEdge"
-MAX_INTENSITY_EDGE = "MaxIntensityEdge"
-MASS_DISPLACEMENT = "MassDisplacement"
-LOWER_QUARTILE_INTENSITY = "LowerQuartileIntensity"
-MEDIAN_INTENSITY = "MedianIntensity"
-MAD_INTENSITY = "MADIntensity"
-UPPER_QUARTILE_INTENSITY = "UpperQuartileIntensity"
-LOC_CMI_X = "CenterMassIntensity_X"
-LOC_CMI_Y = "CenterMassIntensity_Y"
-LOC_CMI_Z = "CenterMassIntensity_Z"
-LOC_MAX_X = "MaxIntensity_X"
-LOC_MAX_Y = "MaxIntensity_Y"
-LOC_MAX_Z = "MaxIntensity_Z"
-
-ALL_MEASUREMENTS = [
-    INTEGRATED_INTENSITY,
-    MEAN_INTENSITY,
-    STD_INTENSITY,
-    MIN_INTENSITY,
-    MAX_INTENSITY,
-    INTEGRATED_INTENSITY_EDGE,
-    MEAN_INTENSITY_EDGE,
-    STD_INTENSITY_EDGE,
-    MIN_INTENSITY_EDGE,
-    MAX_INTENSITY_EDGE,
-    MASS_DISPLACEMENT,
-    LOWER_QUARTILE_INTENSITY,
-    MEDIAN_INTENSITY,
-    MAD_INTENSITY,
-    UPPER_QUARTILE_INTENSITY,
-]
-ALL_LOCATION_MEASUREMENTS = [
-    LOC_CMI_X,
-    LOC_CMI_Y,
-    LOC_CMI_Z,
-    LOC_MAX_X,
-    LOC_MAX_Y,
-    LOC_MAX_Z,
-]
-
 
 class MeasureObjectIntensity(Module):
     module_name = "MeasureObjectIntensity"
@@ -213,7 +155,7 @@ class MeasureObjectIntensity(Module):
         for image_name in self.images_list.value:
             for object_name in self.objects_list.value:
                 for category, features in (
-                    (INTENSITY, ALL_MEASUREMENTS),
+                    (C_INTENSITY, ALL_MEASUREMENTS),
                     (C_LOCATION, ALL_LOCATION_MEASUREMENTS,),
                 ):
                     for feature in features:
@@ -236,14 +178,14 @@ class MeasureObjectIntensity(Module):
         """
         for object_set in self.objects_list.value:
             if object_set == object_name:
-                return [INTENSITY, C_LOCATION]
+                return [C_INTENSITY, C_LOCATION]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
         if category == C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
-        elif category == INTENSITY:
+        elif category == C_INTENSITY:
             all_measurements = ALL_MEASUREMENTS
         else:
             return []
@@ -254,7 +196,7 @@ class MeasureObjectIntensity(Module):
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         """Get the images used to make the given measurement in the given category on the given object"""
-        if category == INTENSITY:
+        if category == C_INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []
         elif category == C_LOCATION:
@@ -277,7 +219,7 @@ class MeasureObjectIntensity(Module):
                 "Median",
                 "STD",
             )
-            workspace.display_data.statistics = statistics = []
+            workspace.display_data.statistics = []
         if len(self.images_list.value) == 0 or len(self.objects_list.value) == 0:
             raise ValueError(
                 "This module needs at least 1 image and object set selected"
@@ -291,10 +233,7 @@ class MeasureObjectIntensity(Module):
                     )
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
-                image_has_mask = image.has_mask
-                image_mask = image.mask
-
-
+                image_mask = image.mask if image.has_mask else None
 
                 objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
@@ -307,33 +246,32 @@ class MeasureObjectIntensity(Module):
                     object_labels=objects.get_labels(),
                     nobjects=nobjects,
                     image_dimensions=image.dimensions,
-                    image_has_mask=image.has_mask
                 )
 
                 m = workspace.measurements
 
                 for category, feature_name in (
-                    (INTENSITY, INTEGRATED_INTENSITY),
-                    (INTENSITY, MEAN_INTENSITY),
-                    (INTENSITY, STD_INTENSITY),
-                    (INTENSITY, MIN_INTENSITY),
-                    (INTENSITY, MAX_INTENSITY),
-                    (INTENSITY, INTEGRATED_INTENSITY_EDGE),
-                    (INTENSITY, MEAN_INTENSITY_EDGE),
-                    (INTENSITY, STD_INTENSITY_EDGE),
-                    (INTENSITY, MIN_INTENSITY_EDGE),
-                    (INTENSITY, MAX_INTENSITY_EDGE),
-                    (INTENSITY, MASS_DISPLACEMENT),
-                    (INTENSITY, LOWER_QUARTILE_INTENSITY),
-                    (INTENSITY, MEDIAN_INTENSITY),
-                    (INTENSITY, MAD_INTENSITY),
-                    (INTENSITY, UPPER_QUARTILE_INTENSITY),
-                    (C_LOCATION, LOC_CMI_X),
-                    (C_LOCATION, LOC_CMI_Y),
-                    (C_LOCATION, LOC_CMI_Z),
-                    (C_LOCATION, LOC_MAX_X),
-                    (C_LOCATION, LOC_MAX_Y),
-                    (C_LOCATION, LOC_MAX_Z),
+                    (C_INTENSITY, IntensityFeature.INTEGRATED_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.MEAN_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.STD_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.MIN_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.MAX_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.INTEGRATED_INTENSITY_EDGE.value),
+                    (C_INTENSITY, IntensityFeature.MEAN_INTENSITY_EDGE.value),
+                    (C_INTENSITY, IntensityFeature.STD_INTENSITY_EDGE.value),
+                    (C_INTENSITY, IntensityFeature.MIN_INTENSITY_EDGE.value),
+                    (C_INTENSITY, IntensityFeature.MAX_INTENSITY_EDGE.value),
+                    (C_INTENSITY, IntensityFeature.MASS_DISPLACEMENT.value),
+                    (C_INTENSITY, IntensityFeature.LOWER_QUARTILE_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.MEDIAN_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.MAD_INTENSITY.value),
+                    (C_INTENSITY, IntensityFeature.UPPER_QUARTILE_INTENSITY.value),
+                    (C_LOCATION, IntensityFeature.LOC_CMI_X.value),
+                    (C_LOCATION, IntensityFeature.LOC_CMI_Y.value),
+                    (C_LOCATION, IntensityFeature.LOC_CMI_Z.value),
+                    (C_LOCATION, IntensityFeature.LOC_MAX_X.value),
+                    (C_LOCATION, IntensityFeature.LOC_MAX_Y.value),
+                    (C_LOCATION, IntensityFeature.LOC_MAX_Z.value),
                 ):
                     measurement_name = "{}_{}_{}".format(
                         category, feature_name, image_name
@@ -346,7 +284,7 @@ class MeasureObjectIntensity(Module):
                         m.add_measurement(object_name, measurement_name, measurement)
                         
                         if self.show_window and len(measurement) > 0:
-                            statistics.append(
+                            workspace.display_data.statistics.append(
                                 (
                                     image_name,
                                     object_name,

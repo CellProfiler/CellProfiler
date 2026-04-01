@@ -42,6 +42,7 @@ from cellprofiler_core.preferences import get_secondary_outline_color
 from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import get_title_font_name
 from cellprofiler_core.preferences import get_title_font_size
+from cellprofiler_core.preferences import get_table_font_name
 from cellprofiler_core.utilities.core.object import overlay_labels
 
 from ._navigation_toolbar import NavigationToolbar
@@ -2226,6 +2227,22 @@ class Figure(wx.Frame):
         nrows = len(statistics)
         ncols = 0 if nrows == 0 else len(statistics[0])
         ctrl.CreateGrid(nrows, ncols)
+        table_cell_font = wx.Font(
+            ctrl.Font.GetPointSize(),
+            ctrl.Font.GetFamily(),
+            ctrl.Font.GetStyle(),
+            wx.FONTWEIGHT_NORMAL,
+            faceName=get_table_font_name(),
+        )
+        table_label_font = wx.Font(
+            ctrl.Font.GetPointSize(),
+            ctrl.Font.GetFamily(),
+            ctrl.Font.GetStyle(),
+            wx.FONTWEIGHT_BOLD,
+            faceName=get_table_font_name(),
+        )
+        ctrl.SetLabelFont(table_label_font)
+        ctrl.SetDefaultCellFont(table_cell_font)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
                 ctrl.SetColLabelValue(i, str(value))

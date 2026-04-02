@@ -1,9 +1,9 @@
 import numpy
 from numpy.typing import NDArray
-from typing import Optional, Tuple, Annotated, Dict, List, Any
+from typing import Optional, Tuple, Annotated
 from pydantic import Field, validate_call, ConfigDict
 
-from cellprofiler_library.types import ObjectSegmentation, ObjectLabelSet
+from cellprofiler_library.types import ObjectSegmentation
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectneighbors import (
     DistanceMethod as NeighborsDistanceMethod,
@@ -12,7 +12,6 @@ from cellprofiler_library.opts.measureobjectneighbors import (
     C_NEIGHBORS
 )
 from cellprofiler_library.functions.measurement import measure_object_neighbors as _measure_object_neighbors
-from cellprofiler_library.functions.segmentation import cast_labels_to_label_set, convert_label_set_to_ijv, indices_from_ijv, areas_from_ijv
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_neighbors(

@@ -328,6 +328,7 @@ previously discarded objects.""".format(
         assert isinstance(m, Measurements)
         image_set = workspace.image_set
         
+        # TODO: #5122 Replace the three loops below with a single call to `add_library_measurements_to_worksapce_measurements()`
         # Record Image Measurements
         for feature_name, value in measurements.image.items():
             m.add_image_measurement(feature_name, value)

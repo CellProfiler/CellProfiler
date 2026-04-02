@@ -132,9 +132,11 @@ from cellprofiler_core.utilities.core.module.identify import (
 from scipy.interpolate import interp1d
 
 from cellprofiler.modules.untangleworms import C_WORM
-from cellprofiler.modules.untangleworms import TemplateMeasurementFormat, Feature
+from cellprofiler_library.opts.untangleworms import TemplateMeasurementFormat, Feature
 from cellprofiler.modules.untangleworms import read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
+from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -149,6 +151,12 @@ FLIP_NONE = "Do not align"
 FLIP_TOP = "Top brightest"
 FLIP_BOTTOM = "Bottom brightest"
 FLIP_MANUAL = "Flip manually"
+
+K_PIXEL_DATA = "pixel_data"
+K_MASK = "mask"
+K_NAME = "name"
+K_PARENT_IMAGE = "__parent_image"
+K_PARENT_IMAGE_NAME = "__parent_image_name"
 
 """The index of the image count setting (# of images to process)"""
 IDX_IMAGE_COUNT_V1 = 5
@@ -444,11 +452,6 @@ of the straightened worms.""",
         for i in range(1, nimages):
             self.add_image()
 
-    K_PIXEL_DATA = "pixel_data"
-    K_MASK = "mask"
-    K_NAME = "name"
-    K_PARENT_IMAGE = "__parent_image"
-    K_PARENT_IMAGE_NAME = "__parent_image_name"
 
     class InteractionCancelledException(RuntimeError):
         def __init__(self, *args):
@@ -466,27 +469,30 @@ of the straightened worms.""",
         objects_name = self.objects_name.value
         orig_objects = object_set.get_objects(objects_name)
         assert isinstance(orig_objects, Objects)
-        m = workspace.measurements
-        assert isinstance(m, Measurements)
+        meas = workspace.measurements
+        assert isinstance(meas, Measurements)
+        meas = meas.to_library_measurements()
         #
         # Sort the features by control point number:
         # Worm_ControlPointX_2 < Worm_ControlPointX_10
         #
-        features = m.get_feature_names(objects_name)
-        cpx = [
+        features = meas.get_feature_names(objects_name)
+        cp_x_feats = [
             f for f in features if f.startswith("_".join((C_WORM, Feature.CONTROL_POINT_X)))
         ]
-        cpy = [
+        cp_y_feats = [
             f for f in features if f.startswith("_".join((C_WORM, Feature.CONTROL_POINT_Y)))
         ]
-        ncontrolpoints = len(cpx)
+        # TODO: convert these measurements to LibraryMeasurements before passing to library?
+        ncontrolpoints = len(cp_x_feats)
         if ncontrolpoints == 0:
             #
             # Recalculate control points.
             #
+            # TODO: do we want this to be in library?
             params = self.read_params(workspace)
             ncontrolpoints = params.num_control_points
-            all_labels = [l for l, idx in orig_objects.get_labels()]
+            all_labels = [lbl for lbl, idx in orig_objects.get_labels()]
             control_points, lengths = recalculate_single_worm_control_points(
                 all_labels, ncontrolpoints
             )
@@ -499,139 +505,47 @@ of the straightened worms.""",
                 bcp = int(b.split("_")[-1])
                 return cellprofiler_core.utilities.legacy.cmp(acp, bcp)
 
-            cpx.sort(key=functools.cmp_to_key(sort_fn))
-            cpy.sort(key=functools.cmp_to_key(sort_fn))
-
+            cp_x_feats.sort(key=functools.cmp_to_key(sort_fn))
+            cp_y_feats.sort(key=functools.cmp_to_key(sort_fn))
             control_points = numpy.array(
                 [
-                    [m.get_current_measurement(objects_name, f) for f in cp]
-                    for cp in (cpy, cpx)
+                    [meas.get_measurement(objects_name, f) for f in cp]
+                    for cp in (cp_y_feats, cp_x_feats)
                 ]
             )
             m_length = TemplateMeasurementFormat.LENGTH % C_WORM
-            lengths = numpy.ceil(m.get_current_measurement(objects_name, m_length))
-
-        nworms = len(lengths)
-        half_width = self.width.value // 2
-        width = 2 * half_width + 1
-        if nworms == 0:
-            shape = (width, width)
-        else:
-            shape = (int(numpy.max(lengths)) + width, nworms * width)
-        labels = numpy.zeros(shape, int)
-        #
-        # ix and jx are the coordinates of the straightened pixel in the
-        # original space.
-        #
-        ix = numpy.zeros(shape)
-        jx = numpy.zeros(shape)
+            lengths = numpy.ceil(meas.get_measurement(objects_name, m_length))
+        
         #
         # This is a list of tuples - first element in the tuples is
         # a labels matrix, second is a list of indexes in the matrix.
         # We need this for overlapping worms.
         #
         orig_labels_and_indexes = orig_objects.get_labels()
+
         #
-        # Handle each of the worm splines separately
+        # Compute coordinate mapping for straightened worms
         #
-        for i in range(nworms):
-            if lengths[i] == 0:
-                continue
-            object_number = i + 1
-            orig_labels = [
-                x
-                for x, y in orig_labels_and_indexes
-                if object_number in y and object_number in x
-            ]
-            if len(orig_labels) == 0:
-                continue
-            orig_labels = orig_labels[0]
-
-            ii = control_points[0, :, i]
-            jj = control_points[1, :, i]
-
-            si = interp1d(numpy.linspace(0, lengths[i], ncontrolpoints), ii)
-            sj = interp1d(numpy.linspace(0, lengths[i], ncontrolpoints), jj)
-            #
-            # The coordinates of "length" points along the worm
-            #
-            ci = si(numpy.arange(0, int(lengths[i]) + 1))
-            cj = sj(numpy.arange(0, int(lengths[i]) + 1))
-            #
-            # Find the normals at each point by taking the derivative,
-            # and twisting by 90 degrees.
-            #
-            di = ci[1:] - ci[:-1]
-            di = numpy.hstack([[di[0]], di])
-            dj = cj[1:] - cj[:-1]
-            dj = numpy.hstack([[dj[0]], dj])
-            ni = -dj / numpy.sqrt(di ** 2 + dj ** 2)
-            nj = di / numpy.sqrt(di ** 2 + dj ** 2)
-            #
-            # Extend the worm out from the head and tail by the width
-            #
-            ci = numpy.hstack(
-                [
-                    numpy.arange(-half_width, 0) * nj[0] + ci[0],
-                    ci,
-                    numpy.arange(1, half_width + 1) * nj[-1] + ci[-1],
-                ]
+        width = self.width.value
+        flip_image_pixel_data = None
+        flip_image_mask = None
+        if self.flip_worms in (FLIP_TOP, FLIP_BOTTOM):
+            flip_image = image_set.get_image(
+                self.flip_image.value, must_be_grayscale=True
             )
-            cj = numpy.hstack(
-                [
-                    numpy.arange(-half_width, 0) * (-ni[0]) + cj[0],
-                    cj,
-                    numpy.arange(1, half_width + 1) * (-ni[-1]) + cj[-1],
-                ]
-            )
-            ni = numpy.hstack([[ni[0]] * half_width, ni, [ni[-1]] * half_width])
-            nj = numpy.hstack([[nj[0]] * half_width, nj, [nj[-1]] * half_width])
-            iii, jjj = numpy.mgrid[0 : len(ci), -half_width : (half_width + 1)]
+            flip_image_pixel_data = flip_image.pixel_data
+            flip_image_mask = flip_image.mask if flip_image.has_mask else None
 
-            #
-            # Create a mapping of i an j in straightened space to
-            # the coordinates in real space
-            #
-            islice = slice(0, len(ci))
-            jslice = slice(width * i, width * (i + 1))
-            ix[islice, jslice] = ci[iii] + ni[iii] * jjj
-            jx[islice, jslice] = cj[iii] + nj[iii] * jjj
-            #
-            # We may need to flip the worm
-            #
-            if self.flip_worms in (FLIP_TOP, FLIP_BOTTOM):
-                ixs = ix[islice, jslice]
-                jxs = jx[islice, jslice]
-                image_name = self.flip_image.value
-                image = image_set.get_image(image_name, must_be_grayscale=True)
-                simage = scipy.ndimage.map_coordinates(image.pixel_data, [ixs, jxs])
-                halfway = int(len(ci)) / 2
-                smask = scipy.ndimage.map_coordinates(orig_labels == i + 1, [ixs, jxs])
-                if image.has_mask:
-                    smask *= scipy.ndimage.map_coordinates(image.mask, [ixs, jxs])
-                simage *= smask
-                #
-                # Compute the mean intensity of the top and bottom halves
-                # of the worm.
-                #
-                area_top = numpy.sum(smask[: int(halfway), :])
-                area_bottom = numpy.sum(smask[int(halfway) :, :])
-                top_intensity = numpy.sum(simage[: int(halfway), :]) / area_top
-                bottom_intensity = numpy.sum(simage[int(halfway) :, :]) / area_bottom
-                if (top_intensity > bottom_intensity) != (self.flip_worms == FLIP_TOP):
-                    # Flip worm if it doesn't match user expectations
-                    iii = len(ci) - iii - 1
-                    jjj = -jjj
-                    ix[islice, jslice] = ci[iii] + ni[iii] * jjj
-                    jx[islice, jslice] = cj[iii] + nj[iii] * jjj
-            mask = (
-                scipy.ndimage.map_coordinates(
-                    (orig_labels == i + 1).astype(numpy.float32),
-                    [ix[islice, jslice], jx[islice, jslice]],
-                )
-                > 0.5
-            )
-            labels[islice, jslice][mask] = object_number
+        map_i, map_j, labels, nworms, width = compute_straightened_worm_coordinates(
+            lengths=lengths,
+            width=width,
+            orig_labels_and_indexes=orig_labels_and_indexes,
+            control_points=control_points,
+            ncontrolpoints=ncontrolpoints,
+            flip_image_pixel_data=flip_image_pixel_data,
+            flip_image_mask=flip_image_mask,
+            flip_worms=self.flip_worms.value,
+        )
         #
         # Now create one straightened image for each input image
         #
@@ -640,47 +554,36 @@ of the straightened worms.""",
             image_name = group.image_name.value
             straightened_image_name = group.straightened_image_name.value
             image = image_set.get_image(image_name)
-            if image.pixel_data.ndim == 2:
-                straightened_pixel_data = scipy.ndimage.map_coordinates(
-                    image.pixel_data, [ix, jx]
-                )
-            else:
-                straightened_pixel_data = numpy.zeros(
-                    (ix.shape[0], ix.shape[1], image.pixel_data.shape[2])
-                )
-                for d in range(image.pixel_data.shape[2]):
-                    straightened_pixel_data[:, :, d] = scipy.ndimage.map_coordinates(
-                        image.pixel_data[:, :, d], [ix, jx]
-                    )
-            straightened_mask = (
-                scipy.ndimage.map_coordinates(image.mask, [ix, jx]) > 0.5
+            st_pixels, st_mask = get_straightened_image(
+                image.pixel_data, image.mask, map_i, map_j
             )
             straightened_images.append(
                 {
-                    self.K_NAME: straightened_image_name,
-                    self.K_PIXEL_DATA: straightened_pixel_data,
-                    self.K_MASK: straightened_mask,
-                    self.K_PARENT_IMAGE: image,
-                    self.K_PARENT_IMAGE_NAME: image_name,
+                    K_PIXEL_DATA: st_pixels,
+                    K_MASK: st_mask,
+                    K_NAME: straightened_image_name,
+                    K_PARENT_IMAGE: image,
+                    K_PARENT_IMAGE_NAME: image_name,
                 }
             )
+
         if self.flip_worms == FLIP_MANUAL:
             result, labels = workspace.interaction_request(
-                self, straightened_images, labels, m.image_set_number
+                self, straightened_images, labels, meas.image_set_number
             )
             for dorig, dedited in zip(straightened_images, result):
-                dorig[self.K_PIXEL_DATA] = dedited[self.K_PIXEL_DATA]
-                dorig[self.K_MASK] = dedited[self.K_MASK]
+                dorig[K_PIXEL_DATA] = dedited[K_PIXEL_DATA]
+                dorig[K_MASK] = dedited[K_MASK]
 
         if self.show_window:
             workspace.display_data.image_pairs = []
-        for d in straightened_images:
-            image = d[self.K_PARENT_IMAGE]
-            image_name = d[self.K_PARENT_IMAGE_NAME]
-            straightened_image_name = d[self.K_NAME]
-            straightened_pixel_data = d[self.K_PIXEL_DATA]
+        for img_entry in straightened_images:
+            image = img_entry[K_PARENT_IMAGE]
+            image_name = img_entry[K_PARENT_IMAGE_NAME]
+            straightened_image_name = img_entry[K_NAME]
+            straightened_pixel_data = img_entry[K_PIXEL_DATA]
             straightened_image = Image(
-                d[self.K_PIXEL_DATA], d[self.K_MASK], parent_image=image
+                img_entry[K_PIXEL_DATA], img_entry[K_MASK], parent_image=image
             )
             image_set.add(straightened_image_name, straightened_image)
             if self.show_window:
@@ -715,7 +618,6 @@ of the straightened worms.""",
     def measure_worms(self, workspace, labels, nworms, width):
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        object_name = self.straightened_objects_name.value
         input_object_name = self.objects_name.value
         nbins_vertical = self.number_of_segments.value
         nbins_horizontal = self.number_of_stripes.value
@@ -726,39 +628,13 @@ of the straightened worms.""",
             # Record measurements if no worms
             #
             # # # # # # # # # # # # # # # # # # # # # #
-            for ftr in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY):
-                for group in self.images:
-                    image_name = group.straightened_image_name.value
-                    if nbins_vertical > 1:
-                        for b in range(nbins_vertical):
-                            measurement = "_".join(
-                                (C_WORM, ftr, image_name, self.get_scale_name(None, b))
-                            )
-                            m.add_measurement(
-                                input_object_name, measurement, numpy.zeros(0)
-                            )
-                    if nbins_horizontal > 1:
-                        for b in range(nbins_horizontal):
-                            measurement = "_".join(
-                                (C_WORM, ftr, image_name, self.get_scale_name(b, None))
-                            )
-                            m.add_measurement(
-                                input_object_name, measurement, numpy.zeros(0)
-                            )
-                        if nbins_vertical > 1:
-                            for v in range(nbins_vertical):
-                                for h in range(nbins_horizontal):
-                                    measurement = "_".join(
-                                        (
-                                            C_WORM,
-                                            ftr,
-                                            image_name,
-                                            self.get_scale_name(h, v),
-                                        )
-                                    )
-                                    m.add_measurement(
-                                        input_object_name, measurement, numpy.zeros(0)
-                                    )
+            image_names = [
+                group.straightened_image_name.value for group in self.images
+            ]
+            record_empty_worm_measurements(
+                m, input_object_name, image_names,
+                nbins_vertical, nbins_horizontal,
+            )
 
         else:
             #
@@ -767,12 +643,9 @@ of the straightened worms.""",
             object_set = workspace.object_set
             assert isinstance(object_set, ObjectSet)
             orig_objects = object_set.get_objects(input_object_name)
-
-            i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-            min_i, max_i, _, _ = scipy.ndimage.extrema(i, labels, orig_objects.indices)
-            min_i = numpy.hstack(([0], min_i))
-            max_i = numpy.hstack(([labels.shape[0]], max_i)) + 1
-            heights = max_i - min_i
+            min_i, max_i, heights = compute_worm_extents(
+                labels, orig_objects.indices
+            )
 
             # # # # # # # # # # # # # # # # #
             #
@@ -781,248 +654,39 @@ of the straightened worms.""",
             # this gridding for each straightened worm
             #
             # # # # # # # # # # # # # # # # #
-            griddings = []
-            if nbins_vertical > 1:
-                scales = numpy.array(
-                    [self.get_scale_name(None, b) for b in range(nbins_vertical)]
-                )
-                scales.shape = (nbins_vertical, 1)
-                griddings += [(nbins_vertical, 1, scales)]
-            if nbins_horizontal > 1:
-                scales = numpy.array(
-                    [self.get_scale_name(b, None) for b in range(nbins_horizontal)]
-                )
-                scales.shape = (1, nbins_horizontal)
-                griddings += [(1, nbins_horizontal, scales)]
-                if nbins_vertical > 1:
-                    scales = numpy.array(
-                        [
-                            [self.get_scale_name(h, v) for h in range(nbins_horizontal)]
-                            for v in range(nbins_vertical)
-                        ]
-                    )
-                    griddings += [(nbins_vertical, nbins_horizontal, scales)]
-
+            griddings = build_measurement_griddings(
+                nbins_vertical, nbins_horizontal,
+            )
+            # TODO: Add comment in PR about this: It was moved from inside the loop to outside. params.radii_from_training likely doesn't change during the loop.
+            radii = numpy.array(params.radii_from_training)
             for i_dim, j_dim, scales in griddings:
-                # # # # # # # # # # # # # # # # # # # # # #
-                #
-                # Start out mapping every point to a 1x1 space
-                #
-                # # # # # # # # # # # # # # # # # # # # # #
-                labels1 = labels.copy()
-                i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-                i_frac = (i - min_i[labels]).astype(float) / heights[labels]
-                i_frac_end = i_frac + 1.0 / heights[labels].astype(float)
-                i_radius_frac = (i - min_i[labels]).astype(float) / (
-                    heights[labels] - 1
-                )
-                labels1[(i_frac >= 1) | (i_frac_end <= 0)] = 0
-                # # # # # # # # # # # # # # # # # # # # # #
-                #
-                # Map the horizontal onto the grid.
-                #
-                # # # # # # # # # # # # # # # # # # # # # #
-                radii = numpy.array(params.radii_from_training)
-                #
-                # For each pixel in the image, find the center of its worm
-                # in the j direction (the width)
-                #
-                j_center = int(width / 2) + width * (labels - 1)
-                #
-                # Find which segment (from the training set) per pixel in
-                # a fractional form
-                #
-                i_index = i_radius_frac * (len(radii) - 1)
-                #
-                # Interpolate
-                #
-                i_index_frac = i_index - numpy.floor(i_index)
-                i_index_frac[i_index >= len(radii) - 1] = 1
-                i_index = numpy.minimum(i_index.astype(int), len(radii) - 2)
-                r = numpy.ceil(
-                    (
-                        radii[i_index] * (1 - i_index_frac)
-                        + radii[i_index + 1] * i_index_frac
+                labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end = (
+                    compute_worm_pixel_fractions(
+                        labels, min_i, heights, width, radii,
                     )
                 )
-                #
-                # Map the worm width into the space 0-1
-                #
-                j_frac = (j - j_center + r) / (r * 2 + 1)
-                j_frac_end = j_frac + 1.0 / (r * 2 + 1)
-                labels1[(j_frac >= 1) | (j_frac_end <= 0)] = 0
-                #
-                # Map the worms onto the gridding.
-                #
-                i_mapping = numpy.maximum(i_frac * i_dim, 0)
-                i_mapping_end = numpy.minimum(i_frac_end * i_dim, i_dim)
-                j_mapping = numpy.maximum(j_frac * j_dim, 0)
-                j_mapping_end = numpy.minimum(j_frac_end * j_dim, j_dim)
-                i_mapping = i_mapping[labels1 > 0]
-                i_mapping_end = i_mapping_end[labels1 > 0]
-                j_mapping = j_mapping[labels1 > 0]
-                j_mapping_end = j_mapping_end[labels1 > 0]
-                labels_1d = labels1[labels1 > 0]
-                i = i[labels1 > 0]
-                j = j[labels1 > 0]
-
-                #
-                # There are easy cases and hard cases. The easy cases are
-                # when a pixel in the input space wholly falls in the
-                # output space.
-                #
-                easy = (i_mapping.astype(int) == i_mapping_end.astype(int)) & (
-                    j_mapping.astype(int) == j_mapping_end.astype(int)
+                (
+                    i_mapping,
+                    i_mapping_end,
+                    j_mapping,
+                    j_mapping_end,
+                    labels_1d,
+                    i,
+                    j,
+                ) = map_fractions_to_grid(
+                    labels1, i, j,
+                    i_frac, i_frac_end,
+                    j_frac, j_frac_end,
+                    i_dim, j_dim,
                 )
 
-                i_src = i[easy]
-                j_src = j[easy]
-                i_dest = i_mapping[easy].astype(int)
-                j_dest = j_mapping[easy].astype(int)
-                weight = numpy.ones(i_src.shape)
-                labels_src = labels_1d[easy]
-                #
-                # The hard cases start in one pixel in the binning space,
-                # possibly continue through one or more intermediate pixels
-                # in horribly degenerate cases and end in a final
-                # partial pixel.
-                #
-                # More horribly, a pixel in the straightened space
-                # might span two or more in the binning space in the I
-                # direction, the J direction or both.
-                #
-                if not numpy.all(easy):
-                    i = i[~easy]
-                    j = j[~easy]
-                    i_mapping = i_mapping[~easy]
-                    j_mapping = j_mapping[~easy]
-                    i_mapping_end = i_mapping_end[~easy]
-                    j_mapping_end = j_mapping_end[~easy]
-                    labels_1d = labels_1d[~easy]
-                    #
-                    # A pixel in the straightened space can be wholly within
-                    # a pixel in the bin space, it can straddle two pixels
-                    # or straddle two and span one or more. It can do different
-                    # things in the I and J direction.
-                    #
-                    # --- The number of pixels wholly spanned ---
-                    #
-                    i_span = numpy.maximum(
-                        numpy.floor(i_mapping_end) - numpy.ceil(i_mapping), 0
+                i_src, j_src, i_dest, j_dest, weight, labels_src = (
+                    compute_bin_pixel_assignments(
+                        i_mapping, i_mapping_end,
+                        j_mapping, j_mapping_end,
+                        labels_1d, i, j,
                     )
-                    j_span = numpy.maximum(
-                        numpy.floor(j_mapping_end) - numpy.ceil(j_mapping), 0
-                    )
-                    #
-                    # --- The fraction of a pixel covered by the lower straddle
-                    #
-                    i_low_straddle = i_mapping.astype(int) + 1 - i_mapping
-                    j_low_straddle = j_mapping.astype(int) + 1 - j_mapping
-                    #
-                    # Segments that start at exact pixel boundaries and span
-                    # whole pixels have low fractions that are 1. The span
-                    # length needs to have these subtracted from it.
-                    #
-                    i_span[i_low_straddle == 1] -= 1
-                    j_span[j_low_straddle == 1] -= 1
-                    #
-                    # --- the fraction covered by the upper straddle
-                    #
-                    i_high_straddle = i_mapping_end - i_mapping_end.astype(int)
-                    j_high_straddle = j_mapping_end - j_mapping_end.astype(int)
-                    #
-                    # --- the total distance across the binning space
-                    #
-                    i_total = i_low_straddle + i_span + i_high_straddle
-                    j_total = j_low_straddle + j_span + j_high_straddle
-                    #
-                    # --- The fraction in the lower straddle
-                    #
-                    i_low_frac = i_low_straddle / i_total
-                    j_low_frac = j_low_straddle / j_total
-                    #
-                    # --- The fraction in the upper straddle
-                    #
-                    i_high_frac = i_high_straddle / i_total
-                    j_high_frac = j_high_straddle / j_total
-                    #
-                    # later on, the high fraction will overwrite the low fraction
-                    # for i and j hitting on a single pixel in the bin space
-                    #
-                    i_high_frac[
-                        (i_mapping.astype(int) == i_mapping_end.astype(int))
-                    ] = 1
-                    j_high_frac[
-                        (j_mapping.astype(int) == j_mapping_end.astype(int))
-                    ] = 1
-                    #
-                    # --- The fraction in spans
-                    #
-                    i_span_frac = i_span / i_total
-                    j_span_frac = j_span / j_total
-                    #
-                    # --- The number of bins touched by each pixel
-                    #
-                    i_count = (
-                        numpy.ceil(i_mapping_end) - numpy.floor(i_mapping)
-                    ).astype(int)
-                    j_count = (
-                        numpy.ceil(j_mapping_end) - numpy.floor(j_mapping)
-                    ).astype(int)
-                    #
-                    # --- For I and J, calculate the weights for each pixel
-                    #     along each axis.
-                    #
-                    i_idx = centrosome.index.Indexes([i_count])
-                    j_idx = centrosome.index.Indexes([j_count])
-                    i_weights = i_span_frac[i_idx.rev_idx]
-                    j_weights = j_span_frac[j_idx.rev_idx]
-                    i_weights[i_idx.fwd_idx] = i_low_frac
-                    j_weights[j_idx.fwd_idx] = j_low_frac
-                    mask = i_high_frac > 0
-                    i_weights[i_idx.fwd_idx[mask] + i_count[mask] - 1] = i_high_frac[
-                        mask
-                    ]
-                    mask = j_high_frac > 0
-                    j_weights[j_idx.fwd_idx[mask] + j_count[mask] - 1] = j_high_frac[
-                        mask
-                    ]
-                    #
-                    # Get indexes for the 2-d array, i_count x j_count
-                    #
-                    idx = centrosome.index.Indexes([i_count, j_count])
-                    #
-                    # The coordinates in the straightened space
-                    #
-                    i_src_hard = i[idx.rev_idx]
-                    j_src_hard = j[idx.rev_idx]
-                    #
-                    # The coordinates in the bin space
-                    #
-                    i_dest_hard = i_mapping[idx.rev_idx].astype(int) + idx.idx[0]
-                    j_dest_hard = j_mapping[idx.rev_idx].astype(int) + idx.idx[1]
-                    #
-                    # The weights are the i-weight times the j-weight
-                    #
-                    # The i-weight can be found at the nth index of
-                    # i_weights relative to the start of the i_weights
-                    # for the pixel in the straightened space.
-                    #
-                    # The start is found at i_idx.fwd_idx[idx.rev_idx]
-                    # the I offset is found at idx.idx[0]
-                    #
-                    # Similarly for J.
-                    #
-                    weight_hard = (
-                        i_weights[i_idx.fwd_idx[idx.rev_idx] + idx.idx[0]]
-                        * j_weights[j_idx.fwd_idx[idx.rev_idx] + idx.idx[1]]
-                    )
-                    i_src = numpy.hstack((i_src, i_src_hard))
-                    j_src = numpy.hstack((j_src, j_src_hard))
-                    i_dest = numpy.hstack((i_dest, i_dest_hard))
-                    j_dest = numpy.hstack((j_dest, j_dest_hard))
-                    weight = numpy.hstack((weight, weight_hard))
-                    labels_src = numpy.hstack((labels_src, labels_1d[idx.rev_idx]))
+                )
 
                 self.measure_bins(
                     workspace,
@@ -1072,9 +736,7 @@ of the straightened worms.""",
         image_set = workspace.image_set
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        object_name = self.straightened_objects_name.value
         orig_name = self.objects_name.value
-        nbins = len(scales)
         for group in self.images:
             image_name = group.straightened_image_name.value
             straightened_image = image_set.get_image(image_name).pixel_data
@@ -1084,33 +746,9 @@ of the straightened worms.""",
             bin_number = (
                 labels_src - 1 + nworms * j_dest + nworms * scales.shape[1] * i_dest
             )
-            bin_counts = numpy.bincount(bin_number)
-            bin_weights = numpy.bincount(bin_number, weight)
-            bin_means = (
-                numpy.bincount(bin_number, weight * straightened_image) / bin_weights
+            bin_means, bin_stds = compute_bin_statistics(
+                straightened_image, bin_number, weight, nworms, scales.shape,
             )
-            deviances = straightened_image - bin_means[bin_number]
-            #
-            # Weighted variance =
-            # sum(weight * (x - mean(x)) ** 2)
-            # ---------------------------------
-            #  N - 1
-            #  ----- sum(weight)
-            #    N
-            #
-            bin_vars = numpy.bincount(bin_number, weight * deviances * deviances) / (
-                bin_weights * (bin_counts - 1) / bin_counts
-            )
-            bin_stds = numpy.sqrt(bin_vars)
-            nexpected = numpy.prod(scales.shape) * nworms
-            bin_means = numpy.hstack(
-                (bin_means, [numpy.nan] * (nexpected - len(bin_means)))
-            )
-            bin_means.shape = (scales.shape[0], scales.shape[1], nworms)
-            bin_stds = numpy.hstack(
-                (bin_stds, [numpy.nan] * (nexpected - len(bin_stds)))
-            )
-            bin_stds.shape = (scales.shape[0], scales.shape[1], nworms)
             for i in range(scales.shape[0]):
                 for j in range(scales.shape[1]):
                     for values, ftr in (
@@ -1157,23 +795,11 @@ of the straightened worms.""",
         longitudinal - band # (0 to # of stripes) or None for transverse-only
         transverse - band # (0 to # of stripes) or None  for longitudinal-only
         """
-        if longitudinal is None:
-            longitudinal = 0
-            lcount = 1
-        else:
-            lcount = self.number_of_stripes.value
-        if transverse is None:
-            transverse = 0
-            tcount = 1
-        else:
-            tcount = self.number_of_segments.value
-        return "%s%dof%d_%s%dof%d" % (
-            SCALE_HORIZONTAL,
-            transverse + 1,
-            tcount,
-            SCALE_VERTICAL,
-            longitudinal + 1,
-            lcount,
+        return format_scale_name(
+            longitudinal,
+            transverse,
+            self.number_of_stripes.value,
+            self.number_of_segments.value,
         )
 
     def get_measurement_columns(self, pipeline):
@@ -1438,7 +1064,7 @@ of the straightened worms.""",
             def refresh():
                 object_number = active_worm[0]
                 if len(straightened_images) == 1:
-                    image = straightened_images[0][self.K_PIXEL_DATA]
+                    image = straightened_images[0][K_PIXEL_DATA]
                     imax = numpy.max(image)
                     imin = numpy.min(image)
                     if imax == imin:
@@ -1453,7 +1079,7 @@ of the straightened worms.""",
                     image = numpy.zeros(shape)
                     image[labels == 0, :] = 1
                     for i, straightened_image in enumerate(straightened_images[:3]):
-                        pixel_data = straightened_image[self.K_PIXEL_DATA]
+                        pixel_data = straightened_image[K_PIXEL_DATA]
                         if pixel_data.ndim == 3:
                             pixel_data = numpy.mean(pixel_data, 2)
                         imin, imax = [
@@ -1515,7 +1141,7 @@ of the straightened worms.""",
                     jdest = (object_number * 2 - 1) * width - jj[mask] - 1
 
                     for d in straightened_images:
-                        for key in self.K_PIXEL_DATA, self.K_MASK:
+                        for key in K_PIXEL_DATA, K_MASK:
                             src = d[key]
                             dest = src.copy()
                             ilim, jlim = src.shape[:2]
@@ -1580,3 +1206,908 @@ of the straightened worms.""",
             if result != wx.OK:
                 raise self.InteractionCancelledException()
             return straightened_images, labels
+
+
+def _forward_diff_with_leading_repeat(arr):
+    """Compute forward differences, repeating the first diff at the start.
+
+    Equivalent to ``numpy.diff`` but with the first element replicated so
+    the output length matches the input length.
+
+    Args:
+        arr: 1D array of values.
+
+    Returns:
+        1D array of the same length as *arr*.
+    """
+    d = arr[1:] - arr[:-1]
+    return numpy.hstack([[d[0]], d])
+
+
+def get_control_point_normals(center_i, center_j):
+    #
+    # Find the normals at each point by taking the derivative,
+    # and twisting by 90 degrees.
+    #
+    di = _forward_diff_with_leading_repeat(center_i)
+    dj = _forward_diff_with_leading_repeat(center_j)
+    normal_i = -dj / numpy.sqrt(di ** 2 + dj ** 2)
+    normal_j = di / numpy.sqrt(di ** 2 + dj ** 2)
+    return normal_i, normal_j
+
+
+def _extend_centerline_axis(center, tangent_start, tangent_end, half_width):
+    """Extend one axis of a worm centerline along the tangent direction.
+
+    The centerline is extended by *half_width* pixels from each endpoint,
+    following the local tangent direction (perpendicular to the normal).
+
+    Args:
+        center: 1D array of coordinates along one axis
+        tangent_start: tangent component at the head endpoint
+        tangent_end: tangent component at the tail endpoint
+        half_width: number of pixels to extend from each end
+
+    Returns:
+        Extended 1D coordinate array.
+    """
+    return numpy.hstack(
+        [
+            numpy.arange(-half_width, 0) * tangent_start + center[0],
+            center,
+            numpy.arange(1, half_width + 1) * tangent_end + center[-1],
+        ]
+    )
+
+
+def _replicate_endpoints(arr, half_width):
+    """Extend an array by replicating its first and last values.
+
+    Args:
+        arr: 1D array to extend
+        half_width: number of replicated values to add at each end
+
+    Returns:
+        Extended 1D array.
+    """
+    return numpy.hstack(
+        [
+            [arr[0]] * half_width, 
+            arr, 
+            [arr[-1]] * half_width
+        ]
+    )
+
+
+def extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width):
+    """Extend worm coordinates from the head and tail by half_width pixels.
+
+    The worm is extended along the tangent direction at each endpoint,
+    and the normal vectors are replicated for the extended region.
+
+    Note: center_i is extended using norm_j (not norm_i), and center_j is
+    extended using -norm_i (not -norm_j), because the extension follows the
+    tangent direction which is perpendicular to the normal.
+
+    Args:
+        center_i: 1D array of i-coordinates along the worm centerline
+        center_j: 1D array of j-coordinates along the worm centerline
+        norm_i: 1D array of normal i-components
+        norm_j: 1D array of normal j-components
+        half_width: number of pixels to extend from each end
+
+    Returns:
+        Tuple of extended (center_i, center_j, norm_i, norm_j) arrays.
+    """
+    center_i = _extend_centerline_axis(center_i, norm_j[0], norm_j[-1], half_width)
+    center_j = _extend_centerline_axis(center_j, -norm_i[0], -norm_i[-1], half_width)
+    norm_i = _replicate_endpoints(norm_i, half_width)
+    norm_j = _replicate_endpoints(norm_j, half_width)
+    
+    return center_i, center_j, norm_i, norm_j
+
+
+def flip_worm_if_needed(
+    map_i, map_j, center_i, center_j, norm_i, norm_j, grid_i, grid_j,
+    islice, jslice, orig_labels, object_number,
+    flip_image_pixel_data, flip_image_mask, flip_worms,
+):
+    """Conditionally flip a worm based on intensity distribution.
+
+    Compares the mean intensity of the top and bottom halves of the worm
+    in the flip image, and reverses the worm's orientation if it doesn't
+    match the user's expectation (brightest half at top or bottom).
+
+    Modifies map_i, map_j coordinate arrays in place if flipping is needed.
+
+    Args:
+        map_i, map_j: coordinate mapping arrays (modified in place if flipped)
+        center_i, center_j: extended interpolated coordinate arrays
+        norm_i, norm_j: extended normal vectors
+        grid_i, grid_j: meshgrid coordinates for the worm region
+        islice, jslice: slice objects for this worm's region in map_i/map_j
+        orig_labels: original label matrix for this worm
+        object_number: the label number for this worm
+        flip_image_pixel_data: grayscale image for intensity comparison
+        flip_image_mask: optional mask for the flip image (None if no mask)
+        flip_worms: flip mode string (FLIP_NONE, FLIP_TOP, or FLIP_BOTTOM)
+    """
+    if flip_worms not in (FLIP_TOP, FLIP_BOTTOM):
+        return
+    assert flip_image_pixel_data is not None, "flip_image cannot be None"
+    map_i_roi = map_i[islice, jslice]
+    map_j_roi = map_j[islice, jslice]
+    mapped_img = scipy.ndimage.map_coordinates(flip_image_pixel_data, [map_i_roi, map_j_roi])
+    halfway = int(len(center_i)) / 2
+    mapped_mask = scipy.ndimage.map_coordinates(orig_labels == object_number, [map_i_roi, map_j_roi])
+    if flip_image_mask is not None:
+        mapped_mask *= scipy.ndimage.map_coordinates(flip_image_mask, [map_i_roi, map_j_roi])
+    mapped_img *= mapped_mask
+    #
+    # Compute the mean intensity of the top and bottom halves
+    # of the worm.
+    #
+    area_top = numpy.sum(mapped_mask[: int(halfway), :])
+    area_bottom = numpy.sum(mapped_mask[int(halfway) :, :])
+    top_intensity = numpy.sum(mapped_img[: int(halfway), :]) / area_top
+    bottom_intensity = numpy.sum(mapped_img[int(halfway) :, :]) / area_bottom
+    if (top_intensity > bottom_intensity) != (flip_worms == FLIP_TOP):
+        # Flip worm if it doesn't match user expectations
+        grid_i = len(center_i) - grid_i - 1
+        grid_j = -grid_j
+        map_i[islice, jslice] = center_i[grid_i] + norm_i[grid_i] * grid_j
+        map_j[islice, jslice] = center_j[grid_i] + norm_j[grid_i] * grid_j
+
+
+def get_straightened_image(image_pixel_data, image_mask, map_i, map_j):
+    """Map an image into straightened worm coordinate space.
+
+    Uses the coordinate mapping arrays (map_i, map_j) to transform an image
+    from the original space into the straightened worm space via
+    interpolation.
+
+    Args:
+        image_pixel_data: 2D (grayscale) or 3D (color) image pixel data
+        image_mask: 2D boolean mask for the image
+        map_i: i-coordinate mapping array (straightened -> original)
+        map_j: j-coordinate mapping array (straightened -> original)
+
+    Returns:
+        Tuple of (straightened_pixel_data, straightened_mask).
+    """
+    if image_pixel_data.ndim == 2:
+        straightened_pixel_data = scipy.ndimage.map_coordinates(
+            image_pixel_data, [map_i, map_j]
+        )
+    else:
+        straightened_pixel_data = numpy.zeros(
+            (map_i.shape[0], map_i.shape[1], image_pixel_data.shape[2])
+        )
+        for ch in range(image_pixel_data.shape[2]):
+            straightened_pixel_data[:, :, ch] = scipy.ndimage.map_coordinates(
+                image_pixel_data[:, :, ch], [map_i, map_j]
+            )
+    straightened_mask = (
+        scipy.ndimage.map_coordinates(image_mask, [map_i, map_j]) > 0.5
+    )
+    return straightened_pixel_data, straightened_mask
+
+
+def interpolate_centerline(control_point_coords, length, ncontrolpoints):
+    """Interpolate one axis of control points to evenly spaced centerline coordinates.
+
+    Args:
+        control_point_coords: 1D array of control point positions along one axis
+        length: the length of the worm
+        ncontrolpoints: number of control points
+
+    Returns:
+        1D array of interpolated coordinates, one per unit length.
+    """
+    interp = interp1d(
+        numpy.linspace(0, length, ncontrolpoints), 
+        control_point_coords
+    )
+    center = interp(numpy.arange(0, int(length) + 1))
+    return center
+
+
+def compute_straightened_worm_coordinates(
+    lengths,
+    width,
+    orig_labels_and_indexes,
+    control_points,
+    ncontrolpoints,
+    flip_image_pixel_data=None,
+    flip_image_mask=None,
+    flip_worms=FLIP_NONE,
+):
+    """Compute coordinate mapping and labels for straightening worms.
+
+    Transforms worm control points and lengths into coordinate mapping arrays
+    that translate positions in the straightened worm image back to their
+    corresponding positions in the original image. Also computes the label
+    matrix for the straightened worm objects.
+
+    Args:
+        lengths: 1D array of worm lengths (one per worm)
+        width: desired pixel width for straightened worms
+        orig_labels_and_indexes: list of (labels, indexes) tuples from
+            the original worm objects
+        control_points: array of shape (2, ncontrolpoints, nworms) with
+            the (i, j) control point coordinates for each worm
+        ncontrolpoints: number of control points per worm
+        flip_image_pixel_data: optional 2D grayscale image for
+            intensity-based worm flipping
+        flip_image_mask: optional mask for the flip image
+        flip_worms: flip mode string (FLIP_NONE, FLIP_TOP, or FLIP_BOTTOM)
+
+    Returns:
+        Tuple of (map_i, map_j, labels, nworms, actual_width) where:
+        - map_i, map_j: coordinate mapping arrays from straightened to original space
+        - labels: integer label matrix for straightened worm objects
+        - nworms: number of worms
+        - actual_width: computed width (2 * half_width + 1)
+    """
+    nworms = len(lengths)
+    half_width = width // 2
+    actual_width = 2 * half_width + 1
+    if nworms == 0:
+        shape = (actual_width, actual_width)
+    else:
+        shape = (int(numpy.max(lengths)) + actual_width, nworms * actual_width)
+    labels = numpy.zeros(shape, int)
+    #
+    # map_i and map_j are the coordinates of the straightened pixel in the
+    # original space.
+    #
+    map_i = numpy.zeros(shape)
+    map_j = numpy.zeros(shape)
+    #
+    # Handle each of the worm splines separately
+    #
+    for i in range(nworms):
+        if lengths[i] == 0:
+            continue
+        object_number = i + 1
+        orig_labels = [
+            lbl
+            for lbl, idx in orig_labels_and_indexes
+            if object_number in idx and object_number in lbl
+        ]
+        if len(orig_labels) == 0:
+            continue
+        orig_labels = orig_labels[0]
+
+        center_i = interpolate_centerline(control_points[0, :, i], lengths[i], ncontrolpoints)
+        center_j = interpolate_centerline(control_points[1, :, i], lengths[i], ncontrolpoints)
+        #
+        # Compute normals and extend the worm endpoints
+        #
+        norm_i, norm_j = get_control_point_normals(center_i, center_j)
+        center_i, center_j, norm_i, norm_j = extend_worm_endpoints(center_i, center_j, norm_i, norm_j, half_width)
+
+        grid_i, grid_j = numpy.mgrid[0 : len(center_i), -half_width : (half_width + 1)]
+        #
+        # Create a mapping of i and j in straightened space to
+        # the coordinates in real space
+        #
+        islice = slice(0, len(center_i))
+        jslice = slice(actual_width * i, actual_width * (i + 1))
+        map_i[islice, jslice] = center_i[grid_i] + norm_i[grid_i] * grid_j
+        map_j[islice, jslice] = center_j[grid_i] + norm_j[grid_i] * grid_j
+        #
+        # We may need to flip the worm
+        #
+        flip_worm_if_needed(
+            map_i, map_j, center_i, center_j, norm_i, norm_j, grid_i, grid_j,
+            islice, jslice, orig_labels, object_number,
+            flip_image_pixel_data, flip_image_mask, flip_worms,
+        )
+        #
+        # Create the mask for this worm in straightened space
+        #
+        mask = (
+            scipy.ndimage.map_coordinates(
+                (orig_labels == object_number).astype(numpy.float32),
+                [map_i[islice, jslice], map_j[islice, jslice]],
+            )
+            > 0.5
+        )
+        labels[islice, jslice][mask] = object_number
+
+    return map_i, map_j, labels, nworms, actual_width
+
+
+def format_scale_name(longitudinal, transverse, nstripes, nsegments):
+    """Create a scale name for measurement bin identification.
+
+    Constructs a string like "T1of4_L2of3" identifying a specific measurement
+    region within a straightened worm. Horizontal (T = Transverse) refers to
+    segments along the worm length; Vertical (L = Longitudinal) refers to
+    stripes across the worm width.
+
+    Args:
+        longitudinal: stripe index (0-based) or None for transverse-only measurements
+        transverse: segment index (0-based) or None for longitudinal-only measurements
+        nstripes: total number of longitudinal stripes
+        nsegments: total number of transverse segments
+
+    Returns:
+        Scale name string, e.g. "T1of4_L2of3"
+    """
+    if longitudinal is None:
+        longitudinal = 0
+        lcount = 1
+    else:
+        lcount = nstripes
+    if transverse is None:
+        transverse = 0
+        tcount = 1
+    else:
+        tcount = nsegments
+    return "%s%dof%d_%s%dof%d" % (
+        SCALE_HORIZONTAL,
+        transverse + 1,
+        tcount,
+        SCALE_VERTICAL,
+        longitudinal + 1,
+        lcount,
+    )
+
+
+def record_empty_worm_measurements(
+    m, input_object_name, image_names, nbins_vertical, nbins_horizontal,
+):
+    """Record empty measurements when no worms are present.
+
+    Adds zero-length arrays for all intensity measurement features so that
+    downstream processing has consistent measurement columns even when there
+    are no worms in the image set.
+
+    Args:
+        m: Measurements object to record into
+        input_object_name: name of the input (untangled) worm objects
+        image_names: list of straightened image names to measure
+        nbins_vertical: number of transverse segments
+        nbins_horizontal: number of longitudinal stripes
+    """
+    for ftr in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY):
+        for image_name in image_names:
+            if nbins_vertical > 1:
+                for b in range(nbins_vertical):
+                    measurement = "_".join(
+                        (
+                            C_WORM,
+                            ftr,
+                            image_name,
+                            format_scale_name(
+                                None, b, nbins_horizontal, nbins_vertical,
+                            ),
+                        )
+                    )
+                    m.add_measurement(
+                        input_object_name, measurement, numpy.zeros(0)
+                    )
+            if nbins_horizontal > 1:
+                for b in range(nbins_horizontal):
+                    measurement = "_".join(
+                        (
+                            C_WORM,
+                            ftr,
+                            image_name,
+                            format_scale_name(
+                                b, None, nbins_horizontal, nbins_vertical,
+                            ),
+                        )
+                    )
+                    m.add_measurement(
+                        input_object_name, measurement, numpy.zeros(0)
+                    )
+                if nbins_vertical > 1:
+                    for v in range(nbins_vertical):
+                        for h in range(nbins_horizontal):
+                            measurement = "_".join(
+                                (
+                                    C_WORM,
+                                    ftr,
+                                    image_name,
+                                    format_scale_name(
+                                        h, v, nbins_horizontal, nbins_vertical,
+                                    ),
+                                )
+                            )
+                            m.add_measurement(
+                                input_object_name, measurement, numpy.zeros(0)
+                            )
+
+
+def compute_worm_extents(labels, indices):
+    """Compute the vertical extents of each worm in the label matrix.
+
+    Finds the minimum and maximum row indices for each labeled worm region,
+    plus a sentinel entry at index 0 for unlabeled pixels.
+
+    Args:
+        labels: 2D integer label matrix where each worm has a unique label
+        indices: 1D array of worm indices (from objects.indices)
+
+    Returns:
+        Tuple of (min_i, max_i, heights) where each is a 1D array indexed
+        by label. Index 0 contains sentinel values (0 for min_i,
+        labels.shape[0]+1 for max_i).
+    """
+    i = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]][0]
+    min_i, max_i, _, _ = scipy.ndimage.extrema(i, labels, indices)
+    min_i = numpy.hstack(([0], min_i))
+    max_i = numpy.hstack(([labels.shape[0]], max_i)) + 1
+    heights = max_i - min_i
+    return min_i, max_i, heights
+
+
+def build_measurement_griddings(nbins_vertical, nbins_horizontal):
+    """Build gridding configurations for worm intensity measurements.
+
+    Creates a list of (i_dim, j_dim, scales) tuples that define how the
+    straightened worm is divided for measurement. Up to three griddings are
+    created:
+      1. Transverse segments only (if nbins_vertical > 1)
+      2. Longitudinal stripes only (if nbins_horizontal > 1)
+      3. Combined transverse x longitudinal (if both > 1)
+
+    Args:
+        nbins_vertical: number of transverse segments
+        nbins_horizontal: number of longitudinal stripes
+
+    Returns:
+        List of (i_dim, j_dim, scales) tuples where:
+        - i_dim: number of vertical divisions
+        - j_dim: number of horizontal divisions
+        - scales: numpy array of scale name strings shaped (i_dim, j_dim)
+    """
+    griddings = []
+    if nbins_vertical > 1:
+        scales = numpy.array(
+            [
+                format_scale_name(None, b, nbins_horizontal, nbins_vertical)
+                for b in range(nbins_vertical)
+            ]
+        )
+        scales.shape = (nbins_vertical, 1)
+        griddings.append((nbins_vertical, 1, scales))
+    if nbins_horizontal > 1:
+        scales = numpy.array(
+            [
+                format_scale_name(b, None, nbins_horizontal, nbins_vertical)
+                for b in range(nbins_horizontal)
+            ]
+        )
+        scales.shape = (1, nbins_horizontal)
+        griddings.append((1, nbins_horizontal, scales))
+        if nbins_vertical > 1:
+            scales = numpy.array(
+                [
+                    [
+                        format_scale_name(h, v, nbins_horizontal, nbins_vertical)
+                        for h in range(nbins_horizontal)
+                    ]
+                    for v in range(nbins_vertical)
+                ]
+            )
+            griddings.append((nbins_vertical, nbins_horizontal, scales))
+    return griddings
+
+
+def compute_worm_pixel_fractions(labels, min_i, heights, width, radii):
+    """Compute the fractional position of each pixel within its worm.
+
+    For every pixel in the straightened worm image, computes its fractional
+    vertical position (head-to-tail) and horizontal position (side-to-side,
+    accounting for the varying worm width from the training set radii).
+
+    Pixels that fall outside the worm bounds are zeroed in the returned
+    labels copy.
+
+    Args:
+        labels: 2D integer label matrix
+        min_i: 1D array of minimum i-coordinates per label
+            (from compute_worm_extents)
+        heights: 1D array of worm heights per label
+            (from compute_worm_extents)
+        width: pixel width of each straightened worm column
+        radii: 1D array of worm radii from training set parameters
+
+    Returns:
+        Tuple of (labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end)
+        where:
+        - labels1: copy of labels with out-of-range pixels zeroed
+        - i, j: coordinate arrays from meshgrid
+        - i_frac, i_frac_end: vertical fractional start/end in [0, 1]
+        - j_frac, j_frac_end: horizontal fractional start/end in [0, 1]
+    """
+    labels1 = labels.copy()
+    i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+    # # # # # # # # # # # # # # # # # # # # # #
+    #
+    # Start out mapping every point to a 1x1 space
+    #
+    # # # # # # # # # # # # # # # # # # # # # #
+    i_frac = (i - min_i[labels]).astype(float) / heights[labels]
+    i_frac_end = i_frac + 1.0 / heights[labels].astype(float)
+    i_radius_frac = (i - min_i[labels]).astype(float) / (heights[labels] - 1)
+    labels1[(i_frac >= 1) | (i_frac_end <= 0)] = 0
+    # # # # # # # # # # # # # # # # # # # # # #
+    #
+    # Map the horizontal onto the grid.
+    #
+    # # # # # # # # # # # # # # # # # # # # # #
+    #
+    # For each pixel in the image, find the center of its worm
+    # in the j direction (the width)
+    #
+    j_center = int(width / 2) + width * (labels - 1)
+    #
+    # Find which segment (from the training set) per pixel in
+    # a fractional form
+    #
+    i_index = i_radius_frac * (len(radii) - 1)
+    #
+    # Interpolate
+    #
+    i_index_frac = i_index - numpy.floor(i_index)
+    i_index_frac[i_index >= len(radii) - 1] = 1
+    i_index = numpy.minimum(i_index.astype(int), len(radii) - 2)
+    r = numpy.ceil(
+        (
+            radii[i_index] * (1 - i_index_frac)
+            + radii[i_index + 1] * i_index_frac
+        )
+    )
+    #
+    # Map the worm width into the space 0-1
+    #
+    j_frac = (j - j_center + r) / (r * 2 + 1)
+    j_frac_end = j_frac + 1.0 / (r * 2 + 1)
+    labels1[(j_frac >= 1) | (j_frac_end <= 0)] = 0
+
+    return labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end
+
+
+def _scale_and_clamp_to_grid(frac, frac_end, dim):
+    """Scale fractional coordinates to grid dimensions and clamp to bounds.
+
+    Args:
+        frac: array of fractional start coordinates in [0, 1]
+        frac_end: array of fractional end coordinates in [0, 1]
+        dim: grid dimension to scale to
+
+    Returns:
+        Tuple of (mapping, mapping_end) clamped to [0, dim].
+    """
+    mapping = numpy.maximum(frac * dim, 0)
+    mapping_end = numpy.minimum(frac_end * dim, dim)
+    return mapping, mapping_end
+
+
+def map_fractions_to_grid(
+    labels1, i, j, i_frac, i_frac_end, j_frac, j_frac_end, i_dim, j_dim,
+):
+    """Map fractional worm coordinates onto measurement grid cells.
+
+    Takes the [0,1] fractional coordinates and scales them to the grid
+    dimensions (i_dim x j_dim). Filters to only pixels with valid labels
+    (> 0) and clamps grid coordinates to valid range.
+
+    Args:
+        labels1: 2D label matrix (with out-of-range pixels already zeroed)
+        i, j: coordinate arrays (from meshgrid)
+        i_frac, i_frac_end: vertical fractional start/end
+        j_frac, j_frac_end: horizontal fractional start/end
+        i_dim: number of vertical grid divisions
+        j_dim: number of horizontal grid divisions
+
+    Returns:
+        Tuple of (i_mapping, i_mapping_end, j_mapping, j_mapping_end,
+        labels_1d, i_filtered, j_filtered) -- all 1D arrays containing
+        only the pixels with valid (>0) labels.
+    """
+    #
+    # Map the worms onto the gridding.
+    #
+    i_mapping, i_mapping_end = _scale_and_clamp_to_grid(i_frac, i_frac_end, i_dim)
+    j_mapping, j_mapping_end = _scale_and_clamp_to_grid(j_frac, j_frac_end, j_dim)
+    # TODO: can we do mask = labels1 > 0 and re-use it below?
+    i_mapping = i_mapping[labels1 > 0]
+    i_mapping_end = i_mapping_end[labels1 > 0]
+    j_mapping = j_mapping[labels1 > 0]
+    j_mapping_end = j_mapping_end[labels1 > 0]
+    labels_1d = labels1[labels1 > 0]
+    i_filtered = i[labels1 > 0]
+    j_filtered = j[labels1 > 0]
+
+    return (
+        i_mapping,
+        i_mapping_end,
+        j_mapping,
+        j_mapping_end,
+        labels_1d,
+        i_filtered,
+        j_filtered,
+    )
+
+
+
+def compute_hard_case_bin_assignments(
+    i, j, i_mapping, j_mapping, i_mapping_end, j_mapping_end, labels_1d,
+):
+    """Compute bin assignments for pixels that span multiple measurement bins.
+
+    When a pixel in the straightened worm space maps to a region that crosses
+    bin boundaries, this function computes the fractional area weights for
+    each bin the pixel overlaps. A pixel may straddle two bins, or span
+    entirely across one or more intermediate bins.
+
+    Args:
+        i, j: coordinates in straightened worm space (1D arrays, hard-case only)
+        i_mapping, j_mapping: start coordinates in bin space
+        i_mapping_end, j_mapping_end: end coordinates in bin space
+        labels_1d: worm labels for each pixel
+
+    Returns:
+        Tuple of (i_src_hard, j_src_hard, i_dest_hard, j_dest_hard, weight_hard, labels_hard) where
+        each element is a 1D array expanded to cover all bin overlaps.
+    """
+    #
+    # A pixel in the straightened space can be wholly within
+    # a pixel in the bin space, it can straddle two pixels
+    # or straddle two and span one or more. It can do different
+    # things in the I and J direction.
+    #
+    # Compute per-axis bin overlap weights independently for i and j.
+    i_weights, i_idx, i_count = _compute_axis_bin_weights(i_mapping, i_mapping_end)
+    j_weights, j_idx, j_count = _compute_axis_bin_weights(j_mapping, j_mapping_end)
+    #
+    # Get indexes for the 2-d array, i_count x j_count
+    #
+    idx = centrosome.index.Indexes([i_count, j_count])
+    #
+    # The coordinates in the straightened space
+    #
+    i_src_hard = i[idx.rev_idx]
+    j_src_hard = j[idx.rev_idx]
+    #
+    # The coordinates in the bin space
+    #
+    i_dest_hard = i_mapping[idx.rev_idx].astype(int) + idx.idx[0]
+    j_dest_hard = j_mapping[idx.rev_idx].astype(int) + idx.idx[1]
+    #
+    # The weights are the i-weight times the j-weight
+    #
+    # The i-weight can be found at the nth index of
+    # i_weights relative to the start of the i_weights
+    # for the pixel in the straightened space.
+    #
+    # The start is found at i_idx.fwd_idx[idx.rev_idx]
+    # the I offset is found at idx.idx[0]
+    #
+    # Similarly for J.
+    #
+    weight_hard = (
+        i_weights[i_idx.fwd_idx[idx.rev_idx] + idx.idx[0]]
+        * j_weights[j_idx.fwd_idx[idx.rev_idx] + idx.idx[1]]
+    )
+    labels_hard = labels_1d[idx.rev_idx]
+
+    return i_src_hard, j_src_hard, i_dest_hard, j_dest_hard, weight_hard, labels_hard
+
+
+def _compute_axis_bin_weights(mapping, mapping_end):
+    """Compute bin overlap weights for one axis of the mapping.
+
+    For each pixel, determines how much of its extent falls in each bin
+    along a single axis.  A pixel may fall wholly within a bin, straddle
+    two bins, or span one or more intermediate bins.
+
+    Args:
+        mapping: 1D array of start positions in bin space
+        mapping_end: 1D array of end positions in bin space
+
+    Returns:
+        Tuple of (weights, idx, count) where:
+        - weights: per-bin fractional area weights
+        - idx: ``centrosome.index.Indexes`` object for this axis
+        - count: 1D array of the number of bins touched by each pixel
+    """
+    #
+    # --- The number of pixels wholly spanned ---
+    #
+    span = numpy.maximum(numpy.floor(mapping_end) - numpy.ceil(mapping), 0)
+    #
+    # --- The fraction of a pixel covered by the lower straddle
+    #
+    low_straddle = mapping.astype(int) + 1 - mapping
+    #
+    # Segments that start at exact pixel boundaries and span
+    # whole pixels have low fractions that are 1. The span
+    # length needs to have these subtracted from it.
+    #
+    span[low_straddle == 1] -= 1
+    #
+    # --- the fraction covered by the upper straddle
+    #
+    high_straddle = mapping_end - mapping_end.astype(int)
+    #
+    # --- the total distance across the binning space
+    #
+    total = low_straddle + span + high_straddle
+    #
+    # --- The fraction in the lower straddle
+    #
+    low_frac = low_straddle / total
+    #
+    # --- The fraction in the upper straddle
+    #
+    high_frac = high_straddle / total
+    #
+    # later on, the high fraction will overwrite the low fraction
+    # for i and j hitting on a single pixel in the bin space
+    #
+    high_frac[(mapping.astype(int) == mapping_end.astype(int))] = 1
+    #
+    # --- The fraction in spans
+    #
+    span_frac = span / total
+    #
+    # --- The number of bins touched by each pixel
+    #
+    count = (
+        numpy.ceil(mapping_end) - numpy.floor(mapping)
+        ).astype(int)
+    #
+    # --- Calculate the weights for each pixel
+    #     along each axis.
+    #
+    idx = centrosome.index.Indexes([count])
+    weights = span_frac[idx.rev_idx]
+    weights[idx.fwd_idx] = low_frac
+    mask = high_frac > 0
+    weights[idx.fwd_idx[mask] + count[mask] - 1] = high_frac[mask]
+    return weights, idx, count
+
+
+def compute_bin_pixel_assignments(
+    i_mapping, i_mapping_end, j_mapping, j_mapping_end, labels_1d, i, j,
+):
+    """Assign pixels to measurement bins with overlap weights.
+
+    Splits pixels into "easy" cases (pixel wholly within one bin) and "hard"
+    cases (pixel spanning multiple bins), then combines the results.
+
+    Args:
+        i_mapping, i_mapping_end: start/end grid coordinates in i direction
+        j_mapping, j_mapping_end: start/end grid coordinates in j direction
+        labels_1d: worm labels for each pixel (1D)
+        i, j: coordinates in straightened space (1D)
+
+    Returns:
+        Tuple of (i_src, j_src, i_dest, j_dest, weight, labels_src) where:
+        - i_src, j_src: coordinates in straightened worm space
+        - i_dest, j_dest: coordinates in the measurement bin grid
+        - weight: fractional area weight for each pixel-bin pair
+        - labels_src: worm label for each entry
+    """
+    #
+    # There are easy cases and hard cases. The easy cases are
+    # when a pixel in the input space wholly falls in the
+    # output space.
+    #
+    easy = (i_mapping.astype(int) == i_mapping_end.astype(int)) & (
+        j_mapping.astype(int) == j_mapping_end.astype(int)
+    )
+
+    i_src = i[easy]
+    j_src = j[easy]
+    i_dest = i_mapping[easy].astype(int)
+    j_dest = j_mapping[easy].astype(int)
+    weight = numpy.ones(i_src.shape)
+    labels_src = labels_1d[easy]
+    #
+    # The hard cases start in one pixel in the binning space,
+    # possibly continue through one or more intermediate pixels
+    # in horribly degenerate cases and end in a final
+    # partial pixel.
+    #
+    # More horribly, a pixel in the straightened space
+    # might span two or more in the binning space in the I
+    # direction, the J direction or both.
+    #
+    if not numpy.all(easy):
+        (
+            i_src_hard,
+            j_src_hard,
+            i_dest_hard,
+            j_dest_hard,
+            weight_hard,
+            labels_hard,
+        ) = compute_hard_case_bin_assignments(
+            i[~easy],
+            j[~easy],
+            i_mapping[~easy],
+            j_mapping[~easy],
+            i_mapping_end[~easy],
+            j_mapping_end[~easy],
+            labels_1d[~easy],
+        )
+
+        i_src = numpy.hstack((i_src, i_src_hard))
+        j_src = numpy.hstack((j_src, j_src_hard))
+        i_dest = numpy.hstack((i_dest, i_dest_hard))
+        j_dest = numpy.hstack((j_dest, j_dest_hard))
+        weight = numpy.hstack((weight, weight_hard))
+        labels_src = numpy.hstack((labels_src, labels_hard))
+
+    return i_src, j_src, i_dest, j_dest, weight, labels_src
+
+
+def _pad_and_reshape_bins(values, nexpected, shape):
+    """Pad a 1D array with NaN to *nexpected* length, then reshape.
+
+    Args:
+        values: 1D array of computed bin values
+        nexpected: total number of elements expected after padding
+        shape: target shape for the reshaped array
+
+    Returns:
+        Reshaped array of the given *shape*.
+    """
+    result = numpy.hstack((values, [numpy.nan] * (nexpected - len(values))))
+    result.shape = shape
+    return result
+
+
+def compute_bin_statistics(pixel_values, bin_number, weight, nworms, scales_shape):
+    """Compute mean and standard deviation of intensity per measurement bin.
+
+    Uses weighted statistics: each pixel contributes to its bin's statistics
+    proportionally to its weight (fraction of area overlap with the bin).
+
+    The weighted variance formula used is::
+
+        var = sum(weight * (x - mean(x))^2) / (sum(weight) * (N-1)/N)
+
+    Args:
+        pixel_values: 1D array of image intensity values at mapped pixel
+            locations
+        bin_number: 1D array of bin indices for each pixel
+        weight: 1D array of area weights for each pixel
+        nworms: number of worms (labels)
+        scales_shape: tuple (n_vertical_bins, n_horizontal_bins)
+
+    Returns:
+        Tuple of (bin_means, bin_stds) each shaped
+        (scales_shape[0], scales_shape[1], nworms). Bins with no data
+        are filled with NaN.
+    """
+    bin_counts = numpy.bincount(bin_number)
+    bin_weights = numpy.bincount(bin_number, weight)
+    bin_means = (
+        numpy.bincount(bin_number, weight * pixel_values) / bin_weights
+    )
+    deviances = pixel_values - bin_means[bin_number]
+    #
+    # Weighted variance =
+    # sum(weight * (x - mean(x)) ** 2)
+    # ---------------------------------
+    #  N - 1
+    #  ----- sum(weight)
+    #    N
+    #
+    bin_vars = numpy.bincount(bin_number, weight * deviances * deviances) / (
+        bin_weights * (bin_counts - 1) / bin_counts
+    )
+    bin_stds = numpy.sqrt(bin_vars)
+    nexpected = numpy.prod(scales_shape) * nworms
+    target_shape = (scales_shape[0], scales_shape[1], nworms)
+    bin_means = _pad_and_reshape_bins(bin_means, nexpected, target_shape)
+    bin_stds = _pad_and_reshape_bins(bin_stds, nexpected, target_shape)
+    return bin_means, bin_stds

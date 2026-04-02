@@ -1,4 +1,3 @@
-import numpy
 from cellprofiler_core.object import Objects
 
 from .._module import Module
@@ -19,7 +18,8 @@ from ...constants.measurement import M_LOCATION_CENTER_Z
 from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
 from ...setting.subscriber import ImageSubscriber
 from ...setting.text import LabelName
-
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
+from cellprofiler_library.functions.measurement import get_image_segmentation_measurements
 
 class ImageSegmentation(Module):
     category = "Image Segmentation"
@@ -33,38 +33,15 @@ class ImageSegmentation(Module):
             object_name = self.y_name.value
 
         objects = workspace.object_set.get_objects(object_name)
-
-        centers = objects.center_of_mass()
-
-        if len(centers) == 0:
-            center_z, center_y, center_x = [], [], []
-        else:
-            if objects.volumetric:
-                center_z, center_y, center_x = centers.transpose()
-            else:
-                center_z = [0] * len(centers)
-
-                center_y, center_x = centers.transpose()
-
-        workspace.measurements.add_measurement(
-            object_name, M_LOCATION_CENTER_X, center_x,
+        # I have tested this when debugging relateobjects while working on the library/object_count _measurements branch and confirmed that it works.
+        lib_measurements = get_image_segmentation_measurements(
+            objects.segmented,
+            objects.volumetric,
+            objects.count,
+            object_name,
         )
 
-        workspace.measurements.add_measurement(
-            object_name, M_LOCATION_CENTER_Y, center_y,
-        )
-
-        workspace.measurements.add_measurement(
-            object_name, M_LOCATION_CENTER_Z, center_z,
-        )
-
-        workspace.measurements.add_measurement(
-            object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects.count + 1),
-        )
-
-        workspace.measurements.add_measurement(
-            IMAGE, FF_COUNT % object_name, numpy.array([objects.count], dtype=float),
-        )
+        add_library_measurements_to_workspace_measurements(workspace.measurements, lib_measurements)
 
     def create_settings(self):
         self.x_name = ImageSubscriber(

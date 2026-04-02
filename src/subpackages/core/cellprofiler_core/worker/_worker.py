@@ -20,6 +20,7 @@ from ..analysis.request import MeasurementsReport
 from ..analysis.request import PipelinePreferences
 from ..analysis.request import SharedDictionary
 from ..analysis.request import Work
+from ..constants.measurement import IMAGE, GROUP_INDEX
 from ..constants.worker import ED_STOP
 from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
@@ -205,7 +206,7 @@ class Worker:
             # that any changes to the modules' shared state dictionaries get
             # propagated correctly.
             should_process = True
-            if current_measurements["Image", "Group_Index", image_set_numbers[0]] == 1:
+            if current_measurements[IMAGE, GROUP_INDEX, image_set_numbers[0]] == 1:
                 workspace = Workspace(
                     current_pipeline, None, None, None, current_measurements, None, None
                 )

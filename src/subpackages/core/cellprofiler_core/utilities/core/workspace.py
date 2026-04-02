@@ -16,7 +16,7 @@ def is_workspace_file(path):
     finally:
         h5file.close()
 
-def add_library_measurements_to_workspace(library_measurements: LibraryMeasurements, workspace, module_num):
+def add_library_measurements_to_workspace_measurements(workspace_measurements, library_measurements: LibraryMeasurements, module_num=None):
     """Add the library measurements to the workspace
 
     library_measurements - the library measurements to be added
@@ -27,7 +27,7 @@ def add_library_measurements_to_workspace(library_measurements: LibraryMeasureme
     # Record the measurements
     #
     # assume isinstance(workspace, Workspace)
-    m = workspace.measurements
+    m = workspace_measurements
     # assume isinstance(m, Measurements)
     
     # Record Image Measurements
@@ -40,6 +40,7 @@ def add_library_measurements_to_workspace(library_measurements: LibraryMeasureme
             m.add_measurement(object_name, feature_name, data)
 
     for relationship in library_measurements.get_relationship_groups():
+        assert module_num is not None, "Module number must be provided to add relate measurements"
         data = library_measurements.get_relationships(
             relationship.relationship,
             relationship.object_name1,

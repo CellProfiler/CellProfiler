@@ -2183,7 +2183,6 @@ def compute_earth_movers_distance_objects(
 # MeasureImageQuality
 ###############################################################################
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_focus_score_for_scale_group(
         scale_groups: Sequence[int],
         pixel_data: ImageGrayscale,
@@ -2275,7 +2274,6 @@ def get_focus_score_for_scale_group(
                 )
     return focus_score, scale, local_focus_score
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_correlation_for_scale_group(
         pixel_data: ImageGrayscale, 
         scale_groups: Sequence[int], 
@@ -2290,7 +2288,6 @@ def get_correlation_for_scale_group(
         scale_measurements[scale] = get_correlation_for_scale(pixel_data, image_labels, scale)
     return scale_measurements
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_correlation_for_scale(
         pixel_data: ImageGrayscale, 
         image_labels: NDArray[numpy.int_], 
@@ -2306,7 +2303,6 @@ def get_correlation_for_scale(
     return value
 
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_saturation_value(
         pixel_data: ImageGrayscale, 
         image_mask: Optional[ImageGrayscaleMask]=None
@@ -2332,7 +2328,6 @@ def get_saturation_value(
     return percent_minimal, percent_maximal
 
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_intensity_measurement_values(
         pixels: ImageGrayscale, 
         image_mask: Optional[ImageGrayscaleMask]=None
@@ -2369,7 +2364,6 @@ def get_intensity_measurement_values(
     return pixel_count, pixel_sum, pixel_mean, pixel_std, pixel_mad, pixel_median, pixel_min, pixel_max
 
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_power_spectrum_measurement_values(
         pixel_data: ImageGrayscale, 
         image_mask: Optional[ImageGrayscaleMask]=None, 
@@ -2411,7 +2405,6 @@ def get_power_spectrum_measurement_values(
     return powerslope
 
 
-@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def calculate_threshold_for_threshold_group(
         image_pixel_data: ImageGrayscale = numpy.ones((100, 100)),
         mask: Optional[ImageGrayscaleMask] = None,
@@ -2443,6 +2436,7 @@ def calculate_threshold_for_threshold_group(
             assign_middle_to_foreground=assign_middle_to_foreground,
         )
     return global_threshold
+
 ###############################################################################
 # Measure Image Skeleton
 ###############################################################################

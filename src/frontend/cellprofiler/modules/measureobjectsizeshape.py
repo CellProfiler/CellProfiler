@@ -7,7 +7,6 @@ from cellprofiler_core.setting import Divider, Binary, ValidationError
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 
 import cellprofiler.gui.help.content
-import cellprofiler.icons
 
 from cellprofiler_library.modules import measureobjectsizeshape
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures, F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD, ZERNIKE_N

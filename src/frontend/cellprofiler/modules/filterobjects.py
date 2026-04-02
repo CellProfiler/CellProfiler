@@ -141,7 +141,7 @@ PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
-    variable_revision_number = 10
+    variable_revision_number = 11
 
     def __init__(self):
         self.rules = Rules()
@@ -519,6 +519,17 @@ value will be retained.""".format(
         )
 
         group.append(
+            "keep_unassociated_objects",
+            Binary(
+                "Keep unassociated objects?",
+                False,
+                doc="""\
+                Select *{YES}* to keep objects that do not have a parent object. Select *{NO}* to only keep child objects of the objects that get selected by the filter.
+                """
+            )
+        )
+
+        group.append(
             "remover",
             RemoveSettingButton(
                 "", "Remove this additional object", self.additional_objects, group
@@ -565,7 +576,7 @@ value will be retained.""".format(
             settings += x.pipeline_settings()
 
         for x in self.additional_objects:
-            settings += [x.object_name, x.target_name]
+            settings += [x.object_name, x.target_name, x.keep_unassociated_objects]
 
         settings += [self.allow_fuzzy]
 
@@ -742,19 +753,56 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         #
         # Loop over both the primary and additional objects
         #
-        object_list = [(self.x_name.value, self.y_name.value)] + [
-            (x.object_name.value, x.target_name.value) for x in self.additional_objects
+        object_list = [(self.x_name.value, self.y_name.value, None)] + [
+            (x.object_name.value, x.target_name.value, x.keep_unassociated_objects.value) for x in self.additional_objects
         ]
         m = workspace.measurements
         first_set = True
-        for src_name, target_name in object_list:
+        for src_name, target_name, keep_unassociated_objects in object_list:
             src_objects = workspace.get_objects(src_name)
             target_labels = src_objects.segmented.copy()
+
+            # Parent relation is used if it exists (use RelateObjects module)
+            parent_relation_exists = len([i for i in m.get_measurement_columns() if i[0] == src_name and i[1] == f'Parent_{self.x_name.value}']) > 0
             #
             # Reindex the labels of the old source image
             #
-            target_labels[target_labels > max_label] = 0
-            target_labels = label_indexes[target_labels]
+            if first_set or not parent_relation_exists:
+                target_labels[target_labels > max_label] = 0
+                target_labels = label_indexes[target_labels]
+            else:
+                #
+                # Get parent object from measurements
+                #
+                parent_objects = m.get_measurement(src_name, f"Parent_{self.x_name.value}")
+                
+                # Initialize target labels to keep all child objects
+                target_label_numbers = numpy.arange(1, target_labels.max() + 1)
+                
+                orphan_children = target_label_numbers[parent_objects == 0]
+
+                # label == 0 indicates parent object has to be removed
+                objects_to_remove = numpy.arange(max_label+1)[label_indexes == 0][1:] # ignore the first zero as it is the background
+                
+                # object is removed by setting its new label to zero
+                target_label_numbers = target_label_numbers*~numpy.isin(parent_objects, objects_to_remove)
+
+                new_child_object_count = sum(target_label_numbers != 0)
+
+                # orphan children get new labels. Labels are always continuous and start at 1
+                target_label_numbers[target_label_numbers != 0] = numpy.arange(1, new_child_object_count + 1)
+                
+                # Add zero for background label
+                target_label_numbers = numpy.pad(target_label_numbers, (1, 0))
+                
+                # Overwrite orphan children new labels with 0 to remove unassociated objects
+                if not keep_unassociated_objects:
+                    target_label_numbers[orphan_children] = 0
+
+                # Numpy fancy indexing to relabel
+                target_labels = target_label_numbers[target_labels]
+
+            
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
@@ -780,7 +828,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                 workspace.display_data.src_objects_segmented = src_objects.segmented
                 workspace.display_data.target_objects_segmented = target_objects.segmented
                 workspace.display_data.dimensions = src_objects.dimensions
-                first_set = False
+            first_set = False
 
         if self.keep_removed_objects.value:
             # Isolate objects removed by the filter
@@ -1212,7 +1260,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         return super(FilterObjects, self).get_measurement_columns(
             pipeline,
             additional_objects=[
-                (x.object_name.value, x.target_name.value)
+                (x.object_name.value, x.target_name.valu, x.keep_unassociated_objects.value)
                 for x in self.additional_objects
             ] + [(self.x_name.value,self.removed_objects_name.value)] if self.keep_removed_objects.value else [],
         )
@@ -1417,6 +1465,64 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if variable_revision_number == 9:
             setting_values.append(False)
             variable_revision_number = 10
+
+        if variable_revision_number == 10:
+            (
+                x_name,
+                y_name,
+                mode,
+                filter_choice,
+                enclosing_object_name,
+                rules_directory,
+                rules_file_name,
+                rules_class,
+                measurement_count,
+                additional_object_count,
+                per_object_assignment,
+                keep_removed_objects,
+                removed_objects_name,
+            ) = setting_values[:13]
+            additional_object_count = int(additional_object_count)
+            n_measurement_settings = int(measurement_count) * 5
+
+            additional_object_settings_index_offset = 13 + n_measurement_settings
+
+            additional_object_settings = setting_values[additional_object_settings_index_offset: additional_object_settings_index_offset + (additional_object_count*2) ] 
+            additional_object_names = additional_object_settings[::2]
+            additional_target_names = additional_object_settings[1::2]
+
+            (allow_fuzzy, ) = setting_values[additional_object_settings_index_offset + ((additional_object_count)*2):]
+            
+            # Add 'No' for keep_unassociated_objects setting
+            new_additional_object_settings = sum(
+                [
+                    [object_name, target_name, "No"]
+                    for object_name, target_name in zip(
+                        additional_object_names, additional_target_names
+                    )
+                ],
+                []
+            )
+            setting_values = ([
+                x_name,
+                y_name,
+                mode,
+                filter_choice,
+                enclosing_object_name,
+                rules_directory,
+                rules_file_name,
+                rules_class,
+                str(measurement_count),
+                str(additional_object_count),
+                per_object_assignment,
+                keep_removed_objects,
+                removed_objects_name,
+            ]
+            + setting_values[13:13+n_measurement_settings]
+            + new_additional_object_settings
+            + [allow_fuzzy]
+            )
+            variable_revision_number = 11
 
         return setting_values, variable_revision_number
 

@@ -15,7 +15,7 @@ from centrosome.outline import outline
 from functools import reduce
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List, Union, Any
+from typing import Tuple, Optional, Dict, Callable, List, Union, Any, Sequence
 from scipy.linalg import lstsq
 from scipy.ndimage import grey_dilation, grey_erosion
 from numpy.typing import NDArray
@@ -35,7 +35,6 @@ from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as ObjectDecimationMethod
 from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABELS, VF_KIND, EF_V1, EF_V2, EF_LENGTH, EF_TOTAL_INTENSITY
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
-from cellprofiler_library.opts.measureobjectneighbors import Measurement as NeighborsMeasurement
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
 
 ###############################################################################

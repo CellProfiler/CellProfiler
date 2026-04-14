@@ -73,7 +73,7 @@ def measure_image_intensity(
     
     percentile_stats = []
     for percentile, value in percentile_measures.items():
-        key = TemplateMeasurementFormat.INTENSITY_PERCENTILE % (percentile, measurement_name)
+        key = TemplateMeasurementFormat.PERCENTILE % (percentile, measurement_name)
         measurements.add_image_measurement(key, value)
         percentile_stats.append((percentile, value))
 

@@ -11,7 +11,7 @@ from cellprofiler_core.setting.subscriber import (
 )
 
 from cellprofiler.modules import _help
-from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, ALL_MEASUREMENTS
+from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, TemplateFeature, ALL_MEASUREMENTS
 from cellprofiler_library.modules._measureimageintensity import measure_image_intensity
 LOGGER = logging.getLogger(__name__)
 
@@ -272,7 +272,8 @@ class MeasureImageIntensity(Module):
         if self.wants_percentiles:
             percentiles = self.get_percentiles(self.percentiles.value, stop=False)
             for percentile in percentiles:
-                col_defs.append((f"Intensity_Percentile_{percentile}_%s", COLTYPE_FLOAT))
+                # partial application of template
+                col_defs.append((TemplateMeasurementFormat.PERCENTILE % (percentile, '%s'), COLTYPE_FLOAT))
 
         for im in self.images_list.value:
             for feature, coltype in col_defs:
@@ -297,7 +298,7 @@ class MeasureImageIntensity(Module):
             if self.wants_percentiles:
                 percentiles = self.get_percentiles(self.percentiles.value, stop=False)
                 for i in percentiles:
-                    measures.append(f"Percentile_{i}")
+                    measures.append(TemplateFeature.PERCENTILE.value)
             return measures
         return []
 
@@ -306,7 +307,7 @@ class MeasureImageIntensity(Module):
         if self.wants_percentiles:
             percentiles = self.get_percentiles(self.percentiles.value, stop=False)
             for i in percentiles:
-                measures.append(f"Percentile_{i}")
+                measures.append(TemplateFeature.PERCENTILE.value)
         if (
             object_name == "Image"
             and category == "Intensity"

@@ -16,6 +16,10 @@ class Feature(str, Enum):
     LOWER_QUARTILE   = "LowerQuartileIntensity"
     UPPER_QUARTILE   = "UpperQuartileIntensity"
 
+class TemplateFeature(str):
+    """A string sublass for measurement feature templates."""
+    PERCENTILE = "Percentile_%s"
+
 class TemplateMeasurementFormat(str):
     """A string subclass for measurement formatting."""
     TOTAL_INTENSITY = f"{C_INTENSITY}_{Feature.TOTAL_INTENSITY.value}_%s"
@@ -30,7 +34,7 @@ class TemplateMeasurementFormat(str):
     LOWER_QUARTILE  = f"{C_INTENSITY}_{Feature.LOWER_QUARTILE.value}_%s"
     UPPER_QUARTILE  = f"{C_INTENSITY}_{Feature.UPPER_QUARTILE.value}_%s"
     # Intensity_Percentile_{percentile_n}_{measurement}
-    INTENSITY_PERCENTILE = f"{C_INTENSITY}_Percentile_%s_%s"
+    PERCENTILE = f"{C_INTENSITY}_Percentile_%s_%s"
 
 # Iterates over the Enum to get the list of raw strings
 ALL_MEASUREMENTS = [x.value for x in Feature]

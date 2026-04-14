@@ -29,6 +29,7 @@ class TemplateMeasurementFormat(str):
     PERCENT_MAXIMAL = f"{C_INTENSITY}_{Feature.PERCENT_MAXIMAL.value}_%s"
     LOWER_QUARTILE  = f"{C_INTENSITY}_{Feature.LOWER_QUARTILE.value}_%s"
     UPPER_QUARTILE  = f"{C_INTENSITY}_{Feature.UPPER_QUARTILE.value}_%s"
+    INTENSITY_PERCENTILE = f"{C_INTENSITY}_Percentile_%s_%s"
 
 # Iterates over the Enum to get the list of raw strings
 ALL_MEASUREMENTS = [x.value for x in Feature]

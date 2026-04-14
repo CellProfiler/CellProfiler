@@ -52,6 +52,6 @@ def measure_image_intensity(
     measurements.add_image_measurement(TemplateMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
     
     for percentile, value in percentile_measures.items():
-        measurements.add_image_measurement(f"Intensity_Percentile_{percentile}_{measurement_name}", value)
+        measurements.add_image_measurement(TemplateMeasurementFormat.INTENSITY_PERCENTILE % (percentile, measurement_name), value)
         
     return measurements

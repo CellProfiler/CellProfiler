@@ -211,7 +211,7 @@ class MeasureImageIntensity(Module):
                     else:
                         pixels = input_pixels[objects.segmented != 0]
                     
-                    lm = measure_image_intensity(
+                    lm, stats = measure_image_intensity(
                         pixels=pixels,
                         image_name=im,
                         object_name=object_set,
@@ -219,14 +219,14 @@ class MeasureImageIntensity(Module):
                     )
                     
                     self._add_library_measurements_to_core(lm, workspace)
-                    statistics += self._get_statistics(lm, im, object_set)
+                    statistics += stats
             else:
                 if image.has_mask:
                     pixels = input_pixels[image.mask]
                 else:
                     pixels = input_pixels
                 
-                lm = measure_image_intensity(
+                lm, stats = measure_image_intensity(
                     pixels=pixels,
                     image_name=im,
                     object_name=None,
@@ -234,7 +234,7 @@ class MeasureImageIntensity(Module):
                 )
                 
                 self._add_library_measurements_to_core(lm, workspace)
-                statistics += self._get_statistics(lm, im, "")
+                statistics += stats
 
         col_labels = ["Image", "Masking object", "Feature", "Value"]
         workspace.display_data.statistics = statistics
@@ -253,56 +253,6 @@ class MeasureImageIntensity(Module):
         for feature_name, value in lib_measurements.image.items():
             workspace.measurements.add_image_measurement(feature_name, value)
             
-    def _get_statistics(self, lib_measurements, image_name, object_name, measurement_name=None):
-        if measurement_name is None:
-            measurement_name = image_name
-            if object_name:
-                measurement_name += "_" + object_name
-            
-        def get_val(fmt):
-            key = fmt % measurement_name
-            return lib_measurements.image.get(key, 0)
-            
-        all_features = [
-                ("Total intensity", get_val(TemplateMeasurementFormat.TOTAL_INTENSITY)),
-                ("Mean intensity", get_val(TemplateMeasurementFormat.MEAN_INTENSITY)),
-                ("Median intensity", get_val(TemplateMeasurementFormat.MEDIAN_INTENSITY)),
-                ("Std intensity", get_val(TemplateMeasurementFormat.STD_INTENSITY)),
-                ("MAD intensity", get_val(TemplateMeasurementFormat.MAD_INTENSITY)),
-                ("Min intensity", get_val(TemplateMeasurementFormat.MIN_INTENSITY)),
-                ("Max intensity", get_val(TemplateMeasurementFormat.MAX_INTENSITY)),
-                ("Pct maximal", get_val(TemplateMeasurementFormat.PERCENT_MAXIMAL)),
-                ("Lower quartile", get_val(TemplateMeasurementFormat.LOWER_QUARTILE)),
-                ("Upper quartile", get_val(TemplateMeasurementFormat.UPPER_QUARTILE)),
-                ("Total area", get_val(TemplateMeasurementFormat.TOTAL_AREA)),
-        ]
-        
-        prefix = f"Intensity_Percentile_"
-        suffix = f"_{measurement_name}"
-        # extract percentiles from the feature name
-        p_keys = []
-        for key in lib_measurements.image.keys():
-            if key.startswith(prefix) and key.endswith(suffix):
-                p_str = key[len(prefix):-len(suffix)]
-                if p_str.isdigit():
-                    p_keys.append((int(p_str), key))
-        # sort the percentiles to ensure consistent output
-        p_keys.sort()
-        
-        for p, key in p_keys:
-            val = lib_measurements.image[key]
-            all_features.append((f"Percentile {p}", val))
-            
-        return [
-            [
-                image_name,
-                object_name if object_name else "",
-                feature_name,
-                str(value),
-            ]
-            for feature_name, value in all_features
-        ]
-
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         columns = []

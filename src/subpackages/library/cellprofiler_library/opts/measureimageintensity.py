@@ -29,7 +29,24 @@ class TemplateMeasurementFormat(str):
     PERCENT_MAXIMAL = f"{C_INTENSITY}_{Feature.PERCENT_MAXIMAL.value}_%s"
     LOWER_QUARTILE  = f"{C_INTENSITY}_{Feature.LOWER_QUARTILE.value}_%s"
     UPPER_QUARTILE  = f"{C_INTENSITY}_{Feature.UPPER_QUARTILE.value}_%s"
+    # Intensity_Percentile_{percentile_n}_{measurement}
     INTENSITY_PERCENTILE = f"{C_INTENSITY}_Percentile_%s_%s"
 
 # Iterates over the Enum to get the list of raw strings
 ALL_MEASUREMENTS = [x.value for x in Feature]
+
+FORMATED_FEATURE_NAMES = {
+    Feature.TOTAL_INTENSITY.value: "Total intensity",
+    Feature.MEAN_INTENSITY.value: "Mean intensity",
+    Feature.MEDIAN_INTENSITY.value: "Median intensity",
+    Feature.STD_INTENSITY.value: "Std intensity",
+    Feature.MAD_INTENSITY.value: "MAD intensity",
+    Feature.MAX_INTENSITY.value: "Max intensity",
+    Feature.MIN_INTENSITY.value: "Min intensity",
+    Feature.TOTAL_AREA.value: "Total area",
+    Feature.PERCENT_MAXIMAL.value: "Pct maximal",
+    Feature.LOWER_QUARTILE.value: "Lower quartile",
+    Feature.UPPER_QUARTILE.value: "Upper quartile",
+}
+# Percentile {percentile_n}
+FORMATED_PERCENTILE_TEMPLATE = "Percentile %s"

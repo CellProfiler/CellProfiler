@@ -166,8 +166,8 @@ Select the previously identified objects you would like to measure.""".format(
                 mask = objects.parent_image.mask if objects.has_parent_image else None
                 spacing = objects.parent_image.spacing if (objects.volumetric and objects.has_parent_image) else None
                 pipeline_volumetric = workspace.pipeline.volumetric()
-                object_name=object_set
-                _lib_measurements, _statistics= measure_objects_area_perimeter(
+                object_name = object_set
+                _lib_measurements, _statistics = measure_objects_area_perimeter(
                     label_image, 
                     object_name,
                     mask, 

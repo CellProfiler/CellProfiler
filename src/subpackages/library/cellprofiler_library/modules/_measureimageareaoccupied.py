@@ -2,7 +2,7 @@ import skimage.measure
 import numpy as np
 from typing import Annotated, Optional, Tuple, List
 from pydantic import Field, validate_call, ConfigDict
-from cellprofiler_library.types import ImageBinary, ObjectSegmentation, ImageAny
+from cellprofiler_library.types import ImageBinary, ObjectSegmentation, ImageAnyMask
 from cellprofiler_library.functions.measurement import measure_area_occupied, measure_total_area, measure_perimeter, measure_object_perimeter, measure_objects_area_occupied, measure_objects_total_area
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimageareaoccupied import TemplateMeasurementFormat
@@ -41,7 +41,7 @@ def measure_image_area_perimeter(
 def measure_objects_area_perimeter(
     label_image:    Annotated[ObjectSegmentation, Field(description="Object labels to measure")],
     object_name:    Annotated[str, Field(description="Name of the objects")],
-    mask:           Annotated[Optional[ImageAny], Field(description="Mask of the image")] = None,
+    mask:           Annotated[Optional[ImageAnyMask], Field(description="Mask of the image")] = None,
     volumetric:     Annotated[bool, Field(description="True if the objects are volumetric")] = False,
     spacing:        Annotated[Optional[Tuple[float, ...]], Field(description="Image spacing")] = None,
     pipeline_volumetric: Annotated[bool, Field(description="Pipeline is volumetric")] = False

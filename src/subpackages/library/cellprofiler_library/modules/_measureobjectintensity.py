@@ -2,13 +2,16 @@ import numpy
 import skimage.segmentation
 
 from numpy.typing import NDArray
-from typing import Tuple, Annotated, Optional
+from typing import Tuple, Annotated, Optional, List, Any
 from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_core.utilities.core.object import crop_labels_and_image
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import measure_object_area_occupied, measure_integrated_intensity, measure_mean_intensity, measure_std_intensity, measure_min_intensity, measure_max_intensity, measure_max_position, measure_center_of_mass_binary, measure_center_of_mass_intensity, measure_mass_displacement, measure_quartile_intensity
-from cellprofiler_library.opts.measureobjectintensity import TemplateMeasurementFormat
+from cellprofiler_library.opts.measureobjectintensity import TemplateMeasurementFormat, IntensityFeature
+
+
+ObjectIntensityStatistics = List[Tuple[str,str,str,Any,Any,Any]]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_location_measurements(
@@ -73,7 +76,7 @@ def measure_object_intensity(
         object_labels:      Annotated[ObjectLabelSet, Field(description="Object labels")],
         nobjects:           Annotated[int, Field(description="Number of objects in object_labels")],
         image_dimensions:   Annotated[int, Field(description="For 2D images, this is 2. For 3D images, this is 3")],
-        ) -> LibraryMeasurements:
+        ) -> Tuple[LibraryMeasurements, ObjectIntensityStatistics]:
     """
     Compute intensity measurements for objects in an image.
     
@@ -234,33 +237,44 @@ def measure_object_intensity(
             min_intensity_edge[lindexes - 1] = _min_intensity_edge
             max_intensity_edge[lindexes - 1] = _max_intensity_edge
 
-    # Create LibraryMeasurements and add all measurements
     measurements = LibraryMeasurements()
-    
-    # Add Intensity measurements
+    statistics: ObjectIntensityStatistics = []
+
+    def add_measurement(feature_name: str, frmt_template: str, measurement_val: NDArray[numpy.float_]):
+        measurements.add_measurement(object_name, frmt_template % image_name, measurement_val)
+
+        statistics.append((
+            image_name,
+            object_name,
+            feature_name,
+            numpy.round(numpy.mean(measurement_val), 3),
+            numpy.round(numpy.median(measurement_val), 3),
+            numpy.round(numpy.std(measurement_val), 3),
+        ))
+
     # Intensity measurements
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.INTEGRATED_INTENSITY % image_name, integrated_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MEAN_INTENSITY % image_name, mean_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.STD_INTENSITY % image_name, std_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MIN_INTENSITY % image_name, min_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MAX_INTENSITY % image_name, max_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.INTEGRATED_INTENSITY_EDGE % image_name, integrated_intensity_edge)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MEAN_INTENSITY_EDGE % image_name, mean_intensity_edge)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.STD_INTENSITY_EDGE % image_name, std_intensity_edge)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MIN_INTENSITY_EDGE % image_name, min_intensity_edge)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MAX_INTENSITY_EDGE % image_name, max_intensity_edge)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MASS_DISPLACEMENT % image_name, mass_displacement)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOWER_QUARTILE_INTENSITY % image_name, lower_quartile_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MEDIAN_INTENSITY % image_name, median_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.MAD_INTENSITY % image_name, mad_intensity)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.UPPER_QUARTILE_INTENSITY % image_name, upper_quartile_intensity)
+    add_measurement(IntensityFeature.INTEGRATED_INTENSITY.value, TemplateMeasurementFormat.INTEGRATED_INTENSITY, integrated_intensity)
+    add_measurement(IntensityFeature.MEAN_INTENSITY.value, TemplateMeasurementFormat.MEAN_INTENSITY, mean_intensity)
+    add_measurement(IntensityFeature.STD_INTENSITY.value, TemplateMeasurementFormat.STD_INTENSITY, std_intensity)
+    add_measurement(IntensityFeature.MIN_INTENSITY.value, TemplateMeasurementFormat.MIN_INTENSITY, min_intensity)
+    add_measurement(IntensityFeature.MAX_INTENSITY.value, TemplateMeasurementFormat.MAX_INTENSITY, max_intensity)
+    add_measurement(IntensityFeature.INTEGRATED_INTENSITY_EDGE.value, TemplateMeasurementFormat.INTEGRATED_INTENSITY_EDGE, integrated_intensity_edge)
+    add_measurement(IntensityFeature.MEAN_INTENSITY_EDGE.value, TemplateMeasurementFormat.MEAN_INTENSITY_EDGE, mean_intensity_edge)
+    add_measurement(IntensityFeature.STD_INTENSITY_EDGE.value, TemplateMeasurementFormat.STD_INTENSITY_EDGE, std_intensity_edge)
+    add_measurement(IntensityFeature.MIN_INTENSITY_EDGE.value, TemplateMeasurementFormat.MIN_INTENSITY_EDGE, min_intensity_edge)
+    add_measurement(IntensityFeature.MAX_INTENSITY_EDGE.value, TemplateMeasurementFormat.MAX_INTENSITY_EDGE, max_intensity_edge)
+    add_measurement(IntensityFeature.MASS_DISPLACEMENT.value, TemplateMeasurementFormat.MASS_DISPLACEMENT, mass_displacement)
+    add_measurement(IntensityFeature.LOWER_QUARTILE_INTENSITY.value, TemplateMeasurementFormat.LOWER_QUARTILE_INTENSITY, lower_quartile_intensity)
+    add_measurement(IntensityFeature.MEDIAN_INTENSITY.value, TemplateMeasurementFormat.MEDIAN_INTENSITY, median_intensity)
+    add_measurement(IntensityFeature.MAD_INTENSITY.value, TemplateMeasurementFormat.MAD_INTENSITY, mad_intensity)
+    add_measurement(IntensityFeature.UPPER_QUARTILE_INTENSITY.value, TemplateMeasurementFormat.UPPER_QUARTILE_INTENSITY, upper_quartile_intensity)
 
     # Location measurements (Using the updated Location prefix)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_CMI_X % image_name, cmi_x)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_CMI_Y % image_name, cmi_y)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_CMI_Z % image_name, cmi_z)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_MAX_X % image_name, max_x)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_MAX_Y % image_name, max_y)
-    measurements.add_measurement(object_name, TemplateMeasurementFormat.LOC_MAX_Z % image_name, max_z)
-    
-    return measurements
+    add_measurement(IntensityFeature.LOC_CMI_X.value, TemplateMeasurementFormat.LOC_CMI_X, cmi_x)
+    add_measurement(IntensityFeature.LOC_CMI_Y.value, TemplateMeasurementFormat.LOC_CMI_Y, cmi_y)
+    add_measurement(IntensityFeature.LOC_CMI_Z.value, TemplateMeasurementFormat.LOC_CMI_Z, cmi_z)
+    add_measurement(IntensityFeature.LOC_MAX_X.value, TemplateMeasurementFormat.LOC_MAX_X, max_x)
+    add_measurement(IntensityFeature.LOC_MAX_Y.value, TemplateMeasurementFormat.LOC_MAX_Y, max_y)
+    add_measurement(IntensityFeature.LOC_MAX_Z.value, TemplateMeasurementFormat.LOC_MAX_Z, max_z)
+
+    return measurements, statistics

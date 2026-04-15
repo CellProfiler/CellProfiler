@@ -1,10 +1,12 @@
 import numpy as np
 from numpy.typing import NDArray
-from typing import List, Annotated, Optional
+from typing import List, Annotated, Optional, Tuple, Union
 from pydantic import Field, validate_call, ConfigDict
 from cellprofiler_library.functions.measurement import measure_image_intensities
 from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, Feature, FORMATED_FEATURE_NAMES, FORMATED_PERCENTILE_TEMPLATE 
 from cellprofiler_library.measurement_model import LibraryMeasurements
+
+IntensityStatistics = List[Union[List[str], Tuple[str,float]]]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_image_intensity(
@@ -12,7 +14,7 @@ def measure_image_intensity(
         image_name:     Annotated[str, Field(description="Name of the image")],
         object_name:    Annotated[Optional[str], Field(description="Name of the object set (if any)")] = None,
         percentiles:    Annotated[Optional[List[int]], Field(description="Percentiles to measure")]=[],
-        ) -> LibraryMeasurements:
+        ) -> Tuple[LibraryMeasurements, IntensityStatistics]:
     
     if percentiles is None:
         percentiles = []
@@ -37,9 +39,9 @@ def measure_image_intensity(
     ), percentile_measures = measure_image_intensities(pixels, percentiles)
 
     measurements = LibraryMeasurements()
-    statistics = []
+    statistics: IntensityStatistics = []
 
-    def add_statistic(feature_name, feature_value):
+    def add_statistic(feature_name: str, feature_value: Union[int, float]):
         statistics.append([
             image_name,
             object_name if object_name else "",
@@ -71,7 +73,7 @@ def measure_image_intensity(
     measurements.add_image_measurement(TemplateMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
     add_statistic(FORMATED_FEATURE_NAMES[Feature.UPPER_QUARTILE.value], pixel_upper_qrt)
     
-    percentile_stats = []
+    percentile_stats: List[Tuple[int,float]] = []
     for percentile, value in percentile_measures.items():
         key = TemplateMeasurementFormat.PERCENTILE % (percentile, measurement_name)
         measurements.add_image_measurement(key, value)

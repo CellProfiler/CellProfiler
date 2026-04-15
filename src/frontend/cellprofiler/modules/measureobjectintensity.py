@@ -1,4 +1,3 @@
-import numpy
 from cellprofiler_core.constants.measurement import C_LOCATION, COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, ValidationError
@@ -8,7 +7,7 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler.modules import _help
 from cellprofiler_library.modules._measureobjectintensity import measure_object_intensity
-from cellprofiler_library.opts.measureobjectintensity import ALL_MEASUREMENTS, ALL_LOCATION_MEASUREMENTS, IntensityFeature, C_INTENSITY
+from cellprofiler_library.opts.measureobjectintensity import ALL_MEASUREMENTS, ALL_LOCATION_MEASUREMENTS, C_INTENSITY, TemplateMeasurementFormat, IntensityFeature
 
 __doc__ = """
 MeasureObjectIntensity
@@ -238,7 +237,7 @@ class MeasureObjectIntensity(Module):
                 objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
                 
-                lib_measurements = measure_object_intensity(
+                lib_measurements, lib_stats = measure_object_intensity(
                     img=img,
                     image_name=image_name,
                     object_name=object_name,
@@ -250,50 +249,24 @@ class MeasureObjectIntensity(Module):
 
                 m = workspace.measurements
 
-                for category, feature_name in (
-                    (C_INTENSITY, IntensityFeature.INTEGRATED_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.MEAN_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.STD_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.MIN_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.MAX_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.INTEGRATED_INTENSITY_EDGE.value),
-                    (C_INTENSITY, IntensityFeature.MEAN_INTENSITY_EDGE.value),
-                    (C_INTENSITY, IntensityFeature.STD_INTENSITY_EDGE.value),
-                    (C_INTENSITY, IntensityFeature.MIN_INTENSITY_EDGE.value),
-                    (C_INTENSITY, IntensityFeature.MAX_INTENSITY_EDGE.value),
-                    (C_INTENSITY, IntensityFeature.MASS_DISPLACEMENT.value),
-                    (C_INTENSITY, IntensityFeature.LOWER_QUARTILE_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.MEDIAN_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.MAD_INTENSITY.value),
-                    (C_INTENSITY, IntensityFeature.UPPER_QUARTILE_INTENSITY.value),
-                    (C_LOCATION, IntensityFeature.LOC_CMI_X.value),
-                    (C_LOCATION, IntensityFeature.LOC_CMI_Y.value),
-                    (C_LOCATION, IntensityFeature.LOC_CMI_Z.value),
-                    (C_LOCATION, IntensityFeature.LOC_MAX_X.value),
-                    (C_LOCATION, IntensityFeature.LOC_MAX_Y.value),
-                    (C_LOCATION, IntensityFeature.LOC_MAX_Z.value),
-                ):
-                    measurement_name = "{}_{}_{}".format(
-                        category, feature_name, image_name
-                    )
-                    
+                # Feature Name -> Template String
+                feature_template_map = {
+                    val[:-len('_%s')].split('_', 1)[1]: val
+                    for val in (getattr(TemplateMeasurementFormat, x.name) for x in IntensityFeature)
+                }
+
+                for stat in lib_stats:
+                    image_name = stat[0]
+                    object_name = stat[1]
+                    feature_name = stat[2]
+                    measurement_name = feature_template_map[feature_name] % image_name
                     # Retrieve measurement from LibraryMeasurements
                     # Note: measure_object_intensity adds them with the same key format
                     if lib_measurements.has_feature(object_name, measurement_name):
                         measurement = lib_measurements.get_measurement(object_name, measurement_name)
                         m.add_measurement(object_name, measurement_name, measurement)
-                        
                         if self.show_window and len(measurement) > 0:
-                            workspace.display_data.statistics.append(
-                                (
-                                    image_name,
-                                    object_name,
-                                    feature_name,
-                                    numpy.round(numpy.mean(measurement), 3),
-                                    numpy.round(numpy.median(measurement), 3),
-                                    numpy.round(numpy.std(measurement), 3),
-                                )
-                            )
+                            workspace.display_data.statistics.append(stat)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

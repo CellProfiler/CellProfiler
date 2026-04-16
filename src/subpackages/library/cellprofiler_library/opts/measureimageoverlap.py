@@ -5,7 +5,6 @@ class DM(Enum):
     KMEANS = "K Means"
     SKELETON = "Skeleton"
 
-
 class Feature(str, Enum):
     F_FACTOR = "Ffactor"
     PRECISION = "Precision"

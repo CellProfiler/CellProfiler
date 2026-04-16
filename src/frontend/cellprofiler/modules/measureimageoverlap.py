@@ -90,7 +90,6 @@ References
 """
 
 from cellprofiler.modules import _help
-
 from cellprofiler_library.modules import measureimageoverlap
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
@@ -99,18 +98,6 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_library.opts.measureimageoverlap import DM, Feature, ALL_FEATURES, C_IMAGE_OVERLAP
-
-ALL_FEATURES = [
-    Feature.F_FACTOR,
-    Feature.PRECISION,
-    Feature.RECALL,
-    Feature.TRUE_POS_RATE,
-    Feature.FALSE_POS_RATE,
-    Feature.FALSE_NEG_RATE,
-    Feature.TRUE_NEG_RATE,
-    Feature.RAND_INDEX,
-    Feature.ADJUSTED_RAND_INDEX,
-]
 
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
@@ -286,7 +273,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         test_pixels = test_image.pixel_data
 
-        measurements = measureimageoverlap(
+        lib_measurements, lib_stats = measureimageoverlap(
             ground_truth_pixels, 
             test_pixels, 
             self.test_img.value,
@@ -300,7 +287,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         m = workspace.measurements
 
-        for feature_name, value in measurements.image.items():
+        for feature_name, value in lib_measurements.image.items():
             if feature_name.startswith(C_IMAGE_OVERLAP + "_"):
                  m.add_image_measurement(feature_name, value)
 
@@ -308,36 +295,22 @@ the two images. Set this setting to “No” to assess no penalty.""",
            
             workspace.display_data.dimensions = test_image.dimensions
            
-            workspace.display_data.true_positives = measurements.image["true_positives"]
+            workspace.display_data.true_positives = lib_measurements.image["true_positives"]
 
-            workspace.display_data.true_negatives = measurements.image["true_negatives"]
+            workspace.display_data.true_negatives = lib_measurements.image["true_negatives"]
 
-            workspace.display_data.false_positives = measurements.image["false_positives"]
+            workspace.display_data.false_positives = lib_measurements.image["false_positives"]
 
-            workspace.display_data.false_negatives = measurements.image["false_negatives"]
+            workspace.display_data.false_negatives = lib_measurements.image["false_negatives"]
 
             def get_val(feature):
-                 return measurements.image[self.measurement_name(feature)]
+                 return lib_measurements.image[self.measurement_name(feature)]
 
             workspace.display_data.rand_index = get_val(Feature.RAND_INDEX)
 
             workspace.display_data.adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
 
-            workspace.display_data.statistics = [
-                (Feature.F_FACTOR.value, get_val(Feature.F_FACTOR)),
-                (Feature.PRECISION.value, get_val(Feature.PRECISION)),
-                (Feature.RECALL.value, get_val(Feature.RECALL)),
-                (Feature.FALSE_POS_RATE.value, get_val(Feature.FALSE_POS_RATE)),
-                (Feature.FALSE_NEG_RATE.value, get_val(Feature.FALSE_NEG_RATE)),
-                (Feature.RAND_INDEX.value, get_val(Feature.RAND_INDEX)),
-                (Feature.ADJUSTED_RAND_INDEX.value, get_val(Feature.ADJUSTED_RAND_INDEX)),
-            ]
-
-            if self.wants_emd:
-                workspace.display_data.statistics.append(
-                    (Feature.EARTH_MOVERS_DISTANCE.value, get_val(Feature.EARTH_MOVERS_DISTANCE))
-                )
-
+            workspace.display_data.statistics = lib_stats
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""

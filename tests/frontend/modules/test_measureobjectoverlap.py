@@ -1,10 +1,10 @@
 import numpy
 import numpy.random
 import scipy.ndimage
+import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler_core.module
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 
 import cellprofiler.modules.measureobjectoverlap
@@ -219,6 +219,4 @@ def test_test_objects_rand_index():
         )
     )
     adjusted_rand_index = measurements.get_current_image_measurement(mname)
-
-
-#        assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)
+    assert 0.6217000249633685 == pytest.approx(adjusted_rand_index)

@@ -1,11 +1,26 @@
 import numpy
 from numpy.typing import NDArray
-from pydantic import Field, validate_call, ConfigDict
-from typing import Annotated, Tuple, Union, Optional
+from pydantic import Field, validate_call, ConfigDict, BaseModel
+from typing import Annotated, Tuple, Union, Optional, List, Any
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod, Feature, C_IMAGE_OVERLAP
 from cellprofiler_library.types import ObjectLabelSet
-from cellprofiler_library.functions.measurement import calculate_overlap_measurements, compute_earth_movers_distance_objects, get_labels_mask
+from cellprofiler_library.functions.measurement import calculate_overlap_measurements, compute_earth_movers_distance_objects
 from cellprofiler_library.measurement_model import LibraryMeasurements
+
+ObjectOverlapStatistics = List[Tuple[str, float]]
+
+class ObjectOverlapDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectOverlapStatistics
+    true_positives: float
+    true_negatives: float
+    false_positives: float
+    false_negatives: float
+
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_overlap(
@@ -21,9 +36,10 @@ def measure_object_overlap(
         penalize_missing:   Annotated[Optional[bool], Field(description="Penalize missing pixels")] = False,
         max_points:         Annotated[Optional[int], Field(description="Maximum # of points")] = 250,
         return_visualization_data: Annotated[bool, Field(description="Return GT_pixels and ID_pixels for visualization")] = False,
-) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, NDArray[numpy.float64], NDArray[numpy.float64], int, int]]:
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectOverlapDisplayData]]:
 
     measurements = LibraryMeasurements()
+    statistics: ObjectOverlapStatistics = []
 
     (
         F_factor,
@@ -50,15 +66,20 @@ def measure_object_overlap(
     def get_measurement_name(feature_name: str) -> str:
         return f"{C_IMAGE_OVERLAP}_{feature_name}_{object_name_GT}_{object_name_ID}"
     
-    measurements.add_image_measurement(get_measurement_name(Feature.F_FACTOR), F_factor)
-    measurements.add_image_measurement(get_measurement_name(Feature.PRECISION), precision)
-    measurements.add_image_measurement(get_measurement_name(Feature.RECALL), recall)
-    measurements.add_image_measurement(get_measurement_name(Feature.TRUE_POS_RATE), true_positive_rate)
-    measurements.add_image_measurement(get_measurement_name(Feature.FALSE_POS_RATE), false_positive_rate)
-    measurements.add_image_measurement(get_measurement_name(Feature.TRUE_NEG_RATE), true_negative_rate)
-    measurements.add_image_measurement(get_measurement_name(Feature.FALSE_NEG_RATE), false_negative_rate)
-    measurements.add_image_measurement(get_measurement_name(Feature.RAND_INDEX), rand_index)
-    measurements.add_image_measurement(get_measurement_name(Feature.ADJUSTED_RAND_INDEX), adjusted_rand_index)
+    def add_measurement(feature_name: str, measurement_val: float):
+        measurements.add_image_measurement(get_measurement_name(feature_name), measurement_val)
+        if return_visualization_data:
+            statistics.append((feature_name, measurement_val))
+
+    add_measurement(Feature.F_FACTOR.value, float(F_factor))
+    add_measurement(Feature.PRECISION.value, float(precision))
+    add_measurement(Feature.RECALL.value, float(recall))
+    add_measurement(Feature.TRUE_POS_RATE.value, float(true_positive_rate))
+    add_measurement(Feature.FALSE_POS_RATE.value, float(false_positive_rate))
+    add_measurement(Feature.TRUE_NEG_RATE.value, float(true_negative_rate))
+    add_measurement(Feature.FALSE_NEG_RATE.value, float(false_negative_rate))
+    add_measurement(Feature.RAND_INDEX.value, float(rand_index))
+    add_measurement(Feature.ADJUSTED_RAND_INDEX.value, float(adjusted_rand_index))
 
     if calcualte_emd:
         assert decimation_method is not None, "Decimation method must be provided for Earth Movers Distance calculation"
@@ -73,9 +94,42 @@ def measure_object_overlap(
             max_points=max_points,
             penalize_missing=penalize_missing,
         )
-        measurements.add_image_measurement(get_measurement_name(Feature.EARTH_MOVERS_DISTANCE), emd)
+        add_measurement(Feature.EARTH_MOVERS_DISTANCE, float(emd))
     
     if return_visualization_data:
-        return measurements, GT_pixels, ID_pixels, xGT, yGT
+        def subscripts(condition1: int, condition2: int):
+            x1, y1 = numpy.where(GT_pixels == condition1)
+            x2, y2 = numpy.where(ID_pixels == condition2)
+            mask = set(zip(x1, y1)) & set(zip(x2, y2))
+            return list(mask)
+
+        TP_mask = subscripts(1, 1)
+        FN_mask = subscripts(1, 0)
+        FP_mask = subscripts(0, 1)
+        TN_mask = subscripts(0, 0)
+
+        TP_pixels = numpy.zeros((xGT, yGT))
+        FN_pixels = numpy.zeros((xGT, yGT))
+        FP_pixels = numpy.zeros((xGT, yGT))
+        TN_pixels = numpy.zeros((xGT, yGT))
+
+        def maskimg(mask: List[Tuple[Any, Any]], img: NDArray[numpy.float_]):
+            for ea in mask:
+                img[ea] = 1
+            return img
+
+        TP_pixels = maskimg(TP_mask, TP_pixels)
+        FN_pixels = maskimg(FN_mask, FN_pixels)
+        FP_pixels = maskimg(FP_mask, FP_pixels)
+        TN_pixels = maskimg(TN_mask, TN_pixels)
+        
+        display_data = ObjectOverlapDisplayData(
+            statistics = statistics,
+            true_positives = float(TP_pixels),
+            true_negatives = float(TN_pixels),
+            false_positives = float(FP_pixels),
+            false_negatives = float(FN_pixels),
+        )
+        return measurements, display_data
     else:
         return measurements

@@ -246,7 +246,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         
         # Unpack result based on whether visualization data was requested
         if self.show_window:
-            lib_measurements, GT_pixels, ID_pixels, xGT, yGT = result
+            lib_measurements, lib_display = result
         else:
             lib_measurements = result
         
@@ -255,64 +255,11 @@ the two objects. Set this setting to “No” to assess no penalty.""",
             m.add_image_measurement(feature_name, value)
 
         if self.show_window:
-            def get_val(feature):
-                name = self.measurement_name(feature)
-                return lib_measurements.image.get(name)
-
-            F_factor = get_val(Feature.F_FACTOR)
-            precision = get_val(Feature.PRECISION)
-            recall = get_val(Feature.RECALL)
-            false_positive_rate = get_val(Feature.FALSE_POS_RATE)
-            false_negative_rate = get_val(Feature.FALSE_NEG_RATE)
-            rand_index = get_val(Feature.RAND_INDEX)
-            adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
-            emd = get_val(Feature.EARTH_MOVERS_DISTANCE) if self.wants_emd.value else None
-
-            def subscripts(condition1, condition2):
-                x1, y1 = numpy.where(GT_pixels == condition1)
-                x2, y2 = numpy.where(ID_pixels == condition2)
-                mask = set(zip(x1, y1)) & set(zip(x2, y2))
-                return list(mask)
-
-            TP_mask = subscripts(1, 1)
-            FN_mask = subscripts(1, 0)
-            FP_mask = subscripts(0, 1)
-            TN_mask = subscripts(0, 0)
-
-            TP_pixels = numpy.zeros((xGT, yGT))
-            FN_pixels = numpy.zeros((xGT, yGT))
-            FP_pixels = numpy.zeros((xGT, yGT))
-            TN_pixels = numpy.zeros((xGT, yGT))
-
-            def maskimg(mask, img):
-                for ea in mask:
-                    img[ea] = 1
-                return img
-
-            TP_pixels = maskimg(TP_mask, TP_pixels)
-            FN_pixels = maskimg(FN_mask, FN_pixels)
-            FP_pixels = maskimg(FP_mask, FP_pixels)
-            TN_pixels = maskimg(TN_mask, TN_pixels)
-            
-            workspace.display_data.true_positives = TP_pixels
-            workspace.display_data.true_negatives = TN_pixels
-            workspace.display_data.false_positives = FP_pixels
-            workspace.display_data.false_negatives = FN_pixels
-            workspace.display_data.statistics = [
-                (Feature.F_FACTOR.value, F_factor),
-                (Feature.PRECISION.value, precision),
-                (Feature.RECALL.value, recall),
-                (Feature.FALSE_POS_RATE.value, false_positive_rate),
-                (Feature.FALSE_NEG_RATE.value, false_negative_rate),
-                (Feature.RAND_INDEX.value, rand_index),
-                (Feature.ADJUSTED_RAND_INDEX.value, adjusted_rand_index),
-            ]
-            if self.wants_emd:
-                assert emd is not None, "Earth Movers Distance was not calculated"
-                workspace.display_data.statistics.append(
-                    (Feature.EARTH_MOVERS_DISTANCE.value, emd)
-                )
-
+            workspace.display_data.true_positives = lib_display.true_positives
+            workspace.display_data.true_negatives = lib_display.true_negatives
+            workspace.display_data.false_positives = lib_display.false_positives
+            workspace.display_data.false_negatives = lib_display.false_negatives
+            workspace.display_data.statistics = lib_display.statistics
 
     def get_labels_mask(self, obj_labels, obj_shape):
         labels_mask = numpy.zeros(obj_shape, bool)

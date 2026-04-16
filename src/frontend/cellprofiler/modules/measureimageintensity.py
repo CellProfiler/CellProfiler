@@ -236,6 +236,7 @@ class MeasureImageIntensity(Module):
                 self._add_library_measurements_to_core(lm, workspace)
                 statistics += stats
 
+        # TODO: library_cleanup - wrap in self.show_window
         col_labels = ["Image", "Masking object", "Feature", "Value"]
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels

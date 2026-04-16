@@ -41,7 +41,9 @@ def measure_image_intensity(
     measurements = LibraryMeasurements()
     statistics: IntensityStatistics = []
 
-    def add_statistic(feature_name: str, feature_value: Union[int, float]):
+    def add_measurement(feature_name: str, fmt_template: str, feature_value: Union[int, float]):
+        measurements.add_image_measurement(fmt_template % measurement_name, feature_value)
+
         statistics.append([
             image_name,
             object_name if object_name else "",
@@ -50,28 +52,17 @@ def measure_image_intensity(
         ])
 
     # Add measurements
-    measurements.add_image_measurement(TemplateMeasurementFormat.TOTAL_INTENSITY % measurement_name, pixel_sum)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.TOTAL_INTENSITY.value], pixel_sum)
-    measurements.add_image_measurement(TemplateMeasurementFormat.MEAN_INTENSITY % measurement_name, pixel_mean)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.MEAN_INTENSITY.value], pixel_mean)
-    measurements.add_image_measurement(TemplateMeasurementFormat.MEDIAN_INTENSITY % measurement_name, pixel_median)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.MEDIAN_INTENSITY.value], pixel_median)
-    measurements.add_image_measurement(TemplateMeasurementFormat.STD_INTENSITY % measurement_name, pixel_std)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.STD_INTENSITY.value], pixel_std)
-    measurements.add_image_measurement(TemplateMeasurementFormat.MAD_INTENSITY % measurement_name, pixel_mad)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.MAD_INTENSITY.value], pixel_mad)
-    measurements.add_image_measurement(TemplateMeasurementFormat.MAX_INTENSITY % measurement_name, pixel_max)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.MAX_INTENSITY.value], pixel_max)
-    measurements.add_image_measurement(TemplateMeasurementFormat.MIN_INTENSITY % measurement_name, pixel_min)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.MIN_INTENSITY.value], pixel_min)
-    measurements.add_image_measurement(TemplateMeasurementFormat.TOTAL_AREA % measurement_name, pixel_count)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.TOTAL_AREA.value], pixel_count)
-    measurements.add_image_measurement(TemplateMeasurementFormat.PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.PERCENT_MAXIMAL.value], pixel_pct_max)
-    measurements.add_image_measurement(TemplateMeasurementFormat.LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.LOWER_QUARTILE.value], pixel_lower_qrt)
-    measurements.add_image_measurement(TemplateMeasurementFormat.UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
-    add_statistic(FORMATED_FEATURE_NAMES[Feature.UPPER_QUARTILE.value], pixel_upper_qrt)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.TOTAL_INTENSITY.value], TemplateMeasurementFormat.TOTAL_INTENSITY, pixel_sum)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.MEAN_INTENSITY.value], TemplateMeasurementFormat.MEAN_INTENSITY, pixel_mean)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.MEDIAN_INTENSITY.value], TemplateMeasurementFormat.MEDIAN_INTENSITY, pixel_median)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.STD_INTENSITY.value], TemplateMeasurementFormat.STD_INTENSITY, pixel_std)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.MAD_INTENSITY.value], TemplateMeasurementFormat.MAD_INTENSITY, pixel_mad)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.MAX_INTENSITY.value], TemplateMeasurementFormat.MAX_INTENSITY, pixel_max)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.MIN_INTENSITY.value], TemplateMeasurementFormat.MIN_INTENSITY, pixel_min)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.TOTAL_AREA.value], TemplateMeasurementFormat.TOTAL_AREA, pixel_count)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.PERCENT_MAXIMAL.value], TemplateMeasurementFormat.PERCENT_MAXIMAL, pixel_pct_max)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.LOWER_QUARTILE.value], TemplateMeasurementFormat.LOWER_QUARTILE, pixel_lower_qrt)
+    add_measurement(FORMATED_FEATURE_NAMES[Feature.UPPER_QUARTILE.value], TemplateMeasurementFormat.UPPER_QUARTILE, pixel_upper_qrt)
     
     percentile_stats: List[Tuple[int,float]] = []
     for percentile, value in percentile_measures.items():

@@ -642,7 +642,7 @@ You can set a different threshold for each image selected in the module.
                 #
                 # Run colocalization measurements on the images
                 #
-                colocalization_measurements, measurements_summary = run_image_pair_images(
+                lib_measurements, lib_display = run_image_pair_images(
                     im1_pixel_data = im1_pixel_data, 
                     im2_pixel_data = im2_pixel_data, 
                     im1_name = im1_name, 
@@ -653,10 +653,11 @@ You can set a different threshold for each image selected in the module.
                     measurement_types = measurement_types, 
                     im1_scale = first_image_scale,
                     im2_scale = second_image_scale,
-                    costes_method = costes_method
+                    costes_method = costes_method,
+                    return_visualization_data = True,
                 )
-                statistics += measurements_summary
-                all_measurements = all_measurements.merge(colocalization_measurements)
+                statistics += lib_display.statistics
+                all_measurements = all_measurements.merge(lib_measurements)
 
             if self.wants_objects():
                 for object_name in self.objects_list.value:
@@ -688,7 +689,7 @@ You can set a different threshold for each image selected in the module.
                     #
                     # Run colocalization measurements on the objects
                     #
-                    colocalization_measurements, measurements_summary = run_image_pair_objects(
+                    lib_measurements, lib_display = run_image_pair_objects(
                         im1_pixels = first_pixels.astype(numpy.float32), 
                         im2_pixels = second_pixels.astype(numpy.float32), 
                         labels = labels, 
@@ -704,11 +705,11 @@ You can set a different threshold for each image selected in the module.
                         measurement_types = measurement_types, 
                         im1_scale = im1_scale,
                         im2_scale = im2_scale,
-                        costes_method = costes_method
-
+                        costes_method = costes_method,
+                        return_visualization_data = True,
                     )
-                    statistics += measurements_summary
-                    all_measurements = all_measurements.merge(colocalization_measurements)
+                    statistics += lib_display.statistics
+                    all_measurements = all_measurements.merge(lib_measurements)
 
         # Unpack all measurements to workspace
         for measurement_name, measurement_value in all_measurements.image.items():

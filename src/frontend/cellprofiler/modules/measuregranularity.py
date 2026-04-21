@@ -276,7 +276,7 @@ class MeasureGranularity(Module):
         granular_spectrum_length = self.granular_spectrum_length.value
         dimensions = im.dimensions
 
-        measurements, summary = measure_granularity(
+        lib_measurements, lib_display = measure_granularity(
             image_name,
             im_pixel_data, 
             im_mask, 
@@ -285,19 +285,20 @@ class MeasureGranularity(Module):
             element_size, 
             object_records, 
             granular_spectrum_length, 
-            dimensions
+            dimensions,
+            return_visualization_data=True,
         )
         
         # Record Image Measurements
-        for feature_name, value in measurements.image.items():
+        for feature_name, value in lib_measurements.image.items():
             workspace.measurements.add_image_measurement(feature_name, value)
             
         # Record Object Measurements
-        for object_name, features in measurements.objects.items():
+        for object_name, features in lib_measurements.objects.items():
             for feature_name, values in features.items():
                 workspace.measurements.add_measurement(object_name, feature_name, values)
 
-        return summary
+        return lib_display.statistics
 
     def get_measurement_columns(self, pipeline, return_sources=False):
         result = []

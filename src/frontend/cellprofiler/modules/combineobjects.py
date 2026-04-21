@@ -34,7 +34,6 @@ YES          YES           NO
 import numpy
 import scipy.ndimage
 import skimage.morphology
-import skimage.segmentation
 from cellprofiler_core.module import Identify
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting.choice import Choice

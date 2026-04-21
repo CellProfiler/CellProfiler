@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import List, Tuple, Annotated, Optional, Union
-from pydantic import validate_call, ConfigDict, BeforeValidator, Field
+from pydantic import validate_call, ConfigDict, BeforeValidator, Field, BaseModel
 from cellprofiler_library.functions.measurement import measure_correlation_and_slope_from_objects, measure_manders_coefficient_from_objects, measure_rwc_coefficient_from_objects, measure_overlap_coefficient_from_objects, measure_costes_coefficient_from_objects, get_thresholded_images_and_counts, measure_correlation_and_slope, measure_manders_coefficient, measure_rwc_coefficient, measure_overlap_coefficient, measure_costes_coefficient
 from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel, ObjectSegmentation, ImageAny, ImageAnyMask
@@ -9,6 +9,7 @@ from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.image_processing import crop_image_similarly
 from cellprofiler_library.functions.object_processing import size_similarly, object_crop_image_similarly
+
 
 def crop_image_pair_similarly(
         im1_pixel_data:     Annotated[ImageGrayscale, Field(description="First image pixel data")],
@@ -107,6 +108,16 @@ def crop_image_pair_and_object_similarly(
 
     return im1_pixels, im2_pixels, obj_segmented, mask, im1_costes_pixels, im2_costes_pixels
 
+ColocalizationStatistics = List[Tuple[str, str, str, str, str]]
+
+class ColocalizationDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ColocalizationStatistics
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def run_image_pair_images(
     im1_pixel_data:     Annotated[ImageGrayscale, Field(description="First image pixel data")],
@@ -120,16 +131,12 @@ def run_image_pair_images(
     im1_scale:          Annotated[Optional[float], Field(description="")] = None,
     im2_scale:          Annotated[Optional[float], Field(description="")] = None,
     costes_method:      Annotated[Optional[CostesMethod], Field(description="")] = CostesMethod.FAST,
-    ) -> Annotated[
-        Tuple[
-            LibraryMeasurements,
-            List[Tuple[str, str, str, str, str]]
-        ], Field(description="List of measurement results and a dictionary of measurements with precise values")]:
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ColocalizationDisplayData]]:
     """Calculate the correlation between the pixels of two images"""
-
-
-    summary: List[Tuple[str, str, str, str, str]] = []
     measurements = LibraryMeasurements()
+    summary: ColocalizationStatistics = []
+
     corr =      np.float64(np.NaN)
     slope =     np.float64(np.NaN)
     C1 =        np.float64(np.NaN)
@@ -141,6 +148,7 @@ def run_image_pair_images(
     overlap =   np.float64(np.NaN)
     K1 =        np.float64(np.NaN)
     K2 =        np.float64(np.NaN)
+
     if mask is not None and np.any(mask):
         im1_pixels = im1_pixel_data[mask]
         im2_pixels = im2_pixel_data[mask]
@@ -228,11 +236,13 @@ def run_image_pair_images(
         measurements.add_image_measurement(costes_measurement_1, C1)
         measurements.add_image_measurement(costes_measurement_2, C2)
 
-    return measurements, summary
+    if return_visualization_data:
+        return measurements, ColocalizationDisplayData(statistics=summary)
+    return measurements
 
 
-def __get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> List[Tuple[str, str, str, str, str]]:
-    summary: List[Tuple[str, str, str, str, str]] = []
+def __get_object_result_array(col_order_list: Tuple[str, str, str], measurement_name: str, measurement_array: NDArray[np.float64]) -> ColocalizationStatistics:
+    summary: ColocalizationStatistics = []
     summary += [
         (*col_order_list, f"Mean {measurement_name}", "%.3f" % np.mean(measurement_array)),
         (*col_order_list, f"Median {measurement_name}", "%.3f" % np.median(measurement_array)),
@@ -258,15 +268,13 @@ def run_image_pair_objects(
     measurement_types:  Annotated[List[MeasurementType], Field(description="List of measurement types to be calculated")]=[MeasurementType.CORRELATION, MeasurementType.MANDERS, MeasurementType.RWC, MeasurementType.OVERLAP, MeasurementType.COSTES],
     im1_scale:          Annotated[Optional[Union[float, int]], Field(description="First image scale for costes thresholding")]=None,
     im2_scale:          Annotated[Optional[Union[float, int]], Field(description="Second image scale for costes thresholding")]=None,
-    costes_method:      Annotated[Optional[CostesMethod], Field(description="Costes method for costes thresholding")]=CostesMethod.FAST
-    ) -> Tuple[
-        LibraryMeasurements,
-        List[Tuple[str, str, str, str, str]]
-        ]:
+    costes_method:      Annotated[Optional[CostesMethod], Field(description="Costes method for costes thresholding")]=CostesMethod.FAST,
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ColocalizationDisplayData]]:
     if MeasurementType.COSTES in measurement_types:
         assert costes_method is not None, "Costes requires a costes method"
     """Calculate per-object correlations between intensities in two images"""
-    summary = []
+    summary: ColocalizationStatistics = []
 
     n_objects = object_count
     # Handle case when both images for the correlation are completely masked out
@@ -389,4 +397,6 @@ def run_image_pair_objects(
             (*col_order_1, "Max correlation", "-"),
         ]
         
-    return measurements, summary
+    if return_visualization_data:
+        return measurements, ColocalizationDisplayData(statistics=summary)
+    return measurements

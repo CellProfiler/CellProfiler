@@ -1,11 +1,21 @@
 import skimage.measure
 import numpy as np
-from typing import Annotated, Optional, Tuple, List
-from pydantic import Field, validate_call, ConfigDict
+from typing import Annotated, Optional, Tuple, List, Union
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.types import ImageBinary, ObjectSegmentation, ImageAnyMask
 from cellprofiler_library.functions.measurement import measure_area_occupied, measure_total_area, measure_perimeter, measure_object_perimeter, measure_objects_area_occupied, measure_objects_total_area
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimageareaoccupied import TemplateMeasurementFormat
+
+ImageAreaOccupiedStatistics = List[List[str]]
+
+class ImageAreaOccupiedDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ImageAreaOccupiedStatistics
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -14,12 +24,9 @@ def measure_image_area_perimeter(
     image_name:     Annotated[str, Field(description="Name of the image")],
     im_volumetric:  Annotated[bool, Field(description="Image is volumetric")],
     im_spacing:     Annotated[Optional[Tuple[float, ...]], Field(description="Image spacing")] = None,
-    pipeline_volumetric: Annotated[bool, Field(description="Pipeline is volumetric")] = False
-    ) -> Tuple[
-        LibraryMeasurements,
-        List[List[str]]
-    ]:
-
+    pipeline_volumetric: Annotated[bool, Field(description="Pipeline is volumetric")] = False,
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ImageAreaOccupiedDisplayData]]:
     area_occupied = measure_area_occupied(im_pixel_data)
     perimeter = measure_perimeter(im_pixel_data, im_volumetric, im_spacing)  if area_occupied > 0 else np.float64(0.0)
     total_area = measure_total_area(im_pixel_data)
@@ -34,7 +41,10 @@ def measure_image_area_perimeter(
     measurements.add_image_measurement(perimeter_format % image_name, perimeter)
     measurements.add_image_measurement(total_area_format % image_name, total_area)
 
-    return measurements, [[image_name, str(area_occupied), str(perimeter), str(total_area),]]
+    if return_visualization_data:
+        summary: ImageAreaOccupiedStatistics = [[image_name, str(area_occupied), str(perimeter), str(total_area),]]
+        return measurements, ImageAreaOccupiedDisplayData(statistics=summary)
+    return measurements
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -44,11 +54,9 @@ def measure_objects_area_perimeter(
     mask:           Annotated[Optional[ImageAnyMask], Field(description="Mask of the image")] = None,
     volumetric:     Annotated[bool, Field(description="True if the objects are volumetric")] = False,
     spacing:        Annotated[Optional[Tuple[float, ...]], Field(description="Image spacing")] = None,
-    pipeline_volumetric: Annotated[bool, Field(description="Pipeline is volumetric")] = False
-    ) -> Tuple[
-        LibraryMeasurements,
-        List[List[str]]
-    ]:
+    pipeline_volumetric: Annotated[bool, Field(description="Pipeline is volumetric")] = False,
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ImageAreaOccupiedDisplayData]]:
     if mask is not None:
         label_image[~mask] = 0
     regionprops = skimage.measure.regionprops(label_image)
@@ -67,4 +75,7 @@ def measure_objects_area_perimeter(
     measurements.add_image_measurement(perimeter_format % object_name, perimeter)
     measurements.add_image_measurement(total_area_format % object_name,total_area)
 
-    return measurements, [[object_name, str(area_occupied), str(perimeter), str(total_area),]]
+    if return_visualization_data:
+        summary: ImageAreaOccupiedStatistics = [[object_name, str(area_occupied), str(perimeter), str(total_area),]]
+        return measurements, ImageAreaOccupiedDisplayData(statistics=summary)
+    return measurements

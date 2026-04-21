@@ -148,15 +148,16 @@ Select the previously identified objects you would like to measure.""".format(
             for binary_image_name in self.images_list.value:
                 binary_image = workspace.image_set.get_image(binary_image_name, must_be_binary=True)
                 pipeline_volumetric = workspace.pipeline.volumetric()
-                _lib_measurements, _statistics = measure_image_area_perimeter(
+                _lib_measurements, _lib_display = measure_image_area_perimeter(
                     binary_image.pixel_data, 
                     binary_image_name,
                     binary_image.volumetric, 
                     binary_image.spacing,
                     pipeline_volumetric, 
+                    return_visualization_data=True,
                     )
                 add_library_measurements_to_workspace(_lib_measurements, workspace)
-                statistics += _statistics
+                statistics += _lib_display.statistics
         if self.operand_choice.value in (Target.BOTH, Target.OBJECTS):
             if len(self.objects_list.value) == 0:
                 raise ValueError("No object sets were selected for analysis.")
@@ -167,16 +168,17 @@ Select the previously identified objects you would like to measure.""".format(
                 spacing = objects.parent_image.spacing if (objects.volumetric and objects.has_parent_image) else None
                 pipeline_volumetric = workspace.pipeline.volumetric()
                 object_name = object_set
-                _lib_measurements, _statistics = measure_objects_area_perimeter(
+                _lib_measurements, _lib_display = measure_objects_area_perimeter(
                     label_image, 
                     object_name,
                     mask, 
                     objects.volumetric, 
                     spacing, 
                     pipeline_volumetric, 
+                    return_visualization_data=True,
                 )
                 add_library_measurements_to_workspace(_lib_measurements, workspace)
-                statistics += _statistics
+                statistics += _lib_display.statistics
 
         if self.show_window:
             workspace.display_data.statistics = statistics

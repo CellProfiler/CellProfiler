@@ -1,5 +1,5 @@
-from pydantic import validate_call, ConfigDict, Field
-from typing import Annotated, List, Dict, Any, Tuple
+from pydantic import validate_call, ConfigDict, Field, BaseModel
+from typing import Annotated, List, Tuple, Union
 from enum import Enum
 import numpy as np
 
@@ -10,6 +10,16 @@ from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 
 class GranularityMeasurementFormat(str, Enum):
     GRANULARITY = "Granularity_%d_%s"
+
+GranularityStatistics = List[str]
+
+class GranularityDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: GranularityStatistics
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_granularity(
@@ -22,7 +32,8 @@ def measure_granularity(
         object_records:             Annotated[List[ObjectRecord], Field(description="Object records")],
         granular_spectrum_length:   Annotated[int, Field(description="Range of the granular spectrum")],
         dimensions:                 Annotated[int, Field(description="Dimensionality of the image")] = 2,
-        ) -> Tuple[LibraryMeasurements, List[str]]:
+        return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+        ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, GranularityDisplayData]]:
     #
     # Downsample the image and mask
     #
@@ -75,6 +86,8 @@ def measure_granularity(
             measurements.add_image_measurement(f"StDev_{stat_name_base}", np.std(obj_gss) if len(obj_gss) > 0 else 0.0)
 
     # Summary for UI display
-    summary = [image_name] + stats_strings
+    summary: GranularityStatistics = [image_name] + stats_strings
     
-    return measurements, summary
+    if return_visualization_data:
+        return measurements, GranularityDisplayData(statistics=summary)
+    return measurements

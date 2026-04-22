@@ -13,7 +13,6 @@ import cellprofiler.modules.measureobjectskeleton
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
 from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON, F_ALL

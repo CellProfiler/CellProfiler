@@ -1,6 +1,6 @@
 import numpy
 from typing import Annotated, Optional, List, Tuple, Union
-from pydantic import Field, validate_call, ConfigDict
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.opts.measureimageoverlap import ALL_FEATURES, DM, C_IMAGE_OVERLAP, Feature
 from cellprofiler_library.functions.measurement import (
     measure_image_overlap_statistics,
@@ -10,6 +10,14 @@ from cellprofiler_library.types import ImageBinary, ImageBinaryMask
 from cellprofiler_library.measurement_model import LibraryMeasurements
 
 ImageOverlapStatistics = List[Tuple[str, Union[int, float, numpy.float_, numpy.int_]]]
+
+class ImageOverlapDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ImageOverlapStatistics
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measureimageoverlap(
@@ -22,7 +30,8 @@ def measureimageoverlap(
     penalize_missing:   Annotated[bool, Field(description="Penalize missing points")] = False,
     decimation_method:  Annotated[DM, Field(description="Decimation method")] = DM.KMEANS,
     max_points:         Annotated[int, Field(description="Maximum number of points")] = 250,
-) -> Tuple[LibraryMeasurements, ImageOverlapStatistics]:
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ImageOverlapDisplayData]]:
 
     all_features = list(ALL_FEATURES)
 
@@ -57,4 +66,6 @@ def measureimageoverlap(
             # Display data (arrays)
             measurements.image[key] = value
 
-    return measurements, stats
+    if return_visualization_data:
+        return measurements, ImageOverlapDisplayData(statistics=stats)
+    return measurements

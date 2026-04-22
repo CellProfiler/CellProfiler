@@ -273,7 +273,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         test_pixels = test_image.pixel_data
 
-        lib_measurements, lib_stats = measureimageoverlap(
+        lib_measurements, lib_display = measureimageoverlap(
             ground_truth_pixels, 
             test_pixels, 
             self.test_img.value,
@@ -282,7 +282,8 @@ the two images. Set this setting to “No” to assess no penalty.""",
             decimation_method=self.decimation_method.enum_member,
             max_distance=self.max_distance.value,
             max_points=self.max_points.value,
-            penalize_missing=self.penalize_missing.value
+            penalize_missing=self.penalize_missing.value,
+            return_visualization_data=True,
             )
 
         m = workspace.measurements
@@ -310,7 +311,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
             workspace.display_data.adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
 
-            workspace.display_data.statistics = lib_stats
+            workspace.display_data.statistics = lib_display.statistics
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""

@@ -1,12 +1,20 @@
 import numpy as np
 from numpy.typing import NDArray
 from typing import List, Annotated, Optional, Tuple, Union
-from pydantic import Field, validate_call, ConfigDict
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.functions.measurement import measure_image_intensities
 from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, Feature, FORMATED_FEATURE_NAMES, FORMATED_PERCENTILE_TEMPLATE 
 from cellprofiler_library.measurement_model import LibraryMeasurements
 
-IntensityStatistics = List[Union[List[str], Tuple[str,float]]]
+ImageIntensityStatistics = List[Union[List[str], Tuple[str,float]]]
+
+class ImageIntensityDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ImageIntensityStatistics
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_image_intensity(
@@ -14,7 +22,8 @@ def measure_image_intensity(
         image_name:     Annotated[str, Field(description="Name of the image")],
         object_name:    Annotated[Optional[str], Field(description="Name of the object set (if any)")] = None,
         percentiles:    Annotated[Optional[List[int]], Field(description="Percentiles to measure")]=[],
-        ) -> Tuple[LibraryMeasurements, IntensityStatistics]:
+        return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+        ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ImageIntensityDisplayData]]:
     
     if percentiles is None:
         percentiles = []
@@ -39,17 +48,18 @@ def measure_image_intensity(
     ), percentile_measures = measure_image_intensities(pixels, percentiles)
 
     measurements = LibraryMeasurements()
-    statistics: IntensityStatistics = []
+    statistics: ImageIntensityStatistics = []
 
     def add_measurement(feature_name: str, fmt_template: str, feature_value: Union[int, float]):
         measurements.add_image_measurement(fmt_template % measurement_name, feature_value)
 
-        statistics.append([
-            image_name,
-            object_name if object_name else "",
-            feature_name,
-            str(feature_value),
-        ])
+        if return_visualization_data:
+            statistics.append([
+                image_name,
+                object_name if object_name else "",
+                feature_name,
+                str(feature_value),
+            ])
 
     # Add measurements
     add_measurement(FORMATED_FEATURE_NAMES[Feature.TOTAL_INTENSITY.value], TemplateMeasurementFormat.TOTAL_INTENSITY, pixel_sum)
@@ -73,4 +83,6 @@ def measure_image_intensity(
     percentile_stats.sort(key = lambda p: p[0])
     statistics += [(FORMATED_PERCENTILE_TEMPLATE % p[0], p[1]) for p in percentile_stats]
 
-    return measurements, statistics
+    if return_visualization_data:
+        return measurements, ImageIntensityDisplayData(statistics=statistics)
+    return measurements

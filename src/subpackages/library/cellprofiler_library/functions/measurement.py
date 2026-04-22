@@ -1,22 +1,22 @@
-import numpy as np
+from functools import reduce
+from typing import Tuple, Optional, Dict, Callable, List, Union, Any
+
 import numpy
+from numpy.typing import NDArray
 import scipy
 import scipy.ndimage
 import scipy.sparse
 import skimage
 import centrosome
-import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.propagate
 import centrosome.fastemd
 import centrosome.index
-from functools import reduce
+import centrosome.cpmorphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from sklearn.cluster import KMeans
-from typing import Tuple, Optional, Dict, Callable, List, Union, Any
 from scipy.linalg import lstsq
 from scipy.ndimage import grey_dilation, grey_erosion
-from numpy.typing import NDArray
 
 from cellprofiler_library.opts import measureimageoverlap as mio
 from cellprofiler_library.functions.segmentation import count_from_ijv
@@ -41,14 +41,14 @@ def measure_image_overlap_statistics(
     mask: Optional[ImageBinaryMask]=None,
 ) -> Dict[str, numpy.float_]:
     # Check that the inputs are binary
-    if not np.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
+    if not numpy.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
     
-    if not np.array_equal(test_image, test_image.astype(bool)):
+    if not numpy.array_equal(test_image, test_image.astype(bool)):
         raise ValueError("test_image is not a binary image")
 
     if mask is None:
-        mask = np.ones_like(ground_truth_image, bool)
+        mask = numpy.ones_like(ground_truth_image, bool)
 
     orig_shape = ground_truth_image.shape
     
@@ -78,13 +78,13 @@ def measure_image_overlap_statistics(
 
     true_negatives[~mask] = False
 
-    false_positive_count = np.sum(false_positives)
+    false_positive_count = numpy.sum(false_positives)
 
-    true_positive_count = np.sum(true_positives)
+    true_positive_count = numpy.sum(true_positives)
 
-    false_negative_count = np.sum(false_negatives)
+    false_negative_count = numpy.sum(false_negatives)
 
-    true_negative_count = np.sum(true_negatives)
+    true_negative_count = numpy.sum(true_negatives)
 
     labeled_pixel_count = true_positive_count + false_positive_count
 
@@ -125,11 +125,11 @@ def measure_image_overlap_statistics(
         true_positive_rate = float(true_positive_count) / float(true_count)
 
     ground_truth_labels, ground_truth_count = scipy.ndimage.label(
-        ground_truth_image & mask, np.ones((3, 3), bool)
+        ground_truth_image & mask, numpy.ones((3, 3), bool)
     )
 
     test_labels, test_count = scipy.ndimage.label(
-        test_image & mask, np.ones((3, 3), bool)
+        test_image & mask, numpy.ones((3, 3), bool)
     )
 
     rand_index, adjusted_rand_index = compute_rand_index(
@@ -200,8 +200,8 @@ def compute_rand_index(
 
     returns a tuple of the Rand Index and the adjusted Rand Index
     """
-    ground_truth_labels = ground_truth_labels[mask].astype(np.uint32)
-    test_labels = test_labels[mask].astype(np.uint32)
+    ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint32)
+    test_labels = test_labels[mask].astype(numpy.uint32)
     if len(test_labels) > 0:
         #
         # Create a sparse matrix of the pixel labels in each of the sets
@@ -211,7 +211,7 @@ def compute_rand_index(
         # test set.
         #
         N_ij = scipy.sparse.coo_matrix(
-            (np.ones(len(test_labels)), (ground_truth_labels, test_labels))
+            (numpy.ones(len(test_labels)), (ground_truth_labels, test_labels))
         ).toarray()
 
         def choose2(x):
@@ -223,7 +223,7 @@ def compute_rand_index(
         # pixel pairs are in the same set in both groups. The number of
         # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
         #
-        A = np.sum(choose2(N_ij))
+        A = numpy.sum(choose2(N_ij))
         #
         # B is the sum of pixels that were classified differently by both
         # sets. But the easier calculation is to find A, C and D and get
@@ -236,10 +236,10 @@ def compute_rand_index(
         #
         # We do the similar calculation for D
         #
-        N_i = np.sum(N_ij, 1)
-        N_j = np.sum(N_ij, 0)
-        C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
-        D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
+        N_i = numpy.sum(N_ij, 1)
+        N_j = numpy.sum(N_ij, 0)
+        C = numpy.sum((N_i[:, numpy.newaxis] - N_ij) * N_ij) / 2
+        D = numpy.sum((N_j[numpy.newaxis, :] - N_ij) * N_ij) / 2
         total = choose2(len(test_labels))
         # an astute observer would say, why bother computing A and B
         # when all we need is A+B and C, D and the total can be used to do
@@ -249,14 +249,14 @@ def compute_rand_index(
         #
         # Compute adjusted Rand Index
         #
-        expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
-        max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
+        expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
+        max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
 
         adjusted_rand_index = (A * total - expected_index) / (
             max_index - expected_index
         )
     else:
-        rand_index = adjusted_rand_index = np.nan
+        rand_index = adjusted_rand_index = numpy.nan
     return rand_index, adjusted_rand_index
 
 
@@ -279,14 +279,14 @@ def compute_earth_movers_distance(
     """
 
     # Check that the inputs are binary
-    if not np.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
+    if not numpy.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
     
-    if not np.array_equal(test_image, test_image.astype(bool)):
+    if not numpy.array_equal(test_image, test_image.astype(bool)):
         raise ValueError("test_image is not a binary image")
 
     if mask is None:
-        mask = np.ones_like(ground_truth_image, bool)
+        mask = numpy.ones_like(ground_truth_image, bool)
 
     # Covert 3D image to 2D long
     if ground_truth_image.ndim > 2:
@@ -299,8 +299,8 @@ def compute_earth_movers_distance(
         mask = mask.reshape(-1, mask.shape[-1])
 
     # ground truth labels
-    dest_labels = scipy.ndimage.label(ground_truth_image & mask, np.ones((3, 3), bool))[0]
-    src_labels = scipy.ndimage.label(test_image & mask, np.ones((3, 3), bool))[0]
+    dest_labels = scipy.ndimage.label(ground_truth_image & mask, numpy.ones((3, 3), bool))[0]
+    src_labels = scipy.ndimage.label(test_image & mask, numpy.ones((3, 3), bool))[0]
     dest_labelset = cast_labels_to_label_set(dest_labels)
     src_labelset = cast_labels_to_label_set(src_labels)
     emd = compute_earth_movers_distance_objects(
@@ -315,7 +315,7 @@ def compute_earth_movers_distance(
     
 
 def get_labels_mask(labelset, shape):
-    labels_mask = np.zeros(shape, bool)
+    labels_mask = numpy.zeros(shape, bool)
     for labels, indexes in labelset:
         labels_mask = labels_mask | labels > 0
     return labels_mask
@@ -325,13 +325,13 @@ def get_skeleton_points(
         labelset: ObjectLabelSet, 
         shape: Tuple[int, int], 
         max_points: int=250,
-    ) -> Tuple[NDArray[np.int32], NDArray[np.int32]]:
+    ) -> Tuple[NDArray[numpy.int32], NDArray[numpy.int32]]:
     """Get points by skeletonizing the objects and decimating"""
-    total_skel = np.zeros(shape, bool)
+    total_skel = numpy.zeros(shape, bool)
 
     for labels, indexes in labelset:
         colors = centrosome.cpmorphology.color_labels(labels)
-        for color in range(1, np.max(colors) + 1):
+        for color in range(1, numpy.max(colors) + 1):
             labels_mask = colors == color
             skel = centrosome.cpmorphology.skeletonize(
                 labels_mask,
@@ -340,37 +340,37 @@ def get_skeleton_points(
             )
             total_skel = total_skel | skel
 
-    n_pts = np.sum(total_skel)
+    n_pts = numpy.sum(total_skel)
 
     if n_pts == 0:
-        return np.zeros(0, np.int32), np.zeros(0, np.int32)
+        return numpy.zeros(0, numpy.int32), numpy.zeros(0, numpy.int32)
 
-    i, j = np.where(total_skel)
+    i, j = numpy.where(total_skel)
 
     if n_pts > max_points:
         #
         # Decimate the skeleton by finding the branchpoints in the
         # skeleton and propagating from those.
         #
-        markers = np.zeros(total_skel.shape, np.int32)
+        markers = numpy.zeros(total_skel.shape, numpy.int32)
         branchpoints = centrosome.cpmorphology.branchpoints(
             total_skel
         ) | centrosome.cpmorphology.endpoints(total_skel)
-        markers[branchpoints] = np.arange(np.sum(branchpoints)) + 1
+        markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
         #
         # We compute the propagation distance to that point, then impose
         # a slightly arbitrary order to get an unambiguous ordering
         # which should number the pixels in a skeleton branch monotonically
         #
         ts_labels, distances = centrosome.propagate.propagate(
-            np.zeros(markers.shape), markers, total_skel, 1
+            numpy.zeros(markers.shape), markers, total_skel, 1
         )
-        order = np.lexsort((j, i, distances[i, j], ts_labels[i, j]))
+        order = numpy.lexsort((j, i, distances[i, j], ts_labels[i, j]))
         #
         # Get a linear space of self.max_points elements with bounds at
         # 0 and len(order)-1 and use that to select the points.
         #
-        order = order[np.linspace(0, len(order) - 1, max_points).astype(int)]
+        order = order[numpy.linspace(0, len(order) - 1, max_points).astype(int)]
         return i[order], j[order]
 
     return i, j
@@ -391,16 +391,16 @@ def get_kmeans_points(
             of j coordinates
     """
 
-    ijv = np.vstack((src_ijv, dest_ijv))
+    ijv = numpy.vstack((src_ijv, dest_ijv))
     if len(ijv) <= max_points:
         return ijv[:, 0], ijv[:, 1]
-    random_state = np.random.RandomState()
+    random_state = numpy.random.RandomState()
     random_state.seed(ijv.astype(int).flatten())
     kmeans = KMeans(n_clusters=max_points, tol=2, random_state=random_state)
     kmeans.fit(ijv[:, :2])
     return ( # TODO: why uint32 below?
-        kmeans.cluster_centers_[:, 0].astype(np.uint32).astype(np.int64),
-        kmeans.cluster_centers_[:, 1].astype(np.uint32).astype(np.int64),
+        kmeans.cluster_centers_[:, 0].astype(numpy.uint32).astype(numpy.int64),
+        kmeans.cluster_centers_[:, 1].astype(numpy.uint32).astype(numpy.int64),
     )
 
 
@@ -417,8 +417,8 @@ def get_weights(
     #
     # Create a mapping of chosen points to their index in the i,j array
     #
-    total_skel = np.zeros(labels_mask.shape, int)
-    total_skel[i, j] = np.arange(1, len(i) + 1)
+    total_skel = numpy.zeros(labels_mask.shape, int)
+    total_skel[i, j] = numpy.arange(1, len(i) + 1)
     #
     # Compute the distance from each chosen point to all others in image,
     # return the nearest point.
@@ -431,13 +431,13 @@ def get_weights(
     #
     ii, jj = [x[labels_mask] for x in (ii, jj)]
     if len(ii) == 0:
-        return np.zeros(0, np.int32)
+        return numpy.zeros(0, numpy.int32)
     #
     # Use total_skel to look up the indices of the chosen points and
     # bincount the indices.
     #
-    result = np.zeros(len(i), np.int32)
-    bc = np.bincount(total_skel[ii, jj])[1:]
+    result = numpy.zeros(len(i), numpy.int32)
+    bc = numpy.bincount(total_skel[ii, jj])[1:]
     result[: len(bc)] = bc
     return result
 
@@ -663,44 +663,44 @@ def measure_object_size_shape(
 
 def get_sum_per_object(
     im_pixels:  NDArray[Pixel], 
-    mask:       NDArray[np.bool_], 
+    mask:       NDArray[numpy.bool_], 
     labels:     NDArray[ObjectLabel], 
-    lrange:     NDArray[np.int32]
-    ) -> NDArray[np.float64]:
+    lrange:     NDArray[numpy.int32]
+    ) -> NDArray[numpy.float64]:
     """Computes the sum of the pixel internsities for each object in the lrange, uses object numbers from labels to group objects
 
     Args:
         im_pixels (NDArray[Pixel]): Input image pixels
-        mask (NDArray[np.bool_]): Mask of where the summation should be performed
-        labels (NDArray[np.int32]): Object labels for pixels in `im_pixels`
-        lrange (NDArray[np.int32]): Range over which the summation should be performed
+        mask (NDArray[numpy.bool_]): Mask of where the summation should be performed
+        labels (NDArray[numpy.int32]): Object labels for pixels in `im_pixels`
+        lrange (NDArray[numpy.int32]): Range over which the summation should be performed
 
     Returns:
-        NDArray[np.float64]: Pixel intensity totals for each object in `lrange`
+        NDArray[numpy.float64]: Pixel intensity totals for each object in `lrange`
     """
-    S = np.array(
+    S = numpy.array(
         scipy.ndimage.sum(
             im_pixels, labels[mask], lrange
         )
-    ).astype(np.float64)
+    ).astype(numpy.float64)
     return S
 
 def get_threshold_values_for_objects(
     image_threshold_percentage: float, 
     pixels: NDArray[Pixel], 
     labels: NDArray[ObjectLabel],
-    lrange: Optional[NDArray[np.int32]] = None
-    ) -> NDArray[np.float64]:
+    lrange: Optional[NDArray[numpy.int32]] = None
+    ) -> NDArray[numpy.float64]:
     """Finds threshold values as a percentage of the maximum intensity for each object
 
     Args:
         image_threshold_percentage (float): Percentage value to use when finding threshold values
         pixels (NDArray[Pixel]): Array of pixel intensities
         labels (NDArray[ObjectLabel]): Segmentation labels for each pixel
-        lrange (Optional[NDArray[np.int32]], optional): Range of labels over which to find the maximum. Defaults to None.
+        lrange (Optional[NDArray[numpy.int32]], optional): Range of labels over which to find the maximum. Defaults to None.
 
     Returns:
-        NDArray[np.float64]: Returns an array of threshold values for each object. Same length as `lrange`.
+        NDArray[numpy.float64]: Returns an array of threshold values for each object. Same length as `lrange`.
     """
     lrange = lrange if lrange is not None else numpy.arange(labels.max(), dtype=numpy.int32) + 1
     object_threshold_values = (image_threshold_percentage / 100) * fix(
@@ -710,44 +710,44 @@ def get_threshold_values_for_objects(
 
 def get_thresholded_sum(
         pixels: NDArray[Pixel],
-        object_threshold_values: NDArray[np.float64],
+        object_threshold_values: NDArray[numpy.float64],
         labels: NDArray[ObjectLabel],
-        lrange: Optional[NDArray[np.int32]] = None
-        ) -> NDArray[np.float64]:
+        lrange: Optional[NDArray[numpy.int32]] = None
+        ) -> NDArray[numpy.float64]:
     """Gets the sum of the pixels that are above the threshold value for each object grouped by label
 
     Args:
         pixels (NDArray[Pixel]): Array of pixel intensities
-        object_threshold_values (NDArray[np.float64]): Array of threshold values for each object
+        object_threshold_values (NDArray[numpy.float64]): Array of threshold values for each object
         labels (NDArray[ObjectLabel]): Segmentation labels for each pixel
-        lrange (Optional[NDArray[np.int32]], optional): Range of labels over which to find the sum. Defaults to None.
+        lrange (Optional[NDArray[numpy.int32]], optional): Range of labels over which to find the sum. Defaults to None.
 
     Returns:
-        NDArray[np.float64]: Returns an array of sums of the pixel intensities that are above the threshold value for each object. Same length as `lrange`.
+        NDArray[numpy.float64]: Returns an array of sums of the pixel intensities that are above the threshold value for each object. Same length as `lrange`.
     """
     lrange = lrange if lrange is not None else numpy.arange(labels.max(), dtype=numpy.int32) + 1
     return scipy.ndimage.sum(
         pixels[pixels >= object_threshold_values[labels - 1]],
         labels[pixels >= object_threshold_values[labels - 1]],
         lrange,
-    ).astype(np.float64)
+    ).astype(numpy.float64)
 
 def get_threshold_sum_and_mask(
         image_threshold_percentage: float,
         pixels: NDArray[Pixel],
         labels: NDArray[ObjectLabel],
-        lrange: Optional[NDArray[np.int32]] = None
-        ) -> Tuple[NDArray[np.float64], NDArray[np.bool_]]:
+        lrange: Optional[NDArray[numpy.int32]] = None
+        ) -> Tuple[NDArray[numpy.float64], NDArray[numpy.bool_]]:
     """Gets the sum of the thresholds and a mask of the pixels that are above the threshold value for each object
 
     Args:
         image_threshold_percentage (float): Percentage value to use when finding threshold values
         pixels (NDArray[Pixel]): Array of pixel intensities
         labels (NDArray[ObjectLabel]): Segmentation labels for each pixel
-        lrange (Optional[NDArray[np.int32]], optional): Range of labels over which to threshold. Defaults to None.
+        lrange (Optional[NDArray[numpy.int32]], optional): Range of labels over which to threshold. Defaults to None.
 
     Returns:
-        Tuple[NDArray[np.float64], NDArray[np.bool_]]: Returns a tuple of the sum of the thresholds and a mask of the pixels that are above the threshold value for each object. 
+        Tuple[NDArray[numpy.float64], NDArray[numpy.bool_]]: Returns a tuple of the sum of the thresholds and a mask of the pixels that are above the threshold value for each object. 
     """
     lrange = lrange if lrange is not None else numpy.arange(labels.max(), dtype=numpy.int32) + 1
     object_threshold_values = get_threshold_values_for_objects(image_threshold_percentage, pixels, labels, lrange) # tff / tss
@@ -762,9 +762,9 @@ def get_thresholded_images_and_counts(
     im2_thr_percent: float,
     labels: Optional[NDArray[ObjectLabel]] = None
 ) -> Tuple[
-    NDArray[np.float64], 
-    NDArray[np.float64], 
-    NDArray[np.bool_]
+    NDArray[numpy.float64], 
+    NDArray[numpy.float64], 
+    NDArray[numpy.bool_]
     ]:
     """Finds the threshold sums and the intersection of the masks after thresholding each image
 
@@ -776,7 +776,7 @@ def get_thresholded_images_and_counts(
         labels (Optional[NDArray[ObjectLabel]], optional): Segmentation labels for each pixel. Defaults to None.
 
     Returns:
-        Tuple[ NDArray[np.float64], NDArray[np.float64], NDArray[np.bool_] ]: Returns a tuple of the sum of the thresholds for each image and the intersection of the masks after thresholding each image.
+        Tuple[ NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.bool_] ]: Returns a tuple of the sum of the thresholds for each image and the intersection of the masks after thresholding each image.
     """
 
     if labels is None:
@@ -800,19 +800,19 @@ def get_thresholded_images_and_counts(
 def measure_correlation_and_slope(
         im1_pixels: NDArray[Pixel], 
         im2_pixels: NDArray[Pixel],
-    ) -> Tuple[np.float64, np.float64]:
+    ) -> Tuple[numpy.float64, numpy.float64]:
     #
     # Perform the correlation, which returns:
     # [ [ii, ij],
     #   [ji, jj] ]
     #
-    corr = np.corrcoef((im1_pixels, im2_pixels))[1, 0]
+    corr = numpy.corrcoef((im1_pixels, im2_pixels))[1, 0]
     #
     # Find the slope as a linear regression to
     # A * i1 + B = i2
     #
     least_squares_solution = lstsq(
-        np.array((im1_pixels, np.ones_like(im1_pixels))).transpose(), 
+        numpy.array((im1_pixels, numpy.ones_like(im1_pixels))).transpose(), 
         im2_pixels)
     assert least_squares_solution is not None
     coeffs = least_squares_solution[0]
@@ -825,8 +825,8 @@ def measure_correlation_and_slope_from_objects(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
     labels: NDArray[ObjectLabel],
-    lrange: NDArray[np.int32]
-) -> NDArray[np.float64]:
+    lrange: NDArray[numpy.int32]
+) -> NDArray[numpy.float64]:
     #
     # The correlation is sum((x-mean(x))(y-mean(y)) /
     #                         ((n-1) * std(x) *std(y)))
@@ -867,10 +867,10 @@ def measure_correlation_and_slope_from_objects(
 #
 def get_manders_coefficient(
         im_thr_common_pixels: NDArray[Pixel],
-        thr_mask_intersection: NDArray[np.bool_],
-        im_thr_sum: NDArray[np.float64],
+        thr_mask_intersection: NDArray[numpy.bool_],
+        im_thr_sum: NDArray[numpy.float64],
         labels: NDArray[ObjectLabel],
-        lrange: NDArray[np.int32]
+        lrange: NDArray[numpy.int32]
         ):
     M = get_sum_per_object(im_thr_common_pixels, thr_mask_intersection, labels, lrange)
     M = M / im_thr_sum
@@ -879,10 +879,10 @@ def get_manders_coefficient(
 def measure_manders_coefficient(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
-    im1_thr_sum: np.float64,
-    im2_thr_sum: np.float64,
-    thr_mask_intersection: NDArray[np.bool_],
-    ) -> Tuple[np.float64, np.float64]:
+    im1_thr_sum: numpy.float64,
+    im2_thr_sum: numpy.float64,
+    thr_mask_intersection: NDArray[numpy.bool_],
+    ) -> Tuple[numpy.float64, numpy.float64]:
 
     im1_thr_common_pixels = im1_pixels[thr_mask_intersection] # fi_thresh
     im2_thr_common_pixels = im2_pixels[thr_mask_intersection] # si_thresh
@@ -897,12 +897,12 @@ def measure_manders_coefficient(
 def measure_manders_coefficient_from_objects(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
-    im1_thr_sum: NDArray[np.float64],
-    im2_thr_sum: NDArray[np.float64],
-    thr_mask_intersection: NDArray[np.bool_],
+    im1_thr_sum: NDArray[numpy.float64],
+    im2_thr_sum: NDArray[numpy.float64],
+    thr_mask_intersection: NDArray[numpy.bool_],
     labels: NDArray[ObjectLabel],
-    lrange: NDArray[np.int32],
-    ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    lrange: NDArray[numpy.int32],
+    ) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]:
 
     # TODO: Many methods use this. Should it be cached?
     im1_thr_common_pixels = im1_pixels[thr_mask_intersection]
@@ -923,23 +923,23 @@ def measure_manders_coefficient_from_objects(
 def get_image_rank(
         im_pixels: NDArray[Pixel], 
         labels: Optional[NDArray[ObjectLabel]]=None
-    ) -> NDArray[np.int32]:
+    ) -> NDArray[numpy.int32]:
 
     if labels is None:
-        Rank = np.lexsort([im_pixels])
+        Rank = numpy.lexsort([im_pixels])
     else:
-        [Rank] = np.lexsort(([labels], [im_pixels]))
+        [Rank] = numpy.lexsort(([labels], [im_pixels]))
 
-    Rank_U = np.hstack([[False], im_pixels[Rank[:-1]] != im_pixels[Rank[1:]]])
-    Rank_S = np.cumsum(Rank_U)
-    Rank_im = np.zeros(im_pixels.shape, dtype=int)
+    Rank_U = numpy.hstack([[False], im_pixels[Rank[:-1]] != im_pixels[Rank[1:]]])
+    Rank_S = numpy.cumsum(Rank_U)
+    Rank_im = numpy.zeros(im_pixels.shape, dtype=int)
     Rank_im[Rank] = Rank_S
     return Rank_im
 
 def calculate_rank_weight(
-        Rank_im1: NDArray[np.int32], 
-        Rank_im2: NDArray[np.int32]
-    ) -> NDArray[np.float64]:
+        Rank_im1: NDArray[numpy.int32], 
+        Rank_im2: NDArray[numpy.int32]
+    ) -> NDArray[numpy.float64]:
 
     R = max(Rank_im1.max(), Rank_im2.max()) + 1
     Di = abs(Rank_im1 - Rank_im2)
@@ -948,24 +948,24 @@ def calculate_rank_weight(
     
 def get_rwc_coefficient(
         im1_thr_common_pixels: NDArray[Pixel],
-        weight_thresh: NDArray[np.float64],
-        thr_mask_intersection: NDArray[np.bool_],
-        im1_thr_sum: NDArray[np.float64],
+        weight_thresh: NDArray[numpy.float64],
+        thr_mask_intersection: NDArray[numpy.bool_],
+        im1_thr_sum: NDArray[numpy.float64],
         labels: NDArray[ObjectLabel],
-        lrange: NDArray[np.int32]
+        lrange: NDArray[numpy.int32]
         ):
     weighted_pixels = im1_thr_common_pixels * weight_thresh
     RWC = get_sum_per_object(weighted_pixels, thr_mask_intersection, labels, lrange)
-    RWC = RWC / np.array(im1_thr_sum)
+    RWC = RWC / numpy.array(im1_thr_sum)
     return RWC
 
 def measure_rwc_coefficient(
         im1_pixels: NDArray[Pixel], 
         im2_pixels: NDArray[Pixel],
-        im1_thr_sum: np.float64,
-        im2_thr_sum: np.float64,
-        thr_mask_intersection: NDArray[np.bool_]
-    ) -> Tuple[np.float64, np.float64]:
+        im1_thr_sum: numpy.float64,
+        im2_thr_sum: numpy.float64,
+        thr_mask_intersection: NDArray[numpy.bool_]
+    ) -> Tuple[numpy.float64, numpy.float64]:
 
     im1_thr_common_pixels = im1_pixels[thr_mask_intersection]
     im2_thr_common_pixels = im2_pixels[thr_mask_intersection]
@@ -984,15 +984,15 @@ def measure_rwc_coefficient(
 def measure_rwc_coefficient_from_objects(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
-    im1_thr_sum: NDArray[np.float64],
-    im2_thr_sum: NDArray[np.float64],
-    thr_mask_intersection: NDArray[np.bool_],
+    im1_thr_sum: NDArray[numpy.float64],
+    im2_thr_sum: NDArray[numpy.float64],
+    thr_mask_intersection: NDArray[numpy.bool_],
     labels: NDArray[ObjectLabel],
-    lrange: NDArray[np.int32],
-) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    lrange: NDArray[numpy.int32],
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]:
     # RWC Coefficient
-    RWC1 = np.zeros(len(lrange))
-    RWC2 = np.zeros(len(lrange))
+    RWC1 = numpy.zeros(len(lrange))
+    RWC2 = numpy.zeros(len(lrange))
 
     im1_thr_common_pixels = im1_pixels[thr_mask_intersection]
     im2_thr_common_pixels = im2_pixels[thr_mask_intersection]
@@ -1002,7 +1002,7 @@ def measure_rwc_coefficient_from_objects(
     weight = calculate_rank_weight(Rank_im1, Rank_im2)
     weight_thresh = weight[thr_mask_intersection]
 
-    if thr_mask_intersection is not None and np.any(thr_mask_intersection):
+    if thr_mask_intersection is not None and numpy.any(thr_mask_intersection):
         RWC1 = get_rwc_coefficient(im1_thr_common_pixels, weight_thresh, thr_mask_intersection, im1_thr_sum, labels, lrange)
         RWC2 = get_rwc_coefficient(im2_thr_common_pixels, weight_thresh, thr_mask_intersection, im2_thr_sum, labels, lrange)
     
@@ -1014,14 +1014,14 @@ def measure_rwc_coefficient_from_objects(
 def measure_overlap_coefficient(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
-    thr_mask_intersection: NDArray[np.bool_],
-    ) -> Tuple[np.float64, np.float64, np.float64]:
+    thr_mask_intersection: NDArray[numpy.bool_],
+    ) -> Tuple[numpy.float64, numpy.float64, numpy.float64]:
 
     im1_thr_common_pixels = im1_pixels[thr_mask_intersection]
     im2_thr_common_pixels = im2_pixels[thr_mask_intersection]
     # Overlap Coefficient
     overlap = 0
-    overlap = (im1_thr_common_pixels * im2_thr_common_pixels).sum() / np.sqrt(
+    overlap = (im1_thr_common_pixels * im2_thr_common_pixels).sum() / numpy.sqrt(
         (im1_thr_common_pixels ** 2).sum() * (im2_thr_common_pixels ** 2).sum()
     )
     K1 = (im1_thr_common_pixels * im2_thr_common_pixels).sum() / (im1_thr_common_pixels ** 2).sum()
@@ -1032,10 +1032,10 @@ def measure_overlap_coefficient(
 def measure_overlap_coefficient_from_objects(
     im1_pixels: NDArray[Pixel],
     im2_pixels: NDArray[Pixel],
-    thr_mask_intersection: Optional[NDArray[np.bool_]],
+    thr_mask_intersection: Optional[NDArray[numpy.bool_]],
     labels: NDArray[ObjectLabel],
-    lrange: NDArray[np.int32]
-) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    lrange: NDArray[numpy.int32]
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]]:
     # Overlap Coefficient
     if thr_mask_intersection is not None and numpy.any(thr_mask_intersection):
         im1_pixels_sq = im1_pixels[thr_mask_intersection] ** 2
@@ -1066,19 +1066,19 @@ def get_costes_thresholded_pixels_and_mask(
         im2_pixels: NDArray[Pixel],
         im1_costes_pixels: NDArray[Pixel],
         im2_costes_pixels: NDArray[Pixel],
-        im1_scale: Optional[np.float64],
-        im2_scale: Optional[np.float64],
+        im1_scale: Optional[numpy.float64],
+        im2_scale: Optional[numpy.float64],
         costes_method: CostesMethod
         ) -> Tuple[
-            NDArray[np.bool_], 
-            NDArray[np.bool_], 
-            NDArray[np.bool_],
+            NDArray[numpy.bool_], 
+            NDArray[numpy.bool_], 
+            NDArray[numpy.bool_],
             NDArray[Pixel],
             NDArray[Pixel]
             ]:
     # Orthogonal Regression for Costes' automated threshold
     scale = get_scale_for_costes_threshold(im1_scale, im2_scale)
-    costes_function: Dict[CostesMethod, Callable[[NDArray[Pixel], NDArray[Pixel], np.float64], Tuple[np.float64, np.float64]]] = {
+    costes_function: Dict[CostesMethod, Callable[[NDArray[Pixel], NDArray[Pixel], numpy.float64], Tuple[numpy.float64, numpy.float64]]] = {
         CostesMethod.FASTER: bisection_costes,
         CostesMethod.ACCURATE: linear_costes,
         CostesMethod.FAST: linear_costes,
@@ -1093,17 +1093,17 @@ def get_costes_thresholded_pixels_and_mask(
     return im1_costes_thr_mask, im2_costes_thr_mask, combined_thresh_c, im1_costes_thr_common_pixels, im2_costes_thr_common_pixels
 
 def get_costes_threshold_pixel_sum(
-        im_costes_thr_mask: NDArray[np.bool_],
+        im_costes_thr_mask: NDArray[numpy.bool_],
         im_pixels: NDArray[Pixel],
         labels: NDArray[ObjectLabel],
-        lrange: NDArray[np.int32]
-        ) -> NDArray[np.float64]:
+        lrange: NDArray[numpy.int32]
+        ) -> NDArray[numpy.float64]:
     if numpy.any(im_costes_thr_mask):
         im_costes_thr_sum = scipy.ndimage.sum(
             im_pixels[im_costes_thr_mask],
             labels[im_costes_thr_mask],
             lrange,
-        ).astype(np.float64)
+        ).astype(numpy.float64)
     else:
         im_costes_thr_sum = numpy.zeros(len(lrange))
 
@@ -1111,13 +1111,13 @@ def get_costes_threshold_pixel_sum(
 
 def get_costes_coefficient(
         im_costes_thr_common_pixels: NDArray[Pixel],
-        combined_thresh_c: NDArray[np.bool_],
-        im_costes_thr_sum: NDArray[np.float64],
+        combined_thresh_c: NDArray[numpy.bool_],
+        im_costes_thr_sum: NDArray[numpy.float64],
         labels: NDArray[ObjectLabel],
-        lrange: NDArray[np.int32]
+        lrange: NDArray[numpy.int32]
         ):
     C = get_sum_per_object(im_costes_thr_common_pixels, combined_thresh_c, labels, lrange) 
-    C = C / np.array(im_costes_thr_sum)
+    C = C / numpy.array(im_costes_thr_sum)
     return C
 
 def measure_costes_coefficient(
@@ -1126,7 +1126,7 @@ def measure_costes_coefficient(
         im1_scale: Optional[float] = None,
         im2_scale: Optional[float] = None,
         costes_method: CostesMethod = CostesMethod.FAST,
-    ) -> Tuple[ np.float64, np.float64]:
+    ) -> Tuple[ numpy.float64, numpy.float64]:
     #
     # Find the Costes threshold for each image
     #
@@ -1163,11 +1163,11 @@ def measure_costes_coefficient_from_objects(
     im1_costes_pixels: NDArray[Pixel],
     im2_costes_pixels: NDArray[Pixel],
     labels: NDArray[ObjectLabel],
-    lrange: NDArray[np.int32],
+    lrange: NDArray[numpy.int32],
     im1_scale: numpy.float64,
     im2_scale: numpy.float64,
     costes_method: CostesMethod = CostesMethod.FAST,
-) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]:
     (
         im1_costes_thr_mask, 
         im2_costes_thr_mask, 
@@ -1196,7 +1196,7 @@ def measure_costes_coefficient_from_objects(
 
     return C1, C2
 
-def get_scale_for_costes_threshold(scale_1: Optional[np.float64], scale_2: Optional[np.float64]) -> np.float64:
+def get_scale_for_costes_threshold(scale_1: Optional[numpy.float64], scale_2: Optional[numpy.float64]) -> numpy.float64:
     if scale_1 is not None and scale_2 is not None:
         return max(scale_1, scale_2)
     elif scale_1 is not None:
@@ -1204,13 +1204,13 @@ def get_scale_for_costes_threshold(scale_1: Optional[np.float64], scale_2: Optio
     elif scale_2 is not None:
         return scale_2
     else:
-        return np.float64(255)
+        return numpy.float64(255)
 
 def bisection_costes(
         im1_costes_pixels: NDArray[Pixel], 
         im2_costes_pixels: NDArray[Pixel], 
-        scale_max:np.float64=np.float64(255)
-        ) -> Tuple[np.float64, np.float64]:
+        scale_max:numpy.float64=numpy.float64(255)
+        ) -> Tuple[numpy.float64, numpy.float64]:
     """
     Finds the Costes Automatic Threshold for colocalization using a bisection algorithm.
     Candidate thresholds are selected from within a window of possible intensities,
@@ -1221,19 +1221,19 @@ def bisection_costes(
     """
 
     non_zero = (im1_costes_pixels > 0) | (im2_costes_pixels > 0)
-    xvar = np.var(im1_costes_pixels[non_zero], axis=0, ddof=1)
-    yvar = np.var(im2_costes_pixels[non_zero], axis=0, ddof=1)
+    xvar = numpy.var(im1_costes_pixels[non_zero], axis=0, ddof=1)
+    yvar = numpy.var(im2_costes_pixels[non_zero], axis=0, ddof=1)
 
-    xmean = np.mean(im1_costes_pixels[non_zero], axis=0)
-    ymean = np.mean(im2_costes_pixels[non_zero], axis=0)
+    xmean = numpy.mean(im1_costes_pixels[non_zero], axis=0)
+    ymean = numpy.mean(im2_costes_pixels[non_zero], axis=0)
 
     z = im1_costes_pixels[non_zero] + im2_costes_pixels[non_zero]
-    zvar = np.var(z, axis=0, ddof=1)
+    zvar = numpy.var(z, axis=0, ddof=1)
 
     covar = 0.5 * (zvar - (xvar + yvar))
 
     denom = 2 * covar
-    num = (yvar - xvar) + np.sqrt(
+    num = (yvar - xvar) + numpy.sqrt(
         (yvar - xvar) * (yvar - xvar) + 4 * (covar * covar)
     )
     a = num / denom
@@ -1250,8 +1250,8 @@ def bisection_costes(
     while lastmid != mid:
         thr_fi_c = mid / scale_max
         thr_si_c = (a * thr_fi_c) + b
-        combt: NDArray[np.bool_] = (im1_costes_pixels < thr_fi_c) | (im2_costes_pixels < thr_si_c)
-        if np.count_nonzero(combt) <= 2:
+        combt: NDArray[numpy.bool_] = (im1_costes_pixels < thr_fi_c) | (im2_costes_pixels < thr_si_c)
+        if numpy.count_nonzero(combt) <= 2:
             # Can't run pearson with only 2 values.
             left = mid - 1
         else:
@@ -1279,9 +1279,9 @@ def bisection_costes(
 def linear_costes(
         im1_costes_pixels: NDArray[Pixel], 
         im2_costes_pixels: NDArray[Pixel], 
-        scale_max:np.float64=np.float64(255), 
+        scale_max:numpy.float64=numpy.float64(255), 
         costes_method: CostesMethod = CostesMethod.FAST
-        ) -> Tuple[np.float64, np.float64]:
+        ) -> Tuple[numpy.float64, numpy.float64]:
     """
     Finds the Costes Automatic Threshold for colocalization using a linear algorithm.
     Candiate thresholds are gradually decreased until Pearson R falls below 0.
@@ -1290,19 +1290,19 @@ def linear_costes(
     """
     i_step = 1 / scale_max
     non_zero = (im1_costes_pixels > 0) | (im2_costes_pixels > 0)
-    xvar = np.var(im1_costes_pixels[non_zero], axis=0, ddof=1)
-    yvar = np.var(im2_costes_pixels[non_zero], axis=0, ddof=1)
+    xvar = numpy.var(im1_costes_pixels[non_zero], axis=0, ddof=1)
+    yvar = numpy.var(im2_costes_pixels[non_zero], axis=0, ddof=1)
 
-    xmean = np.mean(im1_costes_pixels[non_zero], axis=0)
-    ymean = np.mean(im2_costes_pixels[non_zero], axis=0)
+    xmean = numpy.mean(im1_costes_pixels[non_zero], axis=0)
+    ymean = numpy.mean(im2_costes_pixels[non_zero], axis=0)
 
     z = im1_costes_pixels[non_zero] + im2_costes_pixels[non_zero]
-    zvar = np.var(z, axis=0, ddof=1)
+    zvar = numpy.var(z, axis=0, ddof=1)
 
     covar = 0.5 * (zvar - (xvar + yvar))
 
     denom = 2 * covar
-    num = (yvar - xvar) + np.sqrt(
+    num = (yvar - xvar) + numpy.sqrt(
         (yvar - xvar) * (yvar - xvar) + 4 * (covar * covar)
     )
     a = num / denom
@@ -1328,7 +1328,7 @@ def linear_costes(
         combt = (im1_costes_pixels < thr_fi_c) | (im2_costes_pixels < thr_si_c)
         try:
             # Only run pearsonr if the input has changed.
-            if (positives := np.count_nonzero(combt)) != num_true:
+            if (positives := numpy.count_nonzero(combt)) != num_true:
                 costReg, _ = scipy.stats.pearsonr(im1_costes_pixels[combt], im2_costes_pixels[combt])
                 num_true = positives
 
@@ -1366,18 +1366,18 @@ class ObjectRecord(object):
             ):
         self.name = name
         self.labels = segmented
-        self.nobjects = np.max(self.labels)
+        self.nobjects = numpy.max(self.labels)
         if self.nobjects != 0:
             assert im_mask is not None
             assert im_pixel_data is not None
-            self.range = np.arange(1, np.max(self.labels) + 1)
+            self.range = numpy.arange(1, numpy.max(self.labels) + 1)
             self.labels = self.labels.copy()
             self.labels[~im_mask] = 0
             self.current_mean = fix(
                 scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
             )
-            self.start_mean = np.maximum(
-                self.current_mean, np.finfo(float).eps
+            self.start_mean = numpy.maximum(
+                self.current_mean, numpy.finfo(float).eps
             )
 
 
@@ -1403,14 +1403,14 @@ def get_granularity_measurements(
     #
     footprint = get_morphology_footprint(1, dimensions)
     ng = granular_spectrum_length
-    startmean = np.mean(pixels[mask])
+    startmean = numpy.mean(pixels[mask])
     ero = pixels.copy()
     # Mask the test image so that masked pixels will have no effect
     # during reconstruction
     #
     ero[~mask] = 0
     currentmean = startmean
-    startmean = max(startmean, np.finfo(float).eps)
+    startmean = max(startmean, numpy.finfo(float).eps)
     measurements_arr = []
     image_measurements_arr = []
 
@@ -1418,7 +1418,7 @@ def get_granularity_measurements(
         prevmean = currentmean
         ero = masked_erode(ero, mask, footprint)
         rec = skimage.morphology.reconstruction(ero, pixels, footprint=footprint)
-        currentmean = np.mean(rec[mask])
+        currentmean = numpy.mean(rec[mask])
         gs = (prevmean - currentmean) * 100 / startmean
         image_measurements_arr += [gs]
         # measurements.add_image_measurement(feature, gs)
@@ -1448,7 +1448,7 @@ def get_granularity_measurements(
                 )
                 object_record.current_mean = new_mean
             else:
-                gss = np.zeros((0,))
+                gss = numpy.zeros((0,))
             obj_measurements += [[object_record.name, gss]]
         measurements_arr += [obj_measurements]
     return measurements_arr, image_measurements_arr
@@ -1461,8 +1461,8 @@ def get_granularity_measurements(
 def measure_surface_area(
         label_image: Union[ImageBinary, ObjectLabelsDense], 
         spacing: Optional[Tuple[float, ...]]=None, 
-        index: Optional[NDArray[np.int32]]=None,
-        ) -> NDArray[np.float64]:
+        index: Optional[NDArray[numpy.int32]]=None,
+        ) -> NDArray[numpy.float64]:
     if spacing is None:
         spacing = (1.0,) * label_image.ndim
 
@@ -1473,26 +1473,26 @@ def measure_surface_area(
 
         return skimage.measure.mesh_surface_area(verts, faces)
 
-    return np.sum(
+    return numpy.sum(
         [
-            np.round(measure_label_surface_area(label_image, label, spacing))
+            numpy.round(measure_label_surface_area(label_image, label, spacing))
             for label in index
         ]
     )
 
 
-def measure_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> np.float_:
+def measure_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> numpy.float_:
     if im_volumetric:
         perimeter = measure_surface_area(im_pixel_data > 0, spacing=im_spacing)
     else:
         perimeter = skimage.measure.perimeter(im_pixel_data > 0)
     return perimeter
 
-def measure_area_occupied(im_pixel_data: ImageBinary) -> np.float_:
-    return np.sum(im_pixel_data > 0)
+def measure_area_occupied(im_pixel_data: ImageBinary) -> numpy.float_:
+    return numpy.sum(im_pixel_data > 0)
 
-def measure_total_area(im_pixel_data: ImageBinary) -> np.int_:
-    return np.prod(np.shape(im_pixel_data))
+def measure_total_area(im_pixel_data: ImageBinary) -> numpy.int_:
+    return numpy.prod(numpy.shape(im_pixel_data))
 
 
 def measure_object_perimeter(
@@ -1501,22 +1501,22 @@ def measure_object_perimeter(
         regionprops: Optional[List[Any]] = None,
         volumetric: bool = False,
         spacing: Optional[Tuple[float, ...]] = None
-        ) -> np.float_:
+        ) -> numpy.float_:
     """ Uses skimage.measure.regionprops to calculate the perimeter for 2D. Uses skimage.measure.mesh_surface_area to calculate the perimeter for 3D"""
     if regionprops is None:
         if mask is not None:
             label_image[~mask] = 0
         regionprops = skimage.measure.regionprops(label_image)
     if volumetric:
-        labels = np.unique(label_image)
+        labels = numpy.unique(label_image)
         if labels[0] == 0:
             labels = labels[1:]
         
     if volumetric:
         perimeter = measure_surface_area(label_image, spacing=spacing, index=labels)
     else:
-        perimeter = np.sum(
-            [np.round(region["perimeter"]) for region in regionprops]
+        perimeter = numpy.sum(
+            [numpy.round(region["perimeter"]) for region in regionprops]
         )
     return perimeter
 
@@ -1524,7 +1524,7 @@ def measure_objects_area_occupied(
     label_image: Optional[ObjectLabelsDense],
     mask: Optional[ImageAny] = None,
     regionprops: Optional[List[Any]] = None,
-    ) -> np.float_:
+    ) -> numpy.float_:
     """ Area occupied can either be calculated from the label image (with/without mask) or if regionprops are already computed, they can be passed in"""
     if regionprops is None:
         assert label_image is not None, "Either label_image or region_properties must be provided"
@@ -1532,17 +1532,17 @@ def measure_objects_area_occupied(
             label_image[~mask] = 0
         regionprops = skimage.measure.regionprops(label_image)
 
-    return np.sum([region["area"] for region in regionprops])
+    return numpy.sum([region["area"] for region in regionprops])
 
 def measure_objects_total_area(
     label_image: Optional[ObjectLabelsDense],
     mask: Optional[ImageAny] = None,
-    ) -> np.int_:
+    ) -> numpy.int_:
     """ Total area can either be calculated from the label image or from the mask"""
     if mask is not None:
-        total_area = np.sum(mask)
+        total_area = numpy.sum(mask)
     else:
-        total_area = np.product(label_image.shape)
+        total_area = numpy.product(label_image.shape)
     return total_area
 
 
@@ -1564,7 +1564,7 @@ def measure_label_surface_area(
 ###############################################################################
 
 def measure_image_intensities(
-        pixels: NDArray[np.float32], 
+        pixels: NDArray[numpy.float32], 
         percentiles: List[int]=[]
     ) -> Tuple[List[float], Dict[int, float]]:
     pixel_count = numpy.product(pixels.shape)
@@ -2132,7 +2132,7 @@ def compute_earth_movers_distance_objects(
         max_points: int=250,
         max_distance: int=250,
         penalize_missing: bool=False,
-        ) -> np.float_:
+        ) -> numpy.float_:
     src_objects_shape = src_objects_label_set[0][0].shape
     dest_objects_shape = dest_objects_label_set[0][0].shape
 
@@ -2162,9 +2162,9 @@ def compute_earth_movers_distance_objects(
         ):
         if left_count == 0:
             if penalize_missing:
-                return np.sum(right_areas) * max_distance
+                return numpy.sum(right_areas) * max_distance
             else:
-                return np.float64(0)
+                return numpy.float64(0)
     
     if decimation_method in (ObjectDecimationMethod.KMEANS, mio.DM.KMEANS):
         isrc, jsrc = get_kmeans_points(src_obj_ijv, dest_obj_ijv, max_points)
@@ -2186,16 +2186,16 @@ def compute_earth_movers_distance_objects(
     dest_weights = get_weights(idest, jdest, dest_labels_mask)
 
     ioff, joff = [
-        src[:, np.newaxis] - dest[np.newaxis, :]
+        src[:, numpy.newaxis] - dest[numpy.newaxis, :]
         for src, dest in ((isrc, idest), (jsrc, jdest))
     ]
-    c = np.sqrt(ioff * ioff + joff * joff).astype(np.int32)
+    c = numpy.sqrt(ioff * ioff + joff * joff).astype(numpy.int32)
     c[c > max_distance] = max_distance
     extra_mass_penalty = max_distance if penalize_missing else 0
 
     emd = centrosome.fastemd.emd_hat_int32(
-        src_weights.astype(np.int32),
-        dest_weights.astype(np.int32),
+        src_weights.astype(numpy.int32),
+        dest_weights.astype(numpy.int32),
         c,
         extra_mass_penalty=extra_mass_penalty,
     )

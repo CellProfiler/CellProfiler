@@ -2,11 +2,24 @@ import numpy
 from typing import Tuple, Optional, Any, Dict, Union, Annotated, List
 from numpy.typing import NDArray
 from cellprofiler_library.types import Image2DBinary, ObjectSegmentation, Image2DColor, Image2DGrayscale
-from pydantic import Field, validate_call, ConfigDict
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.functions.measurement import calculate_object_skeleton
 from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON
-
 from cellprofiler_library.measurement_model import LibraryMeasurements
+
+
+ObjectSkeletonStatistics = List[None]
+
+class ObjectSkeletonDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectSkeletonStatistics
+    edge_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
+    vertex_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
+    branchpoint_image: Optional[Image2DColor]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_skeleton(
@@ -17,16 +30,10 @@ def measure_object_skeleton(
         labels_count:               Annotated[numpy.integer[Any], Field(description="Number of labels in the original segmentation prior to cropping")],
         fill_small_holes:           Annotated[bool, Field(description="Fill small holes?")],
         max_hole_size:              Annotated[Optional[int], Field(description="Maximum hole size", ge=1)]=None,
-        wants_objskeleton_graph:    Annotated[bool, Field(description="Return the skeleton graph relationships along with the measurements?")]=False,
+        wants_objskeleton_graph:    Annotated[bool, Field(description="Return the skeleton graph relationships along with the measurements in the display data?")]=False,
         intensity_image_pixel_data: Annotated[Optional[Image2DGrayscale], Field(description="Intensity image used for graph relationships")]=None,
-        wants_branchpoint_image:    Annotated[bool, Field(description="Return the branchpoint image?")]=False,
-        ) -> Tuple[
-            LibraryMeasurements,
-            Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
-            Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
-            Optional[Image2DColor],
-        ]:
-    
+        wants_branchpoint_image:    Annotated[bool, Field(description="Return the branchpoint image in display data?")]=False,
+        ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectSkeletonDisplayData]]:
     (
         trunk_counts,
         branch_counts,
@@ -75,10 +82,12 @@ def measure_object_skeleton(
             measurements.add_image_measurement(f"Min_{full_feature_name}", 0.0)
             measurements.add_image_measurement(f"Max_{full_feature_name}", 0.0)
 
-    return (
-        measurements,
-        edge_graph,
-        vertex_graph,
-        branchpoint_image
-    )
+    if wants_objskeleton_graph or wants_branchpoint_image:
+        return measurements, ObjectSkeletonDisplayData(
+                statistics=[],
+                edge_graph=edge_graph,
+                vertex_graph=vertex_graph,
+                branchpoint_image=branchpoint_image,
+        )
+    return measurements
 

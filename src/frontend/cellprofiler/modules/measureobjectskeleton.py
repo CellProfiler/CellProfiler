@@ -349,23 +349,24 @@ The file has the following columns:
         if self.wants_objskeleton_graph:
             intensity_image = workspace.image_set.get_image(self.intensity_image_name.value, must_be_grayscale=True)
 
-        (
-            lib_measurements,
-            edge_graph,
-            vertex_graph,
-            branchpoint_image
-        ) = measure_object_skeleton(
+        lib_res = measure_object_skeleton(
             seed_objects_name,
             skeleton_name,
-            skeleton, 
-            labels, 
-            labels_count, 
-            fill_small_holes, 
-            max_hole_size, 
-            self.wants_objskeleton_graph.value, 
+            skeleton,
+            labels,
+            labels_count,
+            fill_small_holes,
+            max_hole_size,
+            self.wants_objskeleton_graph.value,
             intensity_image.pixel_data if intensity_image else None,
-            True # This is hardcoded to True as branchpoint_image output is needed for frontend show_window
-            )
+            self.wants_branchpoint_image.value
+        )
+        # rare case of not conditioning on self.show_window for display results here
+        # since we might need them even if/when show_window is False
+        if self.wants_branchpoint_image or self.wants_objskeleton_graph:
+            lib_measurements, lib_display = lib_res
+        else:
+            lib_measurements = lib_res
         #
         # Save measurements
         #
@@ -382,32 +383,29 @@ The file has the following columns:
         # Collect the graph information
         #
         if self.wants_objskeleton_graph:
-            image_number = workspace.measurements.image_set_number
-
             edge_path, vertex_path = self.get_graph_file_paths(m, m.image_number)
             workspace.interaction_request(
                 self,
                 m.image_number,
                 edge_path,
-                edge_graph,
+                lib_display.edge_graph,
                 vertex_path,
-                vertex_graph,
+                lib_display.vertex_graph,
                 headless_ok=True,
             )
 
             if self.show_window:
-                workspace.display_data.edge_graph = edge_graph
-                workspace.display_data.vertex_graph = vertex_graph
+                workspace.display_data.edge_graph = lib_display.edge_graph
+                workspace.display_data.vertex_graph = lib_display.vertex_graph
                 workspace.display_data.intensity_image = intensity_image.pixel_data
         #
         # Make the display image
         #
-        if self.show_window or self.wants_branchpoint_image:
-            if self.show_window:
-                workspace.display_data.branchpoint_image = branchpoint_image
-            if self.wants_branchpoint_image:
-                bi = Image(branchpoint_image, parent_image=skeleton_image)
-                workspace.image_set.add(self.branchpoint_image_name.value, bi)
+        if self.show_window:
+            workspace.display_data.branchpoint_image = lib_display.branchpoint_image
+        if self.wants_branchpoint_image:
+            bi = Image(lib_display.branchpoint_image, parent_image=skeleton_image)
+            workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
     def handle_interaction(
         self, image_number, edge_path, edge_graph, vertex_path, vertex_graph

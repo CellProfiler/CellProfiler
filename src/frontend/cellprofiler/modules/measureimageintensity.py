@@ -211,30 +211,32 @@ class MeasureImageIntensity(Module):
                     else:
                         pixels = input_pixels[objects.segmented != 0]
                     
-                    lm, stats = measure_image_intensity(
+                    lib_measurements, lib_display = measure_image_intensity(
                         pixels=pixels,
                         image_name=im,
                         object_name=object_set,
-                        percentiles=percentiles
+                        percentiles=percentiles,
+                        return_visualization_data=True,
                     )
                     
-                    self._add_library_measurements_to_core(lm, workspace)
-                    statistics += stats
+                    self._add_library_measurements_to_core(lib_measurements, workspace)
+                    statistics += lib_display.statistics
             else:
                 if image.has_mask:
                     pixels = input_pixels[image.mask]
                 else:
                     pixels = input_pixels
                 
-                lm, stats = measure_image_intensity(
+                lib_measurements, lib_display = measure_image_intensity(
                     pixels=pixels,
                     image_name=im,
                     object_name=None,
-                    percentiles=percentiles
+                    percentiles=percentiles,
+                    return_visualization_data=True,
                 )
                 
-                self._add_library_measurements_to_core(lm, workspace)
-                statistics += stats
+                self._add_library_measurements_to_core(lib_measurements, workspace)
+                statistics += lib_display.statistics
 
         # TODO: library_cleanup - wrap in self.show_window
         col_labels = ["Image", "Masking object", "Feature", "Value"]

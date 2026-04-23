@@ -238,10 +238,10 @@ class MeasureImageIntensity(Module):
                 self._add_library_measurements_to_core(lib_measurements, workspace)
                 statistics += lib_display.statistics
 
-        # TODO: library_cleanup - wrap in self.show_window
-        col_labels = ["Image", "Masking object", "Feature", "Value"]
-        workspace.display_data.statistics = statistics
-        workspace.display_data.col_labels = col_labels
+        if self.show_window:
+            col_labels = ["Image", "Masking object", "Feature", "Value"]
+            workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = col_labels
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

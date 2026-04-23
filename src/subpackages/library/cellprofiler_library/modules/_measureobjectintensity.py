@@ -2,8 +2,8 @@ import numpy
 import skimage.segmentation
 
 from numpy.typing import NDArray
-from typing import Tuple, Annotated, Optional, List, Any
-from pydantic import Field, validate_call, ConfigDict
+from typing import Tuple, Annotated, Optional, List, Any, Union
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_core.utilities.core.object import crop_labels_and_image
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
 from cellprofiler_library.measurement_model import LibraryMeasurements
@@ -12,6 +12,14 @@ from cellprofiler_library.opts.measureobjectintensity import TemplateMeasurement
 
 
 ObjectIntensityStatistics = List[Tuple[str,str,str,Any,Any,Any]]
+
+class ObjectIntensityDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectIntensityStatistics
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_location_measurements(
@@ -76,7 +84,8 @@ def measure_object_intensity(
         object_labels:      Annotated[ObjectLabelSet, Field(description="Object labels")],
         nobjects:           Annotated[int, Field(description="Number of objects in object_labels")],
         image_dimensions:   Annotated[int, Field(description="For 2D images, this is 2. For 3D images, this is 3")],
-        ) -> Tuple[LibraryMeasurements, ObjectIntensityStatistics]:
+        return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+        ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectIntensityDisplayData]]:
     """
     Compute intensity measurements for objects in an image.
     
@@ -277,4 +286,6 @@ def measure_object_intensity(
     add_measurement(IntensityFeature.LOC_MAX_Y.value, TemplateMeasurementFormat.LOC_MAX_Y, max_y)
     add_measurement(IntensityFeature.LOC_MAX_Z.value, TemplateMeasurementFormat.LOC_MAX_Z, max_z)
 
-    return measurements, statistics
+    if return_visualization_data:
+        return measurements, ObjectIntensityDisplayData(statistics=statistics)
+    return measurements

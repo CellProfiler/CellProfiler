@@ -237,7 +237,7 @@ class MeasureObjectIntensity(Module):
                 objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
                 
-                lib_measurements, lib_stats = measure_object_intensity(
+                lib_measurements, lib_display = measure_object_intensity(
                     img=img,
                     image_name=image_name,
                     object_name=object_name,
@@ -245,8 +245,8 @@ class MeasureObjectIntensity(Module):
                     object_labels=objects.get_labels(),
                     nobjects=nobjects,
                     image_dimensions=image.dimensions,
+                    return_visualization_data=True,
                 )
-
                 m = workspace.measurements
 
                 # Feature Name -> Template String
@@ -255,7 +255,11 @@ class MeasureObjectIntensity(Module):
                     for val in (getattr(TemplateMeasurementFormat, x.name) for x in IntensityFeature)
                 }
 
-                for stat in lib_stats:
+                if self.show_window:
+                    workspace.display_data.statistics += lib_display.statistics
+
+                # TODO: library cleanup - should just iterate on measurements not stats
+                for stat in lib_display.statistics:
                     image_name = stat[0]
                     object_name = stat[1]
                     feature_name = stat[2]
@@ -265,8 +269,6 @@ class MeasureObjectIntensity(Module):
                     if lib_measurements.has_feature(object_name, measurement_name):
                         measurement = lib_measurements.get_measurement(object_name, measurement_name)
                         m.add_measurement(object_name, measurement_name, measurement)
-                        if self.show_window and len(measurement) > 0:
-                            workspace.display_data.statistics.append(stat)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

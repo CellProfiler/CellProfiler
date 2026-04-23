@@ -1,6 +1,10 @@
 from enum import Enum
+import centrosome.zernike
 
-ZERNIKE_N = 9
+def get_zernike_indexes():
+    """The Zernike numbers measured by this module"""
+    return centrosome.zernike.get_zernike_indexes(10)
+
 class ObjectSizeShapeFeatures(str, Enum):
     """The category of the per-object measurements made by the MeasureObjectSizeShape module"""
 

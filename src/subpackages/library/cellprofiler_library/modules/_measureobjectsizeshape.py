@@ -101,7 +101,6 @@ def measureobjectsizeshape(
             feature_name,
             data
         )
-        # TODO: measureobjectsizeshape - check for unwanted mutations here
         finite_data = numpy.isfinite(data)
         if return_visualization_data and numpy.any(finite_data) > 0:
             stat_data = data[finite_data]

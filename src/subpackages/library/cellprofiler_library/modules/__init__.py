@@ -15,7 +15,7 @@ from ._reducenoise import reducenoise
 from ._watershed import watershed
 from ._measureimageoverlap import measureimageoverlap
 from ._gaussianfilter import gaussianfilter
-from ._measureobjectsizeshape import measureobjectsizeshape
+from ._measureobjectsizeshape import measureobjectsizeshape, get_zernike_indexes
 from ._identifyprimaryobjects import identifyprimaryobjects
 from ._identifysecondaryobjects import identifysecondaryobjects
 from ._identifytertiaryobjects import identifytertiaryobjects

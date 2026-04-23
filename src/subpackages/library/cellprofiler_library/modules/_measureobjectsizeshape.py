@@ -2,7 +2,6 @@ from typing import Tuple, Optional, Annotated, Dict, Any, Union, List
 import numpy
 import centrosome
 import centrosome.cpmorphology
-import centrosome.zernike
 from pydantic import validate_call, ConfigDict, Field, BaseModel
 from cellprofiler_library.types import ObjectLabelsDense
 from cellprofiler_library.measurement_model import LibraryMeasurements
@@ -11,12 +10,12 @@ from cellprofiler_library.functions.measurement import (
     measure_object_size_shape_3d
 )
 from cellprofiler_library.opts.objectsizeshapefeatures import (
+    get_zernike_indexes,
     F_STD_2D, 
     F_STD_3D, 
     F_ADV_2D, 
     F_ADV_3D, 
     F_STANDARD, 
-    ZERNIKE_N,
     ObjectSizeShapeFeatures
 )
 from cellprofiler_library.functions.segmentation import (
@@ -87,9 +86,7 @@ def measureobjectsizeshape(
         if calculate_zernikes:
             feature_names += [
                 f"Zernike_{index[0]}_{index[1]}"
-                for index in centrosome.zernike.get_zernike_indexes(
-                    ZERNIKE_N + 1
-                )
+                for index in get_zernike_indexes()
             ]
         if calculate_advanced:
             feature_names += [i.value for i in F_ADV_2D]

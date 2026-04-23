@@ -1,4 +1,3 @@
-import centrosome.zernike
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary, ValidationError
@@ -7,7 +6,7 @@ from cellprofiler_core.setting.subscriber import LabelListSubscriber
 import cellprofiler.gui.help.content
 
 from cellprofiler_library.modules import measureobjectsizeshape
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures, F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD, ZERNIKE_N
+from cellprofiler_library.opts.objectsizeshapefeatures import get_zernike_indexes, ObjectSizeShapeFeatures, F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD
 
 __doc__ = """\
 MeasureObjectSizeShape
@@ -275,15 +274,6 @@ module.""".format(
         else:
             return []
 
-    def get_zernike_numbers(self):
-        """The Zernike numbers measured by this module"""
-        if self.calculate_zernikes.value:
-            return centrosome.zernike.get_zernike_indexes(
-                ZERNIKE_N + 1
-            )
-        else:
-            return []
-
     def get_zernike_name(self, zernike_index):
         """Return the name of a Zernike feature, given a (N,M) 2-tuple
 
@@ -303,7 +293,7 @@ module.""".format(
             feature_names += [i.value for i in F_STD_2D]
             if self.calculate_zernikes.value:
                 feature_names += [
-                    self.get_zernike_name(index) for index in self.get_zernike_numbers()
+                    self.get_zernike_name(index) for index in get_zernike_indexes()
                 ]
             if self.calculate_advanced.value:
                 feature_names += [i.value for i in F_ADV_2D]

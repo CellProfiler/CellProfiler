@@ -447,9 +447,9 @@ def get_weights(
 ################################################################################
 
 def get_object_derived_shape_features(
-    area: NDArray[np.float64],
-    perimeter: NDArray[np.float64]
-) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    area: NDArray[numpy.float64],
+    perimeter: NDArray[numpy.float64]
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]:
     """Compute derived shape features from area and perimeter.
     
     Args:
@@ -466,8 +466,8 @@ def get_object_derived_shape_features(
 
 
 def get_object_radius_features(
-    images: List[NDArray[np.bool_]]
-) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    images: List[NDArray[numpy.bool_]]
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]]:
     """Compute radius features for objects from their binary images.
     
     Args:
@@ -500,9 +500,9 @@ def get_object_radius_features(
 
 def get_object_zernike_features(
     labels: NDArray[ObjectLabel],
-    label_indices: NDArray[np.int32],
+    label_indices: NDArray[numpy.int32],
     zernike_numbers: List[Tuple[int, int]]
-) -> Dict[Tuple[int, int], NDArray[np.float64]]:
+) -> Dict[Tuple[int, int], NDArray[numpy.float64]]:
     """Compute Zernike features for objects.
     
     Args:
@@ -522,8 +522,8 @@ def get_object_zernike_features(
 
 def get_object_feret_features(
     labels: NDArray[ObjectLabel],
-    label_indices: NDArray[np.int32]
-) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    label_indices: NDArray[numpy.int32]
+) -> Tuple[NDArray[numpy.float64], NDArray[numpy.float64]]:
     """Compute Feret diameter features for objects.
     
     Args:
@@ -552,10 +552,10 @@ def measure_object_size_shape_2d(
     spacing: Tuple[float, ...]
 ) -> Tuple[
     Dict[str, Any], # props
-    Tuple[NDArray[np.float64], NDArray[np.float64]], # formfactor, compactness
-    Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]], # max, mean, median radius
-    Dict[Tuple[int, int], NDArray[np.float64]], # zernike
-    Tuple[NDArray[np.float64], NDArray[np.float64]] # feret
+    Tuple[NDArray[numpy.float64], NDArray[numpy.float64]], # formfactor, compactness
+    Tuple[NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]], # max, mean, median radius
+    Dict[Tuple[int, int], NDArray[numpy.float64]], # zernike
+    Tuple[NDArray[numpy.float64], NDArray[numpy.float64]] # feret
 ]:
     """Compute 2D object size and shape measurements.
     
@@ -592,7 +592,7 @@ def measure_object_size_shape_3d(
     spacing: Tuple[float, ...]
 ) -> Tuple[
     Dict[str, Any], # props
-    NDArray[np.float64] # surface_areas
+    NDArray[numpy.float64] # surface_areas
 ]:
     props = skimage.measure.regionprops_table(labels, properties=desired_properties)
     

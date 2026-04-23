@@ -1,6 +1,4 @@
-import centrosome.cpmorphology
 import centrosome.zernike
-import numpy
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, Binary, ValidationError
@@ -329,21 +327,11 @@ module.""".format(
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
 
-        if self.show_window:
-            workspace.display_data.col_labels = (
-                "Object",
-                "Feature",
-                "Mean",
-                "Median",
-                "STD",
-            )
-
-            workspace.display_data.statistics = []
         for object_name in self.objects_list.value:
 
             objects = workspace.get_objects(object_name)
 
-            lib_measurements = measureobjectsizeshape(
+            res = measureobjectsizeshape(
                 objects=objects.dense,
                 object_name=object_name,
                 calculate_advanced=self.calculate_advanced.value,
@@ -352,18 +340,31 @@ module.""".format(
                 spacing=objects.parent_image.spacing
                 if objects.has_parent_image
                 else (1.0,) * objects.dimensions,  # TODO: Check this change is OK
+                return_visualization_data=self.show_window,
             )
+            if self.show_window:
+                lib_measurements, lib_display = res
+
+                workspace.display_data.col_labels = (
+                    "Object",
+                    "Feature",
+                    "Mean",
+                    "Median",
+                    "STD",
+                )
+
+                workspace.display_data.statistics = lib_display.statistics
+            else:
+                lib_measurements = res
 
             # Unpack LibraryMeasurements into workspace
             for obj_name, features in lib_measurements.objects.items():
                 for feature_name, values in features.items():
-                    # Extract the feature name without the AreaShape prefix
-                    # since record_measurement adds it back
-                    if feature_name.startswith("AreaShape_"):
-                        f = feature_name[len("AreaShape_"):]
+                    if not feature_name.startswith(ObjectSizeShapeFeatures.AREA_SHAPE.value):
+                        f = "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
                     else:
                         f = feature_name
-                    self.record_measurement(workspace, obj_name, f, values)
+                    workspace.add_measurement(object_name, f, values)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
@@ -374,26 +375,6 @@ module.""".format(
             col_labels=workspace.display_data.col_labels,
             title="default",
         )
-
-    def record_measurement(self, workspace, object_name, feature_name, result):
-        """Record the result of a measurement in the workspace's measurements"""
-        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
-        workspace.add_measurement(
-            object_name,
-            "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
-            data,
-        )
-        if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
-            data = data[numpy.isfinite(data)]
-            workspace.display_data.statistics.append(
-                (
-                    object_name,
-                    feature_name,
-                    "%.2f" % numpy.mean(data),
-                    "%.2f" % numpy.median(data),
-                    "%.2f" % numpy.std(data),
-                )
-            )
 
     def get_measurement_columns(self, pipeline):
         """Return measurement column definitions.

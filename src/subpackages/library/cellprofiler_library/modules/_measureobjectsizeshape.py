@@ -1,8 +1,9 @@
-from typing import Tuple, Optional, Annotated, Dict, Any
+from typing import Tuple, Optional, Annotated, Dict, Any, Union, List
 import numpy
 import centrosome
+import centrosome.cpmorphology
 import centrosome.zernike
-from pydantic import validate_call, ConfigDict, Field
+from pydantic import validate_call, ConfigDict, Field, BaseModel
 from cellprofiler_library.types import ObjectLabelsDense
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import (
@@ -19,9 +20,18 @@ from cellprofiler_library.opts.objectsizeshapefeatures import (
     ObjectSizeShapeFeatures
 )
 from cellprofiler_library.functions.segmentation import (
-    _validate_dense,
     convert_dense_to_label_set,
 )
+
+ObjectSizeShapeStatistics = List[Tuple[str, str, str, str, str]]
+
+class ObjectSizeShapeDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectSizeShapeStatistics
 
 DEFAULT_INVALID_VALUE_DTYPE = {
     numpy.float64: numpy.nan,
@@ -47,8 +57,9 @@ def measureobjectsizeshape(
     calculate_advanced: Annotated[bool, Field(description="Calculate advanced features?")] = True,
     calculate_zernikes: Annotated[bool, Field(description="Calculate zernike features?")] = True,
     volumetric:         Annotated[bool, Field(description="Are the objects volumetric?")] = False,
-    spacing:            Annotated[Optional[Tuple], Field(description="Object spacing")] = None,
-) -> LibraryMeasurements:
+    spacing:            Annotated[Optional[Tuple[float, ...]], Field(description="Object spacing")] = None,
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectSizeShapeDisplayData]]:
     """
     Measure object size and shape features.
     
@@ -84,116 +95,137 @@ def measureobjectsizeshape(
             feature_names += [i.value for i in F_ADV_2D]
 
     measurements = LibraryMeasurements()
+    statistics: ObjectSizeShapeStatistics = []
+
+    def add_object_measurement(object_name: str, feature_name: str, val: Any):
+        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(val)
+        measurements.add_measurement(
+            object_name,
+            feature_name,
+            data
+        )
+        # TODO: measureobjectsizeshape - check for unwanted mutations here
+        finite_data = numpy.isfinite(data)
+        if return_visualization_data and numpy.any(finite_data) > 0:
+            stat_data = data[finite_data]
+            statistics.append((
+                    object_name,
+                    feature_name,
+                    "%.2f" % numpy.mean(stat_data),
+                    "%.2f" % numpy.median(stat_data),
+                    "%.2f" % numpy.std(stat_data),
+            ))
     
     if len(objects[objects != 0]) == 0:
         # No objects - return empty measurements
         for ft in feature_names:
-            measurements.add_measurement(
+            add_object_measurement(
                 object_name,
                 f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_{ft}",
                 numpy.zeros((0,))
             )
-        return measurements
-
-    if not volumetric:
-        desired_properties = [
-            "label",
-            "image",
-            "area",
-            "perimeter",
-            "bbox",
-            "bbox_area",
-            "major_axis_length",
-            "minor_axis_length",
-            "orientation",
-            "centroid",
-            "equivalent_diameter",
-            "extent",
-            "eccentricity",
-            "convex_area",
-            "solidity",
-            "euler_number",
-        ]
-        if calculate_advanced:
-            desired_properties += [
-                "inertia_tensor",
-                "inertia_tensor_eigvals",
-                "moments",
-                "moments_central",
-                "moments_hu",
-                "moments_normalized",
-            ]
     else:
-        desired_properties = [
-            "label",
-            "image",
-            "area",
-            "centroid",
-            "bbox",
-            "bbox_area",
-            "major_axis_length",
-            "minor_axis_length",
-            "extent",
-            "equivalent_diameter",
-            "euler_number",
-        ]
-        if calculate_advanced:
-            desired_properties += [
+        if not volumetric:
+            desired_properties = [
+                "label",
+                "image",
+                "area",
+                "perimeter",
+                "bbox",
+                "bbox_area",
+                "major_axis_length",
+                "minor_axis_length",
+                "orientation",
+                "centroid",
+                "equivalent_diameter",
+                "extent",
+                "eccentricity",
+                "convex_area",
                 "solidity",
+                "euler_number",
             ]
+            if calculate_advanced:
+                desired_properties += [
+                    "inertia_tensor",
+                    "inertia_tensor_eigvals",
+                    "moments",
+                    "moments_central",
+                    "moments_hu",
+                    "moments_normalized",
+                ]
+        else:
+            desired_properties = [
+                "label",
+                "image",
+                "area",
+                "centroid",
+                "bbox",
+                "bbox_area",
+                "major_axis_length",
+                "minor_axis_length",
+                "extent",
+                "equivalent_diameter",
+                "euler_number",
+            ]
+            if calculate_advanced:
+                desired_properties += [
+                    "solidity",
+                ]
 
-    labels = convert_dense_to_label_set(objects, validate=False)
-    labels = [i[0] for i in labels]  # Just need the labelmaps, not indices
+        labels = convert_dense_to_label_set(objects, validate=False)
+        labels = [i[0] for i in labels]  # Just need the labelmaps, not indices
 
-    if len(labels) > 1:
-        # Overlapping labels
-        features_to_record = {}
-        for labelmap in labels:
-            buffer, measured_labels, nobjects = _measure_single_labelset(
-                labelmap,
+        if len(labels) > 1:
+            # Overlapping labels
+            features_to_record = {}
+            for labelmap in labels:
+                buffer, measured_labels, nobjects = _measure_single_labelset(
+                    labelmap,
+                    desired_properties,
+                    calculate_zernikes,
+                    calculate_advanced,
+                    volumetric,
+                    spacing
+                )
+                for f, m in buffer.items():
+                    if f in features_to_record:
+                        features_to_record[f] = numpy.concatenate(
+                            (features_to_record[f], m)
+                        )
+                    else:
+                        features_to_record[f] = m
+        else:
+            features_to_record, measured_labels, nobjects = _measure_single_labelset(
+                labels[0],
                 desired_properties,
                 calculate_zernikes,
                 calculate_advanced,
                 volumetric,
                 spacing
             )
-            for f, m in buffer.items():
-                if f in features_to_record:
-                    features_to_record[f] = numpy.concatenate(
-                        (features_to_record[f], m)
-                    )
-                else:
-                    features_to_record[f] = m
-    else:
-        features_to_record, measured_labels, nobjects = _measure_single_labelset(
-            labels[0],
-            desired_properties,
-            calculate_zernikes,
-            calculate_advanced,
-            volumetric,
-            spacing
-        )
 
-    # ensure that all objects (objects.indices) are represented in the
-    # output, even if they are not present in the label matrix. Fill with nan if missing
-    if len(measured_labels) < nobjects:
-        for i in objects.indices:
-            if i not in measured_labels:
-                for f in features_to_record:
-                    features_to_record[f] = numpy.insert(
-                        features_to_record[f], i-1, DEFAULT_INVALID_VALUE_DTYPE.get(
-                            features_to_record[f].dtype.type, numpy.nan
+        # ensure that all objects (objects.indices) are represented in the
+        # output, even if they are not present in the label matrix. Fill with nan if missing
+        if len(measured_labels) < nobjects:
+            for i in objects.indices:
+                if i not in measured_labels:
+                    for f in features_to_record:
+                        features_to_record[f] = numpy.insert(
+                            features_to_record[f], i-1, DEFAULT_INVALID_VALUE_DTYPE.get(
+                                features_to_record[f].dtype.type, numpy.nan
+                            )
                         )
-                    )
 
-    # Convert dictionary to LibraryMeasurements
-    for feature_name, values in features_to_record.items():
-        measurements.add_measurement(
-            object_name,
-            f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_{feature_name}",
-            values
-        )
+        # Convert dictionary to LibraryMeasurements
+        for feature_name, values in features_to_record.items():
+            add_object_measurement(
+                object_name,
+                f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_{feature_name}",
+                values
+            )
 
+    if return_visualization_data:
+        return measurements, ObjectSizeShapeDisplayData(statistics=statistics)
     return measurements
 
 def _measure_single_labelset(
@@ -202,7 +234,7 @@ def _measure_single_labelset(
     calculate_zernikes: bool,
     calculate_advanced: bool,
     volumetric: bool,
-    spacing: Optional[Tuple]
+    spacing: Optional[Tuple[float, ...]]
 ) -> Tuple[Dict[str, Any], Any, int]:
     
     if spacing is None:

@@ -10,9 +10,9 @@ from cellprofiler_library.functions.segmentation import convert_ijv_to_sparse
 from cellprofiler_library.functions.segmentation import make_rgb_outlines
 from cellprofiler_library.functions.segmentation import find_ijv_overlaps
 from cellprofiler_library.functions.segmentation import center_of_labels_mass
-from cellprofiler_library.functions.segmentation import histogram_from_labels
-from cellprofiler_library.functions.segmentation import relate_histogram
-from cellprofiler_library.functions.segmentation import relate_labels
+from cellprofiler_library.functions.segmentation import histogram_from_labels as _histogram_from_labels
+from cellprofiler_library.functions.segmentation import relate_histogram as _relate_histogram
+from cellprofiler_library.functions.segmentation import relate_labels as _relate_labels
 
 from ._segmentation import Segmentation
 
@@ -302,7 +302,7 @@ class Objects:
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        return relate_labels(parent_labels, child_labels)
+        return _relate_labels(parent_labels, child_labels)
 
     @staticmethod
     def relate_histogram(histogram):
@@ -310,7 +310,7 @@ class Objects:
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
         """
-        return relate_histogram(histogram)
+        return _relate_histogram(histogram)
 
     @staticmethod
     def histogram_from_labels(parent_labels, child_labels):
@@ -323,7 +323,7 @@ class Objects:
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
         """
-        return histogram_from_labels(parent_labels, child_labels)
+        return _histogram_from_labels(parent_labels, child_labels)
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):

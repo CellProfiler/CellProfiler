@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import Optional, Tuple, Annotated, Union, List
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 
-from cellprofiler_library.types import ObjectSegmentation
+from cellprofiler_library.types import ObjectSegmentation, ObjectLabelMask
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectneighbors import (
     DistanceMethod as NeighborsDistanceMethod,
@@ -26,6 +26,9 @@ class ObjectNeighborsDisplayData(BaseModel):
     first_objects: NDArray[numpy.int_]
     second_objects: NDArray[numpy.int_]
     expanded_labels: Optional[NDArray[numpy.int_]]
+    object_mask: ObjectLabelMask
+    neighbor_count_image: NDArray[numpy.float64]
+    percent_touching_image: NDArray[numpy.float64]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_neighbors(
@@ -133,10 +136,22 @@ def measure_object_neighbors(
         )
 
     if return_visualization_data:
+        object_mask: ObjectLabelMask = kept_labels != 0
+        object_indexes = kept_labels[object_mask] - 1
+
+        neighbor_count_image = numpy.zeros(kept_labels.shape)
+        neighbor_count_image[object_mask] = neighbor_count[object_indexes]
+
+        percent_touching_image = numpy.zeros(kept_labels.shape)
+        percent_touching_image[object_mask] = percent_touching[object_indexes]
+
         return measurements, ObjectNeighborsDisplayData(
                 statistics=[],
                 first_objects=first_objects,
                 second_objects=second_objects,
                 expanded_labels=expanded_labels,
+                object_mask=object_mask,
+                neighbor_count_image=neighbor_count_image,
+                percent_touching_image=percent_touching_image,
         )
     return measurements

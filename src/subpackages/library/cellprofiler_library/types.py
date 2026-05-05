@@ -83,7 +83,7 @@ def validate_object_segmentation_ijv(ijv: NDArray[np.int_]) -> NDArray[np.int_]:
     return ijv
 
 Pixel = Annotated[Union[np.float32, np.float64], Field(description="Pixel value")]
-ObjectLabel =           Annotated[Union[np.int8, np.int16,np.int32], Field(description="Object label")]
+ObjectLabel =           Annotated[Union[np.int8, np.int16, np.int32], Field(description="Object label")]
 
 Image2DColor =          Annotated[NDArray[Pixel],       Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
 Image2DColorMask =      Annotated[NDArray[np.bool_],    Field(description="2D color mask"),        AfterValidator(create_type_validator(False, True, False, np.bool_))]
@@ -106,6 +106,7 @@ ObjectLabelsDense =     Annotated[NDArray[ObjectLabel], Field(description="Dense
 ObjectLabelSet =        Annotated[Sequence[Tuple[NDArray[ObjectLabel], NDArray[np.int32]]], Field(description="List of Tuples of object labels and object numbers in each label matrix"), AfterValidator(validate_object_label_set)]
 ObjectSegmentation =    Annotated[NDArray[ObjectLabel], Field(description="Object segmentation. Label numbers are contiguous and start at 1. Use `skimage.segmentation.relabel_sequential` to convert non-contiguous labels.")]
 ObjectSegmentationIJV = Annotated[NDArray[ObjectLabel], Field(description="Object segmentation in IJV format"), AfterValidator(validate_object_segmentation_ijv)]
+ObjectLabelMask =       Annotated[NDArray[np.bool_],    Field(description="Label Mask"),           AfterValidator(create_type_validator(False, False, False, np.bool_))]
 
 ImageGrayscale =        Union[Image2DGrayscale, Image3DGrayscale]
 ImageGrayscaleMask =    Union[Image2DGrayscaleMask, Image3DGrayscaleMask]

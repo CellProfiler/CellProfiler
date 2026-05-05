@@ -301,6 +301,7 @@ previously discarded objects.""".format(
        
         dimensions = len(objects.shape)
 
+        wants_lib_display = self.show_window or self.wants_count_image or self.wants_percent_touching_image
         res = measure_object_neighbors( 
             objects_small_removed_segmented, 
             kept_labels,
@@ -315,7 +316,7 @@ previously discarded objects.""".format(
             has_pixels,
             len(objects.indices),
             self.wants_excluded_objects.value,
-            self.show_window,
+            wants_lib_display,
         )
         if self.show_window:
             lib_measurements, lib_display = res
@@ -328,7 +329,6 @@ previously discarded objects.""".format(
         assert isinstance(workspace, Workspace)
         m = workspace.measurements
         assert isinstance(m, Measurements)
-        image_set = workspace.image_set
         
         # TODO: 5122 - Replace the three loops below with a single call to `add_library_measurements_to_worksapce_measurements()`
         # Record Image Measurements
@@ -360,51 +360,35 @@ previously discarded objects.""".format(
                 data[R_SECOND_OBJECT_NUMBER], 
             )
 
-        # Retrieve data for display
-        neighbor_count_feature = self.get_measurement_name(Measurement.NUMBER_OF_NEIGHBORS.value)
-        neighbor_count = lib_measurements.objects[self.object_name.value][neighbor_count_feature]
-        
-        percent_touching_feature = self.get_measurement_name(Measurement.PERCENT_TOUCHING.value)
-        percent_touching = lib_measurements.objects[self.object_name.value][percent_touching_feature]
-
-        neighbor_count_image = numpy.zeros(kept_labels.shape, int)
-        object_mask = objects.segmented != 0
-        object_indexes = objects.segmented[object_mask] - 1
-        neighbor_count_image[object_mask] = neighbor_count[object_indexes]
-        workspace.display_data.neighbor_count_image = neighbor_count_image
-
-        percent_touching_image = numpy.zeros(kept_labels.shape)
-        percent_touching_image[object_mask] = percent_touching[object_indexes]
-        workspace.display_data.percent_touching_image = percent_touching_image
-
-        image_set = workspace.image_set
         if self.wants_count_image.value:
             neighbor_cm = get_colormap(self.count_colormap.value)
             sm = matplotlib.cm.ScalarMappable(cmap=neighbor_cm)
-            img = sm.to_rgba(neighbor_count_image)[:, :, :3]
-            img[:, :, 0][~object_mask] = 0
-            img[:, :, 1][~object_mask] = 0
-            img[:, :, 2][~object_mask] = 0
+            img = sm.to_rgba(lib_display.neighbor_count_image)[:, :, :3]
+            img[:, :, 0][~lib_display.object_mask] = 0
+            img[:, :, 1][~lib_display.object_mask] = 0
+            img[:, :, 2][~lib_display.object_mask] = 0
             count_image = Image(img, masking_objects=objects)
-            image_set.add(self.count_image_name.value, count_image)
+            workspace.image_set.add(self.count_image_name.value, count_image)
 
         if self.wants_percent_touching_image:
             percent_touching_cm = get_colormap(self.touching_colormap.value)
             sm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
-            img = sm.to_rgba(percent_touching_image)[:, :, :3]
-            img[:, :, 0][~object_mask] = 0
-            img[:, :, 1][~object_mask] = 0
-            img[:, :, 2][~object_mask] = 0
+            img = sm.to_rgba(lib_display.percent_touching_image)[:, :, :3]
+            img[:, :, 0][~lib_display.object_mask] = 0
+            img[:, :, 1][~lib_display.object_mask] = 0
+            img[:, :, 2][~lib_display.object_mask] = 0
             touching_image = Image(img, masking_objects=objects)
-            image_set.add(self.touching_image_name.value, touching_image)
+            workspace.image_set.add(self.touching_image_name.value, touching_image)
 
         if self.show_window:
+            workspace.display_data.neighbor_count_image = lib_display.neighbor_count_image
             workspace.display_data.neighbor_cm_name = self.count_colormap.value
+            workspace.display_data.percent_touching_image = lib_display.percent_touching_image
             workspace.display_data.percent_touching_cm_name = self.touching_colormap.value
-            workspace.display_data.orig_labels = objects.segmented
+            workspace.display_data.orig_labels = kept_labels
             workspace.display_data.neighbor_labels = neighbor_kept_labels
             workspace.display_data.expanded_labels = lib_display.expanded_labels
-            workspace.display_data.object_mask = object_mask
+            workspace.display_data.object_mask = lib_display.object_mask
             workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):

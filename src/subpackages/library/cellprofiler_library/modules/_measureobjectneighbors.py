@@ -1,7 +1,7 @@
 import numpy
 from numpy.typing import NDArray
-from typing import Optional, Tuple, Annotated
-from pydantic import Field, validate_call, ConfigDict
+from typing import Optional, Tuple, Annotated, Union, List
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 
 from cellprofiler_library.types import ObjectSegmentation
 from cellprofiler_library.measurement_model import LibraryMeasurements
@@ -12,6 +12,20 @@ from cellprofiler_library.opts.measureobjectneighbors import (
     C_NEIGHBORS
 )
 from cellprofiler_library.functions.measurement import measure_object_neighbors as _measure_object_neighbors
+
+
+ObjectNeighborsStatistics = List[None]
+
+class ObjectNeighborsDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectNeighborsStatistics
+    first_objects: NDArray[numpy.int_]
+    second_objects: NDArray[numpy.int_]
+    expanded_labels: Optional[NDArray[numpy.int_]]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_object_neighbors(
@@ -28,11 +42,8 @@ def measure_object_neighbors(
         kept_label_has_pixels:  Annotated[NDArray[numpy.bool_], Field(description="Array of booleans indicating whether each object has any pixels. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
         nkept_objects:          Annotated[int, Field(description="Number of objects in the segmentation that are of interest (excluding objects that have been discarded for touching image border)")],
         wants_excluded_objects: Annotated[bool, Field(description="Consider objects discarded for touching image border?")]=True,
-    ) -> Tuple[
-        LibraryMeasurements,
-        Tuple[NDArray[numpy.int_], NDArray[numpy.int_]],
-        Optional[NDArray[numpy.int_]],
-    ]:
+        return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectNeighborsDisplayData]]:
     (
         neighbor_count,
         first_object_number,
@@ -121,5 +132,11 @@ def measure_object_neighbors(
             second_objects,
         )
 
-    return measurements, (first_objects, second_objects), expanded_labels
-
+    if return_visualization_data:
+        return measurements, ObjectNeighborsDisplayData(
+                statistics=[],
+                first_objects=first_objects,
+                second_objects=second_objects,
+                expanded_labels=expanded_labels,
+        )
+    return measurements

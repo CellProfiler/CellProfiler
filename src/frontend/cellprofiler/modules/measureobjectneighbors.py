@@ -301,7 +301,7 @@ previously discarded objects.""".format(
        
         dimensions = len(objects.shape)
 
-        wants_lib_display = self.show_window or self.wants_count_image or self.wants_percent_touching_image
+        wants_lib_display = self.show_window or self.wants_count_image.value or self.wants_percent_touching_image.value
         res = measure_object_neighbors( 
             objects_small_removed_segmented, 
             kept_labels,
@@ -318,7 +318,7 @@ previously discarded objects.""".format(
             self.wants_excluded_objects.value,
             wants_lib_display,
         )
-        if self.show_window:
+        if wants_lib_display:
             lib_measurements, lib_display = res
         else:
             lib_measurements = res

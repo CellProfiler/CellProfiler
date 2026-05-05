@@ -1,7 +1,9 @@
-from typing import Any, Dict, List
 import copy
+
 from pydantic import BaseModel, Field, ConfigDict
-import numpy as np
+import numpy
+
+from typing import Any, Dict, List
 from numpy.typing import NDArray
 
 # Constants for relationship measurements
@@ -36,7 +38,7 @@ class RelationshipBase:
         return f"RelationshipBase({self.relationship}, {self.object_name1}, {self.object_name2})"
 
 class Relationship(RelationshipBase):
-    def __init__(self, relationship: str, object_name1: str, object_name2: str, object_numbers1: NDArray[np.int_], object_numbers2: NDArray[np.int_]):
+    def __init__(self, relationship: str, object_name1: str, object_name2: str, object_numbers1: NDArray[numpy.int_], object_numbers2: NDArray[numpy.int_]):
         super().__init__(relationship, object_name1, object_name2)
         self.object_numbers1 = object_numbers1
         self.object_numbers2 = object_numbers2
@@ -45,7 +47,7 @@ class Relationship(RelationshipBase):
         if not isinstance(other, Relationship):
             return NotImplemented
 
-        return super().__eq__(other) and np.array_equal(self.object_numbers1, other.object_numbers1) and np.array_equal(self.object_numbers2, other.object_numbers2)
+        return super().__eq__(other) and numpy.array_equal(self.object_numbers1, other.object_numbers1) and numpy.array_equal(self.object_numbers2, other.object_numbers2)
 
     def __copy__(self):
         new_instance = Relationship(
@@ -67,7 +69,7 @@ class Relationship(RelationshipBase):
             self.object_numbers2.copy()
         )
  
-    def __getitem__(self, obj_num: str) -> NDArray[np.int_]:
+    def __getitem__(self, obj_num: str) -> NDArray[numpy.int_]:
         if obj_num == R_FIRST_OBJECT_NUMBER:
             return self.object_numbers1
         elif obj_num == R_SECOND_OBJECT_NUMBER:
@@ -96,7 +98,7 @@ class LibraryMeasurements(BaseModel):
     experiment: Dict[str, Any] = Field(default_factory=dict)
     
     # Placeholder for relationships if needed in the future
-    relationships: List[Relationship] = Field(default_factory=list)
+    relationships: List[Relationship] = Field(default_factory=list[Relationship])
 
     def add_measurement(self, object_name: str, feature_name: str, data: Any):
         """
@@ -140,8 +142,8 @@ class LibraryMeasurements(BaseModel):
         relationship: str,
         object_name1: str,
         object_name2: str,
-        object_numbers1: NDArray[np.int_],
-        object_numbers2: NDArray[np.int_],
+        object_numbers1: NDArray[numpy.int_],
+        object_numbers2: NDArray[numpy.int_],
     ):
         """Helper to add a relate measurement.
         
@@ -171,16 +173,16 @@ class LibraryMeasurements(BaseModel):
                 relationship,
                 object_name1,
                 object_name2,
-                np.array([], dtype=np.int32),
-                np.array([], dtype=np.int32),
+                numpy.array([], dtype=numpy.int32),
+                numpy.array([], dtype=numpy.int32),
             )
             self.relationships.append(target_item)
 
         # Append data
-        target_item.object_numbers1 = np.concatenate(
+        target_item.object_numbers1 = numpy.concatenate(
             (target_item.object_numbers1, object_numbers1)
         )
-        target_item.object_numbers2 = np.concatenate(
+        target_item.object_numbers2 = numpy.concatenate(
             (target_item.object_numbers2, object_numbers2)
         )
 
@@ -210,7 +212,7 @@ class LibraryMeasurements(BaseModel):
             R_FIRST_OBJECT_NUMBER,
             R_SECOND_OBJECT_NUMBER,
         )
-        dt = np.dtype([(feature, np.int32, ()) for feature in features])
+        dt = numpy.dtype([(feature, numpy.int32, ()) for feature in features])
 
         # Find the relationship group
         target_item = None
@@ -224,16 +226,16 @@ class LibraryMeasurements(BaseModel):
                 break
 
         if target_item is None:
-            return np.zeros(0, dt).view(np.recarray)
+            return numpy.zeros(0, dt).view(numpy.recarray)
 
         n_records = len(target_item.object_numbers1)
         if n_records == 0:
-            return np.zeros(0, dt).view(np.recarray)
+            return numpy.zeros(0, dt).view(numpy.recarray)
 
-        temp = np.zeros(n_records, dt)
+        temp = numpy.zeros(n_records, dt)
         for feature in features:
             temp[feature] = target_item[feature]
-        return temp.view(np.recarray)
+        return temp.view(numpy.recarray)
 
     def get_experiment_measurement(self, feature_name: str) -> Any:
         """Helper to get an experiment measurement."""
@@ -338,10 +340,10 @@ class LibraryMeasurements(BaseModel):
             if match_index != -1:
                 # Merge into existing item
                 target = new_relationships[match_index]
-                target.object_numbers1 = np.concatenate(
+                target.object_numbers1 = numpy.concatenate(
                     (target.object_numbers1, other_item.object_numbers1)
                 )
-                target.object_numbers2 = np.concatenate(
+                target.object_numbers2 = numpy.concatenate(
                     (target.object_numbers2, other_item.object_numbers2)
                 )
             else:

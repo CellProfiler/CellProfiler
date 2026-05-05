@@ -10,6 +10,7 @@ from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, Im
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
 from cellprofiler_library.opts.identifyprimaryobjects import UnclumpMethod, WatershedMethod, FillHolesMethod
 
+
 def shrink_to_point(labels, fill):
     """
     Remove all pixels but one from filled objects.
@@ -461,6 +462,7 @@ def fill_convex_hulls(labels):
                 cmask
             ] = label
     return output
+
 
 ################################################################################
 # IdentifyPrimaryObjects IdentifySecondaryObjects IdentifyTertiaryObjects
@@ -951,6 +953,7 @@ def outline(labels: ObjectSegmentation) -> ObjectSegmentation:
     output[different] = labels[different]
     return output
         
+
 #############################################################
 # ConvertObjectsToImage
 #############################################################
@@ -1125,6 +1128,7 @@ def erode_objects_with_structuring_element(
     
     return y_data
 
+
 ################################################################################
 # DilateObjects
 ################################################################################
@@ -1193,6 +1197,8 @@ def find_centroids(
         output_segmented[tuple(arr)] = ind + 1
 
     return output_segmented
+
+
 ################################################################################
 # MeasureColocalization
 ################################################################################

@@ -1,4 +1,3 @@
-
 import numpy as np
 import pytest
 import copy
@@ -305,4 +304,3 @@ class TestLibraryMeasurements:
         
         # Verify original instances are untouched
         assert lm1.get_measurement("Nuclei", "Area") == 100
-

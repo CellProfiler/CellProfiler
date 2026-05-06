@@ -1,10 +1,11 @@
 import itertools
 import logging
 
-import centrosome.threshold
-import centrosome.threshold
 import numpy
-from cellprofiler_core.constants.image import C_SCALING
+import centrosome.threshold
+
+from cellprofiler_core.module import Module
+from cellprofiler_core.constants.image import C_SCALING as GUI_C_SCALING
 from cellprofiler_core.constants.measurement import (
     COLTYPE_FLOAT,
     EXPERIMENT,
@@ -16,10 +17,40 @@ from cellprofiler_core.constants.module._identify import (
     O_FOREGROUND,
     O_BACKGROUND,
 )
-from cellprofiler_core.module import Module
 from cellprofiler_library.modules._measureimagequality import measure_image_quality, ThresholdConfig
-from cellprofiler_library.opts.measureimagequality import C_SCALING
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.opts.measureimagequality import (
+    C_SCALING,
+    C_IMAGE_QUALITY,
+    Feature,
+    Aggregate,
+    INTENSITY_FEATURES,
+    SATURATION_FEATURES,
+    MEAN_THRESH_ALL_IMAGES,
+    MEDIAN_THRESH_ALL_IMAGES,
+    STD_THRESH_ALL_IMAGES
+)
+
+##############################################
+#
+# Choices for which images to include
+#
+##############################################
+
+# Setting variables
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.setting import (
+    Divider,
+    HiddenCount,
+    SettingsGroup,
+    Binary,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageListSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer, Float
+
+from cellprofiler_library.opts.threshold import OtsuMethod
 
 LOGGER = logging.getLogger(__name__)
 
@@ -155,31 +186,7 @@ References
    `(link) <https://doi.org/10.1002/jemt.20118>`__
 """
 
-
-##############################################
-#
-# Choices for which images to include
-#
-##############################################
-
-# Setting variables
-from cellprofiler_core.preferences import get_headless
-from cellprofiler_core.setting import (
-    Divider,
-    HiddenCount,
-    SettingsGroup,
-    Binary,
-    ValidationError,
-)
-from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
-from cellprofiler_core.setting.subscriber import ImageListSubscriber
-from cellprofiler_core.setting.text import ImageName, Integer, Float
-
-from cellprofiler_library.opts.threshold import OtsuMethod
-from cellprofiler_library.opts.measureimagequality import C_IMAGE_QUALITY, Feature, Aggregate, INTENSITY_FEATURES, SATURATION_FEATURES, MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES, STD_THRESH_ALL_IMAGES
-
-"""Image selection"""
+# Image selection
 O_ALL_LOADED = "All loaded images"  # Use all loaded images
 O_SELECT = "Select..."  # Select the images you want from a list, all treated the same
 
@@ -904,7 +911,7 @@ to the foreground pixels or the background pixels.
         if object_name == "Image" and category == C_IMAGE_QUALITY:
             result = []
             if self.any_scaling():
-                result += [cellprofiler_core.constants.image.C_SCALING]
+                result += [GUI_C_SCALING]
             if self.any_blur():
                 result += [
                     Feature.FOCUS_SCORE.value,

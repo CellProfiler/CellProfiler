@@ -28,10 +28,10 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler_core.object.ObjectSet()
     image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
-    if not mask is None:
+    if mask is not None:
         image.mask = mask
     image_set.add(IMAGES_NAME, image)
-    if not objects is None:
+    if objects is not None:
         o = cellprofiler_core.object.Objects()
         o.segmented = objects
         object_set.add_objects(o, OBJECTS_NAME)
@@ -85,7 +85,7 @@ def test_zeros():
         m_value = m.get_current_measurement(
             "Image", feature_name
         )
-        if not value is None:
+        if value is not None:
             assert m_value == value, "Measured value, %f, for feature %s was not %f" % (
                 m_value,
                 feature_name,
@@ -519,7 +519,7 @@ def test_experiment_threshold():
 
     # Check threshold algorithms
     threshold_group = module.image_groups[0].threshold_groups[0]
-    threshold_algorithm = threshold_group.threshold_algorithm
+    # threshold_algorithm = threshold_group.threshold_algorithm
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
@@ -574,7 +574,7 @@ def test_experiment_threshold_cycle_skipping():
 
     # Check threshold algorithms
     threshold_group = module.image_groups[0].threshold_groups[0]
-    threshold_algorithm = threshold_group.threshold_algorithm
+    # threshold_algorithm = threshold_group.threshold_algorithm
     image_name = module.image_groups[0].image_names.value_text
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)

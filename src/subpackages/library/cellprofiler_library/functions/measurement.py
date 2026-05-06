@@ -2438,6 +2438,7 @@ def calculate_threshold_for_threshold_group(
 # Measure Image Skeleton
 ###############################################################################
 
+
 def neighbors(image: ImageBinary):
     """
 

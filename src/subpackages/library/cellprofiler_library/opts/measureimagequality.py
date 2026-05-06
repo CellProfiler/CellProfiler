@@ -1,4 +1,10 @@
 from enum import Enum
+from centrosome.threshold import (
+    TM_OTSU,
+    TM_MOG,
+    TM_METHODS,
+    TM_GLOBAL_METHODS,
+)
 
 """Root module measurement name"""
 C_IMAGE_QUALITY = "ImageQuality"
@@ -40,3 +46,14 @@ SATURATION_FEATURES = [Feature.PERCENT_MAXIMAL, Feature.PERCENT_MINIMAL]
 MEAN_THRESH_ALL_IMAGES = "MeanThresh_AllImages"
 MEDIAN_THRESH_ALL_IMAGES = "MedianThresh_AllImages"
 STD_THRESH_ALL_IMAGES = "StdThresh_AllImages"
+
+# mirrors cellprofiler_libarary/opts/threshold.py but used via a very different path so kept distinct
+class OtsuMethod(str, Enum):
+    TWO_CLASS = "Two classes"
+    THREE_CLASS = "Three classes"
+
+class ScaledThresholdMethod(str, Enum):
+    OTSU = TM_OTSU
+    MOG = TM_MOG
+THRESHOLD_METHODS = TM_METHODS
+GLOBAL_THRESHOLD_METHODS = TM_GLOBAL_METHODS

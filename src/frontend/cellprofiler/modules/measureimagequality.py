@@ -2,7 +2,6 @@ import itertools
 import logging
 
 import numpy
-import centrosome.threshold
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.constants.image import C_SCALING as GUI_C_SCALING
@@ -27,7 +26,11 @@ from cellprofiler_library.opts.measureimagequality import (
     SATURATION_FEATURES,
     MEAN_THRESH_ALL_IMAGES,
     MEDIAN_THRESH_ALL_IMAGES,
-    STD_THRESH_ALL_IMAGES
+    STD_THRESH_ALL_IMAGES,
+    OtsuMethod,
+    ScaledThresholdMethod,
+    THRESHOLD_METHODS,
+    GLOBAL_THRESHOLD_METHODS,
 )
 
 ##############################################
@@ -50,8 +53,6 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer, Float
 
-from cellprofiler_library.opts.threshold import OtsuMethod
-
 LOGGER = logging.getLogger(__name__)
 
 __doc__ = """\
@@ -61,7 +62,7 @@ MeasureImageQuality
 **MeasureImageQuality** measures features that indicate image quality.
 
 This module collects measurements indicating possible image
-aberrations, e.g., blur (poor focus), intensity, saturation (i.e., the
+aberrations, e.g., blur (poor focus), intensity, saturation (i.e. the
 percentage of pixels in the image that are at/near the maximum possible
 value, and at/near the minimum possible value). Details
 and guidance for each of these measures is provided in the settings
@@ -386,8 +387,8 @@ thresholding methods.
 """.format(
                     **{
                         "YES": "Yes",
-                        "TM_OTSU": centrosome.threshold.TM_OTSU,
-                        "TM_MOG": centrosome.threshold.TM_MOG,
+                        "TM_OTSU": ScaledThresholdMethod.OTSU.value,
+                        "TM_MOG": ScaledThresholdMethod.MOG.value,
                     }
                 ),
             ),
@@ -480,8 +481,7 @@ multiple window sizes by selecting additional scales for each image.
             "threshold_method",
             Choice(
                 "Select a thresholding method",
-                centrosome.threshold.TM_METHODS,
-                centrosome.threshold.TM_OTSU,
+                THRESHOLD_METHODS,
                 doc="""\
 *(Used only if particular thresholds are to be calculated)*
 
@@ -505,7 +505,7 @@ chosen)*
 Enter the approximate fraction of the typical image in the set that is
 covered by objects.
 """.format(
-                    **{"TM_MOG": centrosome.threshold.TM_MOG}
+                    **{"TM_MOG": ScaledThresholdMethod.MOG.value}
                 ),
             ),
         )
@@ -534,7 +534,7 @@ the entire field of view is covered with objects, three-class
 thresholding may perform worse than two-class.
 """.format(
                     **{
-                        "TM_OTSU": centrosome.threshold.TM_OTSU,
+                        "TM_OTSU": ScaledThresholdMethod.OTSU.value,
                         "O_TWO_CLASS": OtsuMethod.TWO_CLASS.value,
                         "O_THREE_CLASS": OtsuMethod.THREE_CLASS.value,
                     }
@@ -566,7 +566,7 @@ Choose whether you want the middle grayscale intensities to be assigned
 to the foreground pixels or the background pixels.
 """.format(
                     **{
-                        "TM_OTSU": centrosome.threshold.TM_OTSU,
+                        "TM_OTSU": ScaledThresholdMethod.OTSU.value,
                         "O_THREE_CLASS": OtsuMethod.THREE_CLASS.value,
                     }
                 ),
@@ -688,9 +688,9 @@ to the foreground pixels or the background pixels.
             if threshold_group.can_remove:
                 result += [threshold_group.divider]
             result += [threshold_group.threshold_method]
-            if threshold_group.threshold_method.value == centrosome.threshold.TM_MOG:
+            if threshold_group.threshold_method.value == ScaledThresholdMethod.MOG.value:
                 result += [threshold_group.object_fraction]
-            elif threshold_group.threshold_method.value == centrosome.threshold.TM_OTSU:
+            elif threshold_group.threshold_method.value == ScaledThresholdMethod.OTSU.value:
                 result += [
                     threshold_group.use_weighted_variance,
                     threshold_group.two_class_otsu,
@@ -949,7 +949,6 @@ to the foreground pixels or the background pixels.
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-
         if object_name != "Image" or category != C_IMAGE_QUALITY:
             return []
         if measurement in (
@@ -1058,10 +1057,11 @@ to the foreground pixels or the background pixels.
         # for image in x: for metric in y: run metric on image
         ################################################################################
         image_names = self.images_to_process(image_group, workspace)
-        volumetric = workspace.pipeline.volumetric()
         if image_names is None:
             logging.warning("[MeasureImageQuality]: No images to process in the image group")
             return []
+
+        volumetric = workspace.pipeline.volumetric()
         
         results_dict = {
             "image_scalings": [],
@@ -1073,11 +1073,6 @@ to the foreground pixels or the background pixels.
             "threshold_value": [],
         }
 
-        measurements_dict = {
-            "Image": {
-
-            }
-        }
         scale_groups = [scale_group.scale.value for scale_group in image_group.scale_groups]
         all_threshold_groups = self.get_all_threshold_groups(image_group)
         
@@ -1289,7 +1284,7 @@ to the foreground pixels or the background pixels.
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
         z = itertools.product(
-            [centrosome.threshold.TM_OTSU],
+            [ScaledThresholdMethod.OTSU.value],
             [0],
             [O_WEIGHTED_VARIANCE, O_ENTROPY],
             [OtsuMethod.THREE_CLASS.value],
@@ -1297,7 +1292,7 @@ to the foreground pixels or the background pixels.
         )
         threshold_args += [i for i in z]
         z = itertools.product(
-            [centrosome.threshold.TM_OTSU],
+            [ScaledThresholdMethod.OTSU.value],
             [0],
             [O_WEIGHTED_VARIANCE, O_ENTROPY],
             [OtsuMethod.TWO_CLASS.value],
@@ -1305,7 +1300,7 @@ to the foreground pixels or the background pixels.
         )
         threshold_args += [i for i in z]
         z = itertools.product(
-            [centrosome.threshold.TM_MOG],
+            [ScaledThresholdMethod.MOG.value],
             object_fraction,
             [O_WEIGHTED_VARIANCE],
             [OtsuMethod.TWO_CLASS.value],
@@ -1315,8 +1310,8 @@ to the foreground pixels or the background pixels.
         # Tack on the remaining simpler methods
         leftover_methods = [
             i
-            for i in centrosome.threshold.TM_METHODS
-            if i not in [centrosome.threshold.TM_OTSU, centrosome.threshold.TM_MOG]
+            for i in THRESHOLD_METHODS
+            if i not in [ScaledThresholdMethod.OTSU.value, ScaledThresholdMethod.MOG.value]
         ]
         z = itertools.product(
             leftover_methods, [0], [O_WEIGHTED_VARIANCE], [OtsuMethod.TWO_CLASS.value], [O_FOREGROUND],
@@ -1505,14 +1500,14 @@ to the foreground pixels or the background pixels.
             thresh_dict = dict(
                 list(
                     zip(
-                        centrosome.threshold.TM_GLOBAL_METHODS,
-                        centrosome.threshold.TM_METHODS,
+                        GLOBAL_THRESHOLD_METHODS,
+                        THRESHOLD_METHODS,
                     )
                 )
             )
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [
-                thresh_dict[x] if x in centrosome.threshold.TM_GLOBAL_METHODS else x
+                thresh_dict[x] if x in GLOBAL_THRESHOLD_METHODS else x
                 for x in setting_values
             ]
             variable_revision_number = 5
@@ -1572,7 +1567,7 @@ class ImageQualitySettingsGroup(SettingsGroup):
         # Distinguish Otsu choices from each other
         #
         threshold_algorithm = self.threshold_algorithm
-        if threshold_algorithm == centrosome.threshold.TM_OTSU:
+        if threshold_algorithm == ScaledThresholdMethod.OTSU.value:
             if self.two_class_otsu == OtsuMethod.TWO_CLASS.value:
                 scale = "2"
             else:
@@ -1586,7 +1581,7 @@ class ImageQualitySettingsGroup(SettingsGroup):
             else:
                 scale += "S"
             return scale
-        elif threshold_algorithm == centrosome.threshold.TM_MOG:
+        elif threshold_algorithm == ScaledThresholdMethod.MOG.value:
             return str(int(self.object_fraction.value * 100))
 
     def threshold_description(self, image_name, agg=None):
@@ -1596,7 +1591,7 @@ class ImageQualitySettingsGroup(SettingsGroup):
 
         agg - if present, the aggregating method, e.g., "Mean"
         """
-        if self.threshold_algorithm == centrosome.threshold.TM_OTSU:
+        if self.threshold_algorithm == ScaledThresholdMethod.OTSU.value:
             if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
                 wvorentropy = "WV"
             else:

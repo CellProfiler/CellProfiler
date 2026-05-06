@@ -15,6 +15,8 @@ from ..opts.threshold import (
 )
 from ..types import ImageGrayscale, ImageGrayscaleMask
 
+# TODO: library cleanup - needs standardizing
+# frontend still uses centrosome
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def threshold(
     image:                      Annotated[ImageGrayscale, Field(description="Image to threshold")],

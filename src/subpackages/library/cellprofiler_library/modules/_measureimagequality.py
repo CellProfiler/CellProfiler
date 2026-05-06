@@ -1,10 +1,10 @@
 import numpy
-from typing import Optional, List, Sequence, Annotated
+from typing import Optional, List, Sequence, Annotated, Union, Tuple
 from pydantic import BaseModel, Field, validate_call, ConfigDict
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimagequality import (
-    C_IMAGE_QUALITY, Feature, C_SCALING
+    C_IMAGE_QUALITY, Feature, C_SCALING, ScaledThresholdMethod
 )
 from cellprofiler_library.functions.measurement import (
     get_focus_score_for_scale_group,
@@ -14,7 +14,16 @@ from cellprofiler_library.functions.measurement import (
     get_power_spectrum_measurement_values,
     calculate_threshold_for_threshold_group
 )
-import centrosome.threshold
+
+ImageQualityStatistics = List[None]
+
+class ImageQualityDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True
+    )
+
+    statistics: ImageQualityStatistics
 
 class ThresholdConfig(BaseModel):
     algorithm: str
@@ -24,13 +33,13 @@ class ThresholdConfig(BaseModel):
     assign_middle_to_foreground: bool = True
 
     def get_scale_string(self) -> Optional[str]:
-        if self.algorithm == centrosome.threshold.TM_OTSU:
+        if self.algorithm == ScaledThresholdMethod.OTSU.value:
             scale = "2" if self.two_class_otsu else "3"
             if not self.two_class_otsu:
                 scale += "F" if self.assign_middle_to_foreground else "B"
             scale += "W" if self.use_weighted_variance else "S"
             return scale
-        elif self.algorithm == centrosome.threshold.TM_MOG:
+        elif self.algorithm == ScaledThresholdMethod.MOG.value:
             return str(int(self.object_fraction * 100))
         return None
 
@@ -48,7 +57,8 @@ def measure_image_quality(
     check_intensity:        Annotated[bool, Field(description="Whether to calculate intensity metrics.")] = False,
     calculate_threshold:    Annotated[bool, Field(description="Whether to calculate threshold metrics.")] = False,
     threshold_groups:       Annotated[Optional[List[ThresholdConfig]], Field(description="List of threshold configurations.")] = None,
-) -> LibraryMeasurements:
+    return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ImageQualityDisplayData]]:
     """
     Measure image quality metrics.
 
@@ -193,7 +203,8 @@ def measure_image_quality(
                 
             measurements.add_image_measurement(feature_name, global_threshold)
 
+    if return_visualization_data:
+        return measurements, ImageQualityDisplayData(
+            statistics=[],
+        )
     return measurements
-    return global_threshold
-    
-    

@@ -47,7 +47,7 @@ class ThresholdConfig(BaseModel):
 def measure_image_quality(
     image:                  Annotated[ImageGrayscale, Field(description="The image to measure.")],
     image_name:             Annotated[str, Field(description="The name of the image.")],
-    mask:                   Annotated[Optional[ImageGrayscaleMask], Field(description="The mask for the image.")] = None,
+    image_mask:             Annotated[Optional[ImageGrayscaleMask], Field(description="The mask for the image.")] = None,
     volumetric:             Annotated[bool, Field(description="Whether the image is volumetric (3D).")] = False,
     include_image_scalings: Annotated[bool, Field(description="Whether to include image scalings in the measurements.")] = False,
     image_scale_value:      Annotated[float, Field(description="The scaling value of the image.")] = numpy.nan,
@@ -65,7 +65,7 @@ def measure_image_quality(
     Args:
         image: Input image.
         image_name: Name of the image.
-        mask: Optional mask for the image.
+        image_mask: Optional mask for the image.
         volumetric: Whether the image is volumetric (3D).
         include_image_scalings: Whether to record image scaling.
         image_scale_value: The scaling value of the image.
@@ -95,7 +95,7 @@ def measure_image_quality(
             blur_scales,
             image,
             dimensions,
-            mask,
+            image_mask,
         )
 
         focus_score_name = f"{C_IMAGE_QUALITY}_{Feature.FOCUS_SCORE.value}_{image_name}"
@@ -106,7 +106,7 @@ def measure_image_quality(
             measurements.add_image_measurement(local_focus_score_name, local_focus_score[idx])
 
         # Correlation
-        scale_measurements = get_correlation_for_scale_group(image, blur_scales, mask)
+        scale_measurements = get_correlation_for_scale_group(image, blur_scales, image_mask)
         for s in blur_scales:
             measurements.add_image_measurement(
                 f"{C_IMAGE_QUALITY}_{Feature.CORRELATION.value}_{image_name}_{s}",
@@ -115,7 +115,7 @@ def measure_image_quality(
 
         # Power Spectrum
         if dimensions == 2:
-            powerslope = get_power_spectrum_measurement_values(image, mask, dimensions)
+            powerslope = get_power_spectrum_measurement_values(image, image_mask, dimensions)
             measurements.add_image_measurement(
                 f"{C_IMAGE_QUALITY}_{Feature.POWER_SPECTRUM_SLOPE.value}_{image_name}",
                 powerslope
@@ -123,7 +123,7 @@ def measure_image_quality(
 
     # Saturation Measurements
     if check_saturation:
-        percent_minimal, percent_maximal = get_saturation_value(image, mask)
+        percent_minimal, percent_maximal = get_saturation_value(image, image_mask)
         
         measurements.add_image_measurement(
             f"{C_IMAGE_QUALITY}_{Feature.PERCENT_MAXIMAL.value}_{image_name}",
@@ -147,7 +147,7 @@ def measure_image_quality(
             pixel_median,
             pixel_min,
             pixel_max,
-        ) = get_intensity_measurement_values(image, mask)
+        ) = get_intensity_measurement_values(image, image_mask)
 
         measurements.add_image_measurement(
             f"{C_IMAGE_QUALITY}_{area_feature}_{image_name}", pixel_count
@@ -183,7 +183,7 @@ def measure_image_quality(
         for config in threshold_groups:
             global_threshold = calculate_threshold_for_threshold_group(
                 image_pixel_data=pixel_data_float,
-                mask=mask,
+                mask=image_mask,
                 algorithm=config.algorithm,
                 object_fraction=config.object_fraction,
                 two_class_otsu=config.two_class_otsu,

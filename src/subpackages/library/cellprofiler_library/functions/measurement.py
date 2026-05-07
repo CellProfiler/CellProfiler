@@ -2396,9 +2396,9 @@ def get_power_spectrum_measurement_values(
                 numpy.log(power)[idx][:, numpy.newaxis],
             )[0][0]
         else:
-            powerslope = 0
+            powerslope = 0.
     else:
-        powerslope = 0
+        powerslope = 0.
     return powerslope
 
 

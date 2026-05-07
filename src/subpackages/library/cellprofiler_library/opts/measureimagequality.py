@@ -29,6 +29,17 @@ class Feature(str, Enum):
     PERCENT_MINIMAL = "PercentMinimal"
     THRESHOLD = "Threshold"
 
+class TemplateMeasurementFormat(str):
+    """A string subclass for measurement formatting."""
+    # IQ = Image Quality
+    IQ_SCALING = f"{C_IMAGE_QUALITY}_{C_SCALING}_%s"
+    IQ_FOCUS_SCORE = f"{C_IMAGE_QUALITY}_{Feature.FOCUS_SCORE.value}_%s"
+    IQ_LOCAL_FOCUS_SCORE = f"{C_IMAGE_QUALITY}_{Feature.LOCAL_FOCUS_SCORE.value}_%s"
+    IQ_CORR = f"{C_IMAGE_QUALITY}_{Feature.CORRELATION.value}_%s"
+    IQ_POWER_SPECTRUM_SLOPE = f"{C_IMAGE_QUALITY}_{Feature.POWER_SPECTRUM_SLOPE.value}_%s"
+    IQ_PERCENT_MAXIMAL = f"{C_IMAGE_QUALITY}_{Feature.PERCENT_MAXIMAL.value}_%s"
+    IQ_PERCENT_MINIMAL = f"{C_IMAGE_QUALITY}_{Feature.PERCENT_MINIMAL.value}_%s"
+
 class Aggregate(str, Enum):
     MEAN = "Mean"
     MEDIAN = "Median"

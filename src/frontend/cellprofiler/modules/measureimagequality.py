@@ -1115,60 +1115,60 @@ to the foreground pixels or the background pixels.
             for feature_name, value in lib_measurements.image.items():
                 workspace.add_measurement("Image", feature_name, value)
             
-            # Populate results_dict for display
-            if image_group.include_image_scalings.value:
-                 feature = "{}_{}_{}".format(C_IMAGE_QUALITY, C_SCALING, image_name)
-                 value = lib_measurements.image.get(feature, numpy.nan)
-                 results_dict["image_scalings"] += [["{} scaling".format(image_name), value]]
+            ## Populate results_dict for display
+            #if image_group.include_image_scalings.value:
+            #     feature = "{}_{}_{}".format(C_IMAGE_QUALITY, C_SCALING, image_name)
+            #     value = lib_measurements.image.get(feature, numpy.nan)
+            #     results_dict["image_scalings"] += [["{} scaling".format(image_name), value]]
 
-            if image_group.check_blur.value:
-                focus_score_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name)
-                focus_score = lib_measurements.image.get(focus_score_name)
-                
-                if scale_groups:
-                    last_scale = scale_groups[-1]
-                    results_dict["focus_score"] += [["{} focus score @{:d}".format(image_name, last_scale), focus_score]]
-                
-                for idx, scale in enumerate(scale_groups):
-                    local_focus_score_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.LOCAL_FOCUS_SCORE.value, image_name, scale)
-                    lfs_value = lib_measurements.image.get(local_focus_score_name)
-                    results_dict["focus_score"] += [
-                        [
-                            "{} local focus score @{:d}".format(image_name, scale),
-                            lfs_value,
-                        ]
-                    ]
-                
-                for scale in scale_groups:
-                    corr_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale)
-                    corr_value = lib_measurements.image.get(corr_name)
-                    results_dict["correlation_value"] += [
-                        [
-                            "{} {} @{:d}".format(image_name, Feature.CORRELATION.value, scale),
-                            "{:.2f}".format(corr_value),
-                        ]
-                    ]
+            #if image_group.check_blur.value:
+            #    focus_score_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name)
+            #    focus_score = lib_measurements.image.get(focus_score_name)
+            #    
+            #    if scale_groups:
+            #        last_scale = scale_groups[-1]
+            #        results_dict["focus_score"] += [["{} focus score @{:d}".format(image_name, last_scale), focus_score]]
+            #    
+            #    for idx, scale in enumerate(scale_groups):
+            #        local_focus_score_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.LOCAL_FOCUS_SCORE.value, image_name, scale)
+            #        lfs_value = lib_measurements.image.get(local_focus_score_name)
+            #        results_dict["focus_score"] += [
+            #            [
+            #                "{} local focus score @{:d}".format(image_name, scale),
+            #                lfs_value,
+            #            ]
+            #        ]
+            #    
+            #    for scale in scale_groups:
+            #        corr_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale)
+            #        corr_value = lib_measurements.image.get(corr_name)
+            #        results_dict["correlation_value"] += [
+            #            [
+            #                "{} {} @{:d}".format(image_name, Feature.CORRELATION.value, scale),
+            #                "{:.2f}".format(corr_value),
+            #            ]
+            #        ]
 
-                if image.dimensions == 2:
-                    ps_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name)
-                    ps_value = lib_measurements.image.get(ps_name)
-                    results_dict['power_spectrum_value'] += [
-                        [
-                            "{} {}".format(image_name, Feature.POWER_SPECTRUM_SLOPE.value),
-                            "{:.1f}".format(float(ps_value)) if ps_value is not None else "0.0",
-                        ]
-                    ]
+            #    if image.dimensions == 2:
+            #        ps_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name)
+            #        ps_value = lib_measurements.image.get(ps_name)
+            #        results_dict['power_spectrum_value'] += [
+            #            [
+            #                "{} {}".format(image_name, Feature.POWER_SPECTRUM_SLOPE.value),
+            #                "{:.1f}".format(float(ps_value)) if ps_value is not None else "0.0",
+            #            ]
+            #        ]
 
-            if image_group.check_saturation.value:
-                pmax_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MAXIMAL.value, image_name)
-                pmin_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MINIMAL.value, image_name)
-                percent_maximal = lib_measurements.image.get(pmax_name)
-                percent_minimal = lib_measurements.image.get(pmin_name)
-                
-                results_dict['saturation_value'] += [
-                    ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
-                    ["{} minimal".format(image_name), "{:.1f} %".format(percent_minimal)],
-                ]
+            #if image_group.check_saturation.value:
+            #    pmax_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MAXIMAL.value, image_name)
+            #    pmin_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MINIMAL.value, image_name)
+            #    percent_maximal = lib_measurements.image.get(pmax_name)
+            #    percent_minimal = lib_measurements.image.get(pmin_name)
+            #    
+            #    results_dict['saturation_value'] += [
+            #        ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
+            #        ["{} minimal".format(image_name), "{:.1f} %".format(percent_minimal)],
+            #    ]
 
             if image_group.check_intensity.value:
                 area_text = "Volume" if volumetric else "Area"
@@ -1217,6 +1217,8 @@ to the foreground pixels or the background pixels.
                         ]
                     ]
 
+            for measurement_name, measurement_value in lib_display.statistics:
+                statistics += [[measurement_name, measurement_value]]
         for measurement_class, measurement_items in results_dict.items():
             for measurement_name, measurement_value in measurement_items:
                 statistics += [[measurement_name, measurement_value]]

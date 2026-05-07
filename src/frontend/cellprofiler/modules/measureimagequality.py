@@ -1280,40 +1280,42 @@ to the foreground pixels or the background pixels.
 
         # Produce a list of meaningful combinations of threshold settings."""
         threshold_args = []
-        object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
         z = itertools.product(
             [ScaledThresholdMethod.OTSU.value],
-            [0],
-            [O_WEIGHTED_VARIANCE, O_ENTROPY],
+            [0.],
             [OtsuMethod.THREE_CLASS.value],
+            [O_WEIGHTED_VARIANCE, O_ENTROPY],
             [O_FOREGROUND, O_BACKGROUND],
         )
         threshold_args += [i for i in z]
         z = itertools.product(
             [ScaledThresholdMethod.OTSU.value],
-            [0],
-            [O_WEIGHTED_VARIANCE, O_ENTROPY],
+            [0.],
             [OtsuMethod.TWO_CLASS.value],
+            [O_WEIGHTED_VARIANCE, O_ENTROPY],
             [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
         z = itertools.product(
             [ScaledThresholdMethod.MOG.value],
-            object_fraction,
-            [O_WEIGHTED_VARIANCE],
+            [0.05, 0.25, 0.75, 0.95],
             [OtsuMethod.TWO_CLASS.value],
+            [O_WEIGHTED_VARIANCE],
             [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
-        # Tack on the remaining simpler methods
-        leftover_methods = [
-            i
-            for i in THRESHOLD_METHODS
-            if i not in [ScaledThresholdMethod.OTSU.value, ScaledThresholdMethod.MOG.value]
-        ]
         z = itertools.product(
-            leftover_methods, [0], [O_WEIGHTED_VARIANCE], [OtsuMethod.TWO_CLASS.value], [O_FOREGROUND],
+            # leftover_methods: Tack on the remaining simpler methods
+            [
+                i
+                for i in THRESHOLD_METHODS
+                if i not in [ScaledThresholdMethod.OTSU.value, ScaledThresholdMethod.MOG.value]
+            ]
+            [0.],
+            [OtsuMethod.TWO_CLASS.value],
+            [O_WEIGHTED_VARIANCE],
+            [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
 
@@ -1322,8 +1324,8 @@ to the foreground pixels or the background pixels.
         for (
             threshold_method,
             object_fraction,
-            use_weighted_variance,
             two_class_otsu,
+            use_weighted_variance,
             assign_middle_to_foreground,
         ) in threshold_args:
             threshold_groups.append(self.add_threshold_group(None, False))
@@ -1331,9 +1333,7 @@ to the foreground pixels or the background pixels.
             threshold_groups[-1].object_fraction.value = object_fraction
             threshold_groups[-1].two_class_otsu.value = two_class_otsu
             threshold_groups[-1].use_weighted_variance.value = use_weighted_variance
-            threshold_groups[
-                -1
-            ].assign_middle_to_foreground.value = assign_middle_to_foreground
+            threshold_groups[-1].assign_middle_to_foreground.value = assign_middle_to_foreground
 
         return threshold_groups
 
@@ -1536,6 +1536,7 @@ class ImageQualitySettingsGroup(SettingsGroup):
     @property
     def threshold_algorithm(self):
         """The thresholding algorithm to run"""
+        # NOTE: shouldn't need to split anymore since revision 5 got rid of "Global xyz" but difficult to test this assumpiton atm
         return self.threshold_method.value.split(" ")[0]
 
     def threshold_feature_name(self, image_name, agg=None):

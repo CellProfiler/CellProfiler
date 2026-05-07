@@ -16,7 +16,7 @@ from cellprofiler_core.constants.module._identify import (
     O_FOREGROUND,
     O_BACKGROUND,
 )
-from cellprofiler_library.modules._measureimagequality import measure_image_quality
+from cellprofiler_library.modules._measureimagequality import measure_image_quality, ThresholdConfig
 from cellprofiler_library.opts.measureimagequality import (
     C_SCALING,
     C_IMAGE_QUALITY,
@@ -1079,39 +1079,23 @@ to the foreground pixels or the background pixels.
         threshold_configs = []
         if image_group.calculate_threshold.value:
             for threshold_group in all_threshold_groups:
-                threshold_configs.append({
-                    'algorithm': threshold_group.threshold_algorithm,
-                    'object_fraction': threshold_group.object_fraction.value,
-                    'two_class_otsu': (threshold_group.two_class_otsu.value == OtsuMethod.TWO_CLASS.value),
-                    'use_weighted_variance': (threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE),
-                    'assign_middle_to_foreground': (threshold_group.assign_middle_to_foreground.value == O_FOREGROUND),
-                })
+                threshold_configs.append(ThresholdConfig(
+                    algorithm = threshold_group.threshold_algorithm,
+                    object_fraction = threshold_group.object_fraction.value,
+                    two_class_otsu = (threshold_group.two_class_otsu.value == OtsuMethod.TWO_CLASS.value),
+                    use_weighted_variance = (threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE),
+                    assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == O_FOREGROUND),
+                ))
 
         for image_name in image_names:
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-            dimensions = image.dimensions
-            has_mask = image.has_mask
-            image_mask = image.mask if has_mask else None
-            masked_pixel_data = image.pixel_data
-            if image.has_mask:
-                masked_pixel_data = masked_pixel_data[image.mask]
-            pixel_data = image.pixel_data
-            # Prepare arguments for library function
-            image_scale_value = numpy.nan
-            if image_group.include_image_scalings.value:
-                image_scale_value = workspace.image_set.get_image(image_name).scale
-                if not image_scale_value:
-                    image_scale_value = numpy.nan
-
-            if pixel_data.ndim == 3 and not volumetric:
-                # Not implemented for 3D images
-                 pass
+            image_scale_value = image_group.include_image_scalings.value and image.scale or numpy.nan
 
             # Call library function
             lib_measurements = measure_image_quality(
                 image=image.pixel_data,
                 image_name=image_name,
-                mask=image_mask,
+                mask=image.mask if image.has_mask else None,
                 volumetric=volumetric,
                 include_image_scalings=image_group.include_image_scalings.value,
                 image_scale_value=image_scale_value,
@@ -1161,7 +1145,7 @@ to the foreground pixels or the background pixels.
                         ]
                     ]
 
-                if dimensions == 2:
+                if image.dimensions == 2:
                     ps_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name)
                     ps_value = lib_measurements.image.get(ps_name)
                     results_dict['power_spectrum_value'] += [

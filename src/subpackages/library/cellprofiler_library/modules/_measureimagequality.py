@@ -194,7 +194,7 @@ def measure_image_quality(
             scale = config.get_scale_string()
             
             hdr = Feature.THRESHOLD.value
-            algo = config.algorithm.split(" ")[0] # The original code uses split(" ")[0] for algo name in key
+            algo = config.algorithm
             
             if scale is None:
                 feature_name = f"{C_IMAGE_QUALITY}_{hdr}{algo}_{image_name}"

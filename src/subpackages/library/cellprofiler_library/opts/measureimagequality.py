@@ -3,7 +3,6 @@ from centrosome.threshold import (
     TM_OTSU,
     TM_MOG,
     TM_METHODS,
-    TM_GLOBAL_METHODS,
 )
 
 """Root module measurement name"""
@@ -56,4 +55,3 @@ class ScaledThresholdMethod(str, Enum):
     OTSU = TM_OTSU
     MOG = TM_MOG
 THRESHOLD_METHODS = TM_METHODS
-GLOBAL_THRESHOLD_METHODS = TM_GLOBAL_METHODS

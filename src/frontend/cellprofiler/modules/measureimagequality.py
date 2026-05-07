@@ -16,7 +16,7 @@ from cellprofiler_core.constants.module._identify import (
     O_FOREGROUND,
     O_BACKGROUND,
 )
-from cellprofiler_library.modules._measureimagequality import measure_image_quality, ThresholdConfig
+from cellprofiler_library.modules._measureimagequality import measure_image_quality
 from cellprofiler_library.opts.measureimagequality import (
     C_SCALING,
     C_IMAGE_QUALITY,
@@ -30,7 +30,6 @@ from cellprofiler_library.opts.measureimagequality import (
     OtsuMethod,
     ScaledThresholdMethod,
     THRESHOLD_METHODS,
-    GLOBAL_THRESHOLD_METHODS,
 )
 
 ##############################################
@@ -1080,13 +1079,13 @@ to the foreground pixels or the background pixels.
         threshold_configs = []
         if image_group.calculate_threshold.value:
             for threshold_group in all_threshold_groups:
-                threshold_configs.append(ThresholdConfig(
-                    algorithm=threshold_group.threshold_algorithm,
-                    object_fraction=threshold_group.object_fraction.value,
-                    two_class_otsu=(threshold_group.two_class_otsu.value == OtsuMethod.TWO_CLASS.value),
-                    use_weighted_variance=(threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE),
-                    assign_middle_to_foreground=(threshold_group.assign_middle_to_foreground.value == O_FOREGROUND)
-                ))
+                threshold_configs.append({
+                    'algorithm': threshold_group.threshold_algorithm,
+                    'object_fraction': threshold_group.object_fraction.value,
+                    'two_class_otsu': (threshold_group.two_class_otsu.value == OtsuMethod.TWO_CLASS.value),
+                    'use_weighted_variance': (threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE),
+                    'assign_middle_to_foreground': (threshold_group.assign_middle_to_foreground.value == O_FOREGROUND),
+                })
 
         for image_name in image_names:
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
@@ -1496,18 +1495,13 @@ to the foreground pixels or the background pixels.
             variable_revision_number = 4
 
         if variable_revision_number == 4:
-            # Thresholding method name change: Strip off "Global"
-            thresh_dict = dict(
-                list(
-                    zip(
-                        GLOBAL_THRESHOLD_METHODS,
-                        THRESHOLD_METHODS,
-                    )
-                )
-            )
+            global_threshold_methods = [" ".join((x, "Global")) for x in THRESHOLD_METHODS]
+            # Thresholding method name change: Strip off "Global" since
+            # centrosome.theshold.TM_GLOBAL_METHODS no longer used
+            thresh_dict = dict(zip(global_threshold_methods, THRESHOLD_METHODS))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [
-                thresh_dict[x] if x in GLOBAL_THRESHOLD_METHODS else x
+                thresh_dict[x] if x in global_threshold_methods else x
                 for x in setting_values
             ]
             variable_revision_number = 5

@@ -1,10 +1,11 @@
 import numpy
-from typing import Optional, List, Sequence, Annotated, Union, Tuple
+from numpy.typing import NDArray
+from typing import Optional, List, Sequence, Annotated, Union, Tuple, Any
 from pydantic import BaseModel, Field, validate_call, ConfigDict
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimagequality import (
-    C_IMAGE_QUALITY, Feature, C_SCALING, ScaledThresholdMethod
+     Feature, ScaledThresholdMethod, TemplateMeasurementFormat
 )
 from cellprofiler_library.functions.measurement import (
     get_focus_score_for_scale_group,
@@ -15,7 +16,21 @@ from cellprofiler_library.functions.measurement import (
     calculate_threshold_for_threshold_group
 )
 
-ImageQualityStatistics = List[None]
+ImageQualityMesVal = Union[
+    # image scaling, blur powerslope, saturation percent_minimal|percent_maximal, threshold global_threshold
+    float, 
+    # blur focus_score
+    NDArray[numpy.float_],
+    # intensity pixel_count
+    numpy.int_,
+    # blur local_focus_score
+    # intensity
+    #  pixel_sum|pixel_mean|pixel_std|pixel_mad|pixel_median|pixel_min|pixel_max
+    numpy.float_,
+    # converted stat vals
+    str
+]
+ImageQualityStatistics = List[Tuple[str, ImageQualityMesVal]]
 
 class ImageQualityDisplayData(BaseModel):
     model_config = ConfigDict(
@@ -80,13 +95,52 @@ def measure_image_quality(
         LibraryMeasurements object containing the measurements.
     """
     measurements = LibraryMeasurements()
+    statistics: ImageQualityStatistics = []
 
     dimensions = image.ndim
 
+    feat_stat_name_map = {
+        TemplateMeasurementFormat.IQ_SCALING: f"{image_name} scaling",
+        TemplateMeasurementFormat.IQ_POWER_SPECTRUM_SLOPE: f"{image_name} {Feature.POWER_SPECTRUM_SLOPE.value}",
+        TemplateMeasurementFormat.IQ_PERCENT_MAXIMAL: f"{image_name} maximal",
+        TemplateMeasurementFormat.IQ_PERCENT_MINIMAL: f"{image_name} minimal",
+        TemplateMeasurementFormat.IQ_TOTAL_AREA: f"{image_name} Total Area",
+        TemplateMeasurementFormat.IQ_TOTAL_VOLUME: f"{image_name} Total Volume",
+        TemplateMeasurementFormat.IQ_TOTAL_INTENSITY: f"{image_name} Total intensity",
+        TemplateMeasurementFormat.IQ_MEAN_INTENSITY: f"{image_name} Mean intensity",
+        TemplateMeasurementFormat.IQ_MEDIAN_INTENSITY: f"{image_name} Median intensity",
+        TemplateMeasurementFormat.IQ_STD_INTENSITY: f"{image_name} Std intensity",
+        TemplateMeasurementFormat.IQ_MAD_INTENSITY: f"{image_name} MAD intensity",
+        TemplateMeasurementFormat.IQ_MIN_INTENSITY: f"{image_name} Min intensity",
+        TemplateMeasurementFormat.IQ_MAX_INTENSITY: f"{image_name} Max intensity",
+        # template stat names
+        TemplateMeasurementFormat.IQ_FOCUS_SCORE: f"{image_name} focus score @%d",
+        TemplateMeasurementFormat.IQ_LOCAL_FOCUS_SCORE: f"{image_name} local focus score @%d",
+        TemplateMeasurementFormat.IQ_CORR: f"{image_name} {Feature.CORRELATION.value} @%d",
+        TemplateMeasurementFormat.IQ_THRESHOLD: f"{image_name} %s",
+    }
+    def add_measurement(
+            feature_template: str,
+            template_val: str,
+            feat_val: ImageQualityMesVal,
+            stat_template_val: Optional[Any]=None,
+            feat_val_template: Optional[str]=None
+        ):
+        feature = feature_template % template_val
+        measurements.add_image_measurement(feature, feat_val)
+        if return_visualization_data:
+            stat_name = feat_stat_name_map.get(feature_template, None)
+            if stat_name is None:
+                return # TODO: 5114 - handle this
+            if stat_template_val is not None:
+                stat_name = stat_name % stat_template_val
+            if feat_val_template is not None:
+                feat_val = feat_val_template % feat_val
+            statistics.append((stat_name, feat_val))
+
     # Image Scalings
     if include_image_scalings:
-        feature = f"{C_IMAGE_QUALITY}_{C_SCALING}_{image_name}"
-        measurements.add_image_measurement(feature, image_scale_value)
+        add_measurement(TemplateMeasurementFormat.IQ_SCALING, image_name, image_scale_value)
 
     # Blur Measurements
     if check_blur and blur_scales is not None:
@@ -97,47 +151,63 @@ def measure_image_quality(
             dimensions,
             image_mask,
         )
-
-        focus_score_name = f"{C_IMAGE_QUALITY}_{Feature.FOCUS_SCORE.value}_{image_name}"
-        measurements.add_image_measurement(focus_score_name, focus_score)
-
-        for idx, s in enumerate(blur_scales):
-            local_focus_score_name = f"{C_IMAGE_QUALITY}_{Feature.LOCAL_FOCUS_SCORE.value}_{image_name}_{s}"
-            measurements.add_image_measurement(local_focus_score_name, local_focus_score[idx])
-
         # Correlation
         scale_measurements = get_correlation_for_scale_group(image, blur_scales, image_mask)
-        for s in blur_scales:
-            measurements.add_image_measurement(
-                f"{C_IMAGE_QUALITY}_{Feature.CORRELATION.value}_{image_name}_{s}",
-                scale_measurements[s]
+
+        # Focus Score
+        add_measurement(
+            TemplateMeasurementFormat.IQ_FOCUS_SCORE,
+            image_name,
+            focus_score,
+            stat_template_val=blur_scales[-1]
+        )
+
+        for idx, scale in enumerate(blur_scales):
+            # Focus Score
+            add_measurement(
+                TemplateMeasurementFormat.IQ_LOCAL_FOCUS_SCORE,
+                f"{image_name}_{scale}",
+                local_focus_score[idx],
+                stat_template_val=scale,
+            )
+            # Correlation
+            add_measurement(
+                TemplateMeasurementFormat.IQ_CORR,
+                f"{image_name}_{scale}",
+                scale_measurements[scale],
+                stat_template_val=scale,
+                feat_val_template="%.2f",
             )
 
         # Power Spectrum
         if dimensions == 2:
             powerslope = get_power_spectrum_measurement_values(image, image_mask, dimensions)
-            measurements.add_image_measurement(
-                f"{C_IMAGE_QUALITY}_{Feature.POWER_SPECTRUM_SLOPE.value}_{image_name}",
-                powerslope
+            add_measurement(
+                TemplateMeasurementFormat.IQ_POWER_SPECTRUM_SLOPE,
+                image_name,
+                powerslope,
+                feat_val_template="%.1f",
             )
 
     # Saturation Measurements
     if check_saturation:
         percent_minimal, percent_maximal = get_saturation_value(image, image_mask)
-        
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.PERCENT_MAXIMAL.value}_{image_name}",
-            percent_maximal
+
+        add_measurement(
+            TemplateMeasurementFormat.IQ_PERCENT_MAXIMAL,
+            image_name,
+            percent_maximal,
+            feat_val_template="%.1f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.PERCENT_MINIMAL.value}_{image_name}",
-            percent_minimal
+        add_measurement(
+            TemplateMeasurementFormat.IQ_PERCENT_MINIMAL,
+            image_name,
+            percent_minimal,
+            feat_val_template="%.1f",
         )
 
     # Intensity Measurements
     if check_intensity:
-        area_feature = Feature.TOTAL_VOLUME.value if volumetric else Feature.TOTAL_AREA.value
-        
         (
             pixel_count,
             pixel_sum,
@@ -149,29 +219,53 @@ def measure_image_quality(
             pixel_max,
         ) = get_intensity_measurement_values(image, image_mask)
 
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{area_feature}_{image_name}", pixel_count
+        add_measurement(
+            TemplateMeasurementFormat.IQ_TOTAL_VOLUME if volumetric else TemplateMeasurementFormat.IQ_TOTAL_AREA,
+            image_name,
+            pixel_count,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.TOTAL_INTENSITY.value}_{image_name}", pixel_sum
+        add_measurement(
+            TemplateMeasurementFormat.IQ_TOTAL_INTENSITY,
+            image_name,
+            pixel_sum,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.MEAN_INTENSITY.value}_{image_name}", pixel_mean
+        add_measurement(
+            TemplateMeasurementFormat.IQ_MEAN_INTENSITY,
+            image_name,
+            pixel_mean,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.MEDIAN_INTENSITY.value}_{image_name}", pixel_median
+        add_measurement(
+            TemplateMeasurementFormat.IQ_MEDIAN_INTENSITY,
+            image_name,
+            pixel_median,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.STD_INTENSITY.value}_{image_name}", pixel_std
+        add_measurement(
+            TemplateMeasurementFormat.IQ_STD_INTENSITY,
+            image_name,
+            pixel_std,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.MAD_INTENSITY.value}_{image_name}", pixel_mad
+        add_measurement(
+            TemplateMeasurementFormat.IQ_MAD_INTENSITY,
+            image_name,
+            pixel_mad,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.MAX_INTENSITY.value}_{image_name}", pixel_max
+        add_measurement(
+            TemplateMeasurementFormat.IQ_MAX_INTENSITY,
+            image_name,
+            pixel_max,
+            feat_val_template="%.2f",
         )
-        measurements.add_image_measurement(
-            f"{C_IMAGE_QUALITY}_{Feature.MIN_INTENSITY.value}_{image_name}", pixel_min
+        add_measurement(
+            TemplateMeasurementFormat.IQ_MIN_INTENSITY,
+            image_name,
+            pixel_min,
+            feat_val_template="%.2f",
         )
 
     # Threshold Measurements
@@ -179,7 +273,7 @@ def measure_image_quality(
         # We need to cast pixel data to float32 for threshold calculations as in original code
         # "pixel_data = image.pixel_data.astype(numpy.float32)"
         pixel_data_float = image.astype(numpy.float32)
-        
+
         for config in threshold_groups:
             global_threshold = calculate_threshold_for_threshold_group(
                 image_pixel_data=pixel_data_float,
@@ -190,21 +284,19 @@ def measure_image_quality(
                 use_weighted_variance=config.use_weighted_variance,
                 assign_middle_to_foreground=config.assign_middle_to_foreground,
             )
-            
+
             scale = config.get_scale_string()
-            
-            hdr = Feature.THRESHOLD.value
             algo = config.algorithm
-            
-            if scale is None:
-                feature_name = f"{C_IMAGE_QUALITY}_{hdr}{algo}_{image_name}"
-            else:
-                feature_name = f"{C_IMAGE_QUALITY}_{hdr}{algo}_{image_name}_{scale}"
-                
-            measurements.add_image_measurement(feature_name, global_threshold)
+
+            add_measurement(
+                TemplateMeasurementFormat.IQ_THRESHOLD,
+                f"{algo}_{image_name}_{scale}" if scale else f"{algo}_{image_name}",
+                global_threshold,
+                stat_template_val=f"{algo}" + (f" {scale}" if scale else "")
+            )
 
     if return_visualization_data:
         return measurements, ImageQualityDisplayData(
-            statistics=[],
+            statistics=statistics,
         )
     return measurements

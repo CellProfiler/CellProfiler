@@ -16,13 +16,21 @@ from cellprofiler_core.constants.module._identify import (
     O_FOREGROUND,
     O_BACKGROUND,
 )
-from cellprofiler_library.modules._measureimagequality import measure_image_quality, ThresholdConfig
+from cellprofiler_library.modules._measureimagequality import (
+    measure_image_quality,
+    ThresholdConfig,
+    ImageQualityDisplayData,
+    ImageQualityStatistics,
+    LibraryMeasurements,
+)
 from cellprofiler_library.opts.measureimagequality import (
-    C_SCALING,
     C_IMAGE_QUALITY,
     Feature,
     Aggregate,
     INTENSITY_FEATURES,
+    INTENSITY_TEMPLATES,
+    SATURATION_TEMPLATES,
+    AGGREGATES,
     SATURATION_FEATURES,
     MEAN_THRESH_ALL_IMAGES,
     MEDIAN_THRESH_ALL_IMAGES,
@@ -30,6 +38,7 @@ from cellprofiler_library.opts.measureimagequality import (
     OtsuMethod,
     ScaledThresholdMethod,
     THRESHOLD_METHODS,
+    TemplateMeasurementFormat,
 )
 
 ##############################################
@@ -773,7 +782,7 @@ to the foreground pixels or the background pixels.
                     columns.append(
                         (
                             "Image",
-                            "{}_{}_{}".format(C_IMAGE_QUALITY, C_SCALING, image_name,),
+                            TemplateMeasurementFormat.IQ_SCALING % image_name,
                             COLTYPE_FLOAT,
                         )
                     )
@@ -785,9 +794,7 @@ to the foreground pixels or the background pixels.
                     columns.append(
                         (
                             "Image",
-                            "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name
-                            ),
+                            TemplateMeasurementFormat.IQ_FOCUS_SCORE % image_name,
                             COLTYPE_FLOAT,
                         )
                     )
@@ -796,9 +803,7 @@ to the foreground pixels or the background pixels.
                     columns.append(
                         (
                             "Image",
-                            "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name
-                            ),
+                            TemplateMeasurementFormat.IQ_POWER_SPECTRUM_SLOPE % image_name,
                             COLTYPE_FLOAT,
                         )
                     )
@@ -808,12 +813,7 @@ to the foreground pixels or the background pixels.
                         columns.append(
                             (
                                 "Image",
-                                "{}_{}_{}_{:d}".format(
-                                    C_IMAGE_QUALITY,
-                                    Feature.LOCAL_FOCUS_SCORE.value,
-                                    image_name,
-                                    scale_group.scale.value,
-                                ),
+                                TemplateMeasurementFormat.IQ_LOCAL_FOCUS_SCORE % f"{image_name}_{scale_group.scale.value:d}",
                                 COLTYPE_FLOAT,
                             )
                         )
@@ -822,12 +822,7 @@ to the foreground pixels or the background pixels.
                         columns.append(
                             (
                                 "Image",
-                                "{}_{}_{}_{:d}".format(
-                                    C_IMAGE_QUALITY,
-                                    Feature.CORRELATION.value,
-                                    image_name,
-                                    scale_group.scale.value,
-                                ),
+                                TemplateMeasurementFormat.IQ_CORR % f"{image_name}_{scale_group.scale.value:d}",
                                 COLTYPE_FLOAT,
                             )
                         )
@@ -837,16 +832,13 @@ to the foreground pixels or the background pixels.
             if image_group.check_intensity.value:
                 for image_name in selected_images:
                     area_measurement = [
-                        Feature.TOTAL_VOLUME.value if pipeline.volumetric() else Feature.TOTAL_AREA.value
+                        TemplateMeasurementFormat.IQ_TOTAL_VOLUME if pipeline.volumetric() else TemplateMeasurementFormat.IQ_TOTAL_AREA
                     ]
-                    for feature in area_measurement + INTENSITY_FEATURES:
-                        measurement_name = image_name
+                    for feature_template in area_measurement + INTENSITY_TEMPLATES:
                         columns.append(
                             (
                                 "Image",
-                                "{}_{}_{}".format(
-                                    C_IMAGE_QUALITY, feature, measurement_name
-                                ),
+                                feature_template % image_name,
                                 COLTYPE_FLOAT,
                             )
                         )
@@ -855,11 +847,11 @@ to the foreground pixels or the background pixels.
             # Saturation measurements
             if image_group.check_saturation.value:
                 for image_name in selected_images:
-                    for feature in SATURATION_FEATURES:
+                    for feature_template in SATURATION_TEMPLATES:
                         columns.append(
                             (
                                 "Image",
-                                "{}_{}_{}".format(C_IMAGE_QUALITY, feature, image_name),
+                                feature_template % image_name,
                                 COLTYPE_FLOAT,
                             )
                         )
@@ -872,7 +864,7 @@ to the foreground pixels or the background pixels.
                     for threshold_group in all_threshold_groups:
                         feature = threshold_group.threshold_feature_name(image_name)
                         columns.append(("Image", feature, COLTYPE_FLOAT,))
-                        for agg in ("Mean", "Median", "Std"):
+                        for agg in AGGREGATES:
                             feature = threshold_group.threshold_feature_name(
                                 image_name, agg
                             )
@@ -1050,7 +1042,7 @@ to the foreground pixels or the background pixels.
 
     def run_on_image_group(self, image_group, workspace):
         """Calculate statistics for a particular image"""
-        statistics = []
+        statistics: ImageQualityStatistics = []
         
         ################################################################################
         # for image in x: for metric in y: run metric on image
@@ -1058,20 +1050,10 @@ to the foreground pixels or the background pixels.
         image_names = self.images_to_process(image_group, workspace)
         if image_names is None:
             logging.warning("[MeasureImageQuality]: No images to process in the image group")
-            return []
+            return statistics
 
         volumetric = workspace.pipeline.volumetric()
         
-        results_dict = {
-            "image_scalings": [],
-            "focus_score": [],
-            "correlation_value": [],
-            "power_spectrum_value": [],
-            "saturation_value": [],
-            "intensity_value": [],
-            "threshold_value": [],
-        }
-
         scale_groups = [scale_group.scale.value for scale_group in image_group.scale_groups]
         all_threshold_groups = self.get_all_threshold_groups(image_group)
         
@@ -1107,119 +1089,16 @@ to the foreground pixels or the background pixels.
                 return_visualization_data=self.show_window,
             )
             if self.show_window:
-                lib_measurements, lib_display = res
+                lib_measurements: LibraryMeasurements = res[0]
+                lib_display: ImageQualityDisplayData = res[1]
+                statistics += lib_display.statistics
             else:
-                lib_measurements = res
+                lib_measurements: LibraryMeasurements = res
 
             # Unpack measurements to workspace
             for feature_name, value in lib_measurements.image.items():
                 workspace.add_measurement("Image", feature_name, value)
-            
-            # Populate results_dict for display
-            if image_group.include_image_scalings.value:
-                 feature = "{}_{}_{}".format(C_IMAGE_QUALITY, C_SCALING, image_name)
-                 value = lib_measurements.image.get(feature, numpy.nan)
-                 results_dict["image_scalings"] += [["{} scaling".format(image_name), value]]
 
-            if image_group.check_blur.value:
-                focus_score_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.FOCUS_SCORE.value, image_name)
-                focus_score = lib_measurements.image.get(focus_score_name)
-                
-                if scale_groups:
-                    last_scale = scale_groups[-1]
-                    results_dict["focus_score"] += [["{} focus score @{:d}".format(image_name, last_scale), focus_score]]
-                
-                for idx, scale in enumerate(scale_groups):
-                    local_focus_score_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.LOCAL_FOCUS_SCORE.value, image_name, scale)
-                    lfs_value = lib_measurements.image.get(local_focus_score_name)
-                    results_dict["focus_score"] += [
-                        [
-                            "{} local focus score @{:d}".format(image_name, scale),
-                            lfs_value,
-                        ]
-                    ]
-                
-                for scale in scale_groups:
-                    corr_name = "{}_{}_{}_{:d}".format(C_IMAGE_QUALITY, Feature.CORRELATION.value, image_name, scale)
-                    corr_value = lib_measurements.image.get(corr_name)
-                    results_dict["correlation_value"] += [
-                        [
-                            "{} {} @{:d}".format(image_name, Feature.CORRELATION.value, scale),
-                            "{:.2f}".format(corr_value),
-                        ]
-                    ]
-
-                if image.dimensions == 2:
-                    ps_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.POWER_SPECTRUM_SLOPE.value, image_name)
-                    ps_value = lib_measurements.image.get(ps_name)
-                    results_dict['power_spectrum_value'] += [
-                        [
-                            "{} {}".format(image_name, Feature.POWER_SPECTRUM_SLOPE.value),
-                            "{:.1f}".format(float(ps_value)) if ps_value is not None else "0.0",
-                        ]
-                    ]
-
-            if image_group.check_saturation.value:
-                pmax_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MAXIMAL.value, image_name)
-                pmin_name = "{}_{}_{}".format(C_IMAGE_QUALITY, Feature.PERCENT_MINIMAL.value, image_name)
-                percent_maximal = lib_measurements.image.get(pmax_name)
-                percent_minimal = lib_measurements.image.get(pmin_name)
-                
-                results_dict['saturation_value'] += [
-                    ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
-                    ["{} minimal".format(image_name), "{:.1f} %".format(percent_minimal)],
-                ]
-
-            if image_group.check_intensity.value:
-                area_text = "Volume" if volumetric else "Area"
-                # Area/Volume is calculated but we need to fetch it.
-                # feature key depends on volumetric.
-                area_feature = Feature.TOTAL_VOLUME.value if volumetric else Feature.TOTAL_AREA.value
-                
-                # Fetch all intensity features
-                pixel_sum = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.TOTAL_INTENSITY.value, image_name))
-                pixel_mean = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.MEAN_INTENSITY.value, image_name))
-                pixel_median = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.MEDIAN_INTENSITY.value, image_name))
-                pixel_std = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.STD_INTENSITY.value, image_name))
-                pixel_mad = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.MAD_INTENSITY.value, image_name))
-                pixel_min = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.MIN_INTENSITY.value, image_name))
-                pixel_max = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, Feature.MAX_INTENSITY.value, image_name))
-                pixel_count = lib_measurements.image.get("{}_{}_{}".format(C_IMAGE_QUALITY, area_feature, image_name))
-
-                results_dict['intensity_value'] += [
-                    ["{} {}".format(image_name, feature_name), "{:.2f}".format(value)]
-                    for feature_name, value in (
-                        ("Total intensity", pixel_sum),
-                        ("Mean intensity", pixel_mean),
-                        ("Median intensity", pixel_median),
-                        ("Std intensity", pixel_std),
-                        ("MAD intensity", pixel_mad),
-                        ("Min intensity", pixel_min),
-                        ("Max intensity", pixel_max),
-                        ("Total {}".format(area_text), pixel_count),
-                    )
-                ]
-
-            if image_group.calculate_threshold.value:
-                for threshold_group in all_threshold_groups:
-                    # Reconstruct feature name to fetch value
-                    feature = threshold_group.threshold_feature_name(image_name)
-                    global_threshold = lib_measurements.image.get(feature)
-                    
-                    threshold_method = threshold_group.threshold_algorithm
-                    scale_text = (" " + threshold_group.threshold_scale) if threshold_group.threshold_scale is not None else ""
-                    threshold_description = threshold_method + scale_text
-                    
-                    results_dict['threshold_value'] += [
-                        [
-                            "{} {} threshold".format(image_name, threshold_description),
-                            str(global_threshold),
-                        ]
-                    ]
-
-        for measurement_class, measurement_items in results_dict.items():
-            for measurement_name, measurement_value in measurement_items:
-                statistics += [[measurement_name, measurement_value]]
         return statistics
 
 
@@ -1299,7 +1178,7 @@ to the foreground pixels or the background pixels.
                 i
                 for i in THRESHOLD_METHODS
                 if i not in [ScaledThresholdMethod.OTSU.value, ScaledThresholdMethod.MOG.value]
-            ]
+            ],
             [0.],
             [OtsuMethod.TWO_CLASS.value],
             [O_WEIGHTED_VARIANCE],
@@ -1527,21 +1406,13 @@ class ImageQualitySettingsGroup(SettingsGroup):
         # NOTE: shouldn't need to split anymore since revision 5 got rid of "Global xyz" but difficult to test this assumpiton atm
         return self.threshold_method.value.split(" ")[0]
 
-    def threshold_feature_name(self, image_name, agg=None):
+    def threshold_feature_name(self, image_name, agg=""):
         """The feature name of the threshold measurement generated"""
         scale = self.threshold_scale
-        if agg is None:
-            hdr = Feature.THRESHOLD.value
-        else:
-            hdr = Feature.THRESHOLD.value + agg
         if scale is None:
-            return "{}_{}{}_{}".format(
-                C_IMAGE_QUALITY, hdr, self.threshold_algorithm, image_name
-            )
+            return TemplateMeasurementFormat.IQ_THRESHOLD % f"{agg}{self.threshold_algorithm}_{image_name}"
         else:
-            return "{}_{}{}_{}_{}".format(
-                C_IMAGE_QUALITY, hdr, self.threshold_algorithm, image_name, scale
-            )
+            return TemplateMeasurementFormat.IQ_THRESHOLD % f"{agg}{self.threshold_algorithm}_{image_name}_{scale}"
 
     @property
     def threshold_scale(self):

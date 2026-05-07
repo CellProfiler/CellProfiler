@@ -4,6 +4,7 @@ from centrosome.threshold import (
     TM_MOG,
     TM_METHODS,
 )
+from .threshold import OtsuMethod as ThreshOtsuMethod
 
 """Root module measurement name"""
 C_IMAGE_QUALITY = "ImageQuality"
@@ -46,12 +47,11 @@ MEAN_THRESH_ALL_IMAGES = "MeanThresh_AllImages"
 MEDIAN_THRESH_ALL_IMAGES = "MedianThresh_AllImages"
 STD_THRESH_ALL_IMAGES = "StdThresh_AllImages"
 
-# mirrors cellprofiler_libarary/opts/threshold.py but used via a very different path so kept distinct
-class OtsuMethod(str, Enum):
-    TWO_CLASS = "Two classes"
-    THREE_CLASS = "Three classes"
-
 class ScaledThresholdMethod(str, Enum):
     OTSU = TM_OTSU
     MOG = TM_MOG
+# could just do `from .threshold import OtsuMethod` at the top
+# but we make it explicit here to silence static analysis warnings
+OtsuMethod = ThreshOtsuMethod
+# similar to above
 THRESHOLD_METHODS = TM_METHODS

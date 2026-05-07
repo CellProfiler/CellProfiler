@@ -1091,8 +1091,7 @@ to the foreground pixels or the background pixels.
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             image_scale_value = image_group.include_image_scalings.value and image.scale or numpy.nan
 
-            # Call library function
-            lib_measurements = measure_image_quality(
+            res = measure_image_quality(
                 image=image.pixel_data,
                 image_name=image_name,
                 image_mask=image.mask if image.has_mask else None,
@@ -1105,7 +1104,12 @@ to the foreground pixels or the background pixels.
                 check_intensity=image_group.check_intensity.value,
                 calculate_threshold=image_group.calculate_threshold.value,
                 threshold_groups=threshold_configs if image_group.calculate_threshold.value else None,
+                return_visualization_data=self.show_window,
             )
+            if self.show_window:
+                lib_measurements, lib_display = res
+            else:
+                lib_measurements = res
 
             # Unpack measurements to workspace
             for feature_name, value in lib_measurements.image.items():
@@ -1213,8 +1217,8 @@ to the foreground pixels or the background pixels.
                         ]
                     ]
 
-        for measurement_name, measurement_values in results_dict.items():
-            for measurement_value in measurement_values:
+        for measurement_class, measurement_items in results_dict.items():
+            for measurement_name, measurement_value in measurement_items:
                 statistics += [[measurement_name, measurement_value]]
         return statistics
 

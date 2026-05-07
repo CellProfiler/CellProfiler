@@ -1095,7 +1095,7 @@ to the foreground pixels or the background pixels.
             lib_measurements = measure_image_quality(
                 image=image.pixel_data,
                 image_name=image_name,
-                mask=image.mask if image.has_mask else None,
+                image_mask=image.mask if image.has_mask else None,
                 volumetric=volumetric,
                 include_image_scalings=image_group.include_image_scalings.value,
                 image_scale_value=image_scale_value,
@@ -1104,7 +1104,7 @@ to the foreground pixels or the background pixels.
                 check_saturation=image_group.check_saturation.value,
                 check_intensity=image_group.check_intensity.value,
                 calculate_threshold=image_group.calculate_threshold.value,
-                threshold_groups=threshold_configs if image_group.calculate_threshold.value else None
+                threshold_groups=threshold_configs if image_group.calculate_threshold.value else None,
             )
 
             # Unpack measurements to workspace

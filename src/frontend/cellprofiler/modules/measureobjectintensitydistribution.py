@@ -30,6 +30,24 @@ from cellprofiler_core.utilities.core.object import (
     size_similarly,
 )
 
+from cellprofiler_library.opts.measureobjectintensitydistribution import (
+    C_RADIAL_DISTRIBUTION,
+    CenterChoice,
+    C_CENTERS_OF_OTHER_V2,
+    C_ALL,
+    ZernikeMode,
+    Z_ALL,
+    Feature,
+    F_ALL,
+    MeasurementChoice,
+    MEASUREMENT_CHOICES,
+    MEASUREMENT_ALIASES,
+    FF_SCALE,
+    FF_OVERFLOW,
+    FF_GENERIC,
+    TemplateMeasurementFormat,
+)
+
 import cellprofiler.gui.help.content
 
 MeasureObjectIntensityDistribution_Magnitude_Phase = cellprofiler.gui.help.content.image_resource(
@@ -104,40 +122,6 @@ Measurements made by this module
     }
 )
 
-C_SELF = "These objects"
-C_CENTERS_OF_OTHER_V2 = "Other objects"
-C_CENTERS_OF_OTHER = "Centers of other objects"
-C_EDGES_OF_OTHER = "Edges of other objects"
-C_ALL = [C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER]
-
-Z_NONE = "None"
-Z_MAGNITUDES = "Magnitudes only"
-Z_MAGNITUDES_AND_PHASE = "Magnitudes and phase"
-Z_ALL = [Z_NONE, Z_MAGNITUDES, Z_MAGNITUDES_AND_PHASE]
-
-M_CATEGORY = "RadialDistribution"
-F_FRAC_AT_D = "FracAtD"
-F_MEAN_FRAC = "MeanFrac"
-F_RADIAL_CV = "RadialCV"
-F_ALL = [F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV]
-
-FF_SCALE = "%dof%d"
-FF_OVERFLOW = "Overflow"
-FF_GENERIC = "_%s_" + FF_SCALE
-FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
-FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
-FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
-
-FF_ZERNIKE_MAGNITUDE = "ZernikeMagnitude"
-FF_ZERNIKE_PHASE = "ZernikePhase"
-
-MF_FRAC_AT_D = "_".join((M_CATEGORY, FF_FRAC_AT_D))
-MF_MEAN_FRAC = "_".join((M_CATEGORY, FF_MEAN_FRAC))
-MF_RADIAL_CV = "_".join((M_CATEGORY, FF_RADIAL_CV))
-OF_FRAC_AT_D = "_".join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
-OF_MEAN_FRAC = "_".join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
-OF_RADIAL_CV = "_".join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
-
 """# of settings aside from groups"""
 SETTINGS_STATIC_COUNT = 3
 """# of settings in image group"""
@@ -154,17 +138,6 @@ SETTINGS_HEATMAP_GROUP_COUNT_V4 = 7
 SETTINGS_HEATMAP_GROUP_COUNT = 7
 """Offset of center choice in object group"""
 SETTINGS_CENTER_CHOICE_OFFSET = 1
-
-A_FRAC_AT_D = "Fraction at Distance"
-A_MEAN_FRAC = "Mean Fraction"
-A_RADIAL_CV = "Radial CV"
-MEASUREMENT_CHOICES = [A_FRAC_AT_D, A_MEAN_FRAC, A_RADIAL_CV]
-
-MEASUREMENT_ALIASES = {
-    A_FRAC_AT_D: MF_FRAC_AT_D,
-    A_MEAN_FRAC: MF_MEAN_FRAC,
-    A_RADIAL_CV: MF_RADIAL_CV,
-}
 
 
 class MeasureObjectIntensityDistribution(Module):
@@ -209,9 +182,9 @@ useful information for classifying phenotypes.
 .. |MeasureObjectIntensityDistribution_image0| image:: {MeasureObjectIntensityDistribution_Magnitude_Phase}
 """.format(
                 **{
-                    "Z_NONE": Z_NONE,
-                    "Z_MAGNITUDES": Z_MAGNITUDES,
-                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                    "Z_NONE": ZernikeMode.NONE.value,
+                    "Z_MAGNITUDES": ZernikeMode.MAGNITUDES.value,
+                    "Z_MAGNITUDES_AND_PHASE": ZernikeMode.MAGNITUDES_AND_PHASE.value,
                     "MeasureObjectIntensityDistribution_Magnitude_Phase": MeasureObjectIntensityDistribution_Magnitude_Phase,
                 }
             ),
@@ -231,8 +204,8 @@ moment, so higher values are increasingly expensive to calculate.
 """.format(
                 **{
                     "wants_zernikes": self.wants_zernikes.text,
-                    "Z_MAGNITUDES": Z_MAGNITUDES,
-                    "Z_MAGNITUDES_AND_PHASE": Z_MAGNITUDES_AND_PHASE,
+                    "Z_MAGNITUDES": ZernikeMode.MAGNITUDES.value,
+                    "Z_MAGNITUDES_AND_PHASE": ZernikeMode.MAGNITUDES_AND_PHASE.value,
                 }
             ),
         )
@@ -306,9 +279,9 @@ previously identified Nuclei objects as the centers
 .. |MeasureObjectIntensityDistribution_image1| image:: {MeasureObjectIntensityDistribution_Edges_Centers}
 """.format(
                     **{
-                        "C_SELF": C_SELF,
-                        "C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER,
-                        "C_EDGES_OF_OTHER": C_EDGES_OF_OTHER,
+                        "C_SELF": CenterChoice.SELF.value,
+                        "C_CENTERS_OF_OTHER": CenterChoice.CENTERS_OF_OTHER.value,
+                        "C_EDGES_OF_OTHER": CenterChoice.EDGES_OF_OTHER.value,
                         "MeasureObjectIntensityDistribution_Edges_Centers": MeasureObjectIntensityDistribution_Edges_Centers,
                     }
                 ),
@@ -327,7 +300,10 @@ Select the object to use as the center, or select *None* to use the
 input object centers (which is the same as selecting *{C_SELF}* for the
 object centers).
 """.format(
-                    **{"C_CENTERS_OF_OTHER": C_CENTERS_OF_OTHER, "C_SELF": C_SELF}
+                    **{
+                        "C_CENTERS_OF_OTHER": CenterChoice.CENTERS_OF_OTHER.value,
+                        "C_SELF": CenterChoice.SELF.value,
+                    }
                 ),
             ),
         )
@@ -575,7 +551,7 @@ be selected in a later **SaveImages** or other module.
     def visible_settings(self):
         result = [self.wants_zernikes]
 
-        if self.wants_zernikes != Z_NONE:
+        if self.wants_zernikes != ZernikeMode.NONE.value:
             result.append(self.zernike_degree)
 
         result += [self.images_list, self.spacer_1]
@@ -583,7 +559,7 @@ be selected in a later **SaveImages** or other module.
         for settings in self.objects:
             temp = settings.visible_settings()
 
-            if settings.center_choice.value == C_SELF:
+            if settings.center_choice.value == CenterChoice.SELF.value:
                 temp.remove(settings.center_object_name)
 
             result += temp
@@ -668,14 +644,14 @@ be selected in a later **SaveImages** or other module.
                         image,
                         o.object_name.value,
                         o.center_object_name.value
-                        if o.center_choice != C_SELF
+                        if o.center_choice != CenterChoice.SELF.value
                         else None,
                         o.center_choice.value,
                         bin_count_settings,
                         d,
                     )
 
-        if self.wants_zernikes != Z_NONE:
+        if self.wants_zernikes != ZernikeMode.NONE.value:
             self.calculate_zernikes(workspace)
 
         if self.show_window:
@@ -852,7 +828,7 @@ be selected in a later **SaveImages** or other module.
 
         if nobjects == 0:
             for bin_index in range(1, bin_count + 1):
-                for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
+                for feature in F_ALL:
                     feature_name = (feature + FF_GENERIC) % (
                         image_name,
                         bin_index,
@@ -861,13 +837,13 @@ be selected in a later **SaveImages** or other module.
 
                     measurements.add_measurement(
                         object_name,
-                        "_".join([M_CATEGORY, feature_name]),
+                        "_".join([C_RADIAL_DISTRIBUTION, feature_name]),
                         numpy.zeros(0),
                     )
 
                     if not wants_scaled:
                         measurement_name = "_".join(
-                            [M_CATEGORY, feature, image_name, FF_OVERFLOW]
+                            [C_RADIAL_DISTRIBUTION, feature, image_name, FF_OVERFLOW]
                         )
 
                         measurements.add_measurement(
@@ -918,7 +894,7 @@ be selected in a later **SaveImages** or other module.
 
                 lg = numpy.arange(1, len(i) + 1)[good]
 
-                if center_choice == C_CENTERS_OF_OTHER:
+                if center_choice == CenterChoice.CENTERS_OF_OTHER.value:
                     #
                     # Reduce the propagation labels to the centers of
                     # the centering objects
@@ -1016,7 +992,7 @@ be selected in a later **SaveImages** or other module.
 
             good_mask = cl > 0
 
-            if center_choice == C_EDGES_OF_OTHER:
+            if center_choice == CenterChoice.EDGES_OF_OTHER.value:
                 # Exclude pixels within the centering objects
                 # when performing calculations from the centers
                 good_mask = good_mask & (center_labels == 0)
@@ -1137,9 +1113,21 @@ be selected in a later **SaveImages** or other module.
             radial_cv[numpy.sum(~mask, 1) == 0] = 0
 
             for measurement, feature, overflow_feature in (
-                (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
-                (mean_pixel_fraction[:, bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
-                (numpy.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV),
+                (
+                    fraction_at_distance[:, bin],
+                    TemplateMeasurementFormat.RD_FRAC_AT_D,
+                    TemplateMeasurementFormat.RD_OVERFLOW_FRAC_AT_D,
+                ),
+                (
+                    mean_pixel_fraction[:, bin],
+                    TemplateMeasurementFormat.RD_MEAN_FRAC,
+                    TemplateMeasurementFormat.RD_OVERFLOW_MEAN_FRAC,
+                ),
+                (
+                    numpy.array(radial_cv),
+                    TemplateMeasurementFormat.RD_RADIAL_CV,
+                    TemplateMeasurementFormat.RD_OVERFLOW_RADIAL_CV,
+                ),
             ):
                 if bin == bin_count:
                     measurement_name = overflow_feature % image_name
@@ -1235,7 +1223,7 @@ be selected in a later **SaveImages** or other module.
 
                         meas[object_name, ftr] = numpy.zeros(0)
 
-                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                        if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
                             ftr = self.get_zernike_phase_name(image_name, n, m)
 
                             meas[object_name, ftr] = numpy.zeros(0)
@@ -1265,7 +1253,7 @@ be selected in a later **SaveImages** or other module.
 
                     meas[object_name, ftr] = magnitude
 
-                    if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                    if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
                         phase = numpy.arctan2(vr, vi)
 
                         ftr = self.get_zernike_phase_name(image_name, n, m)
@@ -1279,7 +1267,15 @@ be selected in a later **SaveImages** or other module.
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         """
-        return "_".join((M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
+        return "_".join(
+            (
+                C_RADIAL_DISTRIBUTION,
+                Feature.ZERNIKE_MAGNITUDE.value,
+                image_name,
+                str(n),
+                str(m),
+            )
+        )
 
     def get_zernike_phase_name(self, image_name, n, m):
         """The feature name of the phase of a Zernike moment
@@ -1288,7 +1284,15 @@ be selected in a later **SaveImages** or other module.
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         """
-        return "_".join((M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
+        return "_".join(
+            (
+                C_RADIAL_DISTRIBUTION,
+                Feature.ZERNIKE_PHASE.value,
+                image_name,
+                str(n),
+                str(m),
+            )
+        )
 
     def get_measurement_columns(self, pipeline):
         columns = []
@@ -1303,9 +1307,18 @@ be selected in a later **SaveImages** or other module.
                     wants_scaling = bin_count_obj.wants_scaled.value
 
                     for feature, ofeature in (
-                        (MF_FRAC_AT_D, OF_FRAC_AT_D),
-                        (MF_MEAN_FRAC, OF_MEAN_FRAC),
-                        (MF_RADIAL_CV, OF_RADIAL_CV),
+                        (
+                            TemplateMeasurementFormat.RD_FRAC_AT_D,
+                            TemplateMeasurementFormat.RD_OVERFLOW_FRAC_AT_D,
+                        ),
+                        (
+                            TemplateMeasurementFormat.RD_MEAN_FRAC,
+                            TemplateMeasurementFormat.RD_OVERFLOW_MEAN_FRAC,
+                        ),
+                        (
+                            TemplateMeasurementFormat.RD_RADIAL_CV,
+                            TemplateMeasurementFormat.RD_OVERFLOW_RADIAL_CV,
+                        ),
                     ):
                         for bin in range(1, bin_count + 1):
                             columns.append(
@@ -1321,10 +1334,10 @@ be selected in a later **SaveImages** or other module.
                                 (object_name, ofeature % image_name, COLTYPE_FLOAT,)
                             )
 
-                    if self.wants_zernikes != Z_NONE:
+                    if self.wants_zernikes != ZernikeMode.NONE.value:
                         name_fns = [self.get_zernike_magnitude_name]
 
-                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                        if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
                             name_fns.append(self.get_zernike_phase_name)
 
                         max_n = self.zernike_degree.value
@@ -1341,19 +1354,19 @@ be selected in a later **SaveImages** or other module.
 
     def get_categories(self, pipeline, object_name):
         if object_name in [x.object_name.value for x in self.objects]:
-            return [M_CATEGORY]
+            return [C_RADIAL_DISTRIBUTION]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
-            if self.wants_zernikes == Z_NONE:
+            if self.wants_zernikes == ZernikeMode.NONE.value:
                 return F_ALL
 
-            if self.wants_zernikes == Z_MAGNITUDES:
-                return F_ALL + [FF_ZERNIKE_MAGNITUDE]
+            if self.wants_zernikes == ZernikeMode.MAGNITUDES.value:
+                return F_ALL + [Feature.ZERNIKE_MAGNITUDE.value]
 
-            return F_ALL + [FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE]
+            return F_ALL + [Feature.ZERNIKE_MAGNITUDE.value, Feature.ZERNIKE_PHASE.value]
 
         return []
 
@@ -1368,7 +1381,7 @@ be selected in a later **SaveImages** or other module.
         if image_name in self.get_measurement_images(
             pipeline, object_name, category, feature
         ):
-            if feature in (FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE):
+            if feature in (Feature.ZERNIKE_MAGNITUDE.value, Feature.ZERNIKE_PHASE.value):
                 n_max = self.zernike_degree.value
 
                 result = [
@@ -1427,7 +1440,7 @@ be selected in a later **SaveImages** or other module.
                 )
 
                 if setting_values[offset] == C_CENTERS_OF_OTHER_V2:
-                    setting_values[offset] = C_CENTERS_OF_OTHER
+                    setting_values[offset] = CenterChoice.CENTERS_OF_OTHER.value
 
             variable_revision_number = 3
 
@@ -1443,7 +1456,9 @@ be selected in a later **SaveImages** or other module.
             #
             # Added zernikes
             #
-            setting_values = setting_values[:4] + [Z_NONE, "9"] + setting_values[4:]
+            setting_values = (
+                setting_values[:4] + [ZernikeMode.NONE.value, "9"] + setting_values[4:]
+            )
 
             variable_revision_number = 5
 

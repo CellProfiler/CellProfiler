@@ -27,9 +27,10 @@ from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
+from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.functions.segmentation import relate_labels
 
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV, Image2DBinary, Image2DColor, Image2DGrayscale
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, Image2DGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV, Image2DBinary, Image2DColor, Image2DGrayscale
 from cellprofiler_library.opts.objectsizeshapefeatures import get_zernike_indexes
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as ObjectDecimationMethod
@@ -3453,7 +3454,7 @@ def assign_centers_using_centering_objects(
         NDArray[numpy.float_],
         ObjectSegmentation
     ]:
-    pixel_counts = fix(scipy.ndimage.sum(
+    pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(
         numpy.ones(center_labels.shape),
         center_labels,
         numpy.arange(1, numpy.max(center_labels) + 1, dtype=numpy.int32),

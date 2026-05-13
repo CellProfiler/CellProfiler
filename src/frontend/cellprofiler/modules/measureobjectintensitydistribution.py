@@ -665,38 +665,41 @@ be selected in a later **SaveImages** or other module.
             heatmap_img = d.get(id(heatmap))
 
             if heatmap_img is not None:
-                if self.show_window or heatmap.wants_to_save_display:
-                    labels = workspace.object_set.get_objects(
-                        heatmap.object_name.get_objects_name()
-                    ).segmented
+                self.handle_heatmap_output(workspace, heatmap, heatmap_img)
 
-                if self.show_window:
-                    workspace.display_data.heatmaps.append((heatmap_img, labels != 0))
+    def handle_heatmap_output(self, workspace, heatmap, heatmap_img):
+        if self.show_window or heatmap.wants_to_save_display:
+            labels = workspace.object_set.get_objects(
+                heatmap.object_name.get_objects_name()
+            ).segmented
 
-                if heatmap.wants_to_save_display:
-                    colormap = heatmap.colormap.value
+        if self.show_window:
+            workspace.display_data.heatmaps.append((heatmap_img, labels != 0))
 
-                    if colormap == matplotlib.cm.gray.name:
-                        output_pixels = heatmap_img
-                    else:
-                        if colormap == "Default":
-                            colormap = get_default_colormap()
+        if heatmap.wants_to_save_display:
+            colormap = heatmap.colormap.value
 
-                        cm = matplotlib.cm.ScalarMappable(cmap=colormap)
+            if colormap == matplotlib.cm.gray.name:
+                output_pixels = heatmap_img
+            else:
+                if colormap == "Default":
+                    colormap = get_default_colormap()
 
-                        output_pixels = cm.to_rgba(heatmap_img)[:, :, :3]
+                cm = matplotlib.cm.ScalarMappable(cmap=colormap)
 
-                        output_pixels[labels == 0, :] = 0
+                output_pixels = cm.to_rgba(heatmap_img)[:, :, :3]
 
-                    parent_image = workspace.image_set.get_image(
-                        heatmap.image_name.get_image_name()
-                    )
+                output_pixels[labels == 0, :] = 0
 
-                    output_img = Image(output_pixels, parent_image=parent_image)
+            parent_image = workspace.image_set.get_image(
+                heatmap.image_name.get_image_name()
+            )
 
-                    img_name = heatmap.display_name.value
+            output_img = Image(output_pixels, parent_image=parent_image)
 
-                    workspace.image_set.add(img_name, output_img)
+            img_name = heatmap.display_name.value
+
+            workspace.image_set.add(img_name, output_img)
 
     def display(self, workspace, figure):
         header = workspace.display_data.header
@@ -827,30 +830,9 @@ be selected in a later **SaveImages** or other module.
                 ] = numpy.zeros(labels.shape)
 
         if nobjects == 0:
-            for bin_index in range(1, bin_count + 1):
-                for feature in F_ALL:
-                    feature_name = (feature + FF_GENERIC) % (
-                        image_name,
-                        bin_index,
-                        bin_count,
-                    )
-
-                    measurements.add_measurement(
-                        object_name,
-                        "_".join([C_RADIAL_DISTRIBUTION, feature_name]),
-                        numpy.zeros(0),
-                    )
-
-                    if not wants_scaled:
-                        measurement_name = "_".join(
-                            [C_RADIAL_DISTRIBUTION, feature, image_name, FF_OVERFLOW]
-                        )
-
-                        measurements.add_measurement(
-                            object_name, measurement_name, numpy.zeros(0)
-                        )
-
-            return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
+            return self.record_empty_object_measurements(
+                workspace, image_name, object_name, bin_count, wants_scaled
+            )
 
         name = (
             object_name
@@ -861,165 +843,236 @@ be selected in a later **SaveImages** or other module.
         if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
-            d_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
-
-            if center_object_name is not None:
-                #
-                # Use the center of the centering objects to assign a center
-                # to each labeled pixel using propagation
-                #
-                center_objects = workspace.object_set.get_objects(center_object_name)
-
-                center_labels, cmask = size_similarly(labels, center_objects.segmented)
-
-                pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
-                    scipy.ndimage.sum(
-                        numpy.ones(center_labels.shape),
-                        center_labels,
-                        numpy.arange(
-                            1, numpy.max(center_labels) + 1, dtype=numpy.int32
-                        ),
-                    )
-                )
-
-                good = pixel_counts > 0
-
-                i, j = (
-                    centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
-                ).astype(int)
-
-                ig = i[good]
-
-                jg = j[good]
-
-                lg = numpy.arange(1, len(i) + 1)[good]
-
-                if center_choice == CenterChoice.CENTERS_OF_OTHER.value:
-                    #
-                    # Reduce the propagation labels to the centers of
-                    # the centering objects
-                    #
-                    center_labels = numpy.zeros(center_labels.shape, int)
-
-                    center_labels[ig, jg] = lg
-
-                cl, d_from_center = centrosome.propagate.propagate(
-                    numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
-                )
-
-                #
-                # Erase the centers that fall outside of labels
-                #
-                cl[labels == 0] = 0
-
-                #
-                # If objects are hollow or crescent-shaped, there may be
-                # objects without center labels. As a backup, find the
-                # center that is the closest to the center of mass.
-                #
-                missing_mask = (labels != 0) & (cl == 0)
-
-                missing_labels = numpy.unique(labels[missing_mask])
-
-                if len(missing_labels):
-                    all_centers = centrosome.cpmorphology.centers_of_labels(labels)
-
-                    missing_i_centers, missing_j_centers = all_centers[
-                        :, missing_labels - 1
-                    ]
-
-                    di = missing_i_centers[:, numpy.newaxis] - ig[numpy.newaxis, :]
-
-                    dj = missing_j_centers[:, numpy.newaxis] - jg[numpy.newaxis, :]
-
-                    missing_best = lg[numpy.argsort(di * di + dj * dj)[:, 0]]
-
-                    best = numpy.zeros(numpy.max(labels) + 1, int)
-
-                    best[missing_labels] = missing_best
-
-                    cl[missing_mask] = best[labels[missing_mask]]
-
-                    #
-                    # Now compute the crow-flies distance to the centers
-                    # of these pixels from whatever center was assigned to
-                    # the object.
-                    #
-                    iii, jjj = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
-
-                    di = iii[missing_mask] - i[cl[missing_mask] - 1]
-
-                    dj = jjj[missing_mask] - j[cl[missing_mask] - 1]
-
-                    d_from_center[missing_mask] = numpy.sqrt(di * di + dj * dj)
-            else:
-                # Find the point in each object farthest away from the edge.
-                # This does better than the centroid:
-                # * The center is within the object
-                # * The center tends to be an interesting point, like the
-                #   center of the nucleus or the center of one or the other
-                #   of two touching cells.
-                #
-                i, j = centrosome.cpmorphology.maximum_position_of_labels(
-                    d_to_edge, labels, objects.indices
-                )
-
-                center_labels = numpy.zeros(labels.shape, int)
-
-                center_labels[i, j] = labels[i, j]
-
-                #
-                # Use the coloring trick here to process touching objects
-                # in separate operations
-                #
-                colors = centrosome.cpmorphology.color_labels(labels)
-
-                ncolors = numpy.max(colors)
-
-                d_from_center = numpy.zeros(labels.shape)
-
-                cl = numpy.zeros(labels.shape, int)
-
-                for color in range(1, ncolors + 1):
-                    mask = colors == color
-                    l, d = centrosome.propagate.propagate(
-                        numpy.zeros(center_labels.shape), center_labels, mask, 1
-                    )
-
-                    d_from_center[mask] = d[mask]
-
-                    cl[mask] = l[mask]
-
-            good_mask = cl > 0
-
-            if center_choice == CenterChoice.EDGES_OF_OTHER.value:
-                # Exclude pixels within the centering objects
-                # when performing calculations from the centers
-                good_mask = good_mask & (center_labels == 0)
-
-            i_center = numpy.zeros(cl.shape)
-
-            i_center[good_mask] = i[cl[good_mask] - 1]
-
-            j_center = numpy.zeros(cl.shape)
-
-            j_center[good_mask] = j[cl[good_mask] - 1]
-
-            normalized_distance = numpy.zeros(labels.shape)
-
-            if wants_scaled:
-                total_distance = d_from_center + d_to_edge
-
-                normalized_distance[good_mask] = d_from_center[good_mask] / (
-                    total_distance[good_mask] + 0.001
-                )
-            else:
-                normalized_distance[good_mask] = (
-                    d_from_center[good_mask] / maximum_radius
-                )
+            normalized_distance, i_center, j_center, good_mask = self.compute_center_distances(
+                workspace,
+                labels,
+                objects,
+                center_object_name,
+                center_choice,
+                wants_scaled,
+                maximum_radius,
+            )
 
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
 
+        return self.record_bin_measurements(
+            workspace,
+            image_name,
+            object_name,
+            bin_count,
+            wants_scaled,
+            labels,
+            pixel_data,
+            nobjects,
+            normalized_distance,
+            i_center,
+            j_center,
+            good_mask,
+            heatmaps,
+        )
+
+    def record_empty_object_measurements(
+        self, workspace, image_name, object_name, bin_count, wants_scaled
+    ):
+        measurements = workspace.measurements
+
+        for bin_index in range(1, bin_count + 1):
+            for feature in F_ALL:
+                feature_name = (feature + FF_GENERIC) % (
+                    image_name,
+                    bin_index,
+                    bin_count,
+                )
+
+                measurements.add_measurement(
+                    object_name,
+                    "_".join([C_RADIAL_DISTRIBUTION, feature_name]),
+                    numpy.zeros(0),
+                )
+
+                if not wants_scaled:
+                    measurement_name = "_".join(
+                        [C_RADIAL_DISTRIBUTION, feature, image_name, FF_OVERFLOW]
+                    )
+
+                    measurements.add_measurement(
+                        object_name, measurement_name, numpy.zeros(0)
+                    )
+
+        return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
+
+    def compute_center_distances(
+        self,
+        workspace,
+        labels,
+        objects,
+        center_object_name,
+        center_choice,
+        wants_scaled,
+        maximum_radius,
+    ):
+        d_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
+
+        if center_object_name is not None:
+            #
+            # Use the center of the centering objects to assign a center
+            # to each labeled pixel using propagation
+            #
+            center_objects = workspace.object_set.get_objects(center_object_name)
+
+            center_labels, cmask = size_similarly(labels, center_objects.segmented)
+
+            pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                scipy.ndimage.sum(
+                    numpy.ones(center_labels.shape),
+                    center_labels,
+                    numpy.arange(
+                        1, numpy.max(center_labels) + 1, dtype=numpy.int32
+                    ),
+                )
+            )
+
+            good = pixel_counts > 0
+
+            i, j = (
+                centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
+            ).astype(int)
+
+            ig = i[good]
+
+            jg = j[good]
+
+            lg = numpy.arange(1, len(i) + 1)[good]
+
+            if center_choice == CenterChoice.CENTERS_OF_OTHER.value:
+                #
+                # Reduce the propagation labels to the centers of
+                # the centering objects
+                #
+                center_labels = numpy.zeros(center_labels.shape, int)
+
+                center_labels[ig, jg] = lg
+
+            cl, d_from_center = centrosome.propagate.propagate(
+                numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
+            )
+
+            #
+            # Erase the centers that fall outside of labels
+            #
+            cl[labels == 0] = 0
+
+            #
+            # If objects are hollow or crescent-shaped, there may be
+            # objects without center labels. As a backup, find the
+            # center that is the closest to the center of mass.
+            #
+            missing_mask = (labels != 0) & (cl == 0)
+
+            missing_labels = numpy.unique(labels[missing_mask])
+
+            if len(missing_labels):
+                all_centers = centrosome.cpmorphology.centers_of_labels(labels)
+
+                missing_i_centers, missing_j_centers = all_centers[
+                    :, missing_labels - 1
+                ]
+
+                di = missing_i_centers[:, numpy.newaxis] - ig[numpy.newaxis, :]
+
+                dj = missing_j_centers[:, numpy.newaxis] - jg[numpy.newaxis, :]
+
+                missing_best = lg[numpy.argsort(di * di + dj * dj)[:, 0]]
+
+                best = numpy.zeros(numpy.max(labels) + 1, int)
+
+                best[missing_labels] = missing_best
+
+                cl[missing_mask] = best[labels[missing_mask]]
+
+                #
+                # Now compute the crow-flies distance to the centers
+                # of these pixels from whatever center was assigned to
+                # the object.
+                #
+                iii, jjj = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+
+                di = iii[missing_mask] - i[cl[missing_mask] - 1]
+
+                dj = jjj[missing_mask] - j[cl[missing_mask] - 1]
+
+                d_from_center[missing_mask] = numpy.sqrt(di * di + dj * dj)
+        else:
+            # Find the point in each object farthest away from the edge.
+            # This does better than the centroid:
+            # * The center is within the object
+            # * The center tends to be an interesting point, like the
+            #   center of the nucleus or the center of one or the other
+            #   of two touching cells.
+            #
+            i, j = centrosome.cpmorphology.maximum_position_of_labels(
+                d_to_edge, labels, objects.indices
+            )
+
+            center_labels = numpy.zeros(labels.shape, int)
+
+            center_labels[i, j] = labels[i, j]
+
+            #
+            # Use the coloring trick here to process touching objects
+            # in separate operations
+            #
+            colors = centrosome.cpmorphology.color_labels(labels)
+
+            ncolors = numpy.max(colors)
+
+            d_from_center = numpy.zeros(labels.shape)
+
+            cl = numpy.zeros(labels.shape, int)
+
+            for color in range(1, ncolors + 1):
+                mask = colors == color
+                l, d = centrosome.propagate.propagate(
+                    numpy.zeros(center_labels.shape), center_labels, mask, 1
+                )
+
+                d_from_center[mask] = d[mask]
+
+                cl[mask] = l[mask]
+
+        good_mask = cl > 0
+
+        if center_choice == CenterChoice.EDGES_OF_OTHER.value:
+            # Exclude pixels within the centering objects
+            # when performing calculations from the centers
+            good_mask = good_mask & (center_labels == 0)
+
+        i_center = numpy.zeros(cl.shape)
+
+        i_center[good_mask] = i[cl[good_mask] - 1]
+
+        j_center = numpy.zeros(cl.shape)
+
+        j_center[good_mask] = j[cl[good_mask] - 1]
+
+        normalized_distance = numpy.zeros(labels.shape)
+
+        if wants_scaled:
+            total_distance = d_from_center + d_to_edge
+
+            normalized_distance[good_mask] = d_from_center[good_mask] / (
+                total_distance[good_mask] + 0.001
+            )
+        else:
+            normalized_distance[good_mask] = (
+                d_from_center[good_mask] / maximum_radius
+            )
+
+        return normalized_distance, i_center, j_center, good_mask
+
+    def compute_per_bin_distributions(
+        self, labels, pixel_data, good_mask, normalized_distance, bin_count, nobjects
+    ):
         ngood_pixels = numpy.sum(good_mask)
 
         good_labels = labels[good_mask]
@@ -1064,6 +1117,15 @@ be selected in a later **SaveImages** or other module.
             mean_pixel_fraction, ~object_mask
         )
 
+        return (
+            bin_indexes,
+            fraction_at_distance,
+            mean_pixel_fraction,
+            masked_fraction_at_distance,
+            masked_mean_pixel_fraction,
+        )
+
+    def compute_radial_indexes(self, labels, i_center, j_center, good_mask):
         # Anisotropy calculation.  Split each cell into eight wedges, then
         # compute coefficient of variation of the wedges' mean intensities
         # in each ring.
@@ -1081,6 +1143,40 @@ be selected in a later **SaveImages** or other module.
 
         radial_index = (
             imask.astype(int) + jmask.astype(int) * 2 + absmask.astype(int) * 4
+        )
+
+        return radial_index
+
+    def record_bin_measurements(
+        self,
+        workspace,
+        image_name,
+        object_name,
+        bin_count,
+        wants_scaled,
+        labels,
+        pixel_data,
+        nobjects,
+        normalized_distance,
+        i_center,
+        j_center,
+        good_mask,
+        heatmaps,
+    ):
+        measurements = workspace.measurements
+
+        (
+            bin_indexes,
+            fraction_at_distance,
+            mean_pixel_fraction,
+            masked_fraction_at_distance,
+            masked_mean_pixel_fraction,
+        ) = self.compute_per_bin_distributions(
+            labels, pixel_data, good_mask, normalized_distance, bin_count, nobjects
+        )
+
+        radial_index = self.compute_radial_indexes(
+            labels, i_center, j_center, good_mask
         )
 
         statistics = []
@@ -1162,29 +1258,12 @@ be selected in a later **SaveImages** or other module.
             self.zernike_degree.value + 1
         )
 
-        meas = workspace.measurements
-
         for o in self.objects:
             object_name = o.object_name.value
 
             objects = workspace.object_set.get_objects(object_name)
 
-            #
-            # First, get a table of centers and radii of minimum enclosing
-            # circles per object
-            #
-            ij = numpy.zeros((objects.count + 1, 2))
-
-            r = numpy.zeros(objects.count + 1)
-
-            for labels, indexes in objects.get_labels():
-                ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
-                    labels, indexes
-                )
-
-                ij[indexes] = ij_
-
-                r[indexes] = r_
+            ij, r = self.compute_minimum_enclosing_circles(objects)
 
             #
             # Then compute x and y, the position of each labeled pixel
@@ -1201,64 +1280,104 @@ be selected in a later **SaveImages** or other module.
             )
 
             for image_name in self.images_list.value:
-                image = workspace.image_set.get_image(
-                    image_name, must_be_grayscale=True
+                self.calculate_zernikes_for_image(
+                    workspace,
+                    image_name,
+                    object_name,
+                    objects,
+                    ijv,
+                    l,
+                    z,
+                    zernike_indexes,
                 )
 
-                pixels = image.pixel_data
+    def compute_minimum_enclosing_circles(self, objects):
+        #
+        # First, get a table of centers and radii of minimum enclosing
+        # circles per object
+        #
+        ij = numpy.zeros((objects.count + 1, 2))
 
-                mask = (ijv[:, 0] < pixels.shape[0]) & (ijv[:, 1] < pixels.shape[1])
+        r = numpy.zeros(objects.count + 1)
 
-                mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]
+        for labels, indexes in objects.get_labels():
+            ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
+                labels, indexes
+            )
 
-                yx_ = yx[mask, :]
+            ij[indexes] = ij_
 
-                l_ = l[mask]
+            r[indexes] = r_
 
-                z_ = z[mask, :]
+        return ij, r
 
-                if len(l_) == 0:
-                    for i, (n, m) in enumerate(zernike_indexes):
-                        ftr = self.get_zernike_magnitude_name(image_name, n, m)
+    def calculate_zernikes_for_image(
+        self,
+        workspace,
+        image_name,
+        object_name,
+        objects,
+        ijv,
+        l,
+        z,
+        zernike_indexes,
+    ):
+        meas = workspace.measurements
 
-                        meas[object_name, ftr] = numpy.zeros(0)
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-                        if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
-                            ftr = self.get_zernike_phase_name(image_name, n, m)
+        pixels = image.pixel_data
 
-                            meas[object_name, ftr] = numpy.zeros(0)
+        mask = (ijv[:, 0] < pixels.shape[0]) & (ijv[:, 1] < pixels.shape[1])
 
-                    continue
+        mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]
 
-                areas = scipy.ndimage.sum(
-                    numpy.ones(l_.shape, int), labels=l_, index=objects.indices
-                )
+        l_ = l[mask]
 
-                for i, (n, m) in enumerate(zernike_indexes):
-                    vr = scipy.ndimage.sum(
-                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
-                        labels=l_,
-                        index=objects.indices,
-                    )
+        z_ = z[mask, :]
 
-                    vi = scipy.ndimage.sum(
-                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
-                        labels=l_,
-                        index=objects.indices,
-                    )
+        if len(l_) == 0:
+            for i, (n, m) in enumerate(zernike_indexes):
+                ftr = self.get_zernike_magnitude_name(image_name, n, m)
 
-                    magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
+                meas[object_name, ftr] = numpy.zeros(0)
 
-                    ftr = self.get_zernike_magnitude_name(image_name, n, m)
+                if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
+                    ftr = self.get_zernike_phase_name(image_name, n, m)
 
-                    meas[object_name, ftr] = magnitude
+                    meas[object_name, ftr] = numpy.zeros(0)
 
-                    if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
-                        phase = numpy.arctan2(vr, vi)
+            return
 
-                        ftr = self.get_zernike_phase_name(image_name, n, m)
+        areas = scipy.ndimage.sum(
+            numpy.ones(l_.shape, int), labels=l_, index=objects.indices
+        )
 
-                        meas[object_name, ftr] = phase
+        for i, (n, m) in enumerate(zernike_indexes):
+            vr = scipy.ndimage.sum(
+                pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
+                labels=l_,
+                index=objects.indices,
+            )
+
+            vi = scipy.ndimage.sum(
+                pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
+                labels=l_,
+                index=objects.indices,
+            )
+
+            magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
+
+            ftr = self.get_zernike_magnitude_name(image_name, n, m)
+
+            meas[object_name, ftr] = magnitude
+
+            if self.wants_zernikes == ZernikeMode.MAGNITUDES_AND_PHASE.value:
+                phase = numpy.arctan2(vr, vi)
+
+                ftr = self.get_zernike_phase_name(image_name, n, m)
+
+                meas[object_name, ftr] = phase
 
     def get_zernike_magnitude_name(self, image_name, n, m):
         """The feature name of the magnitude of a Zernike moment

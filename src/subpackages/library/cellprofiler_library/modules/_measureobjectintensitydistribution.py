@@ -11,6 +11,7 @@ from numpy.typing import NDArray
 from pydantic import ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.object_processing import size_similarly
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
     C_RADIAL_DISTRIBUTION,
     CenterChoice,
@@ -447,6 +448,7 @@ def compute_minimum_enclosing_circles(label_indexes_pairs, n_objects):
 
 def calculate_zernikes_for_image(
     image_name,
+    object_name,
     indices,
     pixels,
     image_mask,
@@ -456,6 +458,8 @@ def calculate_zernikes_for_image(
     zernike_indexes,
     wants_phase,
 ):
+    lib_measurements = LibraryMeasurements()
+
     mask = (ijv[:, 0] < pixels.shape[0]) & (ijv[:, 1] < pixels.shape[1])
 
     mask[mask] = image_mask[ijv[mask, 0], ijv[mask, 1]]
@@ -464,20 +468,22 @@ def calculate_zernikes_for_image(
 
     z_ = z[mask, :]
 
-    measurement_pairs = []
-
     if len(l_) == 0:
         for i, (n, m) in enumerate(zernike_indexes):
-            measurement_pairs.append(
-                (get_zernike_magnitude_name(image_name, n, m), numpy.zeros(0))
+            lib_measurements.add_measurement(
+                object_name,
+                get_zernike_magnitude_name(image_name, n, m),
+                numpy.zeros(0),
             )
 
             if wants_phase:
-                measurement_pairs.append(
-                    (get_zernike_phase_name(image_name, n, m), numpy.zeros(0))
+                lib_measurements.add_measurement(
+                    object_name,
+                    get_zernike_phase_name(image_name, n, m),
+                    numpy.zeros(0),
                 )
 
-        return measurement_pairs
+        return lib_measurements
 
     areas = scipy.ndimage.sum(
         numpy.ones(l_.shape, int), labels=l_, index=indices
@@ -498,18 +504,22 @@ def calculate_zernikes_for_image(
 
         magnitude = numpy.sqrt(vr * vr + vi * vi) / areas
 
-        measurement_pairs.append(
-            (get_zernike_magnitude_name(image_name, n, m), magnitude)
+        lib_measurements.add_measurement(
+            object_name,
+            get_zernike_magnitude_name(image_name, n, m),
+            magnitude,
         )
 
         if wants_phase:
             phase = numpy.arctan2(vr, vi)
 
-            measurement_pairs.append(
-                (get_zernike_phase_name(image_name, n, m), phase)
+            lib_measurements.add_measurement(
+                object_name,
+                get_zernike_phase_name(image_name, n, m),
+                phase,
             )
 
-    return measurement_pairs
+    return lib_measurements
 
 
 CenterDistanceCache = Tuple[
@@ -583,21 +593,21 @@ def measureobjectintensitydistribution(
         ),
     ] = None,
 ) -> Tuple[
+    LibraryMeasurements,
     List[StatsRow],
-    List[Tuple[str, NDArray]],
     Dict[str, NDArray[numpy.float_]],
     Optional[CenterDistanceCache],
 ]:
     """Compute the radial intensity distribution for one (image, object, bin_count) triple.
 
     Returns a 4-tuple:
+      - lib_measurements: ``LibraryMeasurements`` with per-object measurements
+        keyed under ``object_name``.
       - statistics: display rows, one per bin (+ overflow if unscaled).
-      - measurement_pairs: list of (feature_name, value_array) to be added to
-        the measurements store under `object_name`.
       - heatmap_arrays: dict keyed by the requested feature templates,
         mapping each to a 2D heatmap array (zeros if no objects).
       - center_distances: the cache tuple to feed back as
-        `cached_center_distances` on the next call sharing this
+        ``cached_center_distances`` on the next call sharing this
         (object, center) pair.
     """
     if heatmap_feature_templates is None:
@@ -608,13 +618,22 @@ def measureobjectintensitydistribution(
         for template in heatmap_feature_templates
     }
 
+    lib_measurements = LibraryMeasurements()
+
     nobjects = int(numpy.max(object_labels))
 
     if nobjects == 0:
         stats_row, measurement_pairs = record_empty_object_measurements(
             image_name, object_name, bin_count, wants_scaled
         )
-        return [stats_row], measurement_pairs, heatmap_arrays, cached_center_distances
+        for feature_name, value in measurement_pairs:
+            lib_measurements.add_measurement(object_name, feature_name, value)
+        return (
+            lib_measurements,
+            [stats_row],
+            heatmap_arrays,
+            cached_center_distances,
+        )
 
     if cached_center_distances is None:
         cached_center_distances = compute_center_distances(
@@ -643,4 +662,7 @@ def measureobjectintensitydistribution(
         heatmap_arrays,
     )
 
-    return statistics, measurement_pairs, heatmap_arrays, cached_center_distances
+    for feature_name, value in measurement_pairs:
+        lib_measurements.add_measurement(object_name, feature_name, value)
+
+    return lib_measurements, statistics, heatmap_arrays, cached_center_distances

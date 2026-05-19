@@ -827,7 +827,7 @@ be selected in a later **SaveImages** or other module.
             else "{}_{}".format(object_name, center_object_name)
         )
 
-        statistics, measurement_pairs, heatmap_arrays, cached = measureobjectintensitydistribution(
+        lib_measurements, statistics, heatmap_arrays, cached = measureobjectintensitydistribution(
             pixel_data=pixel_data,
             image_name=image_name,
             object_labels=labels,
@@ -844,9 +844,9 @@ be selected in a later **SaveImages** or other module.
 
         distance_cache[cache_key] = cached
 
-        measurements = workspace.measurements
-        for feature_name, value in measurement_pairs:
-            measurements.add_measurement(object_name, feature_name, value)
+        m = workspace.measurements
+        for feature_name, value in lib_measurements.objects.get(object_name, {}).items():
+            m.add_measurement(object_name, feature_name, value)
 
         for template, heatmap_id in heatmap_template_to_id.items():
             heatmap_outputs[heatmap_id] = heatmap_arrays[template]
@@ -894,8 +894,9 @@ be selected in a later **SaveImages** or other module.
                     image_name, must_be_grayscale=True
                 )
 
-                measurement_pairs = calculate_zernikes_for_image(
+                lib_measurements = calculate_zernikes_for_image(
                     image_name,
+                    object_name,
                     objects.indices,
                     image.pixel_data,
                     image.mask,
@@ -906,8 +907,8 @@ be selected in a later **SaveImages** or other module.
                     wants_phase,
                 )
 
-                for feature_name, value in measurement_pairs:
-                    meas[object_name, feature_name] = value
+                for feature_name, value in lib_measurements.objects.get(object_name, {}).items():
+                    meas.add_measurement(object_name, feature_name, value)
 
     def get_zernike_magnitude_name(self, image_name, n, m):
         return get_zernike_magnitude_name(image_name, n, m)

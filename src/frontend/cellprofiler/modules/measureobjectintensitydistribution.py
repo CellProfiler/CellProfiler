@@ -25,12 +25,10 @@ from cellprofiler_core.utilities.core.object import crop_labels_and_image
 
 from cellprofiler_library.modules._measureobjectintensitydistribution import (
     calculate_zernikes_for_image,
-    compute_center_distances,
     compute_minimum_enclosing_circles,
     get_zernike_magnitude_name,
     get_zernike_phase_name,
-    record_bin_measurements,
-    record_empty_object_measurements,
+    measureobjectintensitydistribution,
 )
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
     C_RADIAL_DISTRIBUTION,
@@ -635,21 +633,23 @@ be selected in a later **SaveImages** or other module.
 
         stats = []
 
-        d = {}
+        distance_cache = {}
+        heatmap_outputs = {}
 
-        for image in self.images_list.value:
+        for image_name in self.images_list.value:
             for o in self.objects:
                 for bin_count_settings in self.bin_counts:
                     stats += self.do_measurements(
                         workspace,
-                        image,
+                        image_name,
                         o.object_name.value,
                         o.center_object_name.value
                         if o.center_choice != CenterChoice.SELF.value
                         else None,
                         o.center_choice.value,
                         bin_count_settings,
-                        d,
+                        distance_cache,
+                        heatmap_outputs,
                     )
 
         if self.wants_zernikes != ZernikeMode.NONE.value:
@@ -663,7 +663,7 @@ be selected in a later **SaveImages** or other module.
             workspace.display_data.heatmaps = []
 
         for heatmap in self.heatmaps:
-            heatmap_img = d.get(id(heatmap))
+            heatmap_img = heatmap_outputs.get(id(heatmap))
 
             if heatmap_img is not None:
                 self.handle_heatmap_output(workspace, heatmap, heatmap_img)
@@ -784,27 +784,19 @@ be selected in a later **SaveImages** or other module.
         center_object_name,
         center_choice,
         bin_count_settings,
-        dd,
+        distance_cache,
+        heatmap_outputs,
     ):
-        """Perform the radial measurements on the image set
+        """Gather inputs from workspace and delegate to the library function.
 
-        workspace - workspace that holds images / objects
-        image_name - make measurements on this image
-        object_name - make measurements on these objects
-        center_object_name - use the centers of these related objects as
-                      the centers for radial measurements. None to use the
-                      objects themselves.
-        center_choice - the user's center choice for this object's group.
-        bin_count_settings - the bin count settings group
-        dd - a dictionary for saving reusable partial results
+        Records measurements onto workspace.measurements and stores any
+        heatmap arrays under id(heatmap) in heatmap_outputs.
 
-        returns one statistics tuple per ring.
+        distance_cache is keyed by (object_name [+ "_" + center_object_name])
+        so center-distance computations are reused across bin_count and image
+        iterations for the same object pair.
         """
         bin_count = bin_count_settings.bin_count.value
-
-        wants_scaled = bin_count_settings.wants_scaled.value
-
-        maximum_radius = bin_count_settings.maximum_radius.value
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
@@ -812,75 +804,52 @@ be selected in a later **SaveImages** or other module.
 
         labels, pixel_data = crop_labels_and_image(objects.segmented, image.pixel_data)
 
-        nobjects = numpy.max(objects.segmented)
+        if center_object_name is not None:
+            center_object_labels = workspace.object_set.get_objects(
+                center_object_name
+            ).segmented
+        else:
+            center_object_labels = None
 
-        measurements = workspace.measurements
-
-        heatmaps = {}
-
+        heatmap_template_to_id = {}
         for heatmap in self.heatmaps:
             if (
                 heatmap.object_name.get_objects_name() == object_name
-                and image_name == heatmap.image_name.get_image_name()
+                and heatmap.image_name.get_image_name() == image_name 
                 and heatmap.get_number_of_bins() == bin_count
             ):
+                template = MEASUREMENT_ALIASES[heatmap.measurement.value]
+                heatmap_template_to_id[template] = id(heatmap)
 
-                dd[id(heatmap)] = heatmaps[
-                    MEASUREMENT_ALIASES[heatmap.measurement.value]
-                ] = numpy.zeros(labels.shape)
-
-        if nobjects == 0:
-            stats_row, measurement_pairs = record_empty_object_measurements(
-                image_name, object_name, bin_count, wants_scaled
-            )
-            for feature_name, value in measurement_pairs:
-                measurements.add_measurement(object_name, feature_name, value)
-            return [stats_row]
-
-        name = (
+        cache_key = (
             object_name
             if center_object_name is None
             else "{}_{}".format(object_name, center_object_name)
         )
 
-        if name in dd:
-            normalized_distance, i_center, j_center, good_mask = dd[name]
-        else:
-            if center_object_name is not None:
-                center_objects_segmented = workspace.object_set.get_objects(
-                    center_object_name
-                ).segmented
-            else:
-                center_objects_segmented = None
-
-            normalized_distance, i_center, j_center, good_mask = compute_center_distances(
-                labels,
-                objects.indices,
-                center_objects_segmented,
-                center_choice,
-                wants_scaled,
-                maximum_radius,
-            )
-
-            dd[name] = [normalized_distance, i_center, j_center, good_mask]
-
-        statistics, measurement_pairs = record_bin_measurements(
-            image_name,
-            object_name,
-            bin_count,
-            wants_scaled,
-            labels,
-            pixel_data,
-            nobjects,
-            normalized_distance,
-            i_center,
-            j_center,
-            good_mask,
-            heatmaps,
+        statistics, measurement_pairs, heatmap_arrays, cached = measureobjectintensitydistribution(
+            pixel_data=pixel_data,
+            image_name=image_name,
+            object_labels=labels,
+            object_name=object_name,
+            objects_indices=objects.indices,
+            center_choice=center_choice,
+            bin_count=bin_count,
+            wants_scaled=bin_count_settings.wants_scaled.value,
+            maximum_radius=bin_count_settings.maximum_radius.value,
+            center_object_labels=center_object_labels,
+            heatmap_feature_templates=list(heatmap_template_to_id.keys()),
+            cached_center_distances=distance_cache.get(cache_key),
         )
 
+        distance_cache[cache_key] = cached
+
+        measurements = workspace.measurements
         for feature_name, value in measurement_pairs:
             measurements.add_measurement(object_name, feature_name, value)
+
+        for template, heatmap_id in heatmap_template_to_id.items():
+            heatmap_outputs[heatmap_id] = heatmap_arrays[template]
 
         return statistics
 

@@ -1,3 +1,5 @@
+from typing import Annotated, Any, Dict, List, Optional, Tuple
+
 import centrosome.cpmorphology
 import centrosome.propagate
 import centrosome.zernike
@@ -5,6 +7,8 @@ import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
+from numpy.typing import NDArray
+from pydantic import ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
@@ -16,6 +20,7 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     F_ALL,
     TemplateMeasurementFormat,
 )
+from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
 
 
 def get_zernike_magnitude_name(image_name, n, m):
@@ -505,3 +510,137 @@ def calculate_zernikes_for_image(
             )
 
     return measurement_pairs
+
+
+CenterDistanceCache = Tuple[
+    NDArray[numpy.float_],
+    NDArray[numpy.float_],
+    NDArray[numpy.float_],
+    NDArray[numpy.bool_],
+]
+
+StatsRow = Tuple[str, str, str, str, Any, Any, Any]
+
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def measureobjectintensitydistribution(
+    pixel_data: Annotated[
+        ImageGrayscale,
+        Field(description="Pixel array for the image, cropped to the object label matrix."),
+    ],
+    image_name: Annotated[
+        str, Field(description="Name of the image being measured.")
+    ],
+    object_labels: Annotated[
+        NDArray[numpy.int_],
+        Field(
+            description="2D label matrix of objects to measure, cropped to the pixel array shape."
+        ),
+    ],
+    object_name: Annotated[
+        str, Field(description="Name of the object set being measured.")
+    ],
+    objects_indices: Annotated[
+        NDArray[numpy.int_],
+        Field(description="1D array of object label indices present in object_labels."),
+    ],
+    center_choice: Annotated[
+        CenterChoice,
+        Field(description="How to choose object centers: SELF, CENTERS_OF_OTHER, or EDGES_OF_OTHER."),
+    ],
+    bin_count: Annotated[
+        int, Field(description="Number of radial bins.", ge=1)
+    ],
+    wants_scaled: Annotated[
+        bool,
+        Field(
+            description="If True, scale bins to each object's radius. If False, use fixed-width bins up to maximum_radius."
+        ),
+    ],
+    maximum_radius: Annotated[
+        int,
+        Field(
+            description="Maximum radius (in pixels) for unscaled binning. Beyond this distance, pixels are counted in an overflow bin.",
+            ge=1,
+        ),
+    ],
+    center_object_labels: Annotated[
+        Optional[NDArray[numpy.int_]],
+        Field(
+            description="2D label matrix of centering objects (for CENTERS_OF_OTHER / EDGES_OF_OTHER). None when using SELF."
+        ),
+    ] = None,
+    heatmap_feature_templates: Annotated[
+        Optional[List[str]],
+        Field(
+            description="List of TemplateMeasurementFormat values (e.g. RD_FRAC_AT_D) for which to populate heatmap arrays."
+        ),
+    ] = None,
+    cached_center_distances: Annotated[
+        Optional[CenterDistanceCache],
+        Field(
+            description="Pre-computed (normalized_distance, i_center, j_center, good_mask) tuple to skip distance recomputation across repeated calls for the same object set."
+        ),
+    ] = None,
+) -> Tuple[
+    List[StatsRow],
+    List[Tuple[str, NDArray]],
+    Dict[str, NDArray[numpy.float_]],
+    Optional[CenterDistanceCache],
+]:
+    """Compute the radial intensity distribution for one (image, object, bin_count) triple.
+
+    Returns a 4-tuple:
+      - statistics: display rows, one per bin (+ overflow if unscaled).
+      - measurement_pairs: list of (feature_name, value_array) to be added to
+        the measurements store under `object_name`.
+      - heatmap_arrays: dict keyed by the requested feature templates,
+        mapping each to a 2D heatmap array (zeros if no objects).
+      - center_distances: the cache tuple to feed back as
+        `cached_center_distances` on the next call sharing this
+        (object, center) pair.
+    """
+    if heatmap_feature_templates is None:
+        heatmap_feature_templates = []
+
+    heatmap_arrays = {
+        template: numpy.zeros(object_labels.shape)
+        for template in heatmap_feature_templates
+    }
+
+    nobjects = int(numpy.max(object_labels))
+
+    if nobjects == 0:
+        stats_row, measurement_pairs = record_empty_object_measurements(
+            image_name, object_name, bin_count, wants_scaled
+        )
+        return [stats_row], measurement_pairs, heatmap_arrays, cached_center_distances
+
+    if cached_center_distances is None:
+        cached_center_distances = compute_center_distances(
+            object_labels,
+            objects_indices,
+            center_object_labels,
+            center_choice,
+            wants_scaled,
+            maximum_radius,
+        )
+
+    normalized_distance, i_center, j_center, good_mask = cached_center_distances
+
+    statistics, measurement_pairs = record_bin_measurements(
+        image_name,
+        object_name,
+        bin_count,
+        wants_scaled,
+        object_labels,
+        pixel_data,
+        nobjects,
+        normalized_distance,
+        i_center,
+        j_center,
+        good_mask,
+        heatmap_arrays,
+    )
+
+    return statistics, measurement_pairs, heatmap_arrays, cached_center_distances

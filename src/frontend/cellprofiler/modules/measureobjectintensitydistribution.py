@@ -1,4 +1,3 @@
-import centrosome.zernike
 import matplotlib.cm
 import numpy
 import numpy.ma
@@ -25,10 +24,10 @@ from cellprofiler_core.utilities.core.object import crop_labels_and_image
 
 from cellprofiler_library.modules._measureobjectintensitydistribution import (
     calculate_zernikes_for_image,
-    compute_minimum_enclosing_circles,
     get_zernike_magnitude_name,
     get_zernike_phase_name,
     measureobjectintensitydistribution,
+    prepare_object_zernike_polynomials,
 )
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
     C_RADIAL_DISTRIBUTION,
@@ -39,12 +38,12 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     Z_ALL,
     Feature,
     F_ALL,
-    MeasurementChoice,
     MEASUREMENT_CHOICES,
     MEASUREMENT_ALIASES,
     FF_SCALE,
     FF_OVERFLOW,
     TemplateMeasurementFormat,
+    get_zernike_indexes,
 )
 
 import cellprofiler.gui.help.content
@@ -815,7 +814,7 @@ be selected in a later **SaveImages** or other module.
         for heatmap in self.heatmaps:
             if (
                 heatmap.object_name.get_objects_name() == object_name
-                and heatmap.image_name.get_image_name() == image_name 
+                and heatmap.image_name.get_image_name() == image_name
                 and heatmap.get_number_of_bins() == bin_count
             ):
                 template = MEASUREMENT_ALIASES[heatmap.measurement.value]
@@ -827,7 +826,11 @@ be selected in a later **SaveImages** or other module.
             else "{}_{}".format(object_name, center_object_name)
         )
 
-        lib_measurements, statistics, heatmap_arrays, cached = measureobjectintensitydistribution(
+        wants_lib_display = self.show_window or any(
+            h.wants_to_save_display.value for h in self.heatmaps
+        )
+
+        res = measureobjectintensitydistribution(
             pixel_data=pixel_data,
             image_name=image_name,
             object_labels=labels,
@@ -840,7 +843,17 @@ be selected in a later **SaveImages** or other module.
             center_object_labels=center_object_labels,
             heatmap_feature_templates=list(heatmap_template_to_id.keys()),
             cached_center_distances=distance_cache.get(cache_key),
+            return_visualization_data=wants_lib_display,
         )
+
+        if wants_lib_display:
+            lib_measurements, lib_display, cached = res
+            statistics = lib_display.statistics
+            heatmap_arrays = lib_display.heatmap_arrays
+        else:
+            lib_measurements, cached = res
+            statistics = []
+            heatmap_arrays = {}
 
         distance_cache[cache_key] = cached
 
@@ -849,15 +862,12 @@ be selected in a later **SaveImages** or other module.
             m.add_measurement(object_name, feature_name, value)
 
         for template, heatmap_id in heatmap_template_to_id.items():
-            heatmap_outputs[heatmap_id] = heatmap_arrays[template]
+            if template in heatmap_arrays:
+                heatmap_outputs[heatmap_id] = heatmap_arrays[template]
 
         return statistics
 
     def calculate_zernikes(self, workspace):
-        zernike_indexes = centrosome.zernike.get_zernike_indexes(
-            self.zernike_degree.value + 1
-        )
-
         meas = workspace.measurements
 
         wants_phase = (
@@ -869,24 +879,13 @@ be selected in a later **SaveImages** or other module.
 
             objects = workspace.object_set.get_objects(object_name)
 
-            label_indexes_pairs = list(objects.get_labels())
-
-            ij, r = compute_minimum_enclosing_circles(
-                label_indexes_pairs, objects.count
-            )
-
-            #
-            # Then compute x and y, the position of each labeled pixel
-            # within a unit circle around the object
-            #
             ijv = objects.ijv
 
-            l = ijv[:, 2]
-
-            yx = (ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
-
-            z = centrosome.zernike.construct_zernike_polynomials(
-                yx[:, 1], yx[:, 0], zernike_indexes
+            l, z, zernike_indexes = prepare_object_zernike_polynomials(
+                list(objects.get_labels()),
+                objects.count,
+                ijv,
+                self.zernike_degree.value,
             )
 
             for image_name in self.images_list.value:
@@ -965,9 +964,7 @@ be selected in a later **SaveImages** or other module.
                         max_n = self.zernike_degree.value
 
                         for name_fn in name_fns:
-                            for n, m in centrosome.zernike.get_zernike_indexes(
-                                max_n + 1
-                            ):
+                            for n, m in get_zernike_indexes(max_n + 1):
                                 ftr = name_fn(image_name, n, m)
 
                                 columns.append((object_name, ftr, COLTYPE_FLOAT,))
@@ -1008,7 +1005,7 @@ be selected in a later **SaveImages** or other module.
 
                 result = [
                     "{}_{}".format(n, m)
-                    for n, m in centrosome.zernike.get_zernike_indexes(n_max + 1)
+                    for n, m in get_zernike_indexes(n_max + 1)
                 ]
             else:
                 result = [

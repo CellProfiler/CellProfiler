@@ -13,6 +13,7 @@ import centrosome.cpmorphology
 import centrosome.threshold
 import centrosome.haralick
 import centrosome.radial_power_spectrum
+import centrosome.zernike
 from centrosome.outline import outline
 from functools import reduce
 from sklearn.cluster import KMeans
@@ -3695,3 +3696,33 @@ def compute_minimum_enclosing_circles(label_indexes_pairs, n_objects):
         r[indexes] = r_
 
     return ij, r
+
+
+def prepare_object_zernike_polynomials(
+    label_indexes_pairs, n_objects, ijv, zernike_degree
+):
+    """Build per-pixel Zernike polynomial values for one object set.
+
+    For each labeled pixel in ``ijv``, computes its normalized position
+    inside its object's minimum enclosing circle, then evaluates all
+    Zernike polynomials up to ``zernike_degree`` at that position.
+
+    Returns ``(l, z, zernike_indexes)`` where ``l`` is the per-pixel
+    label vector (= ``ijv[:, 2]``), ``z`` is the
+    ``(n_pixels, n_zernikes)`` complex matrix of polynomial values, and
+    ``zernike_indexes`` is the list of ``(n, m)`` pairs identifying each
+    column of ``z``.
+    """
+    ij, r = compute_minimum_enclosing_circles(label_indexes_pairs, n_objects)
+
+    l = ijv[:, 2]
+
+    yx = (ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
+
+    zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
+
+    z = centrosome.zernike.construct_zernike_polynomials(
+        yx[:, 1], yx[:, 0], zernike_indexes
+    )
+
+    return l, z, zernike_indexes

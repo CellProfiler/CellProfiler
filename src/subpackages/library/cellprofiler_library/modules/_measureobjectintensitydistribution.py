@@ -1,17 +1,18 @@
-from typing import Annotated, Any, Dict, List, Optional, Tuple
+from typing import Annotated, Any, Dict, List, Optional, Tuple, Union
 
 import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
 from numpy.typing import NDArray
-from pydantic import ConfigDict, Field, validate_call
+from pydantic import BaseModel, ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.measurement import (
     compute_center_distances as _compute_center_distances,
     compute_minimum_enclosing_circles,
     compute_per_bin_distributions,
     compute_radial_indexes,
+    prepare_object_zernike_polynomials,
 )
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
@@ -303,6 +304,26 @@ CenterDistanceCache = Tuple[
 ]
 
 StatsRow = Tuple[str, str, str, str, Any, Any, Any]
+MeasureObjectIntensityDistributionStatistics = List[StatsRow]
+
+
+class MeasureObjectIntensityDistributionDisplayData(BaseModel):
+    """Display-data bundle produced when ``return_visualization_data=True``.
+
+    Holds the per-bin statistics table (one row per bin, plus an overflow
+    row when unscaled) and the populated heatmap arrays keyed by the
+    feature template strings that were requested via
+    ``heatmap_feature_templates``.
+    """
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, populate_by_name=True
+    )
+
+    statistics: MeasureObjectIntensityDistributionStatistics = Field(
+        default_factory=list
+    )
+    heatmap_arrays: Dict[str, NDArray[numpy.float_]] = Field(default_factory=dict)
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -365,23 +386,31 @@ def measureobjectintensitydistribution(
             description="Pre-computed (normalized_distance, i_center, j_center, good_mask) tuple to skip distance recomputation across repeated calls for the same object set."
         ),
     ] = None,
-) -> Tuple[
-    LibraryMeasurements,
-    List[StatsRow],
-    Dict[str, NDArray[numpy.float_]],
-    Optional[CenterDistanceCache],
+    return_visualization_data: Annotated[
+        bool,
+        Field(
+            description="If True, also return a MeasureObjectIntensityDistributionDisplayData with the statistics table and heatmap arrays."
+        ),
+    ] = False,
+) -> Union[
+    Tuple[LibraryMeasurements, Optional[CenterDistanceCache]],
+    Tuple[
+        LibraryMeasurements,
+        MeasureObjectIntensityDistributionDisplayData,
+        Optional[CenterDistanceCache],
+    ],
 ]:
     """Compute the radial intensity distribution for one (image, object, bin_count) triple.
 
-    Returns a 4-tuple:
-      - lib_measurements: ``LibraryMeasurements`` with per-object measurements
-        keyed under ``object_name``.
-      - statistics: display rows, one per bin (+ overflow if unscaled).
-      - heatmap_arrays: dict keyed by the requested feature templates,
-        mapping each to a 2D heatmap array (zeros if no objects).
-      - center_distances: the cache tuple to feed back as
-        ``cached_center_distances`` on the next call sharing this
-        (object, center) pair.
+    Returns:
+      - When ``return_visualization_data`` is False (default):
+        ``(lib_measurements, cached_center_distances)``.
+      - When True: ``(lib_measurements, display_data, cached_center_distances)``
+        where ``display_data`` holds the per-bin statistics table and the
+        populated heatmap arrays.
+
+    The cache tuple is always returned so the caller can feed it back into
+    the next call sharing the same (object, center) pair.
     """
     if heatmap_feature_templates is None:
         heatmap_feature_templates = []
@@ -401,12 +430,16 @@ def measureobjectintensitydistribution(
         )
         for feature_name, value in measurement_pairs:
             lib_measurements.add_measurement(object_name, feature_name, value)
-        return (
-            lib_measurements,
-            [stats_row],
-            heatmap_arrays,
-            cached_center_distances,
-        )
+
+        if return_visualization_data:
+            return (
+                lib_measurements,
+                MeasureObjectIntensityDistributionDisplayData(
+                    statistics=[stats_row], heatmap_arrays=heatmap_arrays
+                ),
+                cached_center_distances,
+            )
+        return lib_measurements, cached_center_distances
 
     if cached_center_distances is None:
         cached_center_distances = compute_center_distances(
@@ -438,4 +471,13 @@ def measureobjectintensitydistribution(
     for feature_name, value in measurement_pairs:
         lib_measurements.add_measurement(object_name, feature_name, value)
 
-    return lib_measurements, statistics, heatmap_arrays, cached_center_distances
+    if return_visualization_data:
+        return (
+            lib_measurements,
+            MeasureObjectIntensityDistributionDisplayData(
+                statistics=statistics, heatmap_arrays=heatmap_arrays
+            ),
+            cached_center_distances,
+        )
+
+    return lib_measurements, cached_center_distances

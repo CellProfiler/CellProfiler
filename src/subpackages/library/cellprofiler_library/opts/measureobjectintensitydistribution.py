@@ -1,5 +1,7 @@
 from enum import Enum
 
+from centrosome.zernike import get_zernike_indexes
+
 """Root module measurement category"""
 C_RADIAL_DISTRIBUTION = "RadialDistribution"
 

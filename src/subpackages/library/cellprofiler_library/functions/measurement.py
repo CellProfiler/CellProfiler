@@ -31,7 +31,7 @@ from cellprofiler_library.functions.image_processing import masked_erode, restor
 from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.functions.segmentation import relate_labels
 
-from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV, Image2DBinary, Image2DColor, Image2DGrayscale
+from cellprofiler_library.types import Pixel, ObjectLabel, ImageGrayscale, ImageGrayscaleMask, ImageAny, ImageBinary, ImageBinaryMask, ObjectSegmentation, ObjectLabelsDense, ObjectLabelSet, ObjectSegmentationIJV, Image2DBinary, Image2DColor, Image2DGrayscale, ObjectLabelMask
 from cellprofiler_library.opts.objectsizeshapefeatures import get_zernike_indexes
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as ObjectDecimationMethod
@@ -3447,14 +3447,19 @@ def measure_object_neighbors(
 
 
 def compute_center_distances(
-    labels,
-    objects_indices,
-    center_objects_segmented,
-    use_centers_of_other,
-    use_edges_of_other,
-    wants_scaled,
-    maximum_radius,
-):
+    labels: ObjectSegmentation,
+    objects_indices: NDArray[numpy.int_],
+    center_objects_segmented: Optional[ObjectSegmentation],
+    use_centers_of_other: bool,
+    use_edges_of_other: bool,
+    wants_scaled: bool,
+    maximum_radius: int,
+) -> Tuple[
+        NDArray[numpy.float_],
+        NDArray[numpy.float_],
+        NDArray[numpy.float_],
+        NDArray[numpy.bool_]
+    ]:
     """Compute per-pixel normalized distances from each object's center.
 
     When ``center_objects_segmented`` is None, the center of each object is
@@ -3592,38 +3597,49 @@ def compute_center_distances(
 
 
 def compute_per_bin_distributions(
-    labels, pixel_data, good_mask, normalized_distance, bin_count, nobjects
-):
+    labels: ObjectSegmentation,
+    pixel_data: ImageGrayscale,
+    good_mask: ObjectLabelMask,
+    normalized_distance: NDArray[numpy.float_],
+    bin_count: int,
+    nobjects: int,
+) -> Tuple[
+        NDArray[numpy.int_],
+        NDArray[Union[numpy.float32, numpy.float64]],
+        NDArray[Union[numpy.float32, numpy.float64]],
+        NDArray[Union[numpy.float32, numpy.float64]],
+        NDArray[Union[numpy.float32, numpy.float64]],
+    ]:
     """Compute per-(object, bin) intensity-fraction matrices.
 
     Returns ``(bin_indexes, fraction_at_distance, mean_pixel_fraction,
     masked_fraction_at_distance, masked_mean_pixel_fraction)``.
     """
-    ngood_pixels = numpy.sum(good_mask)
+    ngood_pixels: numpy.int_ = numpy.sum(good_mask)
 
     good_labels = labels[good_mask]
 
-    bin_indexes = (normalized_distance * bin_count).astype(int)
+    bin_indexes: NDArray[numpy.int_] = (normalized_distance * bin_count).astype(int)
 
     bin_indexes[bin_indexes > bin_count] = bin_count
 
     labels_and_bins = (good_labels - 1, bin_indexes[good_mask])
 
-    histogram = scipy.sparse.coo_matrix(
+    histogram: NDArray[Union[numpy.float32, numpy.float64]] = scipy.sparse.coo_matrix(
         (pixel_data[good_mask], labels_and_bins), (nobjects, bin_count + 1)
     ).toarray()
 
-    sum_by_object = numpy.sum(histogram, 1)
+    sum_by_object: NDArray[Union[numpy.float32, numpy.float64]] = numpy.sum(histogram, 1)
 
-    sum_by_object_per_bin = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
+    sum_by_object_per_bin: NDArray[Union[numpy.float32, numpy.float64]] = numpy.dstack([sum_by_object] * (bin_count + 1))[0]
 
-    fraction_at_distance = histogram / sum_by_object_per_bin
+    fraction_at_distance: NDArray[Union[numpy.float32, numpy.float64]] = histogram / sum_by_object_per_bin
 
-    number_at_distance = scipy.sparse.coo_matrix(
+    number_at_distance: NDArray[Union[numpy.float32, numpy.float64]] = scipy.sparse.coo_matrix(
         (numpy.ones(ngood_pixels), labels_and_bins), (nobjects, bin_count + 1)
     ).toarray()
 
-    object_mask = number_at_distance > 0
+    object_mask: NDArray[Union[numpy.float32, numpy.float64]] = number_at_distance > 0
 
     sum_by_object = numpy.sum(number_at_distance, 1)
 
@@ -3652,7 +3668,12 @@ def compute_per_bin_distributions(
     )
 
 
-def compute_radial_indexes(labels, i_center, j_center, good_mask):
+def compute_radial_indexes(
+    labels: ObjectSegmentation,
+    i_center: NDArray[numpy.float_],
+    j_center: NDArray[numpy.float_],
+    good_mask: ObjectLabelMask,
+) -> NDArray[numpy.int_]:
     """Assign each good-mask pixel to one of 8 angular wedges around its center.
 
     Used by the radial CV computation.
@@ -3674,7 +3695,13 @@ def compute_radial_indexes(labels, i_center, j_center, good_mask):
     return radial_index
 
 
-def compute_minimum_enclosing_circles(label_indexes_pairs, n_objects):
+def compute_minimum_enclosing_circles(
+    label_indexes_pairs: ObjectLabelSet,
+    n_objects: int,
+) -> Tuple[
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+    ]:
     """For each object, compute (i, j) center and radius of the minimum enclosing circle.
 
     ``label_indexes_pairs`` is a list of ``(labels_array, indexes_array)``
@@ -3699,8 +3726,15 @@ def compute_minimum_enclosing_circles(label_indexes_pairs, n_objects):
 
 
 def prepare_object_zernike_polynomials(
-    label_indexes_pairs, n_objects, ijv, zernike_degree
-):
+    label_indexes_pairs: ObjectLabelSet,
+    n_objects: int,
+    ijv: ObjectSegmentationIJV,
+    zernike_degree: int,
+) -> Tuple[
+        NDArray[ObjectLabel],
+        NDArray[numpy.complex128],
+        NDArray[numpy.int32],
+    ]:
     """Build per-pixel Zernike polynomial values for one object set.
 
     For each labeled pixel in ``ijv``, computes its normalized position
@@ -3715,14 +3749,14 @@ def prepare_object_zernike_polynomials(
     """
     ij, r = compute_minimum_enclosing_circles(label_indexes_pairs, n_objects)
 
-    l = ijv[:, 2]
+    label_vec = ijv[:, 2]
 
-    yx = (ijv[:, :2] - ij[l, :]) / r[l, numpy.newaxis]
+    yx = (ijv[:, :2] - ij[label_vec, :]) / r[label_vec, numpy.newaxis]
 
     zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
 
-    z = centrosome.zernike.construct_zernike_polynomials(
+    zernike_polynomials = centrosome.zernike.construct_zernike_polynomials(
         yx[:, 1], yx[:, 0], zernike_indexes
     )
 
-    return l, z, zernike_indexes
+    return label_vec, zernike_polynomials, zernike_indexes

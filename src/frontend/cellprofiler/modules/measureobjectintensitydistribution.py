@@ -1,3 +1,4 @@
+from typing import Dict
 import matplotlib.cm
 import numpy
 import numpy.ma
@@ -810,14 +811,14 @@ be selected in a later **SaveImages** or other module.
         else:
             center_object_labels = None
 
-        heatmap_template_to_id = {}
+        heatmap_template_to_id: Dict[TemplateMeasurementFormat, int] = {}
         for heatmap in self.heatmaps:
             if (
                 heatmap.object_name.get_objects_name() == object_name
                 and heatmap.image_name.get_image_name() == image_name
                 and heatmap.get_number_of_bins() == bin_count
             ):
-                template = MEASUREMENT_ALIASES[heatmap.measurement.value]
+                template: TemplateMeasurementFormat = MEASUREMENT_ALIASES[heatmap.measurement.value]
                 heatmap_template_to_id[template] = id(heatmap)
 
         cache_key = (
@@ -881,7 +882,7 @@ be selected in a later **SaveImages** or other module.
 
             ijv = objects.ijv
 
-            l, z, zernike_indexes = prepare_object_zernike_polynomials(
+            label_vec, zernike_polynomials, zernike_indexes = prepare_object_zernike_polynomials(
                 list(objects.get_labels()),
                 objects.count,
                 ijv,
@@ -900,8 +901,8 @@ be selected in a later **SaveImages** or other module.
                     image.pixel_data,
                     image.mask,
                     ijv,
-                    l,
-                    z,
+                    label_vec,
+                    zernike_polynomials,
                     zernike_indexes,
                     wants_phase,
                 )
@@ -909,10 +910,10 @@ be selected in a later **SaveImages** or other module.
                 for feature_name, value in lib_measurements.objects.get(object_name, {}).items():
                     meas.add_measurement(object_name, feature_name, value)
 
-    def get_zernike_magnitude_name(self, image_name, n, m):
+    def get_zernike_magnitude_name(image_name: str, n: int, m: int):
         return get_zernike_magnitude_name(image_name, n, m)
 
-    def get_zernike_phase_name(self, image_name, n, m):
+    def get_zernike_phase_name(image_name: str, n: int, m: int):
         return get_zernike_phase_name(image_name, n, m)
 
     def get_measurement_columns(self, pipeline):

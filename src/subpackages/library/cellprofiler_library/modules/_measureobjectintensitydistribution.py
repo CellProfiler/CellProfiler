@@ -9,10 +9,9 @@ from pydantic import BaseModel, ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.measurement import (
     compute_center_distances as _compute_center_distances,
-    compute_minimum_enclosing_circles,
     compute_per_bin_distributions,
     compute_radial_indexes,
-    prepare_object_zernike_polynomials,
+    prepare_object_zernike_polynomials, # passthrough import
 )
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
@@ -24,10 +23,10 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     F_ALL,
     TemplateMeasurementFormat,
 )
-from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
+from cellprofiler_library.types import Image2DBinaryMask, Image2DGrayscale, ObjectSegmentation, ObjectIndices, ObjectLabelMask, ObjectSegmentationIJV, ObjectLabel
 
 
-def get_zernike_magnitude_name(image_name, n, m):
+def get_zernike_magnitude_name(image_name: str, n: int, m: int):
     return "_".join(
         (
             C_RADIAL_DISTRIBUTION,
@@ -39,7 +38,7 @@ def get_zernike_magnitude_name(image_name, n, m):
     )
 
 
-def get_zernike_phase_name(image_name, n, m):
+def get_zernike_phase_name(image_name: str, n: int, m: int):
     return "_".join(
         (
             C_RADIAL_DISTRIBUTION,
@@ -51,8 +50,8 @@ def get_zernike_phase_name(image_name, n, m):
     )
 
 
-def record_empty_object_measurements(image_name, object_name, bin_count, wants_scaled):
-    measurement_pairs = []
+def record_empty_object_measurements(image_name: str, object_name: str, bin_count: int, wants_scaled: bool):
+    measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
 
     for bin_index in range(1, bin_count + 1):
         for feature in F_ALL:
@@ -81,7 +80,7 @@ def record_empty_object_measurements(image_name, object_name, bin_count, wants_s
     return stats_row, measurement_pairs
 
 
-def _center_choice_to_flags(center_choice):
+def _center_choice_to_flags(center_choice: CenterChoice):
     """Translate a CenterChoice setting value into the two booleans that
     the pure-math ``compute_center_distances`` helper expects."""
     return (
@@ -91,13 +90,18 @@ def _center_choice_to_flags(center_choice):
 
 
 def compute_center_distances(
-    labels,
-    objects_indices,
-    center_objects_segmented,
-    center_choice,
-    wants_scaled,
-    maximum_radius,
-):
+    labels: ObjectSegmentation,
+    objects_indices: NDArray[numpy.int_],
+    center_objects_segmented: Optional[ObjectSegmentation],
+    center_choice: CenterChoice,
+    wants_scaled: bool,
+    maximum_radius: int,
+) -> Tuple[
+        NDArray[numpy.float_],
+        NDArray[numpy.float_],
+        NDArray[numpy.float_],
+        NDArray[numpy.bool_]
+    ]:
     """Layer-2 wrapper around the pure-math ``compute_center_distances``.
 
     Translates the ``CenterChoice`` enum value into the two boolean flags
@@ -119,18 +123,19 @@ def compute_center_distances(
 
 
 def record_bin_measurements(
-    image_name,
-    object_name,
-    bin_count,
-    wants_scaled,
-    labels,
-    pixel_data,
-    nobjects,
-    normalized_distance,
-    i_center,
-    j_center,
-    good_mask,
-    heatmaps,
+    image_name: str,
+    object_name: str,
+    bin_count: int,
+    wants_scaled: bool,
+    labels: ObjectSegmentation,
+    pixel_data: Image2DGrayscale,
+    nobjects: int,
+    normalized_distance: NDArray[numpy.float_],
+    i_center: NDArray[numpy.float_],
+    j_center: NDArray[numpy.float_],
+    good_mask: ObjectLabelMask,
+    heatmaps: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]]
+,
 ):
     (
         bin_indexes,
@@ -144,8 +149,8 @@ def record_bin_measurements(
 
     radial_index = compute_radial_indexes(labels, i_center, j_center, good_mask)
 
-    statistics = []
-    measurement_pairs = []
+    statistics: MeasureObjectIntensityDistributionStatistics = []
+    measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
 
     for bin in range(bin_count + (0 if wants_scaled else 1)):
         bin_mask = good_mask & (bin_indexes == bin)
@@ -221,16 +226,16 @@ def record_bin_measurements(
 
 
 def calculate_zernikes_for_image(
-    image_name,
-    object_name,
-    indices,
-    pixels,
-    image_mask,
-    ijv,
-    l,
-    z,
-    zernike_indexes,
-    wants_phase,
+    image_name: str,
+    object_name: str,
+    indices: ObjectIndices,
+    pixels: Image2DGrayscale,
+    image_mask: Image2DBinaryMask,
+    ijv: ObjectSegmentationIJV,
+    label_vec: NDArray[ObjectLabel],
+    zernike_polynomials: NDArray[numpy.complex128],
+    zernike_indexes: NDArray[numpy.int32],
+    wants_phase: bool,
 ):
     lib_measurements = LibraryMeasurements()
 
@@ -238,11 +243,11 @@ def calculate_zernikes_for_image(
 
     mask[mask] = image_mask[ijv[mask, 0], ijv[mask, 1]]
 
-    l_ = l[mask]
+    label_vec_ = label_vec[mask]
 
-    z_ = z[mask, :]
+    zernike_polynomials_ = zernike_polynomials[mask, :]
 
-    if len(l_) == 0:
+    if len(label_vec_) == 0:
         for i, (n, m) in enumerate(zernike_indexes):
             lib_measurements.add_measurement(
                 object_name,
@@ -260,19 +265,19 @@ def calculate_zernikes_for_image(
         return lib_measurements
 
     areas = scipy.ndimage.sum(
-        numpy.ones(l_.shape, int), labels=l_, index=indices
+        numpy.ones(label_vec_.shape, int), labels=label_vec_, index=indices
     )
 
     for i, (n, m) in enumerate(zernike_indexes):
         vr = scipy.ndimage.sum(
-            pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
-            labels=l_,
+            pixels[ijv[mask, 0], ijv[mask, 1]] * zernike_polynomials_[:, i].real,
+            labels=label_vec_,
             index=indices,
         )
 
         vi = scipy.ndimage.sum(
-            pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
-            labels=l_,
+            pixels[ijv[mask, 0], ijv[mask, 1]] * zernike_polynomials_[:, i].imag,
+            labels=label_vec_,
             index=indices,
         )
 
@@ -320,23 +325,21 @@ class MeasureObjectIntensityDistributionDisplayData(BaseModel):
         arbitrary_types_allowed=True, populate_by_name=True
     )
 
-    statistics: MeasureObjectIntensityDistributionStatistics = Field(
-        default_factory=list
-    )
-    heatmap_arrays: Dict[str, NDArray[numpy.float_]] = Field(default_factory=dict)
+    statistics: MeasureObjectIntensityDistributionStatistics
+    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]]
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measureobjectintensitydistribution(
     pixel_data: Annotated[
-        ImageGrayscale,
+        Image2DGrayscale,
         Field(description="Pixel array for the image, cropped to the object label matrix."),
     ],
     image_name: Annotated[
         str, Field(description="Name of the image being measured.")
     ],
     object_labels: Annotated[
-        NDArray[numpy.int_],
+        ObjectSegmentation,
         Field(
             description="2D label matrix of objects to measure, cropped to the pixel array shape."
         ),
@@ -369,13 +372,13 @@ def measureobjectintensitydistribution(
         ),
     ],
     center_object_labels: Annotated[
-        Optional[NDArray[numpy.int_]],
+        Optional[ObjectSegmentation],
         Field(
             description="2D label matrix of centering objects (for CENTERS_OF_OTHER / EDGES_OF_OTHER). None when using SELF."
         ),
     ] = None,
     heatmap_feature_templates: Annotated[
-        Optional[List[str]],
+        Optional[List[TemplateMeasurementFormat]],
         Field(
             description="List of TemplateMeasurementFormat values (e.g. RD_FRAC_AT_D) for which to populate heatmap arrays."
         ),

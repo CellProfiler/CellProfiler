@@ -88,7 +88,7 @@ class TemplateMeasurementFormat(str):
 
 
 MEASUREMENT_ALIASES = {
-    MeasurementChoice.FRAC_AT_D.value: TemplateMeasurementFormat.RD_FRAC_AT_D,
-    MeasurementChoice.MEAN_FRAC.value: TemplateMeasurementFormat.RD_MEAN_FRAC,
-    MeasurementChoice.RADIAL_CV.value: TemplateMeasurementFormat.RD_RADIAL_CV,
+    MeasurementChoice.FRAC_AT_D.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_FRAC_AT_D),
+    MeasurementChoice.MEAN_FRAC.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_MEAN_FRAC),
+    MeasurementChoice.RADIAL_CV.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_RADIAL_CV),
 }

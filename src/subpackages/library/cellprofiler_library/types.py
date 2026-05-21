@@ -84,6 +84,7 @@ def validate_object_segmentation_ijv(ijv: NDArray[np.int_]) -> NDArray[np.int_]:
 
 Pixel = Annotated[Union[np.float32, np.float64], Field(description="Pixel value")]
 ObjectLabel =           Annotated[Union[np.int8, np.int16, np.int32], Field(description="Object label")]
+ObjectIndices =         Annotated[np.int32, Field(description="Object indices")]
 
 Image2DColor =          Annotated[NDArray[Pixel],       Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Union[np.float32, np.float64]))]
 Image2DColorMask =      Annotated[NDArray[np.bool_],    Field(description="2D color mask"),        AfterValidator(create_type_validator(False, True, False, np.bool_))]

@@ -302,9 +302,13 @@ def calculate_zernikes_for_image(
 
 
 CenterDistanceCache = Tuple[
+    # normalized_distance
     NDArray[numpy.float_],
+    # i_center
     NDArray[numpy.float_],
+    # j_center
     NDArray[numpy.float_],
+    # good_mask
     NDArray[numpy.bool_],
 ]
 

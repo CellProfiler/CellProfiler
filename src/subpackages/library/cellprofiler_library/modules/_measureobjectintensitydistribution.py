@@ -134,8 +134,7 @@ def record_bin_measurements(
     i_center: NDArray[numpy.float_],
     j_center: NDArray[numpy.float_],
     good_mask: ObjectLabelMask,
-    heatmaps: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]]
-,
+    heatmaps: List[TemplateMeasurementFormat],
 ):
     (
         bin_indexes,
@@ -151,6 +150,10 @@ def record_bin_measurements(
 
     statistics: MeasureObjectIntensityDistributionStatistics = []
     measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
+    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]] = {
+        template: numpy.zeros(labels.shape)
+        for template in heatmaps
+    }
 
     for bin in range(bin_count + (0 if wants_scaled else 1)):
         bin_mask = good_mask & (bin_indexes == bin)
@@ -182,17 +185,17 @@ def record_bin_measurements(
         for measurement, feature, overflow_feature in (
             (
                 fraction_at_distance[:, bin],
-                TemplateMeasurementFormat.RD_FRAC_AT_D,
+                TemplateMeasurementFormat(TemplateMeasurementFormat.RD_FRAC_AT_D),
                 TemplateMeasurementFormat.RD_OVERFLOW_FRAC_AT_D,
             ),
             (
                 mean_pixel_fraction[:, bin],
-                TemplateMeasurementFormat.RD_MEAN_FRAC,
+                TemplateMeasurementFormat(TemplateMeasurementFormat.RD_MEAN_FRAC),
                 TemplateMeasurementFormat.RD_OVERFLOW_MEAN_FRAC,
             ),
             (
                 numpy.array(radial_cv),
-                TemplateMeasurementFormat.RD_RADIAL_CV,
+                TemplateMeasurementFormat(TemplateMeasurementFormat.RD_RADIAL_CV),
                 TemplateMeasurementFormat.RD_OVERFLOW_RADIAL_CV,
             ),
         ):
@@ -204,7 +207,7 @@ def record_bin_measurements(
             measurement_pairs.append((measurement_name, measurement))
 
             if feature in heatmaps:
-                heatmaps[feature][bin_mask] = measurement[bin_labels - 1]
+                heatmap_arrays[feature][bin_mask] = measurement[bin_labels - 1]
 
         radial_cv.mask = numpy.sum(~mask, 1) == 0
 
@@ -222,7 +225,7 @@ def record_bin_measurements(
             )
         ]
 
-    return statistics, measurement_pairs
+    return statistics, measurement_pairs, heatmap_arrays
 
 
 def calculate_zernikes_for_image(
@@ -422,11 +425,6 @@ def measureobjectintensitydistribution(
     if heatmap_feature_templates is None:
         heatmap_feature_templates = []
 
-    heatmap_arrays = {
-        template: numpy.zeros(object_labels.shape)
-        for template in heatmap_feature_templates
-    }
-
     lib_measurements = LibraryMeasurements()
 
     nobjects = int(numpy.max(object_labels))
@@ -442,7 +440,11 @@ def measureobjectintensitydistribution(
             return (
                 lib_measurements,
                 MeasureObjectIntensityDistributionDisplayData(
-                    statistics=[stats_row], heatmap_arrays=heatmap_arrays
+                    statistics=[stats_row],
+                    heatmap_arrays={
+                        template: numpy.zeros(object_labels.shape)
+                        for template in heatmap_feature_templates
+                    },
                 ),
                 cached_center_distances,
             )
@@ -460,7 +462,7 @@ def measureobjectintensitydistribution(
 
     normalized_distance, i_center, j_center, good_mask = cached_center_distances
 
-    statistics, measurement_pairs = record_bin_measurements(
+    statistics, measurement_pairs, heatmap_arrays = record_bin_measurements(
         image_name,
         object_name,
         bin_count,
@@ -472,7 +474,7 @@ def measureobjectintensitydistribution(
         i_center,
         j_center,
         good_mask,
-        heatmap_arrays,
+        heatmap_feature_templates,
     )
 
     for feature_name, value in measurement_pairs:

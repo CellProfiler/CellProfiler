@@ -26,6 +26,9 @@ from cellprofiler_library.opts.measureobjectintensitydistribution import (
     MeasurementChoice,
     TemplateMeasurementFormat,
 )
+from cellprofiler_library.modules._measureobjectintensitydistribution import (
+    get_zernike_magnitude_name
+)
 
 OBJECT_NAME = "objectname"
 CENTER_NAME = "centername"
@@ -831,11 +834,11 @@ def test_circle():
         module,
         cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
     )
-    data = m[OBJECT_NAME, module.get_zernike_magnitude_name(IMAGE_NAME, 0, 0)]
+    data = m[OBJECT_NAME, get_zernike_magnitude_name(IMAGE_NAME, 0, 0)]
     assert len(data) == 1
     assert abs(data[0] - 1) < 0.001
     for n_, m_ in ((1, 1), (2, 0), (2, 2)):
-        data = m[OBJECT_NAME, module.get_zernike_magnitude_name(IMAGE_NAME, n_, m_)]
+        data = m[OBJECT_NAME, get_zernike_magnitude_name(IMAGE_NAME, n_, m_)]
         assert abs(data[0] - 0) < 0.001
 
 

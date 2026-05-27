@@ -910,12 +910,6 @@ be selected in a later **SaveImages** or other module.
                 for feature_name, value in lib_measurements.objects.get(object_name, {}).items():
                     meas.add_measurement(object_name, feature_name, value)
 
-    def get_zernike_magnitude_name(image_name: str, n: int, m: int):
-        return get_zernike_magnitude_name(image_name, n, m)
-
-    def get_zernike_phase_name(image_name: str, n: int, m: int):
-        return get_zernike_phase_name(image_name, n, m)
-
     def get_measurement_columns(self, pipeline):
         columns = []
 

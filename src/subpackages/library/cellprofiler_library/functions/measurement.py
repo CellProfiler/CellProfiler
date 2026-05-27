@@ -3472,12 +3472,24 @@ def compute_center_distances(
 
     Returns ``(normalized_distance, i_center, j_center, good_mask)``.
     """
-    d_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
+    # Distance from every labeled pixel to the nearest object edge. Combined
+    # with the distance-from-center below, this defines the normalized radius.
+    distance_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
 
     if center_objects_segmented is not None:
-        center_labels, cmask = size_similarly(labels, center_objects_segmented)
+        #
+        # Use the center of the centering objects to assign a center
+        # to each labeled pixel using propagation.
+        #
+        # Resize the centering-object labels to match the object label matrix
+        # so the two can be indexed together.
+        center_labels, center_resized_mask = size_similarly(
+            labels, center_objects_segmented
+        )
 
-        pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        # Count the pixels belonging to each centering object so we can ignore
+        # any centering object that ended up empty after resizing.
+        center_pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 numpy.ones(center_labels.shape),
                 center_labels,
@@ -3487,32 +3499,48 @@ def compute_center_distances(
             )
         )
 
-        good = pixel_counts > 0
+        centers_with_pixels = center_pixel_counts > 0
 
-        i, j = (
+        # Integer (row, col) centroid of each centering object. The +0.5 rounds
+        # to the nearest pixel before truncation to int.
+        center_i, center_j = (
             centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
         ).astype(int)
 
-        ig = i[good]
+        # Keep only the centroids (and labels) of the non-empty centering objects.
+        good_center_i = center_i[centers_with_pixels]
 
-        jg = j[good]
+        good_center_j = center_j[centers_with_pixels]
 
-        lg = numpy.arange(1, len(i) + 1)[good]
+        good_center_labels = numpy.arange(1, len(center_i) + 1)[centers_with_pixels]
 
         if use_centers_of_other:
+            #
+            # Reduce the propagation seeds to the single-pixel centroids of
+            # the centering objects (rather than their full extent).
+            #
             center_labels = numpy.zeros(center_labels.shape, int)
 
-            center_labels[ig, jg] = lg
+            center_labels[good_center_i, good_center_j] = good_center_labels
 
-        cl, d_from_center = centrosome.propagate.propagate(
+        # Propagate the centering-object labels outward across the objects,
+        # recording per pixel the assigned center label and the geodesic
+        # distance from that center.
+        assigned_center_label, distance_from_center = centrosome.propagate.propagate(
             numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
         )
 
-        cl[labels == 0] = 0
+        # Erase the centers that fall outside of labels.
+        assigned_center_label[labels == 0] = 0
 
-        missing_mask = (labels != 0) & (cl == 0)
+        #
+        # If objects are hollow or crescent-shaped, there may be objects
+        # without center labels. As a backup, assign each such object the
+        # centering object whose centroid is closest to its center of mass.
+        #
+        missing_center_mask = (labels != 0) & (assigned_center_label == 0)
 
-        missing_labels = numpy.unique(labels[missing_mask])
+        missing_labels = numpy.unique(labels[missing_center_mask])
 
         if len(missing_labels):
             all_centers = centrosome.cpmorphology.centers_of_labels(labels)
@@ -3521,76 +3549,120 @@ def compute_center_distances(
                 :, missing_labels - 1
             ]
 
-            di = missing_i_centers[:, numpy.newaxis] - ig[numpy.newaxis, :]
+            # Squared distance from each missing object's centroid to every
+            # candidate centering-object centroid; argsort picks the nearest.
+            delta_i = missing_i_centers[:, numpy.newaxis] - good_center_i[numpy.newaxis, :]
 
-            dj = missing_j_centers[:, numpy.newaxis] - jg[numpy.newaxis, :]
+            delta_j = missing_j_centers[:, numpy.newaxis] - good_center_j[numpy.newaxis, :]
 
-            missing_best = lg[numpy.argsort(di * di + dj * dj)[:, 0]]
+            nearest_center_label = good_center_labels[
+                numpy.argsort(delta_i * delta_i + delta_j * delta_j)[:, 0]
+            ]
 
-            best = numpy.zeros(numpy.max(labels) + 1, int)
+            # Map every object label to its chosen center, then stamp the
+            # assigned center onto the missing pixels.
+            nearest_center_by_label = numpy.zeros(numpy.max(labels) + 1, int)
 
-            best[missing_labels] = missing_best
+            nearest_center_by_label[missing_labels] = nearest_center_label
 
-            cl[missing_mask] = best[labels[missing_mask]]
+            assigned_center_label[missing_center_mask] = nearest_center_by_label[
+                labels[missing_center_mask]
+            ]
 
-            iii, jjj = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+            #
+            # Now compute the crow-flies (Euclidean) distance to the centers
+            # of these pixels from whatever center was assigned to the object.
+            #
+            pixel_grid_i, pixel_grid_j = numpy.mgrid[
+                0 : labels.shape[0], 0 : labels.shape[1]
+            ]
 
-            di = iii[missing_mask] - i[cl[missing_mask] - 1]
+            delta_i = (
+                pixel_grid_i[missing_center_mask]
+                - center_i[assigned_center_label[missing_center_mask] - 1]
+            )
 
-            dj = jjj[missing_mask] - j[cl[missing_mask] - 1]
+            delta_j = (
+                pixel_grid_j[missing_center_mask]
+                - center_j[assigned_center_label[missing_center_mask] - 1]
+            )
 
-            d_from_center[missing_mask] = numpy.sqrt(di * di + dj * dj)
+            distance_from_center[missing_center_mask] = numpy.sqrt(
+                delta_i * delta_i + delta_j * delta_j
+            )
     else:
-        i, j = centrosome.cpmorphology.maximum_position_of_labels(
-            d_to_edge, labels, objects_indices
+        #
+        # Find the point in each object farthest away from the edge.
+        # This does better than the centroid:
+        # * The center is within the object
+        # * The center tends to be an interesting point, like the center of
+        #   the nucleus or the center of one or the other of two touching cells.
+        #
+        center_i, center_j = centrosome.cpmorphology.maximum_position_of_labels(
+            distance_to_edge, labels, objects_indices
         )
 
         center_labels = numpy.zeros(labels.shape, int)
 
-        center_labels[i, j] = labels[i, j]
+        center_labels[center_i, center_j] = labels[center_i, center_j]
 
+        #
+        # Use the coloring trick here to process touching objects in separate
+        # operations: objects sharing a color never touch, so propagation
+        # within one color cannot bleed across object boundaries.
+        #
         colors = centrosome.cpmorphology.color_labels(labels)
 
-        ncolors = numpy.max(colors)
+        n_colors = numpy.max(colors)
 
-        d_from_center = numpy.zeros(labels.shape)
+        distance_from_center = numpy.zeros(labels.shape)
 
-        cl = numpy.zeros(labels.shape, int)
+        assigned_center_label = numpy.zeros(labels.shape, int)
 
-        for color in range(1, ncolors + 1):
-            mask = colors == color
-            l, d = centrosome.propagate.propagate(
-                numpy.zeros(center_labels.shape), center_labels, mask, 1
+        for color in range(1, n_colors + 1):
+            color_mask = colors == color
+
+            propagated_labels, propagated_distance = centrosome.propagate.propagate(
+                numpy.zeros(center_labels.shape), center_labels, color_mask, 1
             )
 
-            d_from_center[mask] = d[mask]
+            distance_from_center[color_mask] = propagated_distance[color_mask]
 
-            cl[mask] = l[mask]
+            assigned_center_label[color_mask] = propagated_labels[color_mask]
 
-    good_mask = cl > 0
+    # A pixel is "good" if it was assigned to some center.
+    good_mask = assigned_center_label > 0
 
     if use_edges_of_other:
+        # Exclude pixels within the centering objects when measuring distance
+        # from their edges.
         good_mask = good_mask & (center_labels == 0)
 
-    i_center = numpy.zeros(cl.shape)
+    # Per-pixel center coordinates, looked up by the assigned center label
+    # (labels are 1-based, hence the -1).
+    i_center = numpy.zeros(assigned_center_label.shape)
 
-    i_center[good_mask] = i[cl[good_mask] - 1]
+    i_center[good_mask] = center_i[assigned_center_label[good_mask] - 1]
 
-    j_center = numpy.zeros(cl.shape)
+    j_center = numpy.zeros(assigned_center_label.shape)
 
-    j_center[good_mask] = j[cl[good_mask] - 1]
+    j_center[good_mask] = center_j[assigned_center_label[good_mask] - 1]
 
     normalized_distance = numpy.zeros(labels.shape)
 
     if wants_scaled:
-        total_distance = d_from_center + d_to_edge
+        # Normalize so the object center is ~0 and the edge is ~1. The 0.001
+        # guards against division by zero when a pixel is both center and edge.
+        total_distance = distance_from_center + distance_to_edge
 
-        normalized_distance[good_mask] = d_from_center[good_mask] / (
+        normalized_distance[good_mask] = distance_from_center[good_mask] / (
             total_distance[good_mask] + 0.001
         )
     else:
+        # Fixed-scale binning: express distance as a fraction of the user's
+        # maximum radius rather than the per-object radius.
         normalized_distance[good_mask] = (
-            d_from_center[good_mask] / maximum_radius
+            distance_from_center[good_mask] / maximum_radius
         )
 
     return normalized_distance, i_center, j_center, good_mask

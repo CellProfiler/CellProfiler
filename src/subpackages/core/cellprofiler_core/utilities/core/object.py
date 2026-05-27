@@ -4,6 +4,7 @@ import skimage.color
 
 from ...preferences import get_default_colormap
 from cellprofiler_library.functions.object_processing import size_similarly as _size_similarly
+from cellprofiler_library.functions.object_processing import crop_labels_and_image as _crop_labels_and_image
 
 def crop_labels_and_image(labels, image):
     """Crop a labels matrix and an image to the lowest common size
@@ -13,27 +14,7 @@ def crop_labels_and_image(labels, image):
 
     Assumes that points outside of the common boundary should be masked.
     """
-    min_dim1 = min(labels.shape[0], image.shape[0])
-    min_dim2 = min(labels.shape[1], image.shape[1])
-
-    if labels.ndim == 3:  # volume
-        min_dim3 = min(labels.shape[2], image.shape[2])
-
-        if image.ndim == 4:  # multichannel volume
-            return (
-                labels[:min_dim1, :min_dim2, :min_dim3],
-                image[:min_dim1, :min_dim2, :min_dim3, :],
-            )
-
-        return (
-            labels[:min_dim1, :min_dim2, :min_dim3],
-            image[:min_dim1, :min_dim2, :min_dim3],
-        )
-
-    if image.ndim == 3:  # multichannel image
-        return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2, :]
-
-    return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2]
+    return _crop_labels_and_image(labels, image)
 
 
 def size_similarly(labels, secondary):

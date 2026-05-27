@@ -875,6 +875,39 @@ def filter_labels(
     return segmented_labels_out
 
 
+def crop_labels_and_image(
+        labels: ObjectSegmentation,
+        image: ImageAny,
+    ):
+    """Crop a labels matrix and an image to the lowest common size
+
+    labels - a n x m labels matrix
+    image - a 2-d or 3-d image
+
+    Assumes that points outside of the common boundary should be masked.
+    """
+    min_dim1 = min(labels.shape[0], image.shape[0])
+    min_dim2 = min(labels.shape[1], image.shape[1])
+
+    if labels.ndim == 3:  # volume
+        min_dim3 = min(labels.shape[2], image.shape[2])
+
+        if image.ndim == 4:  # multichannel volume
+            return (
+                labels[:min_dim1, :min_dim2, :min_dim3],
+                image[:min_dim1, :min_dim2, :min_dim3, :],
+            )
+
+        return (
+            labels[:min_dim1, :min_dim2, :min_dim3],
+            image[:min_dim1, :min_dim2, :min_dim3],
+        )
+
+    if image.ndim == 3:  # multichannel image
+        return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2, :]
+
+    return labels[:min_dim1, :min_dim2], image[:min_dim1, :min_dim2]
+
 def size_similarly(
         labels: ObjectSegmentation, 
         secondary: Union[ObjectSegmentation, ImageAny],

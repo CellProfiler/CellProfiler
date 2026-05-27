@@ -8,7 +8,7 @@ from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.measurement import (
-    compute_center_distances as _compute_center_distances,
+    compute_center_distances,
     compute_per_bin_distributions,
     compute_radial_indexes,
     prepare_object_zernike_polynomials, # passthrough import
@@ -48,79 +48,6 @@ def get_zernike_phase_name(image_name: str, n: int, m: int):
             str(m),
         )
     )
-
-
-def record_empty_object_measurements(image_name: str, object_name: str, bin_count: int, wants_scaled: bool):
-    measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
-
-    for bin_index in range(1, bin_count + 1):
-        for feature in F_ALL:
-            feature_name = (feature + FF_GENERIC) % (
-                image_name,
-                bin_index,
-                bin_count,
-            )
-
-            measurement_pairs.append(
-                (
-                    "_".join([C_RADIAL_DISTRIBUTION, feature_name]),
-                    numpy.zeros(0),
-                )
-            )
-
-            if not wants_scaled:
-                overflow_name = "_".join(
-                    [C_RADIAL_DISTRIBUTION, feature, image_name, FF_OVERFLOW]
-                )
-
-                measurement_pairs.append((overflow_name, numpy.zeros(0)))
-
-    stats_row = (image_name, object_name, "no objects", "-", "-", "-", "-")
-
-    return stats_row, measurement_pairs
-
-
-def _center_choice_to_flags(center_choice: CenterChoice):
-    """Translate a CenterChoice setting value into the two booleans that
-    the pure-math ``compute_center_distances`` helper expects."""
-    return (
-        center_choice == CenterChoice.CENTERS_OF_OTHER.value,
-        center_choice == CenterChoice.EDGES_OF_OTHER.value,
-    )
-
-
-def compute_center_distances(
-    labels: ObjectSegmentation,
-    objects_indices: NDArray[numpy.int_],
-    center_objects_segmented: Optional[ObjectSegmentation],
-    center_choice: CenterChoice,
-    wants_scaled: bool,
-    maximum_radius: int,
-) -> Tuple[
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.bool_]
-    ]:
-    """Layer-2 wrapper around the pure-math ``compute_center_distances``.
-
-    Translates the ``CenterChoice`` enum value into the two boolean flags
-    consumed by the helper, so callers (including the frontend) can keep
-    passing the human-readable setting value.
-    """
-    use_centers_of_other, use_edges_of_other = _center_choice_to_flags(
-        center_choice
-    )
-    return _compute_center_distances(
-        labels,
-        objects_indices,
-        center_objects_segmented,
-        use_centers_of_other,
-        use_edges_of_other,
-        wants_scaled,
-        maximum_radius,
-    )
-
 
 def record_bin_measurements(
     image_name: str,
@@ -430,9 +357,31 @@ def measureobjectintensitydistribution(
     nobjects = int(numpy.max(object_labels))
 
     if nobjects == 0:
-        stats_row, measurement_pairs = record_empty_object_measurements(
-            image_name, object_name, bin_count, wants_scaled
-        )
+        stats_row = (image_name, object_name, "no objects", "-", "-", "-", "-")
+
+        measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
+        for bin_index in range(1, bin_count + 1):
+            for feature in F_ALL:
+                feature_name = (feature + FF_GENERIC) % (
+                    image_name,
+                    bin_index,
+                    bin_count,
+                )
+
+                measurement_pairs.append(
+                    (
+                        "_".join([C_RADIAL_DISTRIBUTION, feature_name]),
+                        numpy.zeros(0),
+                    )
+                )
+
+                if not wants_scaled:
+                    overflow_name = "_".join(
+                        [C_RADIAL_DISTRIBUTION, feature, image_name, FF_OVERFLOW]
+                    )
+
+                    measurement_pairs.append((overflow_name, numpy.zeros(0)))
+
         for feature_name, value in measurement_pairs:
             lib_measurements.add_measurement(object_name, feature_name, value)
 
@@ -455,7 +404,8 @@ def measureobjectintensitydistribution(
             object_labels,
             objects_indices,
             center_object_labels,
-            center_choice,
+            center_choice == CenterChoice.CENTERS_OF_OTHER.value,
+            center_choice == CenterChoice.EDGES_OF_OTHER.value,
             wants_scaled,
             maximum_radius,
         )

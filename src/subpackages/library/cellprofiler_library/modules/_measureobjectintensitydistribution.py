@@ -1,15 +1,14 @@
 from typing import Annotated, Any, Dict, List, Optional, Tuple, Union
 
 import numpy
-import numpy.ma
 import scipy.ndimage
-import scipy.sparse
 from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict, Field, validate_call
 
 from cellprofiler_library.functions.measurement import (
     compute_center_distances,
     compute_per_bin_distributions,
+    compute_radial_cv_for_bin,
     compute_radial_indexes,
     prepare_object_zernike_polynomials, # passthrough import
 )
@@ -36,7 +35,6 @@ def get_zernike_magnitude_name(image_name: str, n: int, m: int):
             str(m),
         )
     )
-
 
 def get_zernike_phase_name(image_name: str, n: int, m: int):
     return "_".join(
@@ -82,41 +80,22 @@ def record_bin_measurements(
         for template in heatmaps
     }
 
-    for bin in range(bin_count + (0 if wants_scaled else 1)):
-        bin_mask = good_mask & (bin_indexes == bin)
+    for nbin in range(bin_count + (0 if wants_scaled else 1)):
+        # per-object radial CV across 8 wedges for this bin.
+        bin_mask, bin_labels, radial_cv, empty_object_mask = compute_radial_cv_for_bin(
+            nbin, labels, pixel_data, good_mask, bin_indexes, radial_index, nobjects,
+        )
 
-        bin_pixels = numpy.sum(bin_mask)
-
-        bin_labels = labels[bin_mask]
-
-        bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
-
-        labels_and_radii = (bin_labels - 1, bin_radial_index)
-
-        radial_values = scipy.sparse.coo_matrix(
-            (pixel_data[bin_mask], labels_and_radii), (nobjects, 8)
-        ).toarray()
-
-        pixel_count = scipy.sparse.coo_matrix(
-            (numpy.ones(bin_pixels), labels_and_radii), (nobjects, 8)
-        ).toarray()
-
-        mask = pixel_count == 0
-
-        radial_means = numpy.ma.masked_array(radial_values / pixel_count, mask)
-
-        radial_cv = numpy.std(radial_means, 1) / numpy.mean(radial_means, 1)
-
-        radial_cv[numpy.sum(~mask, 1) == 0] = 0
-
+        # Feature/measurement consolidation: name each per-bin feature, append
+        # to the measurement pairs, and update heatmap arrays in place.
         for measurement, feature, overflow_feature in (
             (
-                fraction_at_distance[:, bin],
+                fraction_at_distance[:, nbin],
                 TemplateMeasurementFormat(TemplateMeasurementFormat.RD_FRAC_AT_D),
                 TemplateMeasurementFormat.RD_OVERFLOW_FRAC_AT_D,
             ),
             (
-                mean_pixel_fraction[:, bin],
+                mean_pixel_fraction[:, nbin],
                 TemplateMeasurementFormat(TemplateMeasurementFormat.RD_MEAN_FRAC),
                 TemplateMeasurementFormat.RD_OVERFLOW_MEAN_FRAC,
             ),
@@ -126,19 +105,21 @@ def record_bin_measurements(
                 TemplateMeasurementFormat.RD_OVERFLOW_RADIAL_CV,
             ),
         ):
-            if bin == bin_count:
+            if nbin == bin_count:
                 measurement_name = overflow_feature % image_name
             else:
-                measurement_name = feature % (image_name, bin + 1, bin_count)
+                measurement_name = feature % (image_name, nbin + 1, bin_count)
 
             measurement_pairs.append((measurement_name, measurement))
 
             if feature in heatmaps:
                 heatmap_arrays[feature][bin_mask] = measurement[bin_labels - 1]
 
-        radial_cv.mask = numpy.sum(~mask, 1) == 0
+        # Mask empty-object CVs before averaging into the stats table so the
+        # mean isn't biased by zero placeholders.
+        radial_cv.mask = empty_object_mask
 
-        bin_name = str(bin + 1) if bin < bin_count else "Overflow"
+        bin_name = str(nbin + 1) if nbin < bin_count else "Overflow"
 
         statistics += [
             (
@@ -146,8 +127,8 @@ def record_bin_measurements(
                 object_name,
                 bin_name,
                 str(bin_count),
-                numpy.round(numpy.mean(masked_fraction_at_distance[:, bin]), 4),
-                numpy.round(numpy.mean(masked_mean_pixel_fraction[:, bin]), 4),
+                numpy.round(numpy.mean(masked_fraction_at_distance[:, nbin]), 4),
+                numpy.round(numpy.mean(masked_mean_pixel_fraction[:, nbin]), 4),
                 numpy.round(numpy.mean(radial_cv), 4),
             )
         ]

@@ -3832,3 +3832,70 @@ def prepare_object_zernike_polynomials(
     )
 
     return label_vec, zernike_polynomials, zernike_indexes
+
+
+def compute_radial_cv_for_bin(
+    nbin: int,
+    labels: ObjectSegmentation,
+    pixel_data: ImageGrayscale,
+    good_mask: ObjectLabelMask,
+    bin_indexes: NDArray[numpy.int_],
+    radial_index: NDArray[numpy.int_],
+    nobjects: int,
+) -> Tuple[
+        NDArray[numpy.bool_],
+        NDArray[numpy.int_],
+        NDArray[Union[numpy.float32, numpy.float64]],
+        NDArray[numpy.bool_],
+    ]:
+    """Compute the per-object radial coefficient of variation for one bin.
+
+    Anisotropy: split each cell into 8 angular wedges, compute the mean
+    intensity per wedge, then the CV across wedges within this radial bin.
+
+    Returns ``(bin_mask, bin_labels, radial_cv, empty_object_mask)``:
+      - ``bin_mask``: pixels in ``good_mask`` that fall in this radial bin.
+      - ``bin_labels``: object label at each pixel in ``bin_mask``.
+      - ``radial_cv``: length-``nobjects`` array of per-object CV values
+        (0 for objects with no pixels in this bin).
+      - ``empty_object_mask``: length-``nobjects`` boolean, True for objects
+        that contributed no wedge to this bin. The caller can apply this
+        as a numpy.ma mask when aggregating ``radial_cv``.
+    """
+    # Pixels of `good_mask` that fall in this radial bin.
+    bin_mask = good_mask & (bin_indexes == nbin)
+
+    bin_pixels = numpy.sum(bin_mask)
+
+    bin_labels = labels[bin_mask]
+
+    # Slice the per-pixel wedge index to just this bin's pixels. radial_index
+    # is dense over good_mask, so filter via the same predicate.
+    bin_radial_index = radial_index[bin_indexes[good_mask] == nbin]
+
+    labels_and_radii = (bin_labels - 1, bin_radial_index)
+
+    # Sum of pixel intensities and pixel counts per (object, wedge), as
+    # dense (nobjects, 8) matrices via sparse construction.
+    radial_values = scipy.sparse.coo_matrix(
+        (pixel_data[bin_mask], labels_and_radii), (nobjects, 8)
+    ).toarray()
+
+    pixel_count = scipy.sparse.coo_matrix(
+        (numpy.ones(bin_pixels), labels_and_radii), (nobjects, 8)
+    ).toarray()
+
+    # A wedge is "empty" if it has zero pixels in this bin. Mask those
+    # cells so the per-object mean/std isn't biased by NaNs.
+    wedge_empty = pixel_count == 0
+
+    radial_means = numpy.ma.masked_array(radial_values / pixel_count, wedge_empty)
+
+    radial_cv = numpy.std(radial_means, 1) / numpy.mean(radial_means, 1)
+
+    # Objects with no contributing wedge get CV = 0.
+    empty_object_mask = numpy.sum(~wedge_empty, 1) == 0
+
+    radial_cv[empty_object_mask] = 0
+
+    return bin_mask, bin_labels, radial_cv, empty_object_mask

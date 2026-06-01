@@ -1,1 +1,0 @@
-/Users/ngogober/Developer/rules/CellProfiler/refactor_prompts/REFACTOR_PATTERN.md

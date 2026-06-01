@@ -28,3 +28,6 @@ scratch/
 
 # pixi environments
 .pixi
+
+# AI
+REFACTOR_PATTERN.md

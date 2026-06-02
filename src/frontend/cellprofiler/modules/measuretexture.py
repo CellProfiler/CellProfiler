@@ -1,5 +1,4 @@
 import cellprofiler.gui.help.content
-import cellprofiler.icons
 
 __doc__ = """\
 MeasureTexture
@@ -172,7 +171,7 @@ from cellprofiler_core.setting.subscriber import (
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.utilities.core.object import size_similarly
 from cellprofiler_library.opts.measuretexture import MeasurementTarget, TEXTURE, F_HARALICK
-from cellprofiler_library.modules._measuretexture import measure_image_texture, measure_object_texture
+from cellprofiler_library.modules._measuretexture import MeasureTextureStatistics, measure_image_texture, measure_object_texture
 
 class MeasureTexture(Module):
     module_name = "MeasureTexture"
@@ -492,19 +491,19 @@ measured and will result in a undefined value in the output file.
             "Value",
         ]
 
-        statistics = []
+        statistics: MeasureTextureStatistics = []
 
         for image_name in self.images_list.value:
             for scale_group in self.scale_groups:
                 scale = scale_group.scale.value
 
                 if self.wants_image_measurements():
-                    statistics += self.run_image(image_name, scale, workspace)
+                    statistics += self.run_image(image_name, scale, workspace, self.show_window)
 
                 if self.wants_object_measurements():
                     for object_name in self.objects_list.value:
                         statistics += self.run_one(
-                            image_name, object_name, scale, workspace
+                            image_name, object_name, scale, workspace, self.show_window
                         )
 
         if self.show_window:
@@ -524,21 +523,13 @@ measured and will result in a undefined value in the output file.
             title=helptext,
         )
 
-    def run_one(self, image_name, object_name, scale, workspace):
-        statistics = []
-
+    def run_one(self, image_name, object_name, scale, workspace, calculate_statistics=False) -> MeasureTextureStatistics:
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
 
-        gray_levels = int(self.gray_levels.value)
-
-        unique_labels = objects.indices
-
-        n_directions = 13 if objects.volumetric else 4
-
-        # # IMG-961: Ensure image and objects have the same shape.
+        # IMG-961: Ensure image and objects have the same shape.
         try:
             mask = (
                 image.mask
@@ -556,99 +547,63 @@ measured and will result in a undefined value in the output file.
                 else:
                     mask = m1
 
-        measurements = measure_object_texture(
+        res = measure_object_texture(
             object_name, 
             labels,
             image_name, 
             pixel_data,
             mask if image.has_mask else None,
-            gray_levels, 
-            unique_labels, 
+            int(self.gray_levels.value),
+            objects.indices,
             scale, 
             objects.volumetric,
+            return_visualization_data=calculate_statistics
         )
+
+        if calculate_statistics:
+            lib_measurements, lib_display = res
+            lib_stats = lib_display.statistics
+        else:
+            lib_measurements = res
+            lib_stats: MeasureTextureStatistics = []
         
         # Unpack measurements
-        for feature_name, value in measurements.image.items():
+        for feature_name, value in lib_measurements.image.items():
             workspace.measurements.add_image_measurement(feature_name, value)
             
-        for obj, features in measurements.objects.items():
+        for obj, features in lib_measurements.objects.items():
             for feature_name, val in features.items():
                 workspace.add_measurement(obj, feature_name, val)
         
-        # Build statistics for display
-        for direction in range(n_directions):
-            scale_str = "{:d}_{:02d}".format(scale, direction)
-            gray_str = "{:d}".format(gray_levels)
-            for feature_enum in F_HARALICK:
-                feature_name = feature_enum.value
-                full_name = "{}_{}_{}_{}_{}".format(
-                    TEXTURE, feature_name, image_name, scale_str, gray_str
-                )
-                
-                # Check if we have values (we might check the object measurement itself)
-                vals = measurements.get_measurement(object_name, full_name)
-                
-                stats_map = {
-                    "Mean": "mean",
-                    "Median": "median",
-                    "Min": "min",
-                    "Max": "max",
-                    "StDev": "std dev"
-                }
-
-                for stat_key, display_name in stats_map.items():
-                    stat_full_name = f"{stat_key}_{full_name}"
-                    stat_val = measurements.image.get(stat_full_name, 0.0)
-
-                    statistics.append([
-                        image_name,
-                        object_name,
-                        "{} {}".format(display_name, feature_name),
-                        scale_str,
-                        "{:.2f}".format(float(stat_val)) if vals is not None and len(vals) > 0 else "-"
-                    ])
-
-        return statistics
+        return lib_stats
     
 
-    def run_image(self, image_name, scale, workspace):
+    def run_image(self, image_name, scale, workspace, calculate_statistics=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         gray_levels = int(self.gray_levels.value)
         pixel_data = image.pixel_data
 
-        measurements = measure_image_texture(pixel_data, gray_levels, scale, image_name)
+        res = measure_image_texture(
+            pixel_data,
+            gray_levels,
+            scale,
+            image_name,
+            return_visualization_data=calculate_statistics
+        )
+
+        if calculate_statistics:
+            lib_measurements, lib_display = res
+            lib_stats = lib_display.statistics
+        else:
+            lib_measurements = res
+            lib_stats: MeasureTextureStatistics = []
         
         # Unpack measurements
-        for feature_name, value in measurements.image.items():
+        for feature_name, value in lib_measurements.image.items():
             workspace.measurements.add_image_measurement(feature_name, value)
             
-        statistics = []
-        
-        n_directions = 13 if pixel_data.ndim == 3 else 4
-        
-        for direction in range(n_directions):
-            scale_str = "{:d}_{:02d}".format(scale, direction)
-            gray_str = "{:d}".format(gray_levels)
-            for feature_enum in F_HARALICK:
-                feature_name = feature_enum.value
-                full_name = "{}_{}_{}_{}_{}".format(
-                    TEXTURE, feature_name, image_name, scale_str, gray_str
-                )
-                
-                # Retrieve from LibraryMeasurements
-                val = measurements.image.get(full_name, 0.0)
-                
-                statistics.append([
-                    image_name,
-                    "-",
-                    feature_name,
-                    scale_str,
-                    "{:.2f}".format(float(val))
-                ])
-                
-        return statistics
+        return lib_stats
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

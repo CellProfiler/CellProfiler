@@ -53,7 +53,6 @@ well as video tutorials.
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
-import matplotlib.cm
 import numpy
 from cellprofiler_core.constants.measurement import (
     COLTYPE_INTEGER,
@@ -79,6 +78,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import LabelName, Integer, Float
 
 from cellprofiler_library.modules._identifydeadworms import identify_dead_worms
+from cellprofiler_library.functions.image_processing import get_diamond
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"
@@ -234,11 +234,10 @@ degrees.
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value, must_be_binary=True)
         image_mask = image.mask if image.has_mask else None
-        angle_count = self.angle_count.value
         #
         # Perform the identification
         #
-        center_x, center_y, angles, nlabels, label_indexes, labels = identify_dead_worms(
+        mask, center_x, center_y, angles, nlabels, label_indexes, labels = identify_dead_worms(
             image.pixel_data,
             image_mask,
             self.wants_automatic_distance.value,
@@ -318,7 +317,7 @@ degrees.
             #
             lcolors = colors * 0.5 + 0.5  # Wash the colors out a little
             for ii in range(count):
-                diamond = self.get_diamond(angles[ii], self.worm_width.value, self.worm_length.value)
+                diamond = get_diamond(angles[ii], self.worm_width.value, self.worm_length.value)
                 hshape = ((numpy.array(diamond.shape) - 1) / 2).astype(int)
                 iii = int(i[ii])
                 jjj = int(j[ii])

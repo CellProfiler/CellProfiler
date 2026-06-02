@@ -44,4 +44,4 @@ def identify_dead_worms(
     # Do all connected components.
     #
     center_x, center_y, angles, nlabels, label_indexes, labels = process_all_connected_components(first, second, i_center, j_center, angular_orientation, mask)
-    return center_x, center_y, angles, nlabels, label_indexes, labels
+    return mask, center_x, center_y, angles, nlabels, label_indexes, labels

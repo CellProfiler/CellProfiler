@@ -1,7 +1,6 @@
-import math
 import numpy
 
-from cellprofiler_library.functions.image_processing import crop_image_similarly
+from cellprofiler_library.functions.image_processing import crop_image_similarly as _crop_image_similarly 
 
 class Image:
     """
@@ -231,7 +230,7 @@ class Image:
         """
         m = numpy.array(mask)
 
-        if not (m.dtype.type is bool):
+        if (m.dtype.type is not bool):
             m = m != 0
 
         self.__mask = m
@@ -287,7 +286,7 @@ class Image:
 
         image - a np.ndarray to be cropped (of any type)
         """
-        return crop_image_similarly(self.pixel_data, image, self.crop_mask)
+        return _crop_image_similarly(self.pixel_data, image, self.crop_mask)
 
     @property
     def file_name(self):

@@ -1097,7 +1097,7 @@ to the foreground pixels or the background pixels.
 
             # Unpack measurements to workspace
             for feature_name, value in lib_measurements.image.items():
-                workspace.add_measurement("Image", feature_name, value)
+                workspace.measurements.add_measurement("Image", feature_name, value)
 
         return statistics
 

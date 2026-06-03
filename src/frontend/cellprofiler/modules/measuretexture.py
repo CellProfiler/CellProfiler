@@ -573,7 +573,7 @@ measured and will result in a undefined value in the output file.
             
         for obj, features in lib_measurements.objects.items():
             for feature_name, val in features.items():
-                workspace.add_measurement(obj, feature_name, val)
+                workspace.measurements.add_measurement(obj, feature_name, val)
         
         return lib_stats
     

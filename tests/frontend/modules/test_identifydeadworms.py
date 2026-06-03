@@ -4,8 +4,9 @@ import scipy.ndimage
 import six.moves
 
 import cellprofiler_core.image
+
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.constants.measurement import (
-    Measurements,
     C_COUNT,
     M_LOCATION_CENTER_X,
     M_LOCATION_CENTER_Y,

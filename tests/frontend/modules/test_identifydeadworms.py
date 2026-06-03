@@ -4,17 +4,24 @@ import scipy.ndimage
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement
-from cellprofiler_core.constants.measurement import C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, COLTYPE_INTEGER, \
-    COLTYPE_FLOAT, M_NUMBER_OBJECT_NUMBER, FF_COUNT
-
+from cellprofiler_core.constants.measurement import (
+    Measurements,
+    C_COUNT,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    COLTYPE_INTEGER,
+    COLTYPE_FLOAT,
+    M_NUMBER_OBJECT_NUMBER,
+    FF_COUNT,
+)
 
 import cellprofiler.modules.identifydeadworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+
 from cellprofiler_library.modules._identifydeadworms import find_adjacent_by_distance 
+
 
 IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
@@ -109,7 +116,7 @@ def make_workspace(pixel_data, mask=None):
         module,
         image_set,
         cellprofiler_core.object.ObjectSet(),
-        cellprofiler_core.measurement.Measurements(),
+        Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -142,7 +149,7 @@ def test_one_worm():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m,cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,Measurements)
     count = m.get_current_image_measurement(
         "_".join((C_COUNT, OBJECTS_NAME))
     )
@@ -188,7 +195,7 @@ def test_crossing_worms():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m,cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,Measurements)
     count = m.get_current_image_measurement(
         "_".join((C_COUNT, OBJECTS_NAME))
     )

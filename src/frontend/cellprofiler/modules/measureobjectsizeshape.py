@@ -354,7 +354,7 @@ module.""".format(
                         f = "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
                     else:
                         f = feature_name
-                    workspace.add_measurement(object_name, f, values)
+                    workspace.measurements.add_measurement(object_name, f, values)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

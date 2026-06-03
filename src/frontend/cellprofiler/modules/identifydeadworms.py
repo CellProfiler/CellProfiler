@@ -69,7 +69,6 @@ from cellprofiler_core.constants.measurement import (
     FTR_CENTER_Y,
     FTR_OBJECT_NUMBER,
 )
-from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects, ObjectSet
 from cellprofiler_core.preferences import get_default_colormap
@@ -234,10 +233,11 @@ degrees.
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value, must_be_binary=True)
         image_mask = image.mask if image.has_mask else None
+        object_name = self.object_name.value
         #
         # Perform the identification
         #
-        mask, center_x, center_y, angles, nlabels, label_indexes, labels = identify_dead_worms(
+        lib_res = identify_dead_worms(
             image.pixel_data,
             image_mask,
             self.wants_automatic_distance.value,
@@ -245,19 +245,22 @@ degrees.
             self.worm_length.value,
             self.angle_count.value,
             self.space_distance.value,
-            self.angular_distance.value
+            self.angular_distance.value,
+            object_name,
+            self.show_window
         )
 
-        m = workspace.measurements
-        assert isinstance(m, Measurements)
-        object_name = self.object_name.value
-        m.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
-        m.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
-        m.add_measurement(object_name, M_ANGLE, angles * 180 / numpy.pi)
-        m.add_measurement(
-            object_name, M_NUMBER_OBJECT_NUMBER, label_indexes,
-        )
-        m.add_image_measurement(FF_COUNT % object_name, nlabels)
+        if self.show_window:
+            labels, lib_measurements, lib_display = lib_res
+        else:
+            labels, lib_measurements = lib_res
+
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+        for obj, features in lib_measurements.objects.items():
+            for feature_name, val in features.items():
+                workspace.measurements.add_measurement(obj, feature_name, val)
         #
         # Make the objects
         #
@@ -267,13 +270,14 @@ degrees.
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)
+
         if self.show_window:
-            workspace.display_data.i = center_y
-            workspace.display_data.j = center_x
-            workspace.display_data.angle = angles
-            workspace.display_data.mask = mask
+            workspace.display_data.i = lib_display.center_y
+            workspace.display_data.j = lib_display.center_x
+            workspace.display_data.angle = lib_display.angles
+            workspace.display_data.mask = lib_display.mask
             workspace.display_data.labels = labels
-            workspace.display_data.count = nlabels
+            workspace.display_data.count = lib_display.nlabels
 
     def display(self, workspace, figure):
         """Show an informative display"""

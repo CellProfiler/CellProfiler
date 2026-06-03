@@ -33,7 +33,7 @@ def measure_granularity(
         granular_spectrum_length:   Annotated[int, Field(description="Range of the granular spectrum")],
         dimensions:                 Annotated[int, Field(description="Dimensionality of the image")] = 2,
         return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
-        ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, GranularityDisplayData]]:
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, GranularityDisplayData]]:
     #
     # Downsample the image and mask
     #

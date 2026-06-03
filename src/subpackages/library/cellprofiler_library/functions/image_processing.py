@@ -2366,7 +2366,7 @@ def process_all_connected_components(
         i_center: NDArray[numpy.int_], 
         j_center: NDArray[numpy.int_], 
         angular_orientation: NDArray[numpy.int_], 
-        mask: NDArray[ObjectLabel]
+        mask: NDArray[numpy.bool_]
     ) -> Tuple[
         NDArray[numpy.int_],
         NDArray[numpy.int_],

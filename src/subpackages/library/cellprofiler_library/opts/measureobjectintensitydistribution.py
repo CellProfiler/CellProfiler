@@ -42,12 +42,14 @@ class Feature(str, Enum):
     RADIAL_CV = "RadialCV"
     ZERNIKE_MAGNITUDE = "ZernikeMagnitude"
     ZERNIKE_PHASE = "ZernikePhase"
+    BIN_NUMBER = "BinNumber"
 
 
 F_ALL = [
     Feature.FRAC_AT_D.value,
     Feature.MEAN_FRAC.value,
     Feature.RADIAL_CV.value,
+    Feature.BIN_NUMBER.value,
 ]
 
 
@@ -56,12 +58,14 @@ class MeasurementChoice(str, Enum):
     FRAC_AT_D = "Fraction at Distance"
     MEAN_FRAC = "Mean Fraction"
     RADIAL_CV = "Radial CV"
+    BIN_NUM = "Bin Number"
 
 
 MEASUREMENT_CHOICES = [
     MeasurementChoice.FRAC_AT_D.value,
     MeasurementChoice.MEAN_FRAC.value,
     MeasurementChoice.RADIAL_CV.value,
+    MeasurementChoice.BIN_NUM.value,
 ]
 
 """Format strings used to build per-bin feature names."""
@@ -76,6 +80,7 @@ class TemplateMeasurementFormat(str):
     RD_FRAC_AT_D = "_".join((C_RADIAL_DISTRIBUTION, Feature.FRAC_AT_D.value + FF_GENERIC))
     RD_MEAN_FRAC = "_".join((C_RADIAL_DISTRIBUTION, Feature.MEAN_FRAC.value + FF_GENERIC))
     RD_RADIAL_CV = "_".join((C_RADIAL_DISTRIBUTION, Feature.RADIAL_CV.value + FF_GENERIC))
+    RD_BIN_NUM = "_".join((C_RADIAL_DISTRIBUTION, Feature.BIN_NUMBER.value + FF_GENERIC))
     RD_OVERFLOW_FRAC_AT_D = "_".join(
         (C_RADIAL_DISTRIBUTION, Feature.FRAC_AT_D.value, "%s", FF_OVERFLOW)
     )
@@ -85,10 +90,14 @@ class TemplateMeasurementFormat(str):
     RD_OVERFLOW_RADIAL_CV = "_".join(
         (C_RADIAL_DISTRIBUTION, Feature.RADIAL_CV.value, "%s", FF_OVERFLOW)
     )
+    RD_OVERFLOW_BIN_NUM = "_".join(
+        (C_RADIAL_DISTRIBUTION, Feature.BIN_NUMBER.value, "%s", FF_OVERFLOW)
+    )
 
 
 MEASUREMENT_ALIASES = {
     MeasurementChoice.FRAC_AT_D.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_FRAC_AT_D),
     MeasurementChoice.MEAN_FRAC.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_MEAN_FRAC),
     MeasurementChoice.RADIAL_CV.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_RADIAL_CV),
+    MeasurementChoice.BIN_NUM.value: TemplateMeasurementFormat(TemplateMeasurementFormat.RD_BIN_NUM),
 }

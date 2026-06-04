@@ -104,6 +104,11 @@ def record_bin_measurements(
                 TemplateMeasurementFormat(TemplateMeasurementFormat.RD_RADIAL_CV),
                 TemplateMeasurementFormat.RD_OVERFLOW_RADIAL_CV,
             ),
+            (
+                numpy.full(nobjects, nbin + 1),
+                TemplateMeasurementFormat(TemplateMeasurementFormat.RD_BIN_NUM),
+                TemplateMeasurementFormat.RD_OVERFLOW_BIN_NUM,
+            ),
         ):
             if nbin == bin_count:
                 measurement_name = overflow_feature % image_name

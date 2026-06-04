@@ -534,6 +534,7 @@ pixel values are multiplied by this weight before assigning the color.
         channel_names = []
         channelstack =  self.scheme_choice == Scheme.STACK
         if self.scheme_choice.value not in (Scheme.STACK, Scheme.COMPOSITE):
+            input_image_names = [c.image_name.value for c in self.color_scheme_settings if c.image_name.value != LEAVE_THIS_BLACK]
             if self.scheme_choice.value == Scheme.RGB:
                 image_arr: List[Image2DGrayscale] = [
                     None if self.red_image_name.value == LEAVE_THIS_BLACK else imgset.get_image(self.red_image_name.value, must_be_grayscale=True).pixel_data,

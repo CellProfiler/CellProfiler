@@ -7,7 +7,7 @@ from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_core.utilities.core.object import crop_labels_and_image
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
 from cellprofiler_library.measurement_model import LibraryMeasurements
-from cellprofiler_library.functions.measurement import measure_object_area_occupied, measure_integrated_intensity, measure_mean_intensity, measure_std_intensity, measure_min_intensity, measure_max_intensity, measure_max_position, measure_center_of_mass_binary, measure_center_of_mass_intensity, measure_mass_displacement, measure_quartile_intensity
+from cellprofiler_library.functions.measurement import measure_object_area_occupied, measure_integrated_intensity, measure_mean_intensity, measure_std_intensity, measure_min_intensity, measure_max_intensity, measure_max_position, measure_center_of_mass_binary, measure_center_of_mass_intensity, measure_mass_displacement, measure_quartile_intensity, measure_mad_intensity
 from cellprofiler_library.opts.measureobjectintensity import TemplateMeasurementFormat, IntensityFeature
 
 
@@ -216,15 +216,14 @@ def measure_object_intensity(
                 dest[lindexes[qmask_no_upper] - 1] = _dest_no_upper
 
             #
-            # Once again, for the MAD
+            # The MAD = median(|x_i - median(x)|). Compute it as a true
+            # per-object median of the absolute deviations. Reusing the
+            # quartile machinery here would interpolate across value
+            # boundaries for odd-sized objects and give a wrong result.
             #
-            fraction = 1.0/ image_dimensions
-            madimg = numpy.abs(limg - median_intensity[llabels - 1])
-            order = numpy.lexsort((madimg, llabels))
-
-            qmask, _mad_intensity, qmask_no_upper, _mad_intensity_no_upper = measure_quartile_intensity(indices, areas, fraction, madimg, order)
-            mad_intensity[lindexes[qmask] - 1] = _mad_intensity
-            mad_intensity[lindexes[qmask_no_upper] - 1] = _mad_intensity_no_upper
+            mad_intensity[lindexes - 1] = measure_mad_intensity(
+                limg, llabels, lindexes, median_intensity
+            )
 
         emask = masked_outlines > 0
         eimg = img[emask]

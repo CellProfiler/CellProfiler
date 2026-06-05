@@ -1692,6 +1692,33 @@ def measure_quartile_intensity(indices:NDArray[numpy.int_], areas: NDArray[numpy
     dest_no_upper = limg[order[qindex[qmask_no_upper]]]
     return qmask, _dest, qmask_no_upper, dest_no_upper
 
+def measure_mad_intensity(
+        limg: NDArray[Pixel],
+        llabels: NDArray[ObjectLabel],
+        lindexes: NDArray[numpy.int_],
+        median_intensity: NDArray[numpy.float_],
+        ) -> NDArray[numpy.float64]:
+    """Compute the median absolute deviation (MAD) of intensity per object.
+
+    MAD is defined as median(|x_i - median(x)|). Unlike the quartile measurements,
+    this is computed as a true per-object median of the absolute deviations rather
+    than via interpolated quartile indexing, which would otherwise interpolate
+    across value boundaries for odd-sized objects and yield an incorrect result.
+
+    Args:
+        limg: 1D array of object pixel intensities
+        llabels: 1D array of object labels, aligned with ``limg``
+        lindexes: object label indices to compute over
+        median_intensity: per-object median intensity, indexed by label - 1
+
+    Returns:
+        Array of MAD values, one per entry in ``lindexes``.
+    """
+    madimg = numpy.abs(limg - median_intensity[llabels - 1])
+    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        scipy.ndimage.median(madimg, llabels, lindexes)
+    )
+
 ###############################################################################
 # MeasureObjectOverlap
 ###############################################################################

@@ -13,6 +13,7 @@ import centrosome.threshold
 import centrosome.filter
 import scipy
 import scipy.interpolate
+import scipy.sparse
 import matplotlib
 import math
 from numpy.typing import NDArray
@@ -22,9 +23,6 @@ from skimage.restoration import denoise_bilateral
 from centrosome.cpmorphology import get_line_pts, all_connected_components
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
-import scipy.ndimage as scind
-import scipy.sparse
-from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 from cellprofiler_library.types import (
     ImageGrayscale, ImageGrayscaleMask, 
@@ -2826,7 +2824,7 @@ def cumsum_quadrant(
 
 def entropy(x: NDArray[Pixel]) -> float:
     """The entropy of x as if x is a probability distribution"""
-    histogram = scind.histogram(x.astype(float), numpy.min(x), numpy.max(x), 256)
+    histogram = scipy.ndimage.histogram(x.astype(float), numpy.min(x), numpy.max(x), 256)
     n = numpy.sum(histogram)
     if n > 0 and numpy.max(histogram) > 0:
         histogram = histogram[histogram != 0]
@@ -2840,8 +2838,8 @@ def entropy2(x: NDArray[Pixel], y: NDArray[Pixel]) -> float:
     #
     # Bin each image into 256 gray levels
     #
-    x = (stretch(x) * 255).astype(int)
-    y = (stretch(y) * 255).astype(int)
+    x = (centrosome.filter.stretch(x) * 255).astype(int)
+    y = (centrosome.filter.stretch(y) * 255).astype(int)
     #
     # create an image where each pixel with the same X & Y gets
     # the same value

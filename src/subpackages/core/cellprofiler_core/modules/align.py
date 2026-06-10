@@ -60,7 +60,9 @@ from ..setting.subscriber import ImageSubscriber
 from ..setting.text import ImageName
 
 from cellprofiler_library.opts.align import AlignmentMethod, CropMode, AdditionalAlignmentChoice, MEASUREMENT_FORMAT, M_ALL, C_ALIGN
-from cellprofiler_library.modules._align import adjust_offsets, apply_alignment, align_images
+from cellprofiler_library.modules._align import align_images
+
+
 class Align(Module):
     module_name = "Align"
     category = "Image Processing"
@@ -276,56 +278,56 @@ a separate alignment to the first image can be calculated:
         return result
 
     def run(self, workspace):
-        off_x, off_y = self.align(
-            workspace, self.first_input_image.value, self.second_input_image.value
-        )
-        names = [
-            (self.first_input_image.value, self.first_output_image.value),
-            (self.second_input_image.value, self.second_output_image.value),
+        input_image_names = [
+            self.first_input_image.value,
+            self.second_input_image.value,
         ]
-        offsets = [(0, 0), (off_y, off_x)]
-
+        output_image_names = [
+            self.first_output_image.value,
+            self.second_output_image.value,
+        ]
+        align_choices = []
         for additional in self.additional_images:
-            names.append(
-                (additional.input_image_name.value, additional.output_image_name.value)
+            input_image_names.append(additional.input_image_name.value)
+            output_image_names.append(additional.output_image_name.value)
+            align_choices.append(additional.align_choice)
+
+        input_images = [workspace.image_set.get_image(im_name) for im_name in input_image_names]
+        # TODO: 5045 - is astype(float) necessary? why?
+        input_image_pixels = [img.pixel_data.astype(float) for img in input_images]
+        input_image_masks = [img.mask for img in input_images]
+
+        res = align_images(
+            input_image_pixels[0],
+            input_image_masks[0],
+            input_image_pixels[1],
+            input_image_masks[1],
+            self.alignment_method.value,
+            self.crop_mode.value,
+            input_image_pixels[2:],
+            input_image_masks[2:],
+            align_choices,
+            input_image_names,
+            output_image_names,
+            self.show_window
+        )
+        if self.show_window:
+            lib_data, lib_display = res
+            output_image_pixels, output_image_masks, crop_masks, lib_measurements = lib_data
+        else:
+            output_image_pixels, output_image_masks, crop_masks, lib_measurements = res
+
+        for i in range(len(output_image_pixels)):
+            output_image = Image(
+                output_image_pixels[i], mask=output_image_masks[i], crop_mask=crop_masks[i], parent_image=input_images[i]
             )
-            if additional.align_choice == AdditionalAlignmentChoice.SIMILARLY.value:
-                a_off_x, a_off_y = off_x, off_y
-            else:
-                a_off_x, a_off_y = self.align(
-                    workspace,
-                    self.first_input_image.value,
-                    additional.input_image_name.value,
-                )
-            offsets.append((a_off_y, a_off_x))
+            workspace.image_set.add(output_image_names[i], output_image)
 
-        shapes = [
-            workspace.image_set.get_image(x).pixel_data.shape[:2] for x, _ in names
-        ]
-        offsets, shapes = adjust_offsets(offsets, shapes, self.crop_mode    .value)
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
-        #
-        # Align and write the measurements
-        #
-        for (input_name, output_name), (y, x), shape in zip(names, offsets, shapes):
-            self.apply_alignment(workspace, input_name, output_name, x, y, shape)
-            for axis, value in (("X", -x), ("Y", -y)):
-                feature = MEASUREMENT_FORMAT % (axis, output_name)
-                workspace.measurements.add_image_measurement(feature, value)
-
-        # save data for display
-        workspace.display_data.image_info = [
-            (
-                input_name,
-                workspace.image_set.get_image(input_name).pixel_data,
-                output_name,
-                workspace.image_set.get_image(output_name).pixel_data,
-                x,
-                y,
-                shape,
-            )
-            for (input_name, output_name), (y, x), shape in zip(names, offsets, shapes)
-        ]
+        if self.show_window:
+            workspace.display_data.image_info = lib_display.image_info
 
     def display(self, workspace, figure):
         """Display the overlaid images
@@ -386,57 +388,6 @@ a separate alignment to the first image can be calculated:
             figure.subplot_imshow(
                 1, j, img, aligned_title, sharexy=figure.subplot(0, 0)
             )
-
-    def align(self, workspace, input1_name, input2_name):
-        """Align the second image with the first
-
-        Calculate the alignment offset that must be added to indexes in the
-        first image to arrive at indexes in the second image.
-
-        Returns the x,y (not i,j) offsets.
-        """
-        image1 = workspace.image_set.get_image(input1_name)
-        image1_pixels = image1.pixel_data.astype(float)
-        image2 = workspace.image_set.get_image(input2_name)
-        image2_pixels = image2.pixel_data.astype(float)
-        image1_mask = image1.mask
-        image2_mask = image2.mask
-        return align_images(image1_pixels, image2_pixels, image1_mask, image2_mask, self.alignment_method.value)
-
-
-    @staticmethod
-    def apply_alignment(
-            workspace, input_image_name, output_image_name, off_x, off_y, shape
-    ):
-        """Apply an alignment to the input image to result in the output image
-
-        workspace - image set's workspace passed to run
-
-        input_image_name - name of the image to be aligned
-
-        output_image_name - name of the resultant image
-
-        off_x, off_y - offset of the resultant image relative to the original
-
-        shape - shape of the resultant image
-        """
-
-        image = workspace.image_set.get_image(input_image_name)
-        pixel_data = image.pixel_data
-        image_mask = image.mask
-
-        output_pixels, output_mask, crop_mask = apply_alignment(
-            pixel_data, 
-            image_mask,
-            off_x, 
-            off_y, 
-            shape,
-        )
-
-        output_image = Image(
-            output_pixels, mask=output_mask, crop_mask=crop_mask, parent_image=image
-        )
-        workspace.image_set.add(output_image_name, output_image)
 
     def get_categories(self, pipeline, object_name):
         if object_name == "Image":

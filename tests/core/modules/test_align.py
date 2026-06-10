@@ -6,18 +6,7 @@ import numpy as np
 
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.modules.align import (
-    Align,
-    # AdditionalAlignmentChoice.SIMILARLY.value,
-    # AdditionalAlignmentChoice.SEPARATELY.value,
-    # AlignmentMethod.MUTUAL_INFORMATION.value,
-    # CropMode.SAME_SIZE.value,
-    # CropMode.CROP.value,
-    # CropMode.PAD.value,
-    # AlignmentMethod.CROSS_CORRELATION.value,
-    # MEASUREMENT_FORMAT,
-    # C_ALIGN,
-)
+from cellprofiler_core.modules.align import Align
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import Pipeline, LoadException
 from cellprofiler_core.workspace import Workspace

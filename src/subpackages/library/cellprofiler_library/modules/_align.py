@@ -1,18 +1,151 @@
 import numpy as np
 
 from typing import Tuple, Optional, List, Union, Annotated
-from pydantic import Field, validate_call, ConfigDict
+from pydantic import Field, validate_call, ConfigDict, BaseModel
 
-from cellprofiler_library.opts.align import CropMode, AlignmentMethod
+from cellprofiler_library.opts.align import CropMode, AlignmentMethod, AdditionalAlignmentChoice, MEASUREMENT_FORMAT
 from cellprofiler_library.types import Image2D, Image2DMask, ImageBinary
+from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.image_processing import (
     align_cross_correlation,
     align_mutual_information,
     offset_slice,
 )
 
+ImageInfo = List[Tuple[
+    str, # input image name
+    Image2D, # input image pixels
+    str, # output image name
+    Image2D, # output image pixels
+    int, # offset X
+    int, # offset Y
+    Tuple[int, int], # image shape
+]]
+
+class AlignDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    image_info: ImageInfo
+
+AlignReturnData = Tuple[
+    List[Image2D],
+    List[Image2DMask],
+    List[Optional[Union[Image2DMask, ImageBinary]]],
+    LibraryMeasurements
+]
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def align_images(
+        primary_image: Annotated[Image2D, Field(description="Primary image")],
+        primary_image_mask: Annotated[Image2DMask, Field(description="Primary image mask")],
+        secondary_image: Annotated[Image2D, Field(description="Secondary image")],
+        secondary_image_mask: Annotated[Image2DMask, Field(description="Secondary image mask")],
+        alignment_method: Annotated[AlignmentMethod, Field(description="Alignment method")],
+        crop_mode: Annotated[CropMode, Field(description="Crop mode")],
+        additional_images: Annotated[List[Image2D], Field(description="List of additonal images to align")] = [],
+        additional_image_masks: Annotated[List[Image2DMask], Field(description="List of image masks for additonal images")] = [],
+        additional_image_alignments: Annotated[List[AdditionalAlignmentChoice], Field(description="List of alignment types for additonal images")] = [],
+        input_image_names: Annotated[Optional[List[str]], Field(description="List of input image names for visualization (if None name will be generated)")] = None,
+        output_image_names: Annotated[Optional[List[str]], Field(description="List of output image names for visualization (if None name will be generated)")] = None,
+        return_visualization_data: Annotated[bool, Field(description="Return GT_pixels and ID_pixels for visualization")] = False,
+) -> Union[
+        Tuple[AlignReturnData, AlignDisplayData],
+        AlignReturnData
+    ]:
+        assert len(additional_images) == len(additional_image_masks), "Must have same number of image masks as images"
+        assert len(additional_images) == len(additional_image_alignments), "Must have same number of image alignments as images"
+        assert input_image_names is None or len(input_image_names) == (len(additional_images) + 2), "Must have same number of input image names as images"
+        assert output_image_names is None or len(output_image_names) == (len(additional_images) + 2), "Must have same number of output image names as images"
+
+        off_x, off_y = align_pair(
+            primary_image,
+            secondary_image,
+            primary_image_mask,
+            secondary_image_mask,
+            alignment_method
+        )
+        offsets = [(0,0), (off_y, off_x)]
+
+        for i in range(len(additional_images)):
+            if additional_image_alignments[i] == AdditionalAlignmentChoice.SIMILARLY.value:
+                offsets.append((off_y, off_x))
+            elif additional_image_alignments[i] == AdditionalAlignmentChoice.SEPARATELY.value:
+                a_off_x, a_off_y = align_pair(
+                    primary_image,
+                    additional_images[i],
+                    primary_image_mask,
+                    additional_image_masks[i],
+                    alignment_method
+                )
+                offsets.append((a_off_y, a_off_x))
+
+        shapes = [primary_image.shape[:2], secondary_image.shape[:2]] + [img.shape[:2] for img in additional_images]
+        offsets, shapes = adjust_offsets(offsets, shapes, crop_mode)
+
+        output_images: List[Image2D] = []
+        output_image_masks: List[Image2DMask] = []
+        crop_masks: List[Optional[Union[Image2DMask, ImageBinary]]] = []
+
+        measurements = LibraryMeasurements()
+        image_info: ImageInfo = []
+
+        for i in range(len(offsets)):
+            if i  == 0:
+                input_image = primary_image
+                input_image_mask = primary_image_mask
+                if return_visualization_data:
+                    input_image_name = input_image_names[i] if input_image_names else "Primary Image"
+                    output_image_name = output_image_names[i] if output_image_names else "Primary Image Aligned"
+            elif i  == 1:
+                input_image = secondary_image
+                input_image_mask = secondary_image_mask
+                if return_visualization_data:
+                    input_image_name = input_image_names[i] if input_image_names else "Secondary Image"
+                    output_image_name = output_image_names[i] if output_image_names else "Secondary Image Aligned"
+            else:
+                input_image = additional_images[i-2]
+                input_image_mask = additional_image_masks[i-2]
+                if return_visualization_data:
+                    input_image_name = input_image_names[i] if input_image_names else f"Additional Image {i+1}"
+                    output_image_name = output_image_names[i] if output_image_names else f"Additional Image {i+1} Aligned"
+
+            output_image, output_mask, crop_mask = apply_alignment(
+                input_image,
+                input_image_mask,
+                offsets[i][1],
+                offsets[i][0],
+                shapes[i],
+            )
+
+            output_images.append(output_image)
+            output_image_masks.append(output_mask)
+            crop_masks.append(crop_mask)
+            output_image_name = output_image_names[i] if output_image_names is not None else f"Image{i+1}"
+
+            for axis, value in (("X", -offsets[i][1]), ("Y", -offsets[i][0])):
+                measurements.add_image_measurement(MEASUREMENT_FORMAT % (axis, output_image_name), value)
+
+            if return_visualization_data:
+                image_info.append((
+                    input_image_name,
+                    input_image,
+                    output_image_name,
+                    output_image,
+                    offsets[i][1],
+                    offsets[i][0],
+                    shapes[i]
+                ))
+
+        if return_visualization_data:
+            return (output_images, output_image_masks, crop_masks, measurements), AlignDisplayData(image_info=image_info)
+        return output_images, output_image_masks, crop_masks, measurements
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def align_pair(
         image1_pixels: Image2D, 
         image2_pixels: Image2D, 
         image1_mask: Image2DMask, 
@@ -30,7 +163,7 @@ def align_images(
     """
     if alignment_method == AlignmentMethod.CROSS_CORRELATION.value:
         return align_cross_correlation(image1_pixels, image2_pixels)
-    else:
+    else: # alignment_method == AlignmentMethod.MUTUAL_INFORMATION.value:
         return align_mutual_information(
             image1_pixels, image2_pixels, image1_mask, image2_mask
         )

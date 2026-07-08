@@ -15,6 +15,7 @@ import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.utilities.icon
 from cellprofiler.gui.help.content import image_resource_dataUrl
+from cellprofiler.gui.i18n import _
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class WelcomeFrame(wx.Frame):
             parent,
             name="WelcomeScreenFrame",
             size=(640, 480),
-            title="Welcome to CellProfiler",
+            title=_("Welcome to CellProfiler"),
         )
 
         self.SetSizer(wx.BoxSizer())

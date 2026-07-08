@@ -153,6 +153,7 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.gui.i18n import _
 import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
@@ -187,7 +188,7 @@ class PipelineController(object):
         self.__analysis = None
         self.__frame = frame
         self.__add_module_frame = cellprofiler.gui.addmoduleframe.AddModuleFrame(
-            frame, -1, "Add modules"
+            frame, -1, _("Add modules")
         )
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         # ~*~
@@ -588,7 +589,7 @@ class PipelineController(object):
         )
         self.__help_button.SetToolTip("Get Help for selected module")
         self.__mcp_text = wx.StaticText(
-            self.__module_controls_panel, -1, "Adjust modules:"
+            self.__module_controls_panel, -1, _("Adjust modules:")
         )
         self.__mcp_add_module_button = wx.Button(
             self.__module_controls_panel,
@@ -691,19 +692,19 @@ class PipelineController(object):
         #
         self.__test_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_TEST"))
         self.__test_mode_button = wx.lib.buttons.GenBitmapTextButton(
-            panel, bitmap=self.__test_bmp, label=self.ENTER_TEST_MODE
+            panel, bitmap=self.__test_bmp, label=_(self.ENTER_TEST_MODE)
         )
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
-        self.__test_mode_button.SetToolTip(self.ENTER_TEST_MODE_HELP)
+        self.__test_mode_button.SetToolTip(_(self.ENTER_TEST_MODE_HELP))
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
         analyze_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16"))
         self.__analyze_images_button = wx.lib.buttons.GenBitmapTextButton(
-            panel, bitmap=analyze_bmp, label=self.ANALYZE_IMAGES
+            panel, bitmap=analyze_bmp, label=_(self.ANALYZE_IMAGES)
         )
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
-        self.__analyze_images_button.SetToolTip(self.ANALYZE_IMAGES_HELP)
+        self.__analyze_images_button.SetToolTip(_(self.ANALYZE_IMAGES_HELP))
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
@@ -713,24 +714,24 @@ class PipelineController(object):
         stop_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_STOP"))
         pause_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("pause"))
         self.__pause_button = wx.lib.buttons.GenBitmapTextButton(
-            panel, bitmap=pause_bmp, label=self.PAUSE
+            panel, bitmap=pause_bmp, label=_(self.PAUSE)
         )
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
-        self.__pause_button.SetToolTip(self.PAUSE_HELP)
+        self.__pause_button.SetToolTip(_(self.PAUSE_HELP))
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
         self.__resume_button = wx.lib.buttons.GenBitmapTextButton(
-            panel, bitmap=analyze_bmp, label=self.RESUME
+            panel, bitmap=analyze_bmp, label=_(self.RESUME)
         )
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
-        self.__resume_button.SetToolTip(self.RESUME_HELP)
+        self.__resume_button.SetToolTip(_(self.RESUME_HELP))
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
         self.__stop_analysis_button = wx.lib.buttons.GenBitmapTextButton(
-            panel, bitmap=stop_bmp, label="Stop Analysis"
+            panel, bitmap=stop_bmp, label=_("Stop Analysis")
         )
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
-        self.__stop_analysis_button.SetToolTip("Cancel the analysis run")
+        self.__stop_analysis_button.SetToolTip(_("Cancel the analysis run"))
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #
         # Test mode sizer
@@ -741,16 +742,16 @@ class PipelineController(object):
 
         run_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_RUN"))
         self.__tcp_continue = wx.lib.buttons.GenBitmapTextButton(
-            panel, label="Run", bitmap=run_bmp
+            panel, label=_("Run"), bitmap=run_bmp
         )
-        self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
+        self.__tcp_continue.SetToolTip(_("Run to next pause"))
         self.__tcp_continue.Bind(wx.EVT_BUTTON, self.on_debug_continue)
         sub_sizer.Add(self.__tcp_continue, 1, wx.EXPAND)
 
         self.__tcp_step = wx.lib.buttons.GenBitmapTextButton(
-            panel, label="Step", bitmap=analyze_bmp
+            panel, label=_("Step"), bitmap=analyze_bmp
         )
-        self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
+        self.__tcp_step.SetToolTip(_("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
@@ -758,21 +759,46 @@ class PipelineController(object):
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
 
         self.__tcp_stop_testmode = wx.lib.buttons.GenBitmapTextButton(
-            panel, label="Exit Test Mode", bitmap=stop_bmp
+            panel, label=_("Exit Test Mode"), bitmap=stop_bmp
         )
-        self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
+        self.__tcp_stop_testmode.SetToolTip(_("Exit test mode"))
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
 
         next_image_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
         self.__tcp_next_imageset = wx.lib.buttons.GenBitmapTextButton(
-            panel, label="Next Image Set", bitmap=next_image_bmp
+            panel, label=_("Next Image Set"), bitmap=next_image_bmp
         )
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
+        self.__tcp_next_imageset.SetToolTip(_("Jump to next image set"))
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
 
         self.show_launch_controls()
+
+    def refresh_translations(self):
+        if hasattr(self, "_PipelineController__add_module_frame"):
+            self.__add_module_frame.refresh_translations()
+        if hasattr(self, "_PipelineController__pipeline_list_view"):
+            self.__pipeline_list_view.refresh_translations()
+        if hasattr(self, "_PipelineController__path_list_ctrl"):
+            self.__path_list_ctrl.refresh_translations()
+        if not hasattr(self, "_PipelineController__test_mode_button"):
+            return
+
+        button_labels = [
+            (self.__test_mode_button, self.ENTER_TEST_MODE, self.ENTER_TEST_MODE_HELP),
+            (self.__analyze_images_button, self.ANALYZE_IMAGES, self.ANALYZE_IMAGES_HELP),
+            (self.__pause_button, self.PAUSE, self.PAUSE_HELP),
+            (self.__resume_button, self.RESUME, self.RESUME_HELP),
+            (self.__stop_analysis_button, "Stop Analysis", "Cancel the analysis run"),
+            (self.__tcp_continue, "Run", "Run to next pause"),
+            (self.__tcp_step, "Step", "Step to next module"),
+            (self.__tcp_stop_testmode, "Exit Test Mode", "Exit test mode"),
+            (self.__tcp_next_imageset, "Next Image Set", "Jump to next image set"),
+        ]
+        for button, label, tooltip in button_labels:
+            button.SetLabel(_(label))
+            button.SetToolTip(_(tooltip))
 
     def show_launch_controls(self):
         """Show the "Analyze images" and "Enter test mode" buttons"""
@@ -1020,7 +1046,7 @@ class PipelineController(object):
         """Handle the New Workspace menu command"""
         if self.__dirty_workspace:
             result = wx.MessageBox(
-                "Do you want to save your existing project?",
+                _("Do you want to save your existing project?"),
                 caption="Save project",
                 style=wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION,
                 parent=self.__frame,
@@ -1070,7 +1096,7 @@ class PipelineController(object):
         wildcard = "CellProfiler project (*.%s)|*.%s" % (EXT_PROJECT, EXT_PROJECT,)
         with wx.FileDialog(
             self.__frame,
-            "Save project file as",
+            _("Save project file as"),
             wildcard=wildcard,
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
         ) as dlg:
@@ -1119,7 +1145,7 @@ class PipelineController(object):
             ";".join(["*.%s" % x for x in EXT_PIPELINE_CHOICES]),
         )
         dlg = wx.FileDialog(
-            self.__frame, "Choose a pipeline file to open", wildcard=wildcard
+            self.__frame, _("Choose a pipeline file to open"), wildcard=wildcard
         )
         if dlg.ShowModal() == wx.ID_OK:
             pathname = dlg.GetPath()
@@ -1129,11 +1155,11 @@ class PipelineController(object):
     def __on_url_load_pipeline(self, event):
         dlg = wx.TextEntryDialog(
             self.__frame,
-            "Enter the pipeline's URL\n\n"
-            "Example: https://svn.broadinstitute.org/"
-            "CellProfiler/trunk/ExampleImages/"
-            "ExampleSBSImages/ExampleSBS.cppipe",
-            "Load pipeline via URL",
+                "Enter the pipeline's URL\n\n"
+                "Example: https://svn.broadinstitute.org/"
+                "CellProfiler/trunk/ExampleImages/"
+                "ExampleSBSImages/ExampleSBS.cppipe"
+            ,  _("Load pipeline via URL"),
         )
         if dlg.ShowModal() == wx.ID_OK:
             import cellprofiler.misc

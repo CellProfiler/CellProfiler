@@ -4,6 +4,7 @@ import webbrowser
 import wx.adv
 
 from cellprofiler.gui.dialog import AboutDialogInfo
+from cellprofiler.gui.i18n import _
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -34,11 +35,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             ),
         )
 
-        self.AppendSubMenu(self.__navigation_menu(), "Navigating The Menu Bar")
+        self.append_submenu(self.__navigation_menu(), "Navigating The Menu Bar")
 
-        self.AppendSubMenu(self.__figure_menu(), "Using Module Display Windows")
+        self.append_submenu(self.__figure_menu(), "Using Module Display Windows")
 
-        self.AppendSubMenu(
+        self.append_submenu(
             self.__project_menu(),
             cellprofiler.gui.help.content.CREATING_A_PROJECT_CAPTION,
         )
@@ -64,7 +65,7 @@ class Menu(cellprofiler.gui.menu.Menu):
             ),
         )
 
-        self.AppendSubMenu(self.__output_menu(), "Using Your Output")
+        self.append_submenu(self.__output_menu(), "Using Your Output")
 
         self.append(
             "Troubleshooting Memory and Speed Issues",
@@ -85,9 +86,9 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.read_content("other_batch.rst"),
         )
 
-        self.AppendSubMenu(self.__legacy_menu(), "Legacy Modules and Features")
+        self.append_submenu(self.__legacy_menu(), "Legacy Modules and Features")
 
-        self.AppendSubMenu(self.__other_menu(), "Other Features")
+        self.append_submenu(self.__other_menu(), "Other Features")
 
         self.AppendSeparator()
 

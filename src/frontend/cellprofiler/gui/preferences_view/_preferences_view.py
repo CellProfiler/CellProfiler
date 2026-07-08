@@ -27,6 +27,7 @@ from ._progress_watcher import ProgressWatcher
 from ..constants.preferences_view import WELCOME_MESSAGE
 from ..html.utils import rst_to_html_fragment
 from ..htmldialog import HTMLDialog
+from ..i18n import _
 from ..utilities.preferences_view import secs_to_timestr
 
 
@@ -38,6 +39,7 @@ class PreferencesView:
     def __init__(self, parent_sizer, panel, progress_panel, status_panel):
         self.__panel = panel
         self.__parent_sizer = parent_sizer
+        self.__folder_panel_labels = []
         panel.AutoLayout = True
         panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
         static_box_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -94,6 +96,22 @@ class PreferencesView:
         self.__pipeline_list_view = None
         self.__progress_watcher = None
 
+    def refresh_translations(self):
+        for text_static, label in self.__folder_panel_labels:
+            text_static.SetLabel(_("%s:") % _(label))
+        if self.__worker_count_ctrl.GetLabel():
+            worker_text = self.__worker_count_ctrl.GetLabel()
+            if worker_text.endswith("worker."):
+                self.__worker_count_ctrl.SetLabel(_("Running 1 worker."))
+            elif "workers." in worker_text:
+                count = worker_text.split()[1]
+                try:
+                    self.__worker_count_ctrl.SetLabel(
+                        _("Running %d workers.") % int(count)
+                    )
+                except ValueError:
+                    pass
+
     def show_default_image_folder(self, show):
         if self.__sizer.IsShown(self.__image_folder_panel) == show:
             return
@@ -130,7 +148,8 @@ class PreferencesView:
         help_button = wx.Button(panel, label="?", style=wx.BU_EXACTFIT)
         sizer.Add(help_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        text_static = wx.StaticText(panel, -1, text + ":")
+        text_static = wx.StaticText(panel, -1, _("%s:") % _(text))
+        self.__folder_panel_labels.append((text_static, text))
         sizer.Add(text_static, 0, wx.ALIGN_CENTER)
         choices = list(set(list_fn()))
         if value not in choices:
@@ -142,13 +161,13 @@ class PreferencesView:
             wx.ART_FOLDER_OPEN, wx.ART_CMN_DIALOG, (16, 16)
         )
         browse_button = wx.BitmapButton(panel, -1, bitmap=browse_bmp)
-        browse_button.SetToolTip("Browse for %s folder" % text)
+        browse_button.SetToolTip(_("Browse for %s folder") % _(text))
         sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
 
         new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR, wx.ART_CMN_DIALOG, (16, 16))
         new_button = wx.BitmapButton(panel, -1, bitmap=new_bmp)
-        new_button.SetToolTip("Make a new sub-folder")
+        new_button.SetToolTip(_("Make a new sub-folder"))
         if os.path.isdir(value):
             new_button.Disable()
         sizer.Add(new_button, 0, wx.ALIGN_CENTER)
@@ -159,7 +178,7 @@ class PreferencesView:
             refresh_button = wx.BitmapButton(panel, -1, bitmap=refresh_bitmap)
             sizer.AddSpacer(2)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
-            refresh_button.SetToolTip("Refresh the Default Input Folder list")
+            refresh_button.SetToolTip(_("Refresh the Default Input Folder list"))
 
             def on_refresh(event):
                 refresh_action()
@@ -217,9 +236,9 @@ class PreferencesView:
         n_workers - # of workers running
         """
         if n_workers == 1:
-            label = "Running 1 worker."
+            label = _("Running 1 worker.")
         else:
-            label = "Running %d workers." % n_workers
+            label = _("Running %d workers.") % n_workers
         self.__worker_count_ctrl.SetLabel(label)
 
     def __make_progress_panel(self):

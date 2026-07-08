@@ -131,6 +131,7 @@ namespaces = true
 [tool.setuptools.package-data]
 "cellprofiler.data" = ["*.rst"]
 "cellprofiler.gui" = ["*.html"]
+"cellprofiler.gui.i18n" = ["translations/*.json"]
 
 [tool.setuptools_scm]
 root = "../.."

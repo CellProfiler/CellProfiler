@@ -167,7 +167,7 @@ def keep_within_limits(limit_groups):
     return indexes
 
 
-def keep_by_rule_scores(scores, rules_class):
+def keep_by_rules(scores, rules_class):
     """Return the indexes (base 1) of objects whose highest-scoring class is rules_class
 
     scores - an MxN matrix as returned by Rules.score(): M objects x N classes.
@@ -360,9 +360,10 @@ def filter_objects(
             raise ValueError(f"Unknown filter choice: {filter_choice} for mode {mode}")
     elif mode == FilterMode.BORDER.value:
         indexes = discard_border_objects(src_labels, parent_image_mask)
+    # keep_by_class
     elif mode in (FilterMode.RULES.value, FilterMode.CLASSIFIERS.value):
         if scores is not None:
-            indexes = keep_by_rule_scores(scores, rules_class)
+            indexes = keep_by_rules(scores, rules_class)
         elif hits is not None:
             indexes = keep_by_hits(hits)
         else:

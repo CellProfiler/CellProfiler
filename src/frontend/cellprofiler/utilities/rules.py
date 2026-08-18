@@ -90,7 +90,7 @@ class Rule(object):
             scorer_kwargs={"SequenceMatcher": s}
         )
 
-        if closest_match == None or len(closest_match) == 0:
+        if closest_match is None or len(closest_match) == 0:
             return ''
         else:
             if full:

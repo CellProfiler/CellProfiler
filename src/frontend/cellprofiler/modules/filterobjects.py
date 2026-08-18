@@ -24,14 +24,7 @@ from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Directory, Filename, Float, LabelName
 
 from cellprofiler.modules import _help
-from cellprofiler_library.modules._filterobjects import (
-    keep_one,
-    keep_per_object,
-    keep_within_limits,
-    discard_border_objects,
-    get_filtered_object,
-    get_removed_objects
-)
+from cellprofiler_library.modules._filterobjects import filter_objects
 
 from cellprofiler_library.opts.filterobjects import (
     FilterMethod,
@@ -708,97 +701,106 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         src_labels = src_objects.segmented
         src_count = src_objects.count
         return src_labels, src_count
-    
-    def run(self, workspace):
-        """Filter objects for this image set, display results"""
-        src_name = self.x_name.value
-        src_objects = workspace.get_objects(src_name)
 
+    def get_parent_objects(self, workspace, object_name):
+        """
+        Return the Parent_<x_name> measurement for object_name, or None if absent
+
+        Parent relation is used if it exists (use RelateObjects module).
+        """
+        m = workspace.measurements
+        parent_feature = f"Parent_{self.x_name.value}"
+        parent_relation_exists = len(
+            [i for i in m.get_measurement_columns() if i[0] == object_name and i[1] == parent_feature]
+        ) > 0
+        return m.get_measurement(object_name, parent_feature) if parent_relation_exists else None
+
+    def get_filter_kwargs(self, workspace, src_objects, src_name):
         if self.mode == FilterMode.RULES.value:
-            indexes = self.keep_by_rules(workspace, src_objects)
+            rules = self.get_rules()
+            rules_class = int(self.rules_class.value) - 1
+            return self.get_rule_score_kwargs(workspace, rules, rules_class)
 
         elif self.mode == FilterMode.MEASUREMENTS.value:
             filter_choice = self.filter_choice.value
             if filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
                 measurement = self.measurements[0].measurement.value
                 values = workspace.measurements.get_current_measurement(src_name, measurement)
-                indexes = keep_one(values, filter_choice)
+                return {"filter_choice": filter_choice, "values": values}
 
             elif filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
-                per_object_assignment = self.per_object_assignment.value
                 measurement = self.measurements[0].measurement.value
                 values = workspace.measurements.get_current_measurement(src_name, measurement)
-                src_labels, _ = self.get_object_labels_and_counts(workspace, src_name)
                 enclosing_labels, enclosing_count = self.get_object_labels_and_counts(workspace, self.enclosing_object_name.value)
-                indexes = keep_per_object(src_labels, enclosing_labels, enclosing_count, per_object_assignment, filter_choice, values)
+                return {
+                    "filter_choice": filter_choice,
+                    "values": values,
+                    "enclosing_labels": enclosing_labels,
+                    "enclosing_count": enclosing_count,
+                    "per_object_assignment": self.per_object_assignment.value,
+                }
 
             elif filter_choice == FilterMethod.LIMITS.value:
                 limit_groups = []
-                MIN_LIM = "min_limit"
-                MAX_LIM = "max_limit"
-                VALUES = "values"
                 for group in self.measurements:
                     measurement = group.measurement.value
                     values = workspace.measurements.get_current_measurement(src_name, measurement)
-                    group_config = {
-                        VALUES: values,
-                        MIN_LIM: group.min_limit.value if group.wants_minimum.value else None,
-                        MAX_LIM: group.max_limit.value if group.wants_maximum.value else None,
-                    }
-                    limit_groups.append(group_config)
-
-                indexes = keep_within_limits(limit_groups)
+                    limit_groups.append({
+                        "values": values,
+                        "min_limit": group.min_limit.value if group.wants_minimum.value else None,
+                        "max_limit": group.max_limit.value if group.wants_maximum.value else None,
+                    })
+                return {"filter_choice": filter_choice, "limit_groups": limit_groups}
             else:
                 raise ValueError(f"Unknown filter choice: {filter_choice} for mode {self.mode.value}")
 
-
         elif self.mode == FilterMode.BORDER.value:
-            labels = src_objects.segmented
             parent_image = src_objects.parent_image if src_objects.has_parent_image else None
             parent_image_mask = src_objects.parent_image.mask if parent_image and parent_image.has_mask else None
-            indexes = discard_border_objects(labels, parent_image_mask)
+            return {"parent_image_mask": parent_image_mask}
 
         elif self.mode == FilterMode.CLASSIFIERS.value:
-            indexes = self.keep_by_class(workspace, src_objects)
+            return self.get_classifier_kwargs(workspace)
 
         else:
             raise ValueError("Unknown filter choice: %s" % self.mode.value)
 
-        #
-        # Create an array that maps label indexes to their new values
-        # All labels to be deleted have a value in this array of zero
-        #
-        new_object_count = len(indexes)
-        max_label = numpy.max(src_objects.segmented)
-        label_indexes = numpy.zeros((max_label + 1,), int)
-        label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+    def run(self, workspace):
+        """Filter objects for this image set, display results"""
+        src_name = self.x_name.value
+        src_objects = workspace.get_objects(src_name)
+
+        filter_kwargs = self.get_filter_kwargs(workspace, src_objects, src_name)
+
+        additional_objects = [
+            (
+                workspace.get_objects(x.object_name.value).segmented,
+                self.get_parent_objects(workspace, x.object_name.value),
+                x.keep_unassociated_objects.value,
+            )
+            for x in self.additional_objects
+        ]
+
+        target_segmented, additional_segmented, removed_segmented = filter_objects(
+            src_labels=src_objects.segmented,
+            mode=self.mode.value,
+            keep_removed_objects=self.keep_removed_objects.value,
+            additional_objects=additional_objects,
+            **filter_kwargs,
+        )
+
         #
         # Loop over both the primary and additional objects
         # Note: Parent of first_set is always None
         #
-        object_list = [(self.x_name.value, self.y_name.value, None)] + [
-            (x.object_name.value, x.target_name.value, x.keep_unassociated_objects.value) for x in self.additional_objects
+        object_list = [(self.x_name.value, self.y_name.value, target_segmented)] + [
+            (x.object_name.value, x.target_name.value, segmented)
+            for x, segmented in zip(self.additional_objects, additional_segmented)
         ]
-        m = workspace.measurements
         first_set = True
-        for src_name, target_name, keep_unassociated_objects in object_list:
+        for src_name, target_name, target_objects_segmented in object_list:
             src_objects = workspace.get_objects(src_name)
 
-            #
-            # Parent relation is used if it exists (use RelateObjects module)
-            # Get parent object from measurements
-            #
-            parent_relation_exists = len([i for i in m.get_measurement_columns() if i[0] == src_name and i[1] == f'Parent_{self.x_name.value}']) > 0
-            parent_objects = m.get_measurement(src_name, f"Parent_{self.x_name.value}") if parent_relation_exists else None
-
-            target_objects_segmented = get_filtered_object(
-                src_objects.segmented, 
-                indexes, 
-                label_indexes,
-                max_label,
-                parent_objects,
-                keep_unassociated_objects
-            )
             #
             # Remove the filtered objects from the small_removed_segmented
             # if present. "small_removed_segmented" should really be
@@ -806,7 +808,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             #
             target_objects_small_removed_segmented = src_objects.small_removed_segmented.copy()
             target_objects_small_removed_segmented[(target_objects_segmented == 0) & (src_objects.segmented != 0)] = 0
-            
+
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
@@ -831,11 +833,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if self.keep_removed_objects.value:
             # Isolate objects removed by the filter
             src_objects = workspace.get_objects(self.x_name.value)
-            removed_labels = get_removed_objects(
-                indexes,
-                max_label,
-                src_objects.segmented,
-            )
+            removed_labels = removed_segmented
             #
             # Remove the filtered objects from the small_removed_segmented
             # if present. "small_removed_segmented" should really be
@@ -975,25 +973,18 @@ measurement is not available at this stage of the pipeline. Consider adding modu
     def get_classifier_features(self):
         return self.load_classifier()[3]
 
-    def keep_by_rules(self, workspace, src_objects, rules=None):
-        """Keep objects according to rules
-
-        workspace - workspace holding the measurements for the rules
-        src_objects - filter these objects (uses measurement indexes instead)
-        rules - supply pre-generated rules loaded from a classifier model file
-
-        Open the rules file indicated by the settings and score the
-        objects by the rules. Return the indexes of the objects that pass.
+    def get_rule_score_kwargs(self, workspace, rules, rules_class):
         """
-        if not rules:
-            rules = self.get_rules()
-            rules_class = int(self.rules_class.value) - 1
-        else:
-            rules_class = self.get_bin_labels().index(self.rules_class.value)
+        Score objects against a set of CPA rules and package the plain result
+
+        :param workspace - workspace holding the measurements for the rules
+        :param rules - a Rules instance (or a classifier loaded as rules)
+        :param rules_class - the 0-based class index to keep
+        """
         measurement_value_list = []
         for rule in rules.rules:
             values = workspace.measurements.get_current_measurement(
-                rule.object_name, 
+                rule.object_name,
                 rule.return_fuzzy_measurement_name(
                     workspace.measurements.get_measurement_columns(),
                     rule.object_name,
@@ -1004,32 +995,26 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             )
             measurement_value_list.append(values)
         scores = rules.score(measurement_value_list)
-        if len(scores) > 0:
-            is_not_nan = numpy.any(~numpy.isnan(scores), 1)
-            best_class = numpy.argmax(scores[is_not_nan], 1).flatten()
-            hits = numpy.zeros(scores.shape[0], bool)
-            hits[is_not_nan] = best_class == rules_class
-            indexes = numpy.argwhere(hits).flatten() + 1
-        else:
-            indexes = numpy.array([], int)
-        return indexes
+        return {"scores": scores, "rules_class": rules_class}
 
-    def keep_by_class(self, workspace, src_objects):
-        """ Keep objects according to their predicted class
-        :param workspace: workspace holding the measurements for the rules
-        :param src_objects: filter these objects (uses measurement indexes instead)
-        :return: indexes (base 1) of the objects that pass
+    def get_classifier_kwargs(self, workspace):
+        """
+        Predict objects' classes and package the plain result
+
+        :param workspace: workspace holding the measurements for the classifier
+        :return: keyword arguments for filter_objects() ("scores"+"rules_class", or "hits")
         """
         classifier = self.get_classifier()
         if self.get_classifier_type() == "Rules":
-            return self.keep_by_rules(workspace, src_objects, rules=classifier)
+            rules_class = self.get_bin_labels().index(self.rules_class.value)
+            return self.get_rule_score_kwargs(workspace, classifier, rules_class)
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
         features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
         feature_vector = numpy.column_stack(
             [
                 workspace.measurements[
-                    object_name, 
+                    object_name,
                     Rule.return_fuzzy_measurement_name(
                         workspace.measurements.get_measurement_columns(),
                         object_name,
@@ -1046,8 +1031,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         numpy.nan_to_num(feature_vector, copy=False)
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
-        indexes = numpy.argwhere(hits) + 1
-        return indexes.flatten()
+        return {"hits": hits}
 
     def get_measurement_columns(self, pipeline):
         return super(FilterObjects, self).get_measurement_columns(

@@ -1,6 +1,12 @@
 import numpy
 import scipy
-from cellprofiler_library.opts.filterobjects import FilterMethod, OverlapAssignment
+from typing import Annotated, Any, Dict, List, Optional, Tuple
+
+from numpy.typing import NDArray
+from pydantic import ConfigDict, Field, validate_call
+
+from cellprofiler_library.opts.filterobjects import FilterMethod, FilterMode, OverlapAssignment
+from cellprofiler_library.types import ObjectSegmentation
 
 def keep_one(values, filter_choice):
     """Return an array containing the single object to keep
@@ -134,8 +140,7 @@ def keep_per_object(src_labels, enclosing_labels, enclosing_max, per_object_assi
 def keep_within_limits(limit_groups):
     """Return an array containing the indices of objects to keep
 
-    workspace - workspace passed into Run
-    src_objects - the Objects instance to be filtered
+    limit_groups - a list of {"values": ndarray, "min_limit": float or None, "max_limit": float or None}
     """
     hits = None
     MIN_LIM = "min_limit"
@@ -160,6 +165,33 @@ def keep_within_limits(limit_groups):
     indexes = numpy.argwhere(hits)[:, 0]
     indexes = indexes + 1
     return indexes
+
+
+def keep_by_rule_scores(scores, rules_class):
+    """Return the indexes (base 1) of objects whose highest-scoring class is rules_class
+
+    scores - an MxN matrix as returned by Rules.score(): M objects x N classes.
+             The Rules object itself is never passed into the library, only
+             the plain scores it produces.
+    rules_class - the 0-based class index to keep
+    """
+    if len(scores) == 0:
+        return numpy.array([], int)
+    is_not_nan = numpy.any(~numpy.isnan(scores), 1)
+    best_class = numpy.argmax(scores[is_not_nan], 1).flatten()
+    hits = numpy.zeros(scores.shape[0], bool)
+    hits[is_not_nan] = best_class == rules_class
+    return numpy.argwhere(hits).flatten() + 1
+
+
+def keep_by_hits(hits):
+    """Return the indexes (base 1) of objects for which hits is True
+
+    Used for classifier predictions (predicted_classes == target_class) -
+    the classifier object itself is never passed into the library, only the
+    resulting boolean hits it produces.
+    """
+    return numpy.argwhere(hits).flatten() + 1
 
 
 def discard_border_objects(labels, parent_image_mask):
@@ -193,19 +225,19 @@ def discard_border_objects(labels, parent_image_mask):
 
 
 def get_filtered_object(
-        src_objects_segmented, 
-        indexes, 
+        src_objects_segmented,
+        indexes,
         label_indexes,
         max_label,
         parent_objects,
         keep_unassociated_objects
     ):
-    
-    if label_indexes is None:   
+
+    if label_indexes is None:
         new_object_count = len(indexes)
         label_indexes = numpy.zeros((max_label + 1,), int)
         label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
-    
+
     #
     # Reindex the labels of the old source image
     #
@@ -214,12 +246,12 @@ def get_filtered_object(
     return target_objects_segmented
 
 def reindex_labels(
-        src_objects_segmented, 
-        max_label, 
-        label_indexes, 
-        parent_objects, 
+        src_objects_segmented,
+        max_label,
+        label_indexes,
+        parent_objects,
         keep_unassociated_objects
-    ):        
+    ):
     target_labels = src_objects_segmented.copy()
     if parent_objects is None:
         target_labels[target_labels > max_label] = 0
@@ -227,12 +259,12 @@ def reindex_labels(
     else:
         # Initialize target labels to keep all child objects
         target_label_numbers = numpy.arange(1, target_labels.max() + 1)
-        
+
         orphan_children = target_label_numbers[parent_objects == 0]
 
         # label == 0 indicates parent object has to be removed
         objects_to_remove = numpy.arange(max_label+1)[label_indexes == 0][1:] # ignore the first zero as it is the background
-        
+
         # object is removed by setting its new label to zero
         target_label_numbers = target_label_numbers*~numpy.isin(parent_objects, objects_to_remove)
 
@@ -240,10 +272,10 @@ def reindex_labels(
 
         # orphan children get new labels. Labels are always continuous and start at 1
         target_label_numbers[target_label_numbers != 0] = numpy.arange(1, new_child_object_count + 1)
-        
+
         # Add zero for background label
         target_label_numbers = numpy.pad(target_label_numbers, (1, 0))
-        
+
         # Overwrite orphan children new labels with 0 to remove unassociated objects
         if not keep_unassociated_objects:
             target_label_numbers[orphan_children] = 0
@@ -273,3 +305,84 @@ def get_removed_objects(
     removed_labels = removed_label_indexes[removed_labels]
 
     return removed_labels
+
+
+#
+# Single-call entry point
+#
+# The frontend gathers whichever plain arrays/scalars correspond to the
+# active filtering mode and makes one call to filter_objects(). Modes that
+# require workspace/measurements/rules-file/classifier access (RULES,
+# CLASSIFIERS) still need that plumbing done in the frontend to produce
+# `scores`/`rules_class` or `hits` - but the Rules/classifier objects
+# themselves are never passed into the library, only the plain arrays they
+# produce. All parameters here are native Python/numpy values - no
+# library-specific types are required to call this function.
+#
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def filter_objects(
+    src_labels: Annotated[ObjectSegmentation, Field(description="Segmentation of the object being filtered")],
+    mode: Annotated[FilterMode, Field(description="Which filtering mode is active")],
+    keep_removed_objects: Annotated[bool, Field(description="Also compute and return the objects removed by the filter")] = False,
+    additional_objects: Annotated[
+        List[Tuple[ObjectSegmentation, Optional[NDArray[numpy.int_]], bool]],
+        Field(description="Additional objects to relabel to match the filtered object, as (labels, parent_objects, keep_unassociated_objects) tuples"),
+    ] = [],
+
+    # mode == Measurements
+    filter_choice: Annotated[Optional[FilterMethod], Field(description="Used only if mode is Measurements: which measurement-filtering method")] = None,
+    values: Annotated[Optional[NDArray[numpy.float64]], Field(description="Used only for Minimal/Maximal or per-object filtering: measurement value per object")] = None,
+    limit_groups: Annotated[Optional[List[Dict[str, Any]]], Field(description="Used only for Limits filtering: list of {'values', 'min_limit', 'max_limit'}")] = None,
+    enclosing_labels: Annotated[Optional[ObjectSegmentation], Field(description="Used only for per-object filtering: enclosing/parent object segmentation")] = None,
+    enclosing_count: Annotated[Optional[int], Field(description="Used only for per-object filtering: number of enclosing objects")] = None,
+    per_object_assignment: Annotated[Optional[OverlapAssignment], Field(description="Used only for per-object filtering")] = None,
+
+    # mode == Border
+    parent_image_mask: Annotated[Optional[NDArray[numpy.bool_]], Field(description="Used only if mode is Border: parent image mask")] = None,
+
+    # mode in (Rules, Classifiers)
+    scores: Annotated[Optional[NDArray[numpy.float64]], Field(description="Used only for rules-based filtering: per-object x per-class scores from Rules.score()")] = None,
+    rules_class: Annotated[Optional[int], Field(description="Used only for rules-based filtering: 0-based class index to keep")] = None,
+    hits: Annotated[Optional[NDArray[numpy.bool_]], Field(description="Used only for classifier-prediction filtering: precomputed pass/fail per object")] = None,
+) -> Tuple[ObjectSegmentation, List[ObjectSegmentation], Optional[ObjectSegmentation]]:
+    max_label = int(numpy.max(src_labels))
+
+    if mode == FilterMode.MEASUREMENTS.value:
+        if filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
+            indexes = keep_one(values, filter_choice)
+        elif filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
+            indexes = keep_per_object(
+                src_labels, enclosing_labels, enclosing_count, per_object_assignment, filter_choice, values,
+            )
+        elif filter_choice == FilterMethod.LIMITS.value:
+            indexes = keep_within_limits(limit_groups)
+        else:
+            raise ValueError(f"Unknown filter choice: {filter_choice} for mode {mode}")
+    elif mode == FilterMode.BORDER.value:
+        indexes = discard_border_objects(src_labels, parent_image_mask)
+    elif mode in (FilterMode.RULES.value, FilterMode.CLASSIFIERS.value):
+        if scores is not None:
+            indexes = keep_by_rule_scores(scores, rules_class)
+        elif hits is not None:
+            indexes = keep_by_hits(hits)
+        else:
+            raise ValueError(f"mode {mode} requires either 'scores' or 'hits'")
+    else:
+        raise ValueError(f"Unknown filter mode: {mode}")
+
+    new_object_count = len(indexes)
+    label_indexes = numpy.zeros((max_label + 1,), int)
+    label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+
+    target_segmented = get_filtered_object(src_labels, indexes, label_indexes, max_label, None, False)
+
+    additional_segmented = [
+        get_filtered_object(labels, indexes, label_indexes, max_label, parent_objects, keep_unassociated_objects)
+        for labels, parent_objects, keep_unassociated_objects in additional_objects
+    ]
+
+    removed_segmented = (
+        get_removed_objects(indexes, max_label, src_labels) if keep_removed_objects else None
+    )
+
+    return target_segmented, additional_segmented, removed_segmented

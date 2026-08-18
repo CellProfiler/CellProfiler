@@ -108,6 +108,8 @@ ADDITIONAL_OBJECT_SETTING_INDEX = 9
 """The location of the measurements count setting"""
 MEASUREMENT_COUNT_SETTING_INDEX = 8
 
+S_RULES = "Rules"
+
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
@@ -693,77 +695,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                         self.rules_file_name
                     )              
 
-
-    def get_object_labels_and_counts(self, workspace, object_name):
-        """Return the labels and counts for the given object"""
-        src_objects = workspace.get_objects(object_name)
-        src_labels = src_objects.segmented
-        src_count = src_objects.count
-        return src_labels, src_count
-
-    def get_parent_objects(self, workspace, object_name):
-        """
-        Return the Parent_<x_name> measurement for object_name, or None if absent
-
-        Parent relation is used if it exists (use RelateObjects module).
-        """
-        m = workspace.measurements
-        parent_feature = f"Parent_{self.x_name.value}"
-        parent_relation_exists = len(
-            [i for i in m.get_measurement_columns() if i[0] == object_name and i[1] == parent_feature]
-        ) > 0
-        return m.get_measurement(object_name, parent_feature) if parent_relation_exists else None
-
-    def get_filter_kwargs(self, workspace, src_objects, src_name):
-        if self.mode == FilterMode.RULES.value:
-            rules = self.get_rules()
-            rules_class = int(self.rules_class.value) - 1
-            return self.get_rule_score_kwargs(workspace, rules, rules_class)
-
-        elif self.mode == FilterMode.MEASUREMENTS.value:
-            filter_choice = self.filter_choice.value
-            if filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
-                measurement = self.measurements[0].measurement.value
-                values = workspace.measurements.get_current_measurement(src_name, measurement)
-                return {"filter_choice": filter_choice, "values": values}
-
-            elif filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
-                measurement = self.measurements[0].measurement.value
-                values = workspace.measurements.get_current_measurement(src_name, measurement)
-                enclosing_labels, enclosing_count = self.get_object_labels_and_counts(workspace, self.enclosing_object_name.value)
-                return {
-                    "filter_choice": filter_choice,
-                    "values": values,
-                    "enclosing_labels": enclosing_labels,
-                    "enclosing_count": enclosing_count,
-                    "per_object_assignment": self.per_object_assignment.value,
-                }
-
-            elif filter_choice == FilterMethod.LIMITS.value:
-                limit_groups = []
-                for group in self.measurements:
-                    measurement = group.measurement.value
-                    values = workspace.measurements.get_current_measurement(src_name, measurement)
-                    limit_groups.append({
-                        "values": values,
-                        "min_limit": group.min_limit.value if group.wants_minimum.value else None,
-                        "max_limit": group.max_limit.value if group.wants_maximum.value else None,
-                    })
-                return {"filter_choice": filter_choice, "limit_groups": limit_groups}
-            else:
-                raise ValueError(f"Unknown filter choice: {filter_choice} for mode {self.mode.value}")
-
-        elif self.mode == FilterMode.BORDER.value:
-            parent_image = src_objects.parent_image if src_objects.has_parent_image else None
-            parent_image_mask = src_objects.parent_image.mask if parent_image and parent_image.has_mask else None
-            return {"parent_image_mask": parent_image_mask}
-
-        elif self.mode == FilterMode.CLASSIFIERS.value:
-            return self.get_classifier_kwargs(workspace)
-
-        else:
-            raise ValueError("Unknown filter choice: %s" % self.mode.value)
-
     def run(self, workspace):
         """Filter objects for this image set, display results"""
         src_name = self.x_name.value
@@ -906,7 +837,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                 sharexy=figure.subplot(0, 0),
             )
 
-
     def get_rules(self):
         """Read the rules from a file"""
         rules_file = self.rules_file_name.value
@@ -918,6 +848,109 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             rules = Rules(allow_fuzzy=self.allow_fuzzy)
             rules.parse(path)
             return rules
+
+    def get_parent_objects(self, workspace, object_name):
+        """
+        Return the Parent_<x_name> measurement for object_name, or None if absent
+
+        Parent relation is used if it exists (use RelateObjects module).
+        """
+        m = workspace.measurements
+        parent_feature = f"Parent_{self.x_name.value}"
+        parent_relation_exists = len(
+            [i for i in m.get_measurement_columns() if i[0] == object_name and i[1] == parent_feature]
+        ) > 0
+        return m.get_measurement(object_name, parent_feature) if parent_relation_exists else None
+
+    def get_filter_kwargs(self, workspace, src_objects, src_name):
+        # keep_by_rules
+        if self.mode == FilterMode.RULES.value:
+            rules = self.get_rules()
+            rules_class = int(self.rules_class.value) - 1
+            return {"rules_class": rules_class, "scores": self.get_scores(workspace, rules)}
+
+        elif self.mode == FilterMode.MEASUREMENTS.value:
+            filter_choice = self.filter_choice.value
+            # keep_one
+            if filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                return {"filter_choice": filter_choice, "values": values}
+
+            # keep_per_object
+            elif filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                enclosing_objects = workspace.get_objects(self.enclosing_object_name.value)
+                enclosing_labels, enclosing_count = enclosing_objects.segmented, enclosing_objects.count
+                return {
+                    "filter_choice": filter_choice,
+                    "values": values,
+                    "enclosing_labels": enclosing_labels,
+                    "enclosing_count": enclosing_count,
+                    "per_object_assignment": self.per_object_assignment.value,
+                }
+
+            # keep_within_limits
+            elif filter_choice == FilterMethod.LIMITS.value:
+                limit_groups = []
+                for group in self.measurements:
+                    measurement = group.measurement.value
+                    values = workspace.measurements.get_current_measurement(src_name, measurement)
+                    limit_groups.append({
+                        "values": values,
+                        "min_limit": group.min_limit.value if group.wants_minimum.value else None,
+                        "max_limit": group.max_limit.value if group.wants_maximum.value else None,
+                    })
+                return {"filter_choice": filter_choice, "limit_groups": limit_groups}
+
+            else:
+                raise ValueError(f"Unknown filter choice: {filter_choice} for mode {self.mode.value}")
+
+        # discard_border_objects
+        elif self.mode == FilterMode.BORDER.value:
+            parent_image = src_objects.parent_image if src_objects.has_parent_image else None
+            parent_image_mask = src_objects.parent_image.mask if parent_image and parent_image.has_mask else None
+            return {"parent_image_mask": parent_image_mask}
+
+        elif self.mode == FilterMode.CLASSIFIERS.value:
+            # predict objects' classes and package the plain result
+            classifier = self.get_classifier()
+
+            # keep_by_rules
+            if self.get_classifier_type() == S_RULES:
+                rules_class = self.get_bin_labels().index(self.rules_class.value)
+                return {"rules_class": rules_class, "scores": self.get_scores(workspace, classifier)}
+
+            # keep_by_hits
+
+            target_idx = self.get_bin_labels().index(self.rules_class.value)
+            target_class = classifier.classes_[target_idx]
+            features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
+            feature_vector = numpy.column_stack(
+                [
+                    workspace.measurements[
+                        object_name,
+                        Rule.return_fuzzy_measurement_name(
+                            workspace.measurements.get_measurement_columns(),
+                            object_name,
+                            feature_name,
+                            False,
+                            self.allow_fuzzy
+                            )
+                            ]
+                    for object_name, feature_name in features
+                ]
+            )
+            if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+                feature_vector = classifier.scaler.transform(feature_vector)
+            numpy.nan_to_num(feature_vector, copy=False)
+            predicted_classes = classifier.predict(feature_vector)
+            hits = predicted_classes == target_class
+            return {"hits": hits}
+
+        else:
+            raise ValueError("Unknown filter choice: %s" % self.mode.value)
 
     def load_classifier(self):
         """Load the classifier pickle if not cached
@@ -947,7 +980,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                         rules.load(d[path_][0])
                         d[path_] = (rules,
                                     d[path_][1],
-                                    "Rules",
+                                    S_RULES,
                                     [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
                 else:
                     # Probably a rules list
@@ -956,7 +989,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                     # Construct a classifier-like object
                     d[path_] = (rules,
                                 rules.get_classes(),
-                                "Rules",
+                                S_RULES,
                                 [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
         return d[path_]
 
@@ -972,13 +1005,12 @@ measurement is not available at this stage of the pipeline. Consider adding modu
     def get_classifier_features(self):
         return self.load_classifier()[3]
 
-    def get_rule_score_kwargs(self, workspace, rules, rules_class):
+    def get_scores(self, workspace, rules):
         """
-        Score objects against a set of CPA rules and package the plain result
+        Score objects against a set of CPA rules
 
         :param workspace - workspace holding the measurements for the rules
         :param rules - a Rules instance (or a classifier loaded as rules)
-        :param rules_class - the 0-based class index to keep
         """
         measurement_value_list = []
         for rule in rules.rules:
@@ -994,43 +1026,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             )
             measurement_value_list.append(values)
         scores = rules.score(measurement_value_list)
-        return {"scores": scores, "rules_class": rules_class}
-
-    def get_classifier_kwargs(self, workspace):
-        """
-        Predict objects' classes and package the plain result
-
-        :param workspace: workspace holding the measurements for the classifier
-        :return: keyword arguments for filter_objects() ("scores"+"rules_class", or "hits")
-        """
-        classifier = self.get_classifier()
-        if self.get_classifier_type() == "Rules":
-            rules_class = self.get_bin_labels().index(self.rules_class.value)
-            return self.get_rule_score_kwargs(workspace, classifier, rules_class)
-        target_idx = self.get_bin_labels().index(self.rules_class.value)
-        target_class = classifier.classes_[target_idx]
-        features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
-        feature_vector = numpy.column_stack(
-            [
-                workspace.measurements[
-                    object_name,
-                    Rule.return_fuzzy_measurement_name(
-                        workspace.measurements.get_measurement_columns(),
-                        object_name,
-                        feature_name,
-                        False,
-                        self.allow_fuzzy
-                        )
-                        ]
-                for object_name, feature_name in features
-            ]
-        )
-        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
-            feature_vector = classifier.scaler.transform(feature_vector)
-        numpy.nan_to_num(feature_vector, copy=False)
-        predicted_classes = classifier.predict(feature_vector)
-        hits = predicted_classes == target_class
-        return {"hits": hits}
+        return scores
 
     def get_measurement_columns(self, pipeline):
         return super(FilterObjects, self).get_measurement_columns(

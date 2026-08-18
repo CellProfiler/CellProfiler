@@ -1,6 +1,5 @@
 from cellprofiler_core.constants.measurement import (
-    M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y, C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
+    C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
     FTR_CENTER_Y, FTR_CENTER_Z,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing

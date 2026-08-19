@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 import cellprofiler_core.measurement
-from cellprofiler.utilities.rules import Rule, Rules
+from cellprofiler.utilities.rules import Rule, Rules, scores_from_measurements
 
 OBJECT_NAME = "MyObject"
 M_FEATURES = ["Measurement%d" % i for i in range(1, 11)]
@@ -63,21 +63,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]]), False, 1
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 0)
         self.assertEqual(score.shape[1], 2)
 
@@ -90,21 +77,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)
@@ -125,21 +99,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], -2.0)
@@ -160,21 +121,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertTrue(score[0, 0], -2)
@@ -189,21 +137,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), True, 0.7
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)
@@ -215,22 +150,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
             )
         ]
         with pytest.raises(AssertionError):
-            measurement_value_list = []
             assert m is not None, "measurements must be provided if measurement_value_list is None"
-            for rule in rules.rules:
-                values = m.get_current_measurement(
-                    rule.object_name, 
-                    rule.return_fuzzy_measurement_name(
-                        m.get_measurement_columns(),
-                        rule.object_name,
-                        rule.feature,
-                        False,
-                        rule.allow_fuzzy
-                        )
-                )
-                measurement_value_list.append(values)
-            score = rules.score(measurement_value_list)
-
+            score = scores_from_measurements(m, rules)
 
     def test_03_01_score_two_rules(self):
         m = cellprofiler_core.measurement.Measurements()
@@ -245,21 +166,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]]), False, 1
             ),
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0 - 2.3)
@@ -280,21 +188,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 1
             )
         ]
-        measurement_value_list = []
         assert m is not None, "measurements must be provided if measurement_value_list is None"
-        for rule in rules.rules:
-            values = m.get_current_measurement(
-                rule.object_name, 
-                rule.return_fuzzy_measurement_name(
-                    m.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    rule.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        score = rules.score(measurement_value_list)
+        score = scores_from_measurements(m, rules)
         self.assertEqual(score.shape[0], 2)
         self.assertEqual(score.shape[1], 2)
         self.assertAlmostEqual(score[0, 0], 1.0)

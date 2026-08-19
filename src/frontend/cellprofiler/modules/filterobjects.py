@@ -94,7 +94,7 @@ import os
 import numpy
 import cellprofiler.gui.help
 import cellprofiler_core.object
-from cellprofiler.utilities.rules import Rules, Rule
+from cellprofiler.utilities.rules import Rules, Rule, scores_from_measurements
 
 LOGGER = logging.getLogger(__name__)
 
@@ -867,7 +867,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if self.mode == FilterMode.RULES.value:
             rules = self.get_rules()
             rules_class = int(self.rules_class.value) - 1
-            return {"rules_class": rules_class, "scores": self.get_scores(workspace, rules)}
+            return {"rules_class": rules_class, "scores": scores_from_measurements(workspace.measurements, rules)}
 
         elif self.mode == FilterMode.MEASUREMENTS.value:
             filter_choice = self.filter_choice.value
@@ -1004,29 +1004,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
 
     def get_classifier_features(self):
         return self.load_classifier()[3]
-
-    def get_scores(self, workspace, rules):
-        """
-        Score objects against a set of CPA rules
-
-        :param workspace - workspace holding the measurements for the rules
-        :param rules - a Rules instance (or a classifier loaded as rules)
-        """
-        measurement_value_list = []
-        for rule in rules.rules:
-            values = workspace.measurements.get_current_measurement(
-                rule.object_name,
-                rule.return_fuzzy_measurement_name(
-                    workspace.measurements.get_measurement_columns(),
-                    rule.object_name,
-                    rule.feature,
-                    False,
-                    self.allow_fuzzy
-                    )
-            )
-            measurement_value_list.append(values)
-        scores = rules.score(measurement_value_list)
-        return scores
 
     def get_measurement_columns(self, pipeline):
         return super(FilterObjects, self).get_measurement_columns(

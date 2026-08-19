@@ -213,3 +213,26 @@ characters in a column name" setting. """
             weights = numpy.vstack((pos, neg))
             rule = Rule(object_name, feature, ">", th, weights, self.allow_fuzzy,self.fuzzy_value)
             self.rules.append(rule)
+
+# this is outside Rules to avoid having a dependency on workspace.measurements in the Rules and Rule classes
+def scores_from_measurements(measurements, rules: Rules):
+    """
+    measurements - a measurements structure
+                   (cellprofiler_core.measurements.Measurements). Look
+                   up this rule's measurement in the structure to
+                   get the testing value.
+    """
+    measurement_value_list = []
+    for rule in rules.rules:
+        values = measurements.get_current_measurement(
+            rule.object_name, 
+            rule.return_fuzzy_measurement_name(
+                measurements.get_measurement_columns(),
+                rule.object_name,
+                rule.feature,
+                False,
+                rule.allow_fuzzy
+                )
+        )
+        measurement_value_list.append(values)
+    return rules.score(measurement_value_list)

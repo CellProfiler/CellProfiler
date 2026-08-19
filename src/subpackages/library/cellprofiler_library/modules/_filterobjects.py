@@ -1,6 +1,6 @@
 import numpy
 import scipy
-from typing import Annotated, Any, Dict, List, Optional, Tuple
+from typing import Annotated, Any, Dict, List, Optional, Tuple, Union
 
 from numpy.typing import NDArray
 from pydantic import ConfigDict, Field, validate_call
@@ -8,7 +8,7 @@ from pydantic import ConfigDict, Field, validate_call
 from cellprofiler_library.opts.filterobjects import FilterMethod, FilterMode, OverlapAssignment
 from cellprofiler_library.types import ObjectSegmentation
 
-def keep_one(values, filter_choice):
+def keep_one(values: NDArray[numpy.float64], filter_choice: FilterMethod) -> NDArray[numpy.int_]:
     """
     Return an array containing the single object to keep
 
@@ -25,7 +25,14 @@ def keep_one(values, filter_choice):
     return numpy.array([best_idx], int)
 
 
-def keep_per_object(src_labels, enclosing_labels, enclosing_max, per_object_assignment, filter_choice, values):
+def keep_per_object(
+    src_labels: ObjectSegmentation,
+    enclosing_labels: ObjectSegmentation,
+    enclosing_max: int,
+    per_object_assignment: OverlapAssignment,
+    filter_choice: FilterMethod,
+    values: NDArray[numpy.float64],
+) -> Union[NDArray[numpy.int_], List[int]]:
     """
     Return an array containing the best object per enclosing object
 
@@ -143,7 +150,7 @@ def keep_per_object(src_labels, enclosing_labels, enclosing_max, per_object_assi
         return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
 
 
-def keep_within_limits(limit_groups):
+def keep_within_limits(limit_groups: List[Dict[str, Any]]) -> NDArray[numpy.int_]:
     """Return an array containing the indices of objects to keep
 
     limit_groups - a list of {"values": ndarray, "min_limit": float or None, "max_limit": float or None}
@@ -173,7 +180,7 @@ def keep_within_limits(limit_groups):
     return indexes
 
 
-def keep_by_rules(scores, rules_class):
+def keep_by_rules(scores: NDArray[numpy.float64], rules_class: int) -> NDArray[numpy.int_]:
     """Return the indexes (base 1) of objects whose highest-scoring class is rules_class
 
     scores - an MxN matrix as returned by Rules.score(): M objects x N classes.
@@ -190,7 +197,7 @@ def keep_by_rules(scores, rules_class):
     return numpy.argwhere(hits).flatten() + 1
 
 
-def keep_by_hits(hits):
+def keep_by_hits(hits: NDArray[numpy.bool_]) -> NDArray[numpy.int_]:
     """Return the indexes (base 1) of objects for which hits is True
 
     Used for classifier predictions (predicted_classes == target_class) -
@@ -200,7 +207,7 @@ def keep_by_hits(hits):
     return numpy.argwhere(hits).flatten() + 1
 
 
-def discard_border_objects(labels, parent_image_mask):
+def discard_border_objects(labels: ObjectSegmentation, parent_image_mask: Optional[NDArray[numpy.bool_]]) -> List[int]:
     """
     Return an array containing the object numbers to keep
 
@@ -235,13 +242,13 @@ def discard_border_objects(labels, parent_image_mask):
 
 
 def get_filtered_object(
-        src_objects_segmented,
-        indexes,
-        label_indexes,
-        max_label,
-        parent_objects,
-        keep_unassociated_objects
-    ):
+        src_objects_segmented: ObjectSegmentation,
+        indexes: Union[NDArray[numpy.int_], List[int]],
+        label_indexes: Optional[NDArray[numpy.int_]],
+        max_label: int,
+        parent_objects: Optional[NDArray[numpy.int_]],
+        keep_unassociated_objects: bool,
+    ) -> ObjectSegmentation:
     """
     Relabel a segmentation so it keeps only the filtered objects
 
@@ -265,12 +272,12 @@ def get_filtered_object(
     return target_objects_segmented
 
 def reindex_labels(
-        src_objects_segmented,
-        max_label,
-        label_indexes,
-        parent_objects,
-        keep_unassociated_objects
-    ):
+        src_objects_segmented: ObjectSegmentation,
+        max_label: int,
+        label_indexes: NDArray[numpy.int_],
+        parent_objects: Optional[NDArray[numpy.int_]],
+        keep_unassociated_objects: bool,
+    ) -> ObjectSegmentation:
     """
     Reindex a segmentation, dropping objects whose new label is 0
 
@@ -315,10 +322,10 @@ def reindex_labels(
 
 
 def get_removed_objects(
-        indexes,
-        max_label,
-        src_objects_segmented,
-    ):
+        indexes: Union[NDArray[numpy.int_], List[int]],
+        max_label: int,
+        src_objects_segmented: ObjectSegmentation,
+    ) -> ObjectSegmentation:
     """
     Return a segmentation containing only the objects removed by the filter
 

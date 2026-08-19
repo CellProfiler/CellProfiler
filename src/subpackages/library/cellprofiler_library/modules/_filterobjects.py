@@ -9,10 +9,11 @@ from cellprofiler_library.opts.filterobjects import FilterMethod, FilterMode, Ov
 from cellprofiler_library.types import ObjectSegmentation
 
 def keep_one(values, filter_choice):
-    """Return an array containing the single object to keep
+    """
+    Return an array containing the single object to keep
 
-    workspace - workspace passed into Run
-    src_objects - the Objects instance to be filtered
+    values - measurement value per object
+    filter_choice - FilterMethod.MINIMAL or FilterMethod.MAXIMAL
     """
     if len(values) == 0:
         return numpy.array([], int)
@@ -25,10 +26,15 @@ def keep_one(values, filter_choice):
 
 
 def keep_per_object(src_labels, enclosing_labels, enclosing_max, per_object_assignment, filter_choice, values):
-    """Return an array containing the best object per enclosing object
+    """
+    Return an array containing the best object per enclosing object
 
-    workspace - workspace passed into Run
-    src_objects - the Objects instance to be filtered
+    src_labels - segmentation of the objects being filtered
+    enclosing_labels - segmentation of the enclosing (parent) objects
+    enclosing_max - number of enclosing objects
+    per_object_assignment - OverlapAssignment strategy for matching objects to enclosing objects
+    filter_choice - FilterMethod.MINIMAL_PER_OBJECT or FilterMethod.MAXIMAL_PER_OBJECT
+    values - measurement value per object
     """
     if enclosing_max == 0:
         return numpy.array([], int)
@@ -195,7 +201,11 @@ def keep_by_hits(hits):
 
 
 def discard_border_objects(labels, parent_image_mask):
-    """Return an array containing the indices of objects to keep
+    """
+    Return an array containing the object numbers to keep
+
+    labels - segmentation of the objects being filtered
+    parent_image_mask - mask of the parent image (or None); objects touching its border are discarded
     """
 
     if parent_image_mask is not None:
@@ -232,7 +242,16 @@ def get_filtered_object(
         parent_objects,
         keep_unassociated_objects
     ):
+    """
+    Relabel a segmentation so it keeps only the filtered objects
 
+    src_objects_segmented - segmentation to filter and relabel
+    indexes - object numbers (base 1) to keep
+    label_indexes - mapping from old label to new label, or None to build it from indexes
+    max_label - highest label value in src_objects_segmented
+    parent_objects - parent object number per object, or None if unrelated to a parent
+    keep_unassociated_objects - whether to keep objects that have no parent
+    """
     if label_indexes is None:
         new_object_count = len(indexes)
         label_indexes = numpy.zeros((max_label + 1,), int)
@@ -252,6 +271,15 @@ def reindex_labels(
         parent_objects,
         keep_unassociated_objects
     ):
+    """
+    Reindex a segmentation, dropping objects whose new label is 0
+
+    src_objects_segmented - segmentation to relabel
+    max_label - highest label value of the filtered object
+    label_indexes - mapping from old label to new label (0 removes the object)
+    parent_objects - parent object number per object, or None if unrelated to a parent
+    keep_unassociated_objects - whether to keep objects that have no parent
+    """
     target_labels = src_objects_segmented.copy()
     if parent_objects is None:
         target_labels[target_labels > max_label] = 0
@@ -291,6 +319,13 @@ def get_removed_objects(
         max_label,
         src_objects_segmented,
     ):
+    """
+    Return a segmentation containing only the objects removed by the filter
+
+    indexes - object numbers (base 1) that were kept
+    max_label - highest label value in src_objects_segmented
+    src_objects_segmented - the original, unfiltered segmentation
+    """
     removed_labels = src_objects_segmented.copy()
     # Isolate objects removed by the filter
     removed_indexes = [x for x in range(1, max_label+1) if x not in indexes]
@@ -307,18 +342,6 @@ def get_removed_objects(
     return removed_labels
 
 
-#
-# Single-call entry point
-#
-# The frontend gathers whichever plain arrays/scalars correspond to the
-# active filtering mode and makes one call to filter_objects(). Modes that
-# require workspace/measurements/rules-file/classifier access (RULES,
-# CLASSIFIERS) still need that plumbing done in the frontend to produce
-# `scores`/`rules_class` or `hits` - but the Rules/classifier objects
-# themselves are never passed into the library, only the plain arrays they
-# produce. All parameters here are native Python/numpy values - no
-# library-specific types are required to call this function.
-#
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def filter_objects(
     src_labels: Annotated[ObjectSegmentation, Field(description="Segmentation of the object being filtered")],

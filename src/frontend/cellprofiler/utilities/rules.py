@@ -108,7 +108,7 @@ class Rules(Module):
         Use "parse" to read in the rules file or add rules programatically
         to self.rules.
         """
-        self.rules = []
+        self.rules: list[Rule] = []
         self.allow_fuzzy = allow_fuzzy
         self.fuzzy_value = fuzzy_value
 

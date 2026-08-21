@@ -36,12 +36,6 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
 from cellprofiler_library.modules._rescaleintensity import rescale_intensity
 from cellprofiler_library.functions.image_processing import divide
-# Legacy opts
-# R_SCALE = "Scale similarly to others"
-# R_MASK = "Mask pixels"
-# R_SET_TO_ZERO = "Set to zero"
-# R_SET_TO_CUSTOM = "Set to custom value"
-# R_SET_TO_ONE = "Set to one"
 
 class RescaleIntensity(ImageProcessing):
     module_name = "RescaleIntensity"
@@ -436,7 +430,8 @@ Select the measurement value to use as the divisor for the final image.
                 source_low,
                 source_scale_min,
                 source_scale_max,
-                shared_dict,
+                shared_dict.get(MinimumIntensityMethod.ALL_IMAGES.value, None), # global_min
+                shared_dict.get(MaximumIntensityMethod.ALL_IMAGES.value, None), # global_max
                 self.dest_scale.min,
                 self.dest_scale.max,
                 reference_image_pixel_data,
@@ -485,7 +480,7 @@ Select the measurement value to use as the divisor for the final image.
             y=0,
         )
 
-    # TODO #5088 update this once measurement format is finalized
+    # TODO: 5088 - update this once measurement format is finalized
     def divide_by_measurement(self, workspace, input_image):
         m = workspace.measurements
         value = m.get_current_image_measurement(self.divisor_measurement.value)

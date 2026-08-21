@@ -1,7 +1,7 @@
-from typing import Optional, Union, Annotated
+from typing import Optional, Annotated
 from pydantic import validate_call, ConfigDict, Field
-from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod, M_ALL, LOW_ALL, HIGH_ALL
-from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscale, ImageGrayscaleMask
+from cellprofiler_library.opts.rescaleintensity import RescaleMethod, MinimumIntensityMethod, MaximumIntensityMethod
+from cellprofiler_library.types import ImageAny, ImageAnyMask, ImageGrayscaleMask, PixelAny
 from cellprofiler_library.functions.image_processing import stretch_rescale, manual_input_range, manual_io_range, divide_by_image_maximum, divide_by_image_minimum, divide_by_value, scale_by_image_maximum
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -18,7 +18,8 @@ def rescale_intensity(
         source_low:             Annotated[float, Field(description="Lower intensity limit for the input image")],
         source_scale_min:       Annotated[float, Field(description="Intensity range for the input image - minimum")],
         source_scale_max:       Annotated[float, Field(description="Intensity range for the input image - maximum")],
-        shared_dict, # do not type annotate as it has a bad interation with Pydantic TODO #5088: Discuss
+        global_min:             Annotated[Optional[PixelAny], Field(description="Intensity range for all images - minimum")],
+        global_max:             Annotated[Optional[PixelAny], Field(description="Intensity range for all images = maximum")],
         dest_scale_min:         Annotated[Optional[float], Field(description="Intensity range for the output image - minimum")],
         dest_scale_max:         Annotated[Optional[float], Field(description="Intensity range for the output image - maximum")],
         reference_image_pixel_data: Annotated[Optional[ImageAny], Field(description="Reference image data - for scale by image maximum")],
@@ -32,13 +33,13 @@ def rescale_intensity(
             output_image = manual_input_range(
                 in_pixel_data,
                 in_mask_manual_input,
-                source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict
+                source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, global_min, global_max
             )
         else:
             output_image = manual_io_range(
                 in_pixel_data,
                 in_mask_manual_input,
-                source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict, dest_scale_min, dest_scale_max
+                source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, global_min, global_max, dest_scale_min, dest_scale_max
                 )
     elif rescale_method == RescaleMethod.DIVIDE_BY_IMAGE_MINIMUM.value:
         output_image = divide_by_image_minimum(in_pixel_data, in_mask)
@@ -47,7 +48,7 @@ def rescale_intensity(
     elif rescale_method == RescaleMethod.DIVIDE_BY_VALUE.value:
         output_image = divide_by_value(in_pixel_data, divisor_value)
     elif rescale_method == RescaleMethod.DIVIDE_BY_MEASUREMENT.value:
-        # TODO #5088 update this once measurement format is finalized
+        # TODO: 5088 - update this once measurement format is finalized
         raise NotImplementedError("Rescale by measurement not implemented in library yet")
     elif rescale_method == RescaleMethod.SCALE_BY_IMAGE_MAXIMUM.value:
         assert reference_image_pixel_data is not None, "Reference image is required for scale by image maximum"

@@ -32,7 +32,7 @@ from cellprofiler_library.types import (
     ImageAny, ImageAnyMask, 
     ObjectSegmentation, 
     Image2D, Image2DMask, 
-    StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, Image2DBinary, ObjectLabel, ImageBinary, Pixel,
+    StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, Image2DBinary, ObjectLabel, ImageBinary, Pixel, PixelAny
 )
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod
@@ -2927,7 +2927,8 @@ def manual_input_range(
         source_scale_max: float, 
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
-        shared_dict, # do not type annotate as it has a bad interation with Pydantic
+        global_min: Optional[PixelAny],
+        global_max: Optional[PixelAny],
     ) -> ImageAny:
     return manual_io_range(
         data, 
@@ -2938,7 +2939,8 @@ def manual_input_range(
         source_scale_max, 
         auto_high, 
         auto_low, 
-        shared_dict
+        global_min,
+        global_max
     )
 
 
@@ -2951,11 +2953,12 @@ def manual_io_range(
         source_scale_max: float, 
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
-        shared_dict, # do not type annotate as it has a bad interation with Pydantic
+        global_min: Optional[PixelAny],
+        global_max: Optional[PixelAny],
         dest_scale_min: Optional[float]=None, 
         dest_scale_max: Optional[float]=None
     ) -> ImageAny:
-    in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, shared_dict)
+    in_range = get_source_range(data, mask, source_high, source_low, source_scale_min, source_scale_max, auto_high, auto_low, global_min, global_max)
     if dest_scale_min is None and dest_scale_max is None:
         return rescale(data, in_range)
     else:
@@ -2963,32 +2966,32 @@ def manual_io_range(
         return rescale(data, in_range, out_range)
 
 
-def divide(data: ImageAny, value) -> ImageAny:
+def divide(data: ImageAny, value: float) -> ImageAny:
     if value == 0.0:
         raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
-    return data / float(value)
+    return data / value
 
 
 def divide_by_image_minimum(data: ImageAny, mask: ImageAnyMask) -> ImageAny:
     if (masked_data := data[mask]).size == 0:
-        src_min = 0
+        src_min = numpy.float64(0)
     else:
         src_min = numpy.min(masked_data)
 
-    return divide(data, src_min)
+    return divide(data, float(src_min))
 
 
 def divide_by_image_maximum(data: ImageAny, mask: ImageAnyMask) -> ImageAny:
     if (masked_data := data[mask]).size == 0:
-        src_max = 1
+        src_max = numpy.float64(1)
     else:
         src_max = numpy.max(masked_data)
 
-    return divide(data, src_max)
+    return divide(data, float(src_max))
 
 
-def divide_by_value(data: ImageAny, divisor_value):
+def divide_by_value(data: ImageAny, divisor_value: float):
     return divide(data, divisor_value)
 
 
@@ -3020,7 +3023,7 @@ def scale_by_image_maximum(
     else:
         reference_max = numpy.max(masked_ref)
 
-    return divide(data * reference_max, image_max)
+    return divide(data * reference_max, float(image_max))
 
 
 def get_source_range(
@@ -3032,7 +3035,8 @@ def get_source_range(
         source_scale_max: float, 
         auto_high: MaximumIntensityMethod, 
         auto_low: MinimumIntensityMethod, 
-        shared_dict, # do not type annotate as it has a bad interation with Pydantic
+        global_min: Optional[PixelAny],
+        global_max: Optional[PixelAny],
     ) -> Tuple[float, float]:
     """Get the source range, accounting for automatically computed values"""
     input_pixels = None
@@ -3053,18 +3057,18 @@ def get_source_range(
                 return 0, 1
 
     if auto_low == MinimumIntensityMethod.ALL_IMAGES.value:
-        src_min = shared_dict[MinimumIntensityMethod.ALL_IMAGES.value]
+        src_min = float(global_min or 0)
     elif auto_low == MinimumIntensityMethod.EACH_IMAGE.value:
         assert input_pixels is not None, "Invalid settings for automatic minimum, please check your settings and data"
-        src_min = numpy.min(input_pixels)
+        src_min = float(numpy.min(input_pixels))
     else:
         src_min = source_low
 
     if auto_high == MaximumIntensityMethod.ALL_IMAGES.value:
-        src_max = shared_dict[MaximumIntensityMethod.ALL_IMAGES.value]
+        src_max = float(global_max or 0)
     elif auto_high == MaximumIntensityMethod.EACH_IMAGE.value:
         assert input_pixels is not None, "Invalid settings for automatic maximum, please check your settings and data"
-        src_max = numpy.max(input_pixels)
+        src_max = float(numpy.max(input_pixels))
     else:
         src_max = source_high
         

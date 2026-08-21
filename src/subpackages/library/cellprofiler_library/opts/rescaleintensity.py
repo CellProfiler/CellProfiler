@@ -22,15 +22,17 @@ M_ALL = [
     RescaleMethod.SCALE_BY_IMAGE_MAXIMUM,
 ]
 
+_CUSTOM_VALUE = "Custom"
+
 class MinimumIntensityMethod(str, Enum):
-    CUSTOM_VALUE = "Custom"
+    CUSTOM_VALUE = _CUSTOM_VALUE
     ALL_IMAGES = "Minimum of all images"
     EACH_IMAGE = "Minimum for each image"
 
 LOW_ALL = [MinimumIntensityMethod.CUSTOM_VALUE, MinimumIntensityMethod.EACH_IMAGE, MinimumIntensityMethod.ALL_IMAGES]
 
 class MaximumIntensityMethod(str, Enum):
-    CUSTOM_VALUE = "Custom"
+    CUSTOM_VALUE = _CUSTOM_VALUE
     ALL_IMAGES = "Maximum of all images"
     EACH_IMAGE = "Maximum for each image"
 

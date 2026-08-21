@@ -82,14 +82,18 @@ def validate_object_segmentation_ijv(ijv: NDArray[np.int_]) -> NDArray[np.int_]:
         raise ValueError(f"Expected a 2-dimensional array with 3 columns, got {ijv.shape[1]}")
     return ijv
 
-Pixel_ = Union[np.float32, np.float64, np.int_, np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32]
-Pixel = Annotated[Pixel_, Field(description="Pixel value")]
+PixelAny_ = Union[np.float32, np.float64, np.int_, np.int8, np.int16, np.int32, np.uint8, np.uint16, np.uint32, np.bool_]
+PixelAny = Annotated[PixelAny_, Field(description="Pixel value, before conversion to float")]
+Pixel_ = Union[np.float32, np.float64]
+Pixel = Annotated[Union[np.float32, np.float64], Field(description="Pixel value")]
 ObjectLabel =           Annotated[Union[np.int8, np.int16, np.int32], Field(description="Object label")]
 ObjectIndices =         Annotated[np.int32, Field(description="Object indices")]
 
 Image2DColor =          Annotated[NDArray[Pixel],       Field(description="2D image with multiple channels of type float32"), AfterValidator(create_type_validator(False, True, False, Pixel_))]
+Image2DColorAny =          Annotated[NDArray[PixelAny],       Field(description="2D image with multiple channels of any type"), AfterValidator(create_type_validator(False, True, False, PixelAny_))]
 Image2DColorMask =      Annotated[NDArray[np.bool_],    Field(description="2D color mask"),        AfterValidator(create_type_validator(False, True, False, np.bool_))]
 Image2DGrayscale =      Annotated[NDArray[Pixel],       Field(description="2D grayscale image of type float32"), AfterValidator(create_type_validator(False, False, False, Pixel_))]
+Image2DGrayscaleAny =      Annotated[NDArray[PixelAny],       Field(description="2D grayscale image of any type"), AfterValidator(create_type_validator(False, False, False, PixelAny_))]
 Image2DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="2D grayscale mask"),    AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinary =         Annotated[NDArray[np.bool_],    Field(description="2D binary image"),      AfterValidator(create_type_validator(False, False, False, np.bool_))]
 Image2DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="2D binary mask"),       AfterValidator(create_type_validator(False, False, False, np.bool_))]
@@ -97,8 +101,10 @@ Image2DInt =            Annotated[NDArray[np.int32],    Field(description="2D in
 Image2DUInt =           Annotated[NDArray[np.uint8],    Field(description="2D uint8 image"),       AfterValidator(create_type_validator(False, False, False, np.uint8))]
 
 Image3DColor =          Annotated[NDArray[Pixel],       Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, Pixel_))]
+Image3DColorAny =          Annotated[NDArray[PixelAny],       Field(description="3D image with multiple channels of any type"), AfterValidator(create_type_validator(True, True, False, PixelAny_))]
 Image3DColorMask =      Annotated[NDArray[np.bool_],    Field(description="3D image with multiple channels of type float32"), AfterValidator(create_type_validator(True, True, False, np.bool_))]
 Image3DGrayscale =      Annotated[NDArray[Pixel],       Field(description="3D grayscale image of type float32"), AfterValidator(create_type_validator(True, False, False, Pixel_))]
+Image3DGrayscaleAny =      Annotated[NDArray[PixelAny],       Field(description="3D grayscale image of any type"), AfterValidator(create_type_validator(True, False, False, PixelAny_))]
 Image3DGrayscaleMask =  Annotated[NDArray[np.bool_],    Field(description="3D grayscale mask"),    AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinary =         Annotated[NDArray[np.bool_],    Field(description="3D binary image"),      AfterValidator(create_type_validator(True, False, False, np.bool_))]
 Image3DBinaryMask =     Annotated[NDArray[np.bool_],    Field(description="3D binary mask"),       AfterValidator(create_type_validator(True, False, False, np.bool_))]
@@ -121,7 +127,7 @@ ImageColorMask =        Union[Image2DColorMask, Image3DColorMask]
 ImageBinary =           Union[Image2DBinary, Image3DBinary]
 ImageBinaryMask =       Union[Image2DBinaryMask, Image3DBinaryMask]
 
-ImageAny =              Union[Image2DColor, Image3DColor, Image2DGrayscale, Image3DGrayscale, Image2DBinary, Image3DBinary, Image2DInt, Image3DInt]
+ImageAny =              Union[Image2DColorAny, Image3DColorAny, Image2DGrayscaleAny, Image3DGrayscaleAny, Image2DBinary, Image3DBinary, Image2DInt, Image3DInt]
 ImageAnyMask =          Union[Image2DColorMask, Image3DColorMask, Image2DGrayscaleMask, Image3DGrayscaleMask, Image2DBinaryMask, Image3DBinaryMask]
 
 Image2D =               Union[Image2DColor, Image2DGrayscale, Image2DBinary]

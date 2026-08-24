@@ -64,27 +64,7 @@ from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text.number import Float
 
 from cellprofiler_library.modules._makeprojection import accumulate_projection, calculate_final_projection, set_projection
-from cellprofiler_library.opts.makeprojection import ProjectionType, StateKey
-
-P_AVERAGE = ProjectionType.AVERAGE.value
-P_MAXIMUM = ProjectionType.MAXIMUM.value
-P_MINIMUM = ProjectionType.MINIMUM.value
-P_SUM = ProjectionType.SUM.value
-P_VARIANCE = ProjectionType.VARIANCE.value
-P_POWER = ProjectionType.POWER.value
-P_BRIGHTFIELD = ProjectionType.BRIGHTFIELD.value
-P_MASK = ProjectionType.MASK.value
-
-P_ALL = [
-    P_AVERAGE,
-    P_MAXIMUM,
-    P_MINIMUM,
-    P_SUM,
-    P_VARIANCE,
-    P_POWER,
-    P_BRIGHTFIELD,
-    P_MASK,
-]
+from cellprofiler_library.opts.makeprojection import ProjectionType, StateKey, P_ALL
 
 K_PROVIDER = "Provider"
 
@@ -107,18 +87,18 @@ class MakeProjection(Module):
             doc="""\
 The final projection image can be created by the following methods:
 
--  *%(P_AVERAGE)s:* Use the average pixel intensity at each pixel
+-  *{P_AVERAGE}:* Use the average pixel intensity at each pixel
    position.
--  *%(P_MAXIMUM)s:* Use the maximum pixel value at each pixel position.
--  *%(P_MINIMUM)s:* Use the minimum pixel value at each pixel position.
--  *%(P_SUM)s:* Add the pixel values at each pixel position.
--  *%(P_VARIANCE)s:* Compute the variance at each pixel position.
+-  *{P_MAXIMUM}:* Use the maximum pixel value at each pixel position.
+-  *{P_MINIMUM}:* Use the minimum pixel value at each pixel position.
+-  *{P_SUM}:* Add the pixel values at each pixel position.
+-  *{P_VARIANCE}:* Compute the variance at each pixel position.
    The variance method is described in Selinummi et al (2009). The
    method is designed to operate on a Z-stack of brightfield images
    taken at different focus planes. Background pixels will have
    relatively uniform illumination whereas cytoplasm pixels will have
    higher variance across the Z-stack.
--  *%(P_POWER)s:* Compute the power at a given frequency at each pixel
+-  *{P_POWER}:* Compute the power at a given frequency at each pixel
    position.
    The power method is experimental. The method computes the power at a
    given frequency through the Z-stack. It might be used with a phase
@@ -127,7 +107,7 @@ The final projection image can be created by the following methods:
    and pixels that vary with the given frequency will have a higher
    score than other pixels with similar variance, but different
    frequencies.
--  *%(P_BRIGHTFIELD)s:* Perform the brightfield projection at each
+-  *{P_BRIGHTFIELD}:* Perform the brightfield projection at each
    pixel position.
    Artifacts such as dust appear as black spots that are most strongly
    resolved at their focal plane with gradually increasing signals
@@ -135,7 +115,7 @@ The final projection image can be created by the following methods:
    appears in the early Z-stacks. These pixels have a high score for the
    variance method but have a reduced score when using the brightfield
    method.
--  *%(P_MASK)s:* Compute a binary image of the pixels that are masked
+-  *{P_MASK}:* Compute a binary image of the pixels that are masked
    in any of the input images.
    The mask method operates on any masks that might have been applied to
    the images in a group. The output is a binary image where the “1”
@@ -156,8 +136,17 @@ References
    4(10): e7497 `(link)`_.
 
 .. _(link): https://doi.org/10.1371/journal.pone.0007497
-"""
-            % globals(),
+""".format(
+            **{
+                "P_AVERAGE": ProjectionType.AVERAGE.value,
+                "P_MAXIMUM": ProjectionType.MAXIMUM.value,
+                "P_MINIMUM": ProjectionType.MINIMUM.value,
+                "P_SUM": ProjectionType.SUM.value,
+                "P_VARIANCE": ProjectionType.VARIANCE.value,
+                "P_POWER": ProjectionType.POWER.value,
+                "P_BRIGHTFIELD": ProjectionType.BRIGHTFIELD.value,
+                "P_MASK": ProjectionType.MASK.value,
+            })
         )
 
         self.projection_image_name = ImageName(
@@ -171,14 +160,16 @@ References
             6.0,
             minval=1.0,
             doc="""\
-*(Used only if "%(P_POWER)s" is selected as the projection method)*
+*(Used only if "{P_PROJECTION}" is selected as the projection method)*
 
 This setting controls the frequency at which the power is measured. A
 frequency of 2 will respond most strongly to pixels that alternate
 between dark and light in successive z-stack slices. A frequency of N
 will respond most strongly to pixels whose brightness cycles every N
-slices."""
-            % globals(),
+slices.""".format(**
+        {
+           "P_PROJECTION": ProjectionType.POWER.value,
+        })
         )
 
     def settings(self):
@@ -191,7 +182,7 @@ slices."""
 
     def visible_settings(self):
         result = [self.image_name, self.projection_type, self.projection_image_name]
-        if self.projection_type == P_POWER:
+        if self.projection_type == ProjectionType.POWER.value:
             result += [self.frequency]
         return result
 

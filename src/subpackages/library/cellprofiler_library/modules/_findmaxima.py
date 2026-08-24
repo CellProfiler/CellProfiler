@@ -1,4 +1,3 @@
-import numpy
 import scipy.ndimage
 from typing import Optional, Annotated, Union
 from pydantic import validate_call, ConfigDict, Field

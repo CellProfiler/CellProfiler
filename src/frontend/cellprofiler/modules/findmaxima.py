@@ -21,10 +21,7 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import numpy
-from skimage.feature import peak_local_max
 from skimage.morphology import disk, ball, dilation
-import scipy.ndimage
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
@@ -32,7 +29,6 @@ from cellprofiler_core.setting import Color, Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Integer, Float
-from cellprofiler_core.utilities.core.object import overlay_labels
 
 from cellprofiler_library.opts.findmaxima import BackgroundExclusionMode
 from cellprofiler_library.modules._findmaxima import find_maxima
@@ -172,9 +168,17 @@ images.
 
         x_data = x_data_orig.copy()
 
-        min_intensity_value = self.min_intensity.value if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value else None
-        target_mask = images.get_image(self.mask_image.value).pixel_data if self.exclude_mode.value == BackgroundExclusionMode.MASK.value else None
-        target_mask = workspace.object_set.get_objects(self.mask_objects.value).segmented if self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value else target_mask
+        min_intensity_value = None
+        target_mask = None
+
+        if self.exclude_mode.value == BackgroundExclusionMode.THRESHOLD.value:
+            min_intensity_value = self.min_intensity.value
+        elif self.exclude_mode.value == BackgroundExclusionMode.MASK.value:
+            target_mask = images.get_image(self.mask_image.value).pixel_data
+        elif self.exclude_mode.value == BackgroundExclusionMode.OBJECTS.value:
+            target_mask = workspace.object_set.get_objects(self.mask_objects.value).segmented
+        else:
+            raise NotImplementedError(f"Invalid background method choice: {self.exclude_mode.value}")
      
         y_data = find_maxima(
             x_data, 

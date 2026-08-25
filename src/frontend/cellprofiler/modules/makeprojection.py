@@ -280,7 +280,7 @@ class ImageProvider(AbstractImage):
         self._cached_image = None
 
     @staticmethod
-    def create(name, how_to_accumulate, frequency=6):
+    def create(name, how_to_accumulate, frequency=6.0):
         """Factory method to create the appropriate ImageProvider."""
         return ImageProvider(name, how_to_accumulate, frequency)
 

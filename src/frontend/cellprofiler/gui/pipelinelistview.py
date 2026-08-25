@@ -37,6 +37,7 @@ import cellprofiler.gui.module_view._validation_request_controller
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.utilities.module_view
+from cellprofiler.gui.i18n import _
 import cellprofiler.icons
 
 
@@ -172,10 +173,10 @@ class PipelineListView(object):
         self.outputs_panel.SetSizer(wx.BoxSizer())
         self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_ERASE)
         self.outputs_button = wx.Button(
-            self.outputs_panel, label="Output Settings", style=wx.BU_EXACTFIT
+            self.outputs_panel, label=_("Output Settings"), style=wx.BU_EXACTFIT
         )
         self.wsv_button = wx.Button(
-            self.outputs_panel, label="View Workspace", style=wx.BU_EXACTFIT
+            self.outputs_panel, label=_("View Workspace"), style=wx.BU_EXACTFIT
         )
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_panel.GetSizer().Add(self.outputs_button, 0, wx.ALL, 2)
@@ -199,6 +200,18 @@ class PipelineListView(object):
         self.validation_requests = []
         self.__allow_editing = True
         self.__has_file_list = False
+
+    def refresh_translations(self):
+        self.outputs_button.SetLabel(_("Output Settings"))
+        self.wsv_button.SetLabel(_("View Workspace"))
+        if self.transparent_window is not None:
+            self.transparent_window.SetToolTip(
+                _(
+                    "The current pipeline is a legacy pipeline that does not use these modules"
+                )
+            )
+        self.outputs_panel.Layout()
+        self.__panel.Layout()
 
     def allow_editing(self, allow):
         """Allow or disallow pipeline editing
@@ -292,7 +305,9 @@ class PipelineListView(object):
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
         transparent_window.SetToolTip(
-            "The current pipeline is a legacy pipeline that does not use these modules"
+            _(
+                "The current pipeline is a legacy pipeline that does not use these modules"
+            )
         )
         self.transparent_window = transparent_window
 
@@ -1725,7 +1740,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         )
 
         if len(self.items) == 0:
-            text = "Drop a pipeline file here (.cppipe or .cpproj)\n or double-click to add modules"
+            text = _("Drop a pipeline file here (.cppipe or .cpproj) or double-click to add modules")
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
             dc.DrawLabel(
                 text, wx.Bitmap(), wx.Rect(self.GetSize()), alignment=wx.ALIGN_CENTER,

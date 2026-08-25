@@ -13,6 +13,7 @@ import cellprofiler.gui
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
 import cellprofiler.gui.utilities.icon
+from cellprofiler.gui.i18n import _
 import cellprofiler.modules
 
 
@@ -32,8 +33,9 @@ class AddModuleFrame(wx.Frame):
         right_panel = wx.Panel(self, -1)
         # Module categories (in left panel)
         module_categories_text = wx.StaticText(
-            left_panel, -1, "Module Categories", style=wx.ALIGN_CENTER
+            left_panel, -1, _("Module Categories"), style=wx.ALIGN_CENTER
         )
+        self.__module_categories_text = module_categories_text
         font = module_categories_text.GetFont()
         font.SetWeight(wx.FONTWEIGHT_BOLD)
         module_categories_text.SetFont(font)
@@ -41,15 +43,19 @@ class AddModuleFrame(wx.Frame):
         # Control panel for the selected module
         selected_module_panel = wx.Panel(left_panel, -1)
         add_to_pipeline_button = wx.Button(
-            selected_module_panel, -1, "+ Add to Pipeline"
+            selected_module_panel, -1, _("+ Add to Pipeline")
         )
-        module_help_button = wx.Button(selected_module_panel, -1, "? Module Help")
+        module_help_button = wx.Button(selected_module_panel, -1, _("? Module Help"))
+        self.__add_to_pipeline_button = add_to_pipeline_button
+        self.__module_help_button = module_help_button
         # Other buttons
-        getting_started_button = wx.Button(left_panel, -1, "Getting Started")
-        done_button = wx.Button(left_panel, -1, "Done")
+        getting_started_button = wx.Button(left_panel, -1, _("Getting Started"))
+        done_button = wx.Button(left_panel, -1, _("Done"))
+        self.__getting_started_button = getting_started_button
+        self.__done_button = done_button
         # Right-side panel
         self.__module_list_box = wx.ListBox(right_panel, -1)
-        w, h, _, _ = self.__module_list_box.GetFullTextExtent(
+        w, h, _descent, _external_leading = self.__module_list_box.GetFullTextExtent(
             "MeasureObjectIntensityDistribution"
         )
         self.__module_list_box.SetMinSize(wx.Size(w, h * 30))
@@ -58,13 +64,14 @@ class AddModuleFrame(wx.Frame):
         search_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.GetSizer().Add(search_sizer, 0, wx.EXPAND | wx.ALL, 2)
         search_sizer.Add(
-            wx.StaticText(self, label="Find Modules:"),
+            wx.StaticText(self, label=_("Find Modules:")),
             0,
             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL,
         )
+        self.__find_modules_text = search_sizer.GetItem(0).GetWindow()
         self.search_text = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         search_sizer.Add(self.search_text, 1, wx.EXPAND)
-        self.search_button = wx.Button(self, label="Search Help")
+        self.search_button = wx.Button(self, label=_("Search Help"))
         search_sizer.Add(self.search_button, 0, wx.EXPAND)
         self.GetSizer().AddSpacer(2)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -126,6 +133,7 @@ class AddModuleFrame(wx.Frame):
         self.__on_category_selected(None)
         self.Fit()
         self.search_text.SetFocus()
+        self.refresh_translations()
 
     def __on_close(self, event):
         self.Hide()
@@ -219,8 +227,8 @@ class AddModuleFrame(wx.Frame):
     def __on_search_help(self, event):
         if len(self.search_text.GetValue()) == 0:
             wx.MessageBox(
-                "Please enter the search text to be found.",
-                caption="No text to search",
+                _("Please enter the search text to be found."),
+                caption=_("No text to search"),
                 parent=self,
                 style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
             )
@@ -232,8 +240,8 @@ class AddModuleFrame(wx.Frame):
         )
         if html is None:
             wx.MessageBox(
-                'No references found for "%s".' % self.search_text.GetValue(),
-                caption="Text not found",
+                _('No references found for "%s".') % self.search_text.GetValue(),
+                caption=_("Text not found"),
                 parent=self,
                 style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
             )
@@ -268,7 +276,7 @@ class AddModuleFrame(wx.Frame):
         if len(top_scorers) > 0:
             self.__module_list_box.Select(0)
         else:
-            self.__module_list_box.AppendItems("No matching modules")
+            self.__module_list_box.AppendItems([_("No matching modules")])
             self.__module_list_box.Enable(False)
 
     def __on_special_key(self, event):
@@ -302,7 +310,7 @@ class AddModuleFrame(wx.Frame):
             cellprofiler.gui.html.utils.rst_to_html_fragment(
                 cellprofiler.gui.help.content.read_content("pipelines_building.rst")
             ),
-            "Add modules: Getting Started",
+            _("Add modules: Getting Started"),
         )
 
     def display_helpframe(self, help_text, title):
@@ -327,6 +335,17 @@ class AddModuleFrame(wx.Frame):
     def notify(self, event):
         for listener in self.__listeners:
             listener(self, event)
+
+    def refresh_translations(self):
+        self.SetTitle(_("Add modules"))
+        self.__module_categories_text.SetLabel(_("Module Categories"))
+        self.__add_to_pipeline_button.SetLabel(_("+ Add to Pipeline"))
+        self.__module_help_button.SetLabel(_("? Module Help"))
+        self.__getting_started_button.SetLabel(_("Getting Started"))
+        self.__done_button.SetLabel(_("Done"))
+        self.__find_modules_text.SetLabel(_("Find Modules:"))
+        self.search_button.SetLabel(_("Search Help"))
+        self.Layout()
 
 
 class AddToPipelineEvent(object):

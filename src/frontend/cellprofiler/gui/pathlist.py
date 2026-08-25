@@ -14,6 +14,8 @@ import wx.lib.scrolledpanel
 from cellprofiler_core.pipeline import ImageFile
 from cellprofiler_core.preferences import report_progress
 
+from cellprofiler.gui.i18n import _
+
 LOGGER = logging.getLogger(__name__)
 
 OMERO_SCHEME = "omero:"
@@ -21,8 +23,7 @@ OMERO_SCHEME = "omero:"
 EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
 
 IMAGE_PLANE = "plane"
-
-DROP_FILES_AND_FOLDERS_HERE = "Drop files and folders here"
+DROP_FILES_AND_FOLDERS_HERE_KEY = "Drop files and folders here"
 
 ENABLED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
 DISABLED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
@@ -50,7 +51,7 @@ class PathListCtrl(wx.TreeCtrl):
         # TreeCtrl can't hide items, so instead we store the file objects here when they aren't shown.
         self.hidden_files = []
         # The id of the tree root. This is never shown to the user but is what folders get attached to.
-        self.root_id = self.AddRoot("File List")
+        self.root_id = self.AddRoot(_("File List"))
         # Whether we're showing disabled items on the tree
         self.show_disabled = True
         # Whether metadata has been extracted from the file list.
@@ -101,12 +102,12 @@ class PathListCtrl(wx.TreeCtrl):
         try:
             self.SetFont(self._drop_files_font)
             self.drop_files_and_folders_text_extent = self.GetFullTextExtent(
-                DROP_FILES_AND_FOLDERS_HERE
+                _(DROP_FILES_AND_FOLDERS_HERE_KEY)
             )[:2]
         except:
             LOGGER.warning(
                 'Failed to get text extend for "%s" message'
-                % DROP_FILES_AND_FOLDERS_HERE,
+                % _(DROP_FILES_AND_FOLDERS_HERE_KEY),
                 exc_info=True,
             )
             self.drop_files_and_folders_text_extent = (200, 30)
@@ -114,8 +115,8 @@ class PathListCtrl(wx.TreeCtrl):
             self.SetFont(tmp)
         try:
             self.SetFont(self._plane_details_font)
-            _, self.details_height = self.GetFullTextExtent(
-                DROP_FILES_AND_FOLDERS_HERE
+            _details_width, self.details_height = self.GetFullTextExtent(
+                _(DROP_FILES_AND_FOLDERS_HERE_KEY)
             )[:2]
         except:
             LOGGER.warning(
@@ -125,6 +126,32 @@ class PathListCtrl(wx.TreeCtrl):
             self.details_height = 11
         finally:
             self.SetFont(tmp)
+
+    def refresh_translations(self):
+        self.SetItemText(self.root_id, _("File List"))
+        tmp = self.GetFont()
+        try:
+            self.SetFont(self._drop_files_font)
+            self.drop_files_and_folders_text_extent = self.GetFullTextExtent(
+                _(DROP_FILES_AND_FOLDERS_HERE_KEY)
+            )[:2]
+        except Exception:
+            LOGGER.warning("Failed to refresh drop-files text extent", exc_info=True)
+            self.drop_files_and_folders_text_extent = (200, 30)
+        finally:
+            self.SetFont(tmp)
+
+        try:
+            self.SetFont(self._plane_details_font)
+            _details_width, self.details_height = self.GetFullTextExtent(
+                _(DROP_FILES_AND_FOLDERS_HERE_KEY)
+            )[:2]
+        except Exception:
+            LOGGER.warning("Failed to refresh plane-details text extent", exc_info=True)
+            self.details_height = 11
+        finally:
+            self.SetFont(tmp)
+        self.Refresh()
 
     def AcceptsFocus(self):
         """Tell the scrollpanel that we can accept the focus"""
@@ -549,7 +576,7 @@ class PathListCtrl(wx.TreeCtrl):
                 wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
             )
             paint_dc.Clear()
-            text = DROP_FILES_AND_FOLDERS_HERE
+            text = _(DROP_FILES_AND_FOLDERS_HERE_KEY)
             font = self._drop_files_font
             paint_dc.SetTextForeground(
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)

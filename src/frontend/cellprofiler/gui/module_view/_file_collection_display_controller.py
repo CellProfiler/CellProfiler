@@ -10,6 +10,7 @@ from cellprofiler_core.setting import FileCollectionDisplay
 from ..pipeline import Pipeline
 from ..utilities.module_view import edit_control_name
 from ...icons import get_builtin_image
+from cellprofiler.gui.i18n import _
 
 LOGGER = logging.getLogger(__name__)
 
@@ -196,7 +197,7 @@ class FileCollectionDisplayController:
         width, height = self.tree_ctrl.GetSize()
         dc.DrawRectangle(0, 0, width, height)
         if len(self.modpath_to_item) == 0:
-            text = "Drop files and folders here"
+            text = _("Drop files and folders here")
             font = wx.Font(
                 36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD
             )

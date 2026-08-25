@@ -423,6 +423,8 @@ INTERPOLATION_MODE = "InterpolationMode"
 INTENSITY_MODE = "IntensityMode"
 NORMALIZATION_FACTOR = "NormalizationFactor"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
+UI_LANGUAGE = "UILanguage"
+DEFAULT_UI_LANGUAGE = "en"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
@@ -804,6 +806,7 @@ ALL_KEYS = [
     OMERO_PORT,
     OMERO_USER,
     SAVE_PIPELINE_WITH_PROJECT,
+    UI_LANGUAGE,
 ] + [
     recent_file(n, category)
     for n in range(RECENT_FILE_COUNT)
@@ -1752,6 +1755,16 @@ def set_save_pipeline_with_project(value):
     global __save_pipeline_with_project
     __save_pipeline_with_project = value
     config_write(SAVE_PIPELINE_WITH_PROJECT, value)
+
+
+def get_ui_language():
+    if not config_exists(UI_LANGUAGE):
+        return DEFAULT_UI_LANGUAGE
+    return str(config_read(UI_LANGUAGE) or DEFAULT_UI_LANGUAGE)
+
+
+def set_ui_language(value):
+    config_write(UI_LANGUAGE, value)
 
 
 __allow_schema_write = True

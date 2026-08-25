@@ -32,6 +32,7 @@ from .help.content import read_content
 from .help.menu import Menu
 from .html.htmlwindow import HtmlClickableWindow
 from .html.utils import rst_to_html_fragment
+from .i18n import _, add_language_change_listener, get_language, set_language
 from .imagesetctrl import ImageSetCtrl
 from .module_view import ModuleView
 from .pathlist import PathListCtrl
@@ -119,6 +120,8 @@ ID_FIND_USAGES = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
 ID_OPTIONS_READERS = wx.NewId()
+ID_LANGUAGE_EN = wx.NewId()
+ID_LANGUAGE_ZH = wx.NewId()
 ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
@@ -195,17 +198,23 @@ class CPFrame(wx.Frame):
 
         self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetToolTip(
-            "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules."
+            _(
+                "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules."
+            )
         )
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
         self.__pipeline_test_panel.SetToolTip(
-            "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings."
+            _(
+                "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings."
+            )
         )
         self.__module_controls_panel = wx.Panel(
             self.__left_win, -1, style=wx.BORDER_NONE
         )
         self.__module_controls_panel.SetToolTip(
-            "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules."
+            _(
+                "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules."
+            )
         )
         #
         # The right window has the following structure:
@@ -279,8 +288,9 @@ class CPFrame(wx.Frame):
         #
         hsizer.AddSpacer(5)
         self.__path_list_filter_checkbox = wx.CheckBox(
-            self.__path_list_sash, label="Show files excluded by filters"
+            self.__path_list_sash, label=_("Show files excluded by filters")
         )
+        self.__path_list_filter_checkbox_msgid = "Show files excluded by filters"
         hsizer.Add(self.__path_list_filter_checkbox, 0, wx.EXPAND)
 
         def show_disabled(event):
@@ -344,7 +354,30 @@ class CPFrame(wx.Frame):
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.GetSizer().Add(self.__preferences_panel, 1, wx.EXPAND)
         self.__preferences_panel.SetToolTip(
-            "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run."
+            _(
+                "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run."
+            )
+        )
+
+        self.__init_i18n_state()
+        self.__register_i18n_tooltip(
+            self.__module_list_panel,
+            "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.",
+        )
+        self.__register_i18n_tooltip(
+            self.__pipeline_test_panel,
+            "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.",
+        )
+        self.__register_i18n_tooltip(
+            self.__module_controls_panel,
+            "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.",
+        )
+        self.__register_i18n_tooltip(
+            self.__preferences_panel,
+            "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.",
+        )
+        self.__register_i18n_widget_label(
+            self.__path_list_filter_checkbox, self.__path_list_filter_checkbox_msgid
         )
 
         #
@@ -365,6 +398,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
+        add_language_change_listener(self.__on_language_changed)
         if get_startup_blurb() and sys.platform != "linux":
             self.show_welcome_screen(True)
         self.show_module_ui(True)
@@ -584,104 +618,210 @@ class CPFrame(wx.Frame):
         for k, v in list(d.items()):
             self.menu_edit.Enable(k, v)
 
+    def __init_i18n_state(self):
+        self.__i18n_menu_items = []
+        self.__i18n_submenu_titles = []
+        self.__i18n_menubar_labels = []
+        self.__i18n_widget_labels = []
+        self.__i18n_tooltips = []
+
+    def __register_i18n_widget_label(self, widget, message):
+        self.__i18n_widget_labels.append((widget, message))
+
+    def __register_i18n_tooltip(self, widget, message):
+        self.__i18n_tooltips.append((widget, message))
+
+    def __t_append(self, menu, item_id, label, help_string=None, helpString=None):
+        help_text = help_string if help_string is not None else helpString
+        translated_label = _(label)
+        if help_text:
+            menu.Append(item_id, translated_label, _(help_text))
+        elif helpString is not None:
+            menu.Append(item_id, translated_label, helpString=_(helpString))
+        else:
+            menu.Append(item_id, translated_label)
+        self.__i18n_menu_items.append((menu, item_id, label, help_text))
+
+    def __t_submenu(self, parent_menu, submenu, title):
+        parent_menu.AppendSubMenu(submenu, _(title))
+        item = parent_menu.FindItemByPosition(parent_menu.GetMenuItemCount() - 1)
+        self.__i18n_submenu_titles.append((parent_menu, item.GetId(), title))
+
+    def __t_append_radio(self, menu, item_id, label, help_string):
+        menu.Append(item_id, _(label), _(help_string), kind=wx.ITEM_RADIO)
+        self.__i18n_menu_items.append((menu, item_id, label, help_string))
+
+    def __t_menubar(self, menu_bar, menu, title):
+        menu_bar.Append(menu, _(title))
+        self.__i18n_menubar_labels.append((menu_bar.GetMenuCount() - 1, title))
+
+    def __on_language_changed(self):
+        self.__refresh_ui_translations()
+
+    def __on_language_en(self, event):
+        set_language("en")
+
+    def __on_language_zh(self, event):
+        set_language("zh")
+
+    def __update_language_menu_checks(self):
+        if not hasattr(self, "_CPFrame__menu_language"):
+            return
+        current_language = get_language()
+        self.__menu_language.Check(ID_LANGUAGE_EN, current_language == "en")
+        self.__menu_language.Check(ID_LANGUAGE_ZH, current_language == "zh")
+
+    def __refresh_ui_translations(self):
+        for menu, item_id, label, help_text in self.__i18n_menu_items:
+            if label:
+                menu.SetLabel(item_id, _(label))
+            if help_text:
+                menu.SetHelpString(item_id, _(help_text))
+        for parent_menu, item_id, title in self.__i18n_submenu_titles:
+            parent_menu.SetLabel(item_id, _(title))
+        for index, title in self.__i18n_menubar_labels:
+            self.__menu_bar.SetMenuLabel(index, _(title))
+        for widget, message in self.__i18n_widget_labels:
+            widget.SetLabel(_(message))
+        for widget, message in self.__i18n_tooltips:
+            widget.SetToolTip(_(message))
+        if isinstance(self.__menu_help, Menu):
+            self.__menu_help.refresh_translations()
+        if (
+            hasattr(self, "_CPFrame__preferences_view")
+            and self.__preferences_view is not None
+        ):
+            self.__preferences_view.refresh_translations()
+        if (
+            hasattr(self, "_CPFrame__pipeline_controller")
+            and self.__pipeline_controller is not None
+        ):
+            self.__pipeline_controller.refresh_translations()
+        self.__update_language_menu_checks()
+        self.Layout()
+
     def __add_menu(self):
         """Add the menu to the frame
 
         """
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(
-            wx.ID_NEW, "New Project", helpString="Create an empty project"
+        self.__t_append(
+            self.__menu_file,
+            wx.ID_NEW,
+            "New Project",
+            helpString="Create an empty project",
         )
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             wx.ID_OPEN,
             "Open Project...\tctrl+O",
             helpString="Open a project from a .{} project file".format(EXT_PROJECT),
         )
         self.recent_workspace_files = wx.Menu()
-        self.__menu_file.AppendSubMenu(self.recent_workspace_files, "Open Recent")
-        self.__menu_file.Append(
+        self.__t_submenu(self.__menu_file, self.recent_workspace_files, "Open Recent")
+        self.__t_append(
+            self.__menu_file,
             wx.ID_SAVE,
             "Save Project\tctrl+S",
             helpString="Save the project to the current project file",
         )
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             wx.ID_SAVEAS,
             "Save Project As...",
             helpString="Save the project to a file of your choice",
         )
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             ID_FILE_REVERT_TO_SAVED,
             "Revert to Saved",
             helpString="Reload the project file, discarding changes",
         )
         submenu = wx.Menu()
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_LOAD_PIPELINE,
             "Pipeline from File...",
             "Import a pipeline into the project from a .%s file" % EXT_PIPELINE,
         )
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_URL_LOAD_PIPELINE,
             "Pipeline from URL...",
             "Load a pipeline from the web",
         )
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_IMPORT_FILE_LIST,
             "File List...",
             "Add files or URLs to the Images module file list",
         )
-        self.__menu_file.AppendSubMenu(submenu, "Import")
+        self.__t_submenu(self.__menu_file, submenu, "Import")
 
         submenu = wx.Menu()
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_SAVE_PIPELINE,
             "Pipeline...\tctrl+P",
             "Save the project's pipeline to a .%s file" % EXT_PIPELINE,
         )
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_EXPORT_IMAGE_SETS,
             "Image Set Listing...",
             "Export the project's image sets as a CSV file suitable for LoadData",
         )
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_EXPORT_PIPELINE_NOTES,
             "Pipeline notes...",
             "Save a text file outlining the pipeline's modules and module notes",
         )
-        submenu.Append(
+        self.__t_append(
+            submenu,
             ID_FILE_EXPORT_PIPELINE_CITATIONS,
             "Citation list for your pipeline...",
             "Save a text file bibliography listing citations for your current pipeline modules",
         )
-        self.__menu_file.AppendSubMenu(submenu, "Export")
-        self.__menu_file.Append(
+        self.__t_submenu(self.__menu_file, submenu, "Export")
+        self.__t_append(
+            self.__menu_file,
             ID_FILE_CLEAR_PIPELINE,
             "Clear Pipeline",
             "Remove all modules from the current pipeline",
         )
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(
-            ID_FILE_OPEN_IMAGE, "View Image", "Open an image file for viewing"
+        self.__t_append(
+            self.__menu_file,
+            ID_FILE_OPEN_IMAGE,
+            "View Image",
+            "Open an image file for viewing",
         )
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             ID_FILE_ANALYZE_IMAGES,
             "Analyze Images\tctrl+N",
             "Run the pipeline on the images in the image directory",
         )
-        self.__menu_file.Append(
-            ID_FILE_STOP_ANALYSIS, "Stop Analysis", "Stop running the pipeline"
+        self.__t_append(
+            self.__menu_file,
+            ID_FILE_STOP_ANALYSIS,
+            "Stop Analysis",
+            "Stop running the pipeline",
         )
         self.__menu_file.AppendSeparator()
         if sys.platform == "darwin":
-            self.__menu_file.Append(ID_FILE_NEW_CP, "Open A New CP Window")
+            self.__t_append(self.__menu_file, ID_FILE_NEW_CP, "Open A New CP Window")
             self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             ID_OPTIONS_READERS,
             "Configure Readers...",
             "Configure image file reader preferences",
         )
-        self.__menu_file.Append(
+        self.__t_append(
+            self.__menu_file,
             ID_OPTIONS_PREFERENCES,
             "&Preferences...",
             "Set global application preferences",
@@ -689,140 +829,176 @@ class CPFrame(wx.Frame):
 
         self.recent_files = wx.Menu()
         self.recent_pipeline_files = wx.Menu()
-        self.__menu_file.Append(ID_FILE_EXIT, "Q&uit\tctrl+Q", "Quit the application")
+        self.__t_append(
+            self.__menu_file, ID_FILE_EXIT, "Q&uit\tctrl+Q", "Quit the application"
+        )
 
         self.menu_edit = wx.Menu()
-        self.menu_edit.Append(wx.ID_UNDO, helpString="Undo last action")
+        self.__t_append(self.menu_edit, wx.ID_UNDO, "&Undo", helpString="Undo last action")
         self.menu_edit.AppendSeparator()
 
-        self.menu_edit.Append(wx.ID_CUT)
-        self.menu_edit.Append(wx.ID_COPY)
-        self.menu_edit.Append(wx.ID_PASTE)
-        self.menu_edit.Append(wx.ID_SELECTALL)
+        for stock_id, stock_label in (
+            (wx.ID_CUT, "&Cut"),
+            (wx.ID_COPY, "&Copy"),
+            (wx.ID_PASTE, "&Paste"),
+            (wx.ID_SELECTALL, "Select &All"),
+        ):
+            self.menu_edit.Append(stock_id, _(stock_label))
+            self.__i18n_menu_items.append((self.menu_edit, stock_id, stock_label, None))
 
         self.menu_edit.AppendSeparator()
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_MOVE_UP,
             "Move Selected Modules &Up",
             "Move selected modules toward the start of the pipeline",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_MOVE_DOWN,
             "Move Selected Modules &Down",
             "Move selected modules toward the end of the pipeline",
         )
-        self.menu_edit.Append(
-            ID_EDIT_DELETE, "&Delete Selected Modules", "Delete selected modules"
+        self.__t_append(
+            self.menu_edit,
+            ID_EDIT_DELETE,
+            "&Delete Selected Modules",
+            "Delete selected modules",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_DUPLICATE,
             "Duplicate Selected Modules",
             "Duplicate selected modules",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_ENABLE_MODULE,
             "Disable Selected Modules",
             "Disable a module to skip it when running the pipeline",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_DISPLAY_MODULE,
             "Disable Display of Selected Modules",
             "Turn off module output display",
         )
         self.menu_edit_add_module = wx.Menu()
-        self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add Module")
+        self.__t_submenu(self.menu_edit, self.menu_edit_add_module, "&Add Module")
         self.menu_edit_goto_module = wx.Menu()
-        self.menu_edit.AppendSubMenu(self.menu_edit_goto_module, "&Go to Module")
+        self.__t_submenu(self.menu_edit, self.menu_edit_goto_module, "&Go to Module")
 
         self.menu_edit.AppendSeparator()
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_SHOW_FILE_LIST_IMAGE,
             "Show Selected Image",
             "Display the first selected image in the file list",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_REMOVE_FROM_FILE_LIST,
             "Remove From File List",
             "Remove the selected files from the file list",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_BROWSE_FOR_FILES,
             "Browse for Images",
             "Select images to add to the file list using a file browser",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_BROWSE_FOR_FOLDER,
             "Browse for Image Folder",
             "Select a folder of images to add to the file list using a file browser",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_CLEAR_FILE_LIST,
             "Clear File List",
             "Remove all files from the file list",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_EXPAND_ALL,
             "Expand All Folders",
             "Expand all folders in the file list and show all file names",
         )
-        self.menu_edit.Append(
+        self.__t_append(
+            self.menu_edit,
             ID_EDIT_COLLAPSE_ALL,
             "Collapse All Folders",
             "Collapse all folders in the file list, hiding all file names",
         )
 
         self.__menu_debug = wx.Menu()
-        self.__menu_debug.Append(
-            ID_DEBUG_TOGGLE, "&Start Test Mode\tF5", "Start the pipeline debugger"
+        self.__t_append(
+            self.__menu_debug,
+            ID_DEBUG_TOGGLE,
+            "&Start Test Mode\tF5",
+            "Start the pipeline debugger",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_STEP,
             "Ste&p to Next Module\tF6",
             "Execute the currently selected module",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_NEXT_IMAGE_SET,
             "&Next Image Set\tF7",
             "Advance to the next image set",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_NEXT_GROUP,
             "Next Image &Group\tF8",
             "Advance to the next group in the image set list",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
             "Random Image Set",
             "Advance to a random image set",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP,
             "Random Image Group",
             "Advance to a random image group",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_CHOOSE_IMAGE_SET,
             "Choose Image Set",
             "Choose any of the available image sets",
         )
-        self.__menu_debug.Append(
+        self.__t_append(
+            self.__menu_debug,
             ID_DEBUG_CHOOSE_GROUP,
             "Choose Image Group",
             "Choose which image set group to process in test-mode",
         )
 
-        self.__menu_debug.Append(
-            ID_DEBUG_VIEW_WORKSPACE, "View workspace", "View the current workspace",
+        self.__t_append(
+            self.__menu_debug,
+            ID_DEBUG_VIEW_WORKSPACE,
+            "View workspace",
+            "View the current workspace",
         )
 
         if not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG"):
-            self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
-            self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
+            self.__t_append(self.__menu_debug, ID_DEBUG_RELOAD, "Reload Modules' Source")
+            self.__t_append(self.__menu_debug, ID_DEBUG_PDB, "Break Into Debugger")
 
             if get_widget_inspector():
-                self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
+                self.__t_append(
+                    self.__menu_debug, ID_FILE_WIDGET_INSPECTOR, "Widget inspector"
+                )
 
-        self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")
+        self.__t_append(self.__menu_debug, ID_DEBUG_HELP, "Pipeline Testing Help")
         self.__menu_debug.Enable(ID_DEBUG_STEP, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
@@ -832,24 +1008,28 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP, False)
 
         self.__menu_window = wx.Menu()
-        self.__menu_window.Append(
+        self.__t_append(
+            self.__menu_window,
             ID_WINDOW_CLOSE_ALL,
             "Close &All Open Windows\tctrl+L",
             "Close all open module display windows",
         )
-        self.__menu_window.Append(
+        self.__t_append(
+            self.__menu_window,
             ID_WINDOW_SHOW_ALL_WINDOWS,
             "Show All Windows On Run",
             "Show all module display windows for all modules during analysis",
         )
-        self.__menu_window.Append(
+        self.__t_append(
+            self.__menu_window,
             ID_WINDOW_HIDE_ALL_WINDOWS,
             "Hide All Windows On Run",
             "Hide all module display windows for all modules during analysis",
         )
         self.__menu_window.AppendSeparator()
 
-        self.__menu_window.Append(
+        self.__t_append(
+            self.__menu_window,
             ID_FILE_PLATEVIEWER,
             "Show Plate Viewer",
             "Open the plate viewer to inspect the images in the current workspace",
@@ -863,31 +1043,51 @@ class CPFrame(wx.Frame):
             # Only show the plugins menu if a plugin is using it
             self.__menu_plugins = wx.Menu()
             for callback_fn, wx_id, name, tooltip in PLUGIN_MENU_ENTRIES:
-                self.__menu_plugins.Append(wx_id, name, tooltip)
+                self.__menu_plugins.Append(wx_id, _(name), _(tooltip) if tooltip else "")
+                self.__i18n_menu_items.append(
+                    (self.__menu_plugins, wx_id, name, tooltip or None)
+                )
                 self.Bind(wx.EVT_MENU, callback_fn, id=wx_id)
 
         self.__menu_help = Menu(self)
 
+        self.__menu_language = wx.Menu()
+        self.__t_append_radio(
+            self.__menu_language,
+            ID_LANGUAGE_EN,
+            "English",
+            "Use English for the user interface",
+        )
+        self.__t_append_radio(
+            self.__menu_language,
+            ID_LANGUAGE_ZH,
+            "简体中文",
+            "Use Simplified Chinese for the user interface",
+        )
+
         self.__menu_bar = wx.MenuBar()
-        self.__menu_bar.Append(self.__menu_file, "&File")
-        self.__menu_bar.Append(self.menu_edit, "&Edit")
-        self.__menu_bar.Append(self.__menu_debug, "&Test")
+        self.__t_menubar(self.__menu_bar, self.__menu_file, "&File")
+        self.__t_menubar(self.__menu_bar, self.menu_edit, "&Edit")
+        self.__t_menubar(self.__menu_bar, self.__menu_debug, "&Test")
         if get_show_sampling():
             self.__menu_sample = wx.Menu()
-            self.__menu_sample.Append(
+            self.__t_append(
+                self.__menu_sample,
                 ID_SAMPLE_INIT,
                 "Initialize Sampling",
                 "Initialize sampling up to current module",
             )
-            self.__menu_bar.Append(self.__menu_sample, "&Sample")
+            self.__t_menubar(self.__menu_bar, self.__menu_sample, "&Sample")
         if PLUGIN_MENU_ENTRIES:
-            self.__menu_bar.Append(self.__menu_plugins, "&Plugins")
-        self.__menu_bar.Append(self.__menu_window, "&Windows")
+            self.__t_menubar(self.__menu_bar, self.__menu_plugins, "&Plugins")
+        self.__t_menubar(self.__menu_bar, self.__menu_window, "&Windows")
+        self.__t_menubar(self.__menu_bar, self.__menu_language, "Language / 语言")
         if wx.VERSION <= (2, 8, 10, 1, "") and wx.Platform == "__WXMAC__":
-            self.__menu_bar.Append(self.__menu_help, "CellProfiler Help")
+            self.__t_menubar(self.__menu_bar, self.__menu_help, "CellProfiler Help")
         else:
-            self.__menu_bar.Append(self.__menu_help, "&Help")
+            self.__t_menubar(self.__menu_bar, self.__menu_help, "&Help")
         self.SetMenuBar(self.__menu_bar)
+        self.__update_language_menu_checks()
         self.enable_edit_commands([])
 
         self.Bind(wx.EVT_MENU, self.on_open_image, id=ID_FILE_OPEN_IMAGE)
@@ -915,6 +1115,8 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_readers, id=ID_OPTIONS_READERS)
         
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
+        self.Bind(wx.EVT_MENU, self.__on_language_en, id=ID_LANGUAGE_EN)
+        self.Bind(wx.EVT_MENU, self.__on_language_zh, id=ID_LANGUAGE_ZH)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
         self.Bind(wx.EVT_MENU, self.__on_debug_help, id=ID_DEBUG_HELP)

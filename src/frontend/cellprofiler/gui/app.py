@@ -64,6 +64,9 @@ class App(wx.App):
                 print(f"Python rejected the system locale detected by WX ('{self.locale.GetName()}').\n"
                       "This shouldn't cause problems, but please let us know if you encounter errors.")
         from .cpframe import CPFrame
+        from .i18n import init_from_preferences
+
+        init_from_preferences()
 
         # This import is needed to populate the modules list
         import cellprofiler_core.modules

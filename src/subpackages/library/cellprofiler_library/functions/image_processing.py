@@ -848,11 +848,12 @@ def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, color
         image=image,
     )
 
-def gaussian_filter(image, sigma):
+def gaussian_filter(image, sigma, perZ_3D = False):
     '''
     GaussianFilter will blur an image and remove noise, and can be helpful where the foreground signal is noisy or near the noise floor.
     image=input image, y_data=output image
     Sigma is the standard deviation of the kernel to be used for blurring, larger sigmas induce more blurring. 
+    If an image is 3D and you have selected perZ_3D, the Gaussian will be applied to each Z plane independently
     '''
     # this replicates "automatic channel detection" present in skimage < 0.22, which was removed in 0.22
     # only relevant for ndim < len(sigma), e.g. multichannel images
@@ -862,7 +863,12 @@ def gaussian_filter(image, sigma):
         channel_axis = -1
     else:
         channel_axis = None
-    y_data = skimage.filters.gaussian(image, sigma=sigma, channel_axis=channel_axis)
+    if perZ_3D and image.ndim >2:
+            y_data = numpy.zeros_like(image, dtype=float)
+            for index, plane in enumerate(image):
+                y_data[index] = skimage.filters.gaussian(plane, sigma=sigma)
+    else:
+        y_data = skimage.filters.gaussian(image, sigma=sigma, channel_axis=channel_axis)
     return y_data
 
 

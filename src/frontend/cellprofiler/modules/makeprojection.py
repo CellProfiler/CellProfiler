@@ -53,7 +53,6 @@ See also
 See also the help for the **Input** modules.
 """
 
-
 import numpy
 from cellprofiler_core.image import AbstractImage
 from cellprofiler_core.image import Image
@@ -63,8 +62,8 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text.number import Float
 
-from cellprofiler_library.modules._makeprojection import accumulate_projection, calculate_final_projection, set_projection
-from cellprofiler_library.opts.makeprojection import ProjectionType, StateKey, P_ALL
+from cellprofiler_library.modules._makeprojection import makeprojection
+from cellprofiler_library.opts.makeprojection import ProjectionType, P_ALL
 
 K_PROVIDER = "Provider"
 
@@ -265,7 +264,7 @@ class ImageProvider(AbstractImage):
     D_NAME = "name"
     D_FREQUENCY = "frequency"
     D_METHOD = "method"
-    D_LIBRARY_STATE = "library_state"
+    D_LIBRARY_STATE = "library_accumulator"
 
     def __init__(self, name, method, frequency=6.0):
         """Construct using a parent provider that does the real work
@@ -276,7 +275,7 @@ class ImageProvider(AbstractImage):
         self._name = name
         self.method = ProjectionType(method)
         self.frequency = frequency
-        self.library_state = {}
+        self.library_accumulator = None
         self._cached_image = None
 
     @staticmethod
@@ -292,7 +291,7 @@ class ImageProvider(AbstractImage):
         d[ImageProvider.D_NAME] = self._name
         d[ImageProvider.D_FREQUENCY] = self.frequency
         d[ImageProvider.D_METHOD] = self.method.value
-        d[ImageProvider.D_LIBRARY_STATE] = self.library_state
+        d[ImageProvider.D_LIBRARY_STATE] = self.library_accumulator
 
     @staticmethod
     def restore_from_state(d):
@@ -305,33 +304,36 @@ class ImageProvider(AbstractImage):
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]
         method = d[ImageProvider.D_METHOD]
-        library_state = d.get(ImageProvider.D_LIBRARY_STATE, {})
+        library_accumulator = d.get(ImageProvider.D_LIBRARY_STATE, None)
         
         provider = ImageProvider.create(name, method, frequency)
-        provider.library_state = library_state
+        provider.library_accumulator = library_accumulator
         return provider
 
     def reset(self):
         """Reset accumulator at start of groups"""
-        self.library_state = {}
+        self.library_accumulator = None
         self._cached_image = None
 
     @property
     def has_image(self):
-        return len(self.library_state) > 0
+        return self.library_accumulator is not None
 
     @property
     def count(self):
-        return self.library_state.get(StateKey.IMAGE_COUNT)
+        if self.library_accumulator is None:
+            return 0
+        else:
+            _, _, agg_image_count = self.library_accumulator.finalize()
+            return agg_image_count
 
     def set_image(self, image):
         self._cached_image = None
-        self.library_state = {}
-        set_projection(
+        self.library_accumulator = makeprojection(
+            self.method,
             image.pixel_data, 
             image.mask,
-            self.library_state,
-            self.method
+            self.frequency,
         )
 
     def accumulate_image(self, image):
@@ -340,20 +342,14 @@ class ImageProvider(AbstractImage):
         pixels = image.pixel_data
         mask = image.mask if image.has_mask else None
         
-        self.library_state = accumulate_projection(
-            pixels, 
-            mask, 
-            self.library_state, 
-            self.method, 
-            self.frequency
-        )
+        self.library_accumulator = self.library_accumulator.accumulate(pixels, mask)
 
     def provide_image(self, image_set):
         """Return the final projected image."""
         if self._cached_image is not None:
             return self._cached_image
             
-        pixels, mask = calculate_final_projection(self.library_state, self.method)
+        pixels, mask, _ = self.library_accumulator.finalize()
         
         if numpy.all(mask):
             self._cached_image = Image(pixels)

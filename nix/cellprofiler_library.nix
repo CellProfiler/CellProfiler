@@ -13,6 +13,7 @@
   mahotas,
   scikit-image,
   scipy,
+  pydantic,
   packaging,
   cp_version,
   python3Packages,
@@ -52,6 +53,7 @@ buildPythonPackage rec {
     mahotas
     centrosome
     matplotlib
+    pydantic
     packaging
   ];
 

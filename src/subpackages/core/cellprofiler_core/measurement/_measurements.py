@@ -257,7 +257,7 @@ class Measurements:
         # XXX - question for Lee: should this return the minimum number
         # of non-null values across columns in the Image table?
         try:
-            return len(self.hdf5_dict.get_indices("Image", "ImageNumber"))
+            return len(self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER))
         except KeyError:
             return 0
 
@@ -760,7 +760,7 @@ class Measurements:
         return [
             name
             for name in self.hdf5_dict.second_level_names(object_name)
-            if name not in ("ImageNumber", "ObjectNumber")
+            if name not in (IMAGE_NUMBER, OBJECT_NUMBER)
         ]
 
     def get_image_numbers(self):
@@ -1022,7 +1022,7 @@ class Measurements:
                 else:
                     measurement = "%s_%s" % (C_METADATA, feature,)
                     result += str(
-                        self.get_measurement("Image", measurement, image_set_number)
+                        self.get_measurement(IMAGE, measurement, image_set_number)
                     )
                 piece = piece[m.end() :]
             result_pieces.append(result)
@@ -1199,7 +1199,7 @@ class Measurements:
         if len(aggs) == 0:
             return d
         for object_name in self.get_object_names():
-            if object_name == "Image":
+            if object_name == IMAGE:
                 continue
             for feature in self.get_feature_names(object_name):
                 if self.agg_ignore_feature(object_name, feature):

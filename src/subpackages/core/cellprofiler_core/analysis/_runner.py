@@ -21,6 +21,7 @@ from . import reply as anareply
 from . import request as anarequest
 from ..image import ImageSetList
 from ..measurement import Measurements
+from ..constants.measurement import GROUP_INDEX, IMAGE, EXPERIMENT, GROUP_NUMBER
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import dump
 from ..preferences import get_plugin_directory
@@ -262,16 +263,16 @@ class Runner:
             if self.pipeline.requires_aggregation():
                 overwrite = True
             if has_groups and not overwrite:
-                if not measurements.has_feature("Image", self.STATUS):
+                if not measurements.has_feature(IMAGE, self.STATUS):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            "Image", "Group_Number", image_number,
+                            IMAGE, GROUP_NUMBER, image_number,
                         ]
                         status = measurements[
-                            "Image", self.STATUS, image_number,
+                            IMAGE, self.STATUS, image_number,
                         ]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
@@ -285,24 +286,24 @@ class Runner:
                     overwrite
                     or (
                         not measurements.has_measurements(
-                            "Image", self.STATUS, image_set_number,
+                            IMAGE, self.STATUS, image_set_number,
                         )
                     )
                     or (
-                        measurements["Image", self.STATUS, image_set_number,]
+                        measurements[IMAGE, self.STATUS, image_set_number,]
                         != self.STATUS_DONE
                     )
                 ):
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        "Image", "Group_Number", image_set_number,
+                        IMAGE, GROUP_NUMBER, image_set_number,
                     ]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
                     new_image_sets_to_process.append(image_set_number)
-            measurements["Image", self.STATUS, new_image_sets_to_process] = \
+            measurements[IMAGE, self.STATUS, new_image_sets_to_process] = \
                 [self.STATUS_UNPROCESSED] * len(new_image_sets_to_process)
             image_sets_to_process = new_image_sets_to_process
 
@@ -313,10 +314,10 @@ class Runner:
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
                     group_number = measurements[
-                        "Image", "Group_Number", image_set_number,
+                        IMAGE, GROUP_NUMBER, image_set_number,
                     ]
                     group_index = measurements[
-                        "Image", "Group_Index", image_set_number,
+                        IMAGE, GROUP_INDEX, image_set_number,
                     ]
                     job_groups[group_number] = job_groups.get(group_number, []) + [
                         (group_index, image_set_number)
@@ -369,14 +370,14 @@ class Runner:
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
                         measurements[
-                            "Image", self.STATUS, int(image_set_number),
+                            IMAGE, self.STATUS, int(image_set_number),
                         ] = self.STATUS_IN_PROCESS
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        "Image", self.STATUS, int(finished_req.image_set_number),
+                        IMAGE, self.STATUS, int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
                         assert isinstance(
@@ -396,7 +397,7 @@ class Runner:
 
                 # check progress and report
                 counts = collections.Counter(
-                    measurements["Image", self.STATUS, image_set_number,]
+                    measurements[IMAGE, self.STATUS, image_set_number,]
                     for image_set_number in image_sets_to_process
                 )
                 self.post_event(Progress(counts))
@@ -451,18 +452,18 @@ class Runner:
         """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
-            if o == "Experiment":
+            if o == EXPERIMENT:
                 continue  # Written during prepare_run / post_run
-            elif o == "Image":
+            elif o == IMAGE:
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
-                    if not measurements.has_feature("Image", feature):
+                    if not measurements.has_feature(IMAGE, feature):
                         f_image_numbers = image_numbers
                     else:
-                        local_values = measurements["Image", feature, image_numbers]
+                        local_values = measurements[IMAGE, feature, image_numbers]
                         remote_values = recd_measurements[
-                            "Image", feature, image_numbers
+                            IMAGE, feature, image_numbers
                         ]
                         f_image_numbers = [
                             i
@@ -485,7 +486,7 @@ class Runner:
                         o, feature, image_numbers
                     ]
         for image_set_number in image_numbers:
-            measurements["Image", self.STATUS, image_set_number] = self.STATUS_DONE
+            measurements[IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
 
     def jobserver(self, start_signal):
         # this server subthread should be very lightweight, as it has to handle

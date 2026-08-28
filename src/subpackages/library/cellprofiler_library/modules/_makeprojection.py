@@ -285,6 +285,8 @@ def calculate_final_projection(
 
 # --- Helper functions ---
 
+# NOTE: _mut prefix means the function mutates input numpy arrays, rather than returning new arrays
+
 def _mut_accumulate_sum(image: Image2D, mask: Image2DMask, agg_image: Union[Image2DMask, Image2D]):
     """This function is called by both sum and average projection methods"""
     agg_image[mask] += image[mask]

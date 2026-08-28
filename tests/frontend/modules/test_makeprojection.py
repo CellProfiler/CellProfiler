@@ -106,7 +106,8 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     )
     module.run(w)
     image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
-    assert numpy.max(image_provider.count) == 1
+    agg_image_count = image_provider.library_accumulator.finalize.keywords["agg_image_count"]
+    assert numpy.max(agg_image_count) == 1
 
     return image
 

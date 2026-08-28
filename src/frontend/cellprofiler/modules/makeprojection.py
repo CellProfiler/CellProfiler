@@ -319,14 +319,6 @@ class ImageProvider(AbstractImage):
     def has_image(self):
         return self.library_accumulator is not None
 
-    @property
-    def count(self):
-        if self.library_accumulator is None:
-            return 0
-        else:
-            _, _, agg_image_count = self.library_accumulator.finalize()
-            return agg_image_count
-
     def set_image(self, image):
         self._cached_image = None
         self.library_accumulator = makeprojection(
@@ -349,7 +341,7 @@ class ImageProvider(AbstractImage):
         if self._cached_image is not None:
             return self._cached_image
             
-        pixels, mask, _ = self.library_accumulator.finalize()
+        pixels, mask = self.library_accumulator.finalize()
         
         if numpy.all(mask):
             self._cached_image = Image(pixels)

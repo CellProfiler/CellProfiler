@@ -199,6 +199,22 @@ NANS_AS_NULLS = "Null"
 NANS_AS_NANS = "NaN"
 
 
+def format_data_value(value):
+    """Render a measurement value for writing to a spreadsheet
+
+    Floats whose default representation uses scientific notation are written
+    in positional notation instead, since spreadsheet software mangles values
+    such as 1e-05. The shortest round-trip representation is kept, so the
+    written value still parses back to exactly the measured one.
+    """
+    if isinstance(value, (float, numpy.floating)):
+        text = str(value)
+        if "e" in text:
+            return numpy.format_float_positional(value, trim="0")
+        return text
+    return value
+
+
 class ExportToSpreadsheet(Module):
     module_name = "ExportToSpreadsheet"
     category = ["File Processing", "Data Tools"]
@@ -1102,6 +1118,8 @@ desired.
                     v = base64.b64encode(v.data)
                 elif isinstance(v, bytes):
                     v = v.decode("unicode_escape", errors='ignore')
+                elif isinstance(v, (float, numpy.floating)):
+                    v = format_data_value(v)
                 else:
                     v = str(v)
                 writer.writerow((feature_name, v))
@@ -1172,7 +1190,7 @@ desired.
                             else:
                                 row.append(str(numpy.NaN))
                         else:
-                            row.append(str(value))
+                            row.append(format_data_value(value))
                 writer.writerow(row)
         finally:
             fd.close()
@@ -1310,7 +1328,7 @@ desired.
                 row = [
                     "" if x is None else x if numpy.isscalar(x) else x[0] for x in row
                 ]
-                writer.writerow(row)
+                writer.writerow([format_data_value(x) for x in row])
         finally:
             fd.close()
 
@@ -1445,7 +1463,7 @@ desired.
                             else field
                             for field in row
                         ]
-                    writer.writerow(row)
+                    writer.writerow([format_data_value(field) for field in row])
         finally:
             fd.close()
 

@@ -2728,3 +2728,152 @@ def test_test_overwrite_relationships_file(output_dir):
     with open(output_csv_filename, "w") as fd:
         fd.write("Hello, world.\n")
     assert not module.prepare_run(workspace)
+
+
+def test_object_measurements_avoid_scientific_notation(output_dir):
+    """Small and large object measurements are written without an exponent"""
+    path = os.path.join(output_dir, "my_file.csv")
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+    module.set_module_num(1)
+    module.wants_everything.value = False
+    module.wants_prefix.value = False
+    module.object_groups[0].name.value = "my_object"
+    module.object_groups[0].file_name.value = path
+    module.object_groups[0].wants_automatic_file_name.value = False
+    m = cellprofiler_core.measurement.Measurements()
+    mvalues = numpy.array(
+        [1.7053025658242404e-13, 8.163265306122448e-05, 0.15625, 1.0, 3.0e21]
+    )
+    m.add_measurement("my_object", "my_measurement", mvalues)
+    m.add_image_measurement("Count_my_object", len(mvalues))
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    fd = open(path, "r")
+    try:
+        reader = csv.reader(fd, delimiter=module.delimiter_char)
+        header = next(reader)
+        assert header[2] == "my_measurement"
+        for expected in mvalues:
+            row = next(reader)
+            assert "e" not in row[2].lower()
+            assert float(row[2]) == expected
+        with pytest.raises(StopIteration):
+            reader.__next__()
+    finally:
+        fd.close()
+
+
+def test_image_measurements_avoid_scientific_notation(output_dir):
+    """Small image measurements are written without an exponent"""
+    path = os.path.join(output_dir, "my_file.csv")
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+    module.set_module_num(1)
+    module.wants_everything.value = False
+    module.wants_prefix.value = False
+    module.object_groups[0].name.value = "Image"
+    module.object_groups[0].file_name.value = path
+    module.object_groups[0].wants_automatic_file_name.value = False
+    m = cellprofiler_core.measurement.Measurements()
+    m.add_image_measurement("my_measurement", 3.0517578125e-05)
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    fd = open(path, "r")
+    try:
+        reader = csv.reader(fd, delimiter=module.delimiter_char)
+        header = next(reader)
+        assert header[1] == "my_measurement"
+        row = next(reader)
+        assert row[1] == "0.000030517578125"
+        assert float(row[1]) == 3.0517578125e-05
+    finally:
+        fd.close()
+
+
+def test_experiment_measurements_avoid_scientific_notation(output_dir):
+    """Small experiment measurements are written without an exponent"""
+    path = os.path.join(output_dir, "my_file.csv")
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+    module.set_module_num(1)
+    module.wants_everything.value = False
+    module.wants_prefix.value = False
+    module.object_groups[0].name.value = EXPERIMENT
+    module.object_groups[0].file_name.value = path
+    module.object_groups[0].wants_automatic_file_name.value = False
+    m = cellprofiler_core.measurement.Measurements()
+    m.add_experiment_measurement("my_measurement", 1.23456789e-07)
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    fd = open(path, "r")
+    try:
+        reader = csv.reader(fd, delimiter=module.delimiter_char)
+        next(reader)
+        row = next(reader)
+        assert row[0] == "my_measurement"
+        assert row[1] == "0.000000123456789"
+        assert float(row[1]) == 1.23456789e-07
+    finally:
+        del m
+        fd.close()
+
+
+def test_gct_measurements_avoid_scientific_notation(output_dir):
+    """Small measurements in the GenePattern file are written without an exponent"""
+    path = os.path.join(output_dir, "my_file.csv")
+    module = add_gct_settings(path)
+    module.set_module_num(1)
+    module.how_to_specify_gene_name.value = (
+        cellprofiler.modules.exporttospreadsheet.GP_NAME_METADATA
+    )
+    module.gene_name_column.value = "Metadata_Bar"
+    m = cellprofiler_core.measurement.Measurements()
+    m.add_image_measurement("Metadata_Bar", "Hi")
+    m.add_image_measurement("PathName_Foo", output_dir)
+    m.add_image_measurement("my_measurement", 3.0517578125e-05)
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    fd = open(os.path.splitext(path)[0] + ".gct", "r")
+    try:
+        reader = csv.reader(fd, delimiter="\t")
+        next(reader)
+        next(reader)
+        header = next(reader)
+        row = next(reader)
+        value = row[header.index("my_measurement")]
+        assert value == "0.000030517578125"
+        assert float(value) == 3.0517578125e-05
+    finally:
+        fd.close()
+
+
+def test_format_data_value_leaves_other_values_alone():
+    """Only floats written with an exponent are reformatted"""
+    format_data_value = cellprofiler.modules.exporttospreadsheet.format_data_value
+    assert format_data_value(0.15625) == "0.15625"
+    assert format_data_value(1.0) == "1.0"
+    assert format_data_value(numpy.float32(1e-5)) == "0.00001"
+    assert format_data_value(numpy.NaN) == str(numpy.NaN)
+    assert format_data_value(numpy.inf) == str(numpy.inf)
+    assert format_data_value(42) == 42
+    assert format_data_value("Hello, world") == "Hello, world"
+    assert format_data_value(None) is None

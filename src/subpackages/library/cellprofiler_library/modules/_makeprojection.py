@@ -35,7 +35,7 @@ ProjectionAccumulator: TypeAlias = Callable[
 ]
 ProjectionFinalizer: TypeAlias = Callable[
     [],
-    Tuple[Image2D, Image2DMask, NDArray[np.int_]]
+    Tuple[Image2D, Image2DMask]
 ]
 class MakeProjectionAccumulator(BaseModel):
     model_config = ConfigDict(
@@ -237,7 +237,7 @@ def calculate_final_projection(
         agg_bright_max:   Annotated[Optional[Image2D], Field(description="Aggregation of max brightfield vals (for method brightfield)")],
         agg_bright_min:   Annotated[Optional[Image2D], Field(description="Aggregation of min brightfield vals (for method brightfield)")],
         agg_image:        Annotated[Optional[Union[Image2DMask, Image2D]], Field(description="Aggregation of image or mask (for methods mask, average, sum, maximum, minimum)")],
-    ) -> Tuple[Image2D, Image2DMask, NDArray[np.int_]]:
+    ) -> Tuple[Image2D, Image2DMask]:
     """
     Calculate the final projection image from the state.
 
@@ -281,7 +281,7 @@ def calculate_final_projection(
     else:
         raise ValueError(T_PROJECTION_METHOD_INVALID % method)
 
-    return final_projection, mask_2d, agg_image_count
+    return final_projection, mask_2d
 
 # --- Helper functions ---
 

@@ -3105,7 +3105,3 @@ def apply_target_mask(x_data: ImageAny, masking_image: Union[ImageAny,ObjectSegm
     mask = masking_image.astype(bool)
     x_data[~mask] = 0
     return x_data
-
-
-
-

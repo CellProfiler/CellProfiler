@@ -707,12 +707,14 @@ fewer iterations, but less accuracy.
         ]
 
     def prepare_group(self, workspace, grouping, image_numbers):
+        if self.each_or_all == CalculateFunctionTarget.EACH.value or len(image_numbers) == 0:
+            return True
+
         image_set_list = workspace.image_set_list
-        pipeline = workspace.pipeline
-        assert isinstance(pipeline, Pipeline)
-        m = workspace.measurements
-        assert isinstance(m, Measurements)
-        if self.each_or_all != CalculateFunctionTarget.EACH.value and len(image_numbers) > 0:
+        output_image_provider = CorrectIlluminationImageProvider.create(
+            self.illumination_image_name.value, self
+        )
+        if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
             title = "#%d: CorrectIlluminationCalculate for %s" % (
                 self.module_num,
                 self.image_name,
@@ -721,31 +723,29 @@ fewer iterations, but less accuracy.
                 "CorrectIlluminationCalculate is averaging %d images while "
                 "preparing for run" % (len(image_numbers))
             )
-            output_image_provider = CorrectIlluminationImageProvider.create(
-                self.illumination_image_name.value, self
+            pipeline = workspace.pipeline
+            assert isinstance(pipeline, Pipeline)
+            #
+            # Find the module that provides the image we need
+            #
+            md = workspace.pipeline.get_provider_dictionary(
+                self.image_name.group, self
             )
-            d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
-            if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
-                #
-                # Find the module that provides the image we need
-                #
-                md = workspace.pipeline.get_provider_dictionary(
-                    self.image_name.group, self
-                )
-                src_module, src_setting = md[self.image_name.value][-1]
-                modules = list(pipeline.modules())
-                idx = modules.index(src_module)
-                last_module = modules[idx + 1]
-                for w in pipeline.run_group_with_yield(
-                    workspace, grouping, image_numbers, last_module, title, message
-                ):
-                    image = w.image_set.get_image(self.image_name.value, cache=False)
-                    if not output_image_provider.has_image:
-                        output_image_provider.set_image(image)
-                    else:
-                        output_image_provider.accumulate_image(image)
-                    w.image_set.clear_cache()
-            output_image_provider.save_state(d)
+            src_module, src_setting = md[self.image_name.value][-1]
+            modules = list(pipeline.modules())
+            idx = modules.index(src_module)
+            last_module = modules[idx + 1]
+            for w in pipeline.run_group_with_yield(
+                workspace, grouping, image_numbers, last_module, title, message
+            ):
+                image = w.image_set.get_image(self.image_name.value, cache=False)
+                if not output_image_provider.has_image:
+                    output_image_provider.set_image(image)
+                else:
+                    output_image_provider.accumulate_image(image)
+                w.image_set.clear_cache()
+        d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
+        output_image_provider.save_state(d)
 
         return True
 

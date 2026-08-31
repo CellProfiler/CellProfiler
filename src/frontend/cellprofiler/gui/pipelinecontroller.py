@@ -189,6 +189,10 @@ def make_accessible_proxy(button, handler):
     )
     proxy.Bind(wx.EVT_BUTTON, handler)
     proxy.Lower()
+    # Keep it out of Tab order: it's a real second control layered behind the
+    # visible one, and without this Tab would stop on it and draw its focus
+    # ring where nothing appears to be.
+    proxy.DisableFocusFromKeyboard()
 
     def sync_geometry(event=None):
         proxy.SetSize(button.GetSize())

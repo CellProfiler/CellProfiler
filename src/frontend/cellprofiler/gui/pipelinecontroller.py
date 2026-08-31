@@ -174,6 +174,49 @@ ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
 
 
+def make_accessible_proxy(button, handler):
+    """Overlay an invisible native wx.Button on top of a wx.lib.buttons.Gen* button
+
+    Gen* buttons (GenBitmapTextButton, etc.) are custom-drawn windows, not native
+    controls, so they don't publish themselves to the OS Accessibility API and
+    are invisible to tools that hint UI elements via that API. A plain
+    wx.Button is backed by a real NSButton and gets picked up automatically, so we
+    stack one behind the Gen* button, mirror its geometry/visibility/enabled state,
+    and route its click to the same handler.
+    """
+    proxy = wx.Button(
+        button.GetParent(), label=button.GetLabel(), style=wx.BORDER_NONE
+    )
+    proxy.Bind(wx.EVT_BUTTON, handler)
+    proxy.Lower()
+
+    def sync_geometry(event=None):
+        proxy.SetSize(button.GetSize())
+        proxy.SetPosition(button.GetPosition())
+        if event is not None:
+            event.Skip()
+
+    def sync_shown(event):
+        proxy.Show(event.IsShown())
+        event.Skip()
+
+    button.Bind(wx.EVT_SIZE, sync_geometry)
+    button.Bind(wx.EVT_MOVE, sync_geometry)
+    button.Bind(wx.EVT_SHOW, sync_shown)
+    sync_geometry()
+    proxy.Show(button.IsShown())
+
+    unproxied_enable = button.Enable
+
+    def enable(enable=True):
+        proxy.Enable(enable)
+        return unproxied_enable(enable)
+
+    button.Enable = enable
+
+    return proxy
+
+
 class PipelineController(object):
     """Controls the pipeline through the UI
 
@@ -695,6 +738,7 @@ class PipelineController(object):
         )
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
         self.__test_mode_button.SetToolTip(self.ENTER_TEST_MODE_HELP)
+        make_accessible_proxy(self.__test_mode_button, self.on_debug_toggle)
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
@@ -704,6 +748,7 @@ class PipelineController(object):
         )
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
         self.__analyze_images_button.SetToolTip(self.ANALYZE_IMAGES_HELP)
+        make_accessible_proxy(self.__analyze_images_button, self.on_analyze_images)
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
@@ -717,6 +762,7 @@ class PipelineController(object):
         )
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
         self.__pause_button.SetToolTip(self.PAUSE_HELP)
+        make_accessible_proxy(self.__pause_button, self.on_pause)
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
         self.__resume_button = wx.lib.buttons.GenBitmapTextButton(
@@ -724,6 +770,7 @@ class PipelineController(object):
         )
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
         self.__resume_button.SetToolTip(self.RESUME_HELP)
+        make_accessible_proxy(self.__resume_button, self.on_resume)
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
         self.__stop_analysis_button = wx.lib.buttons.GenBitmapTextButton(
@@ -731,6 +778,7 @@ class PipelineController(object):
         )
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
         self.__stop_analysis_button.SetToolTip("Cancel the analysis run")
+        make_accessible_proxy(self.__stop_analysis_button, self.on_stop_running)
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #
         # Test mode sizer
@@ -745,6 +793,7 @@ class PipelineController(object):
         )
         self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
         self.__tcp_continue.Bind(wx.EVT_BUTTON, self.on_debug_continue)
+        make_accessible_proxy(self.__tcp_continue, self.on_debug_continue)
         sub_sizer.Add(self.__tcp_continue, 1, wx.EXPAND)
 
         self.__tcp_step = wx.lib.buttons.GenBitmapTextButton(
@@ -752,6 +801,7 @@ class PipelineController(object):
         )
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
+        make_accessible_proxy(self.__tcp_step, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -762,6 +812,7 @@ class PipelineController(object):
         )
         self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
+        make_accessible_proxy(self.__tcp_stop_testmode, self.on_debug_stop)
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
 
         next_image_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
@@ -770,6 +821,7 @@ class PipelineController(object):
         )
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
+        make_accessible_proxy(self.__tcp_next_imageset, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
 
         self.show_launch_controls()

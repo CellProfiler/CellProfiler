@@ -29,12 +29,6 @@ def start_java():
     scyjava.config.set_java_constraints(fetch="auto")
 
     # Add Bio-Formats Java dependency.
-    # scijava.public no longer proxies OME's artifactory, so RELEASE metadata
-    # resolution for ome:formats-gpl fails against it on a clean ~/.m2 (e.g. CI).
-    # Point at OME's own repository directly.
-    scyjava.config.add_repositories(
-        {"ome.releases": "https://artifacts.openmicroscopy.org/artifactory/ome.releases"}
-    )
     scyjava.config.endpoints.append("ome:formats-gpl")
     scyjava.config.endpoints.append("org.scijava:scijava-config")
 

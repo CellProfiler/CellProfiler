@@ -1,5 +1,6 @@
 from enum import Enum
 from centrosome.bg_compensate import MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY
+
 class IntensityChoice(str, Enum):
     """Choice of how to calculate the illumination function"""
     REGULAR = "Regular"

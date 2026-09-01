@@ -24,6 +24,10 @@ def start_java():
     if scyjava.jvm_started():
         return
 
+    # java fetching
+    # https://github.com/scijava/scyjava/issues/89
+    scyjava.config.set_java_constraints(fetch="auto")
+
     # Add Bio-Formats Java dependency.
     # scijava.public no longer proxies OME's artifactory, so RELEASE metadata
     # resolution for ome:formats-gpl fails against it on a clean ~/.m2 (e.g. CI).

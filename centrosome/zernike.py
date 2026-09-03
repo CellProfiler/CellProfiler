@@ -6,8 +6,6 @@ import scipy.ndimage
 
 from .cpmorphology import minimum_enclosing_circle, fixup_scipy_ndimage_result
 from .cpmorphology import fill_labeled_holes, draw_line
-from six.moves import range
-from six.moves import zip
 from centrosome._np_compat import np_cumproduct
 
 

@@ -10,8 +10,6 @@ import scipy.io.matlab
 import centrosome.cpmorphology as morph
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.filter import permutations
-from six.moves import range
-from six.moves import zip
 
 from centrosome._np_compat import np_product, np_Inf, np_NaN
 

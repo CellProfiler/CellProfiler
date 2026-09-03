@@ -4,9 +4,6 @@ import copy
 import numpy
 import scipy.ndimage
 from . import lapjv
-import six
-from six.moves import range
-from six.moves import zip
 
 invalid_match = 1000000  # limiting the choices of the algorithms
 
@@ -200,7 +197,7 @@ class Trace(object):
         """
         traces = []
 
-        for d1n, d2n in six.iteritems(assignments):
+        for d1n, d2n in assignments.items():
             # check if the match is between existing cells
             if d1n < len(detections_1) and d2n < len(detections_2):
                 traces.append(Trace(detections_1[d1n], detections_2[d2n]))

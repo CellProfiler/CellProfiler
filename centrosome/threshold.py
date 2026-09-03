@@ -13,8 +13,6 @@ import scipy.interpolate
 from .otsu import otsu, entropy, otsu3, entropy3
 from .smooth import smooth_with_noise
 from .filter import stretch, unstretch
-from six.moves import range
-from six.moves import zip
 from centrosome._np_compat import np_product, np_Inf
 
 TM_OTSU = "Otsu"

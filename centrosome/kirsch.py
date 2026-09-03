@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import numpy
 import scipy.ndimage.filters
-from six.moves import range
 
 
 def kirsch(image):

@@ -4,8 +4,6 @@ import unittest
 
 import centrosome.lapjv as LAPJV
 from centrosome.filter import permutations
-from six.moves import range
-from six.moves import zip
 
 
 class TestLAPJVPYX(unittest.TestCase):

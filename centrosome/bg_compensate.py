@@ -5,7 +5,6 @@ import warnings
 import numpy as np
 from numpy import linspace
 from scipy.ndimage import affine_transform
-from six.moves import range
 
 """Automatically determine whether background is darker than foreground"""
 MODE_AUTO = "auto"

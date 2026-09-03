@@ -15,8 +15,6 @@ from ._cpmorphology2 import _all_connected_components
 from ._cpmorphology2 import index_lookup, prepare_for_index_lookup
 from ._cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
 from ._cpmorphology2 import trace_outlines
-from six.moves import range
-from six.moves import zip
 
 try:
     from ._cpmorphology2 import ptrsize

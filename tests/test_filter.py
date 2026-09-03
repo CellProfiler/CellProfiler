@@ -9,7 +9,6 @@ import unittest
 import pytest
 
 import centrosome.filter as F
-from six.moves import range
 
 """Perform line-integration per-column of the image"""
 VERTICAL = "vertical"

@@ -5,7 +5,6 @@ import numpy as np
 from ._lapjv import reduction_transfer
 from ._lapjv import augmenting_row_reduction
 from ._lapjv import augment
-from six.moves import range
 
 
 def lapjv(i, j, costs, wants_dual_variables=False, augmenting_row_reductions=2):

@@ -24,7 +24,6 @@ from .cpmorphology import (
     grey_erosion,
     grey_reconstruction,
 )
-from six.moves import range
 from centrosome._np_compat import np_product, np_NaN
 
 """# of points handled in the first pass of the convex hull code"""

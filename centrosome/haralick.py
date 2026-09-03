@@ -4,7 +4,6 @@ import scipy.ndimage as scind
 from scipy.linalg import toeplitz
 
 from .cpmorphology import fixup_scipy_ndimage_result as fix
-from six.moves import range
 
 
 def minimum(input, labels, index):

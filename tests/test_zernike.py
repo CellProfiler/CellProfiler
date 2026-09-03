@@ -5,7 +5,6 @@ import scipy.ndimage as scind
 import unittest
 import centrosome.zernike as z
 from centrosome.cpmorphology import fill_labeled_holes, draw_line
-from six.moves import range
 from centrosome._np_compat import np_product
 
 

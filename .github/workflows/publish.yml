@@ -49,6 +49,16 @@ jobs:
             python: 313
             cibuildwheel: "cibuildwheel<4"
 
+          # NumPy no longer publishes manylinux2014 wheels for cp312/cp313, so
+          # building it from sdist there fails (needs GCC >= 10.3, image has 10.2).
+          # Use manylinux_2_28 (newer glibc/GCC) for these two Python versions only.
+          - os: ubuntu-latest
+            python_version: '3.12'
+            manylinux_image: manylinux_2_28
+          - os: ubuntu-latest
+            python_version: '3.13'
+            manylinux_image: manylinux_2_28
+
     runs-on: ${{ matrix.os }}
 
     steps:

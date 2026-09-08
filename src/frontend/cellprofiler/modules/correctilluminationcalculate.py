@@ -46,11 +46,8 @@ References
 import numpy
 from cellprofiler_core.image import AbstractImage
 from cellprofiler_core.image import Image
-from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
-from cellprofiler_core.pipeline import Pipeline
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
@@ -76,13 +73,11 @@ from cellprofiler_library.modules._correctilluminationcalculate import (
     calculate_average_from_state,
 )
 
-EA_ALL = "All"
-
 OUTPUT_IMAGE = "OutputImage"
 
 class CorrectIlluminationCalculate(Module):
     module_name = "CorrectIlluminationCalculate"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
@@ -140,7 +135,7 @@ the image beforehand solves this problem.
 """.format(
                 **{
                     "IC_REGULAR": IntensityChoice.REGULAR.value,
-                    "EA_ALL": EA_ALL,
+                    "EA_ALL": CalculateFunctionTarget.ALL.value,
                     "EA_EACH": CalculateFunctionTarget.EACH.value,
                     "SM_NONE": SmoothingMethod.NONE.value,
                     "IC_BACKGROUND": IntensityChoice.BACKGROUND.value,
@@ -226,7 +221,7 @@ are all equal to or greater than 1. You have the following options:
 
         self.each_or_all = Choice(
             "Calculate function for each image individually, or based on all images?",
-            [CalculateFunctionTarget.EACH.value, CalculateFunctionTarget.ALL_FIRST.value, CalculateFunctionTarget.ALL_ACROSS.value],
+            [CalculateFunctionTarget.EACH.value, CalculateFunctionTarget.ALL.value],
             doc="""\
 Calculate a separate function for each image, or one for all the
 images? You can calculate the illumination function using just the
@@ -236,19 +231,7 @@ illumination function can be calculated in one of the three ways:
 
 -  *{EA_EACH}:* Calculate an illumination function for each image
    individually.
--  *{EA_ALL_FIRST}:* Calculate an illumination function based on all
-   of the images in a group, performing the calculation before
-   proceeding to the next module. This means that the illumination
-   function will be created in the first cycle (making the first cycle
-   longer than subsequent cycles), and lets you use the function in a
-   subsequent **CorrectIlluminationApply** module in the same
-   pipeline, but also means that you will not have the ability to filter
-   out images (e.g., by using **FlagImage**). The input images need to
-   be assembled using the **Input** modules; using images produced by
-   other modules will yield an error. Thus, typically,
-   **CorrectIlluminationCalculate** will be the first module after the
-   input modules.
--  *{EA_ALL_ACROSS}:* Calculate an illumination function across all
+-  *{EA_ALL}:* Calculate an illumination function across all
    cycles in each group. This option takes any image as input; however,
    the illumination function will not be completed until the end of the
    last cycle in the group. You can use **SaveImages** to save the
@@ -259,8 +242,7 @@ illumination function can be calculated in one of the three ways:
 """.format(
                 **{
                     "EA_EACH": CalculateFunctionTarget.EACH.value, 
-                    "EA_ALL_FIRST": CalculateFunctionTarget.ALL_FIRST.value, 
-                    "EA_ALL_ACROSS": CalculateFunctionTarget.ALL_ACROSS.value
+                    "EA_ALL": CalculateFunctionTarget.ALL.value
                    }
 ),
         )
@@ -714,87 +696,47 @@ fewer iterations, but less accuracy.
         output_image_provider = CorrectIlluminationImageProvider.create(
             self.illumination_image_name.value, self
         )
-        if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
-            title = "#%d: CorrectIlluminationCalculate for %s" % (
-                self.module_num,
-                self.image_name,
-            )
-            message = (
-                "CorrectIlluminationCalculate is averaging %d images while "
-                "preparing for run" % (len(image_numbers))
-            )
-            pipeline = workspace.pipeline
-            assert isinstance(pipeline, Pipeline)
-            #
-            # Find the module that provides the image we need
-            #
-            md = workspace.pipeline.get_provider_dictionary(
-                self.image_name.group, self
-            )
-            src_module, src_setting = md[self.image_name.value][-1]
-            modules = list(pipeline.modules())
-            idx = modules.index(src_module)
-            last_module = modules[idx + 1]
-            for w in pipeline.run_group_with_yield(
-                workspace, grouping, image_numbers, last_module, title, message
-            ):
-                image = w.image_set.get_image(self.image_name.value, cache=False)
-                if not output_image_provider.has_image:
-                    output_image_provider.set_image(image)
-                else:
-                    output_image_provider.accumulate_image(image)
-                w.image_set.clear_cache()
         d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
         output_image_provider.save_state(d)
 
         return True
 
     def run(self, workspace):
-        if self.each_or_all != CalculateFunctionTarget.EACH.value:
+        if self.each_or_all == CalculateFunctionTarget.ALL.value:
+            orig_image = workspace.image_set.get_image(self.image_name.value)
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.restore_from_state(d)
-            if self.each_or_all == CalculateFunctionTarget.ALL_ACROSS.value:
-                #
-                # We are accumulating a pipeline image. Add this image set's
-                # image to the output image provider.
-                #
-                orig_image = workspace.image_set.get_image(self.image_name.value)
-                if not output_image_provider.has_image:
-                    output_image_provider.set_image(orig_image)
-                else:
-                    output_image_provider.accumulate_image(orig_image)
-                output_image_provider.save_state(d)
 
-            # fetch images for display
-            if (
-                self.show_window
-                or self.save_average_image
-                or self.save_dilated_image
-                or self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value
-            ):
-                avg_image = output_image_provider.provide_avg_image()
-                dilated_image = output_image_provider.provide_dilated_image()
-                workspace.image_set.add_provider(output_image_provider)
-                output_image = output_image_provider.provide_image(workspace.image_set)
+            if not output_image_provider.has_image:
+                output_image_provider.set_image(orig_image)
             else:
-                workspace.image_set.add_provider(output_image_provider)
-        else:
+                output_image_provider.accumulate_image(orig_image)
+            output_image_provider.save_state(d)
+
+            if self.show_window:
+                output_image = output_image_provider.provide_image(workspace.image_set)
+
+            workspace.image_set.add_provider(output_image_provider)
+        else: # CalculateFunctionTarget.EACH.value
             orig_image = workspace.image_set.get_image(self.image_name.value)
             output_image_provider = CorrectIlluminationImageProvider.create(
                 self.illumination_image_name.value, self
             )
             output_image_provider.set_image(orig_image)
-            avg_image = output_image_provider.provide_avg_image()
-            dilated_image = output_image_provider.provide_dilated_image()
+
             output_image = output_image_provider.provide_image(workspace.image_set)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
             output_image.mask = numpy.ones(output_image.pixel_data.shape[:2], bool)
             workspace.image_set.add(self.illumination_image_name.value, output_image)
 
-        if self.save_average_image.value:
-            workspace.image_set.add(self.average_image_name.value, avg_image)
-        if self.save_dilated_image.value:
-            workspace.image_set.add(self.dilated_image_name.value, dilated_image)
+        if self.show_window or self.save_average_image:
+            avg_image = output_image_provider.provide_avg_image()
+            if self.save_average_image.value:
+                workspace.image_set.add(self.average_image_name.value, avg_image)
+        if self.show_window or self.save_dilated_image:
+            dilated_image = output_image_provider.provide_dilated_image()
+            if self.save_dilated_image.value:
+                workspace.image_set.add(self.dilated_image_name.value, dilated_image)
         if self.show_window:
             # store images for potential display
             workspace.display_data.avg_image = avg_image.pixel_data
@@ -817,7 +759,7 @@ fewer iterations, but less accuracy.
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.restore_from_state(d)
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
-            if not self.illumination_image_name.value in image_set.names:
+            if self.illumination_image_name.value not in image_set.names:
                 workspace.image_set.add_provider(output_image_provider)
             if (
                 self.save_average_image
@@ -892,31 +834,12 @@ fewer iterations, but less accuracy.
         )
 
     def validate_module(self, pipeline):
-        """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
-        if (
-            not pipeline.is_image_from_file(self.image_name.value)
-            and self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value
-        ):
-            raise ValidationError(
-                "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
-                self.each_or_all,
-            )
-
-        """Modify the image provider attributes based on other setttings"""
+        """Modify the image provider attributes based setttings"""
         d = self.illumination_image_name.provided_attributes
-        if self.each_or_all == CalculateFunctionTarget.ALL_ACROSS.value:
+        if self.each_or_all == CalculateFunctionTarget.ALL.value:
             d["available_on_last"] = True
         elif "available_on_last" in d:
             del d["available_on_last"]
-
-    def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
-        if self.each_or_all == CalculateFunctionTarget.ALL_FIRST.value:
-            raise ValidationError(
-                "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead."
-                % CalculateFunctionTarget.ALL_ACROSS.value,
-                self.each_or_all,
-            )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values of old versions
@@ -942,21 +865,12 @@ fewer iterations, but less accuracy.
             ]  # spline convergence
             variable_revision_number = 2
 
+        if variable_revision_number == 2:
+            if setting_values[7] in ["All: First cycle", "All: Across cycles"]:
+                setting_values[7] = CalculateFunctionTarget.ALL.value
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number
-
-    def post_pipeline_load(self, pipeline):
-        """After loading, set each_or_all appropriately
-
-        This function handles the legacy EA_ALL which guessed the user's
-        intent: processing before the first cycle or not. We look for
-        the image provider and see if it is a file image provider.
-        """
-        if self.each_or_all == EA_ALL:
-            if pipeline.is_image_from_file(self.image_name.value):
-                self.each_or_all.value = CalculateFunctionTarget.ALL_FIRST.value
-            else:
-                self.each_or_all.value = CalculateFunctionTarget.ALL_ACROSS.value
-
 
 # ============================================================
 # Stage providers — internal pipeline steps used by

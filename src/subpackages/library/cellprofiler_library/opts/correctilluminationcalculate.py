@@ -16,9 +16,7 @@ class RescaleIlluminationFunction(str, Enum):
 class CalculateFunctionTarget(str, Enum):
     """Calculate function for each image individually, or based on all images?"""
     EACH = "Each"
-    # ALL = "All"
-    ALL_FIRST = "All: First cycle"
-    ALL_ACROSS = "All: Across cycles"
+    ALL = "All"
 
 class SmoothingMethod(str, Enum):
     """Smoothing method"""

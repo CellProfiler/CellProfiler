@@ -93,8 +93,7 @@ def test_zeros():
 
         for ea in (
             CalculateFunctionTarget.EACH.value,
-            CalculateFunctionTarget.ALL_ACROSS.value,
-            CalculateFunctionTarget.ALL_FIRST.value,
+            CalculateFunctionTarget.ALL.value,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
@@ -167,9 +166,7 @@ def test_zeros():
 
 
 def test_ones_image():
-    """The illumination correction of an image of all ones should be uniform
-
-    """
+    """The illumination correction of an image of all ones should be uniform"""
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
     for image in (numpy.ones((10, 10)), numpy.ones((10, 10, 3))):
@@ -187,8 +184,7 @@ def test_ones_image():
 
         for ea in (
             CalculateFunctionTarget.EACH.value,
-            CalculateFunctionTarget.ALL_ACROSS.value,
-            CalculateFunctionTarget.ALL_FIRST.value,
+            CalculateFunctionTarget.ALL.value,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
@@ -276,8 +272,7 @@ def test_masked_image():
 
         for ea in (
             CalculateFunctionTarget.EACH.value,
-            CalculateFunctionTarget.ALL_ACROSS.value,
-            CalculateFunctionTarget.ALL_FIRST.value,
+            CalculateFunctionTarget.ALL.value,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
@@ -346,7 +341,7 @@ def test_filtered():
     i2 = r.uniform(size=(11, 13))
     workspaces, module = make_workspaces(((i0, None), (i1, None), (i2, None)))
     module.each_or_all.value = (
-        CalculateFunctionTarget.ALL_ACROSS.value
+        CalculateFunctionTarget.ALL.value
     )
     module.smoothing_method.value = (
         SmoothingMethod.TO_AVERAGE.value
@@ -385,7 +380,7 @@ def test_not_filtered():
     i2 = r.uniform(size=(11, 13))
     workspaces, module = make_workspaces(((i0, None), (i1, None), (i2, None)))
     module.each_or_all.value = (
-        CalculateFunctionTarget.ALL_ACROSS.value
+        CalculateFunctionTarget.ALL.value
     )
     module.smoothing_method.value = (
         SmoothingMethod.TO_AVERAGE.value

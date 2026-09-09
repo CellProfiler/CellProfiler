@@ -63,15 +63,7 @@ from cellprofiler_library.opts.correctilluminationcalculate import (
     SplineBackgroundMode,
 )
 from cellprofiler_library.functions.image_processing import get_smoothing_filter_size
-from cellprofiler_library.modules._correctilluminationcalculate import (
-    apply_smoothing,
-    apply_dilation,
-    apply_scaling,
-    preprocess_image_for_averaging,
-    initialize_illumination_accumulation,
-    accumulate_illumination_image,
-    calculate_average_from_state,
-)
+from cellprofiler_library.modules._correctilluminationcalculate import correctilluminationcalculate
 
 OUTPUT_IMAGE = "OutputImage"
 
@@ -872,183 +864,19 @@ fewer iterations, but less accuracy.
 
         return setting_values, variable_revision_number
 
-# ============================================================
-# Stage providers — internal pipeline steps used by
-# CorrectIlluminationCalculateProvider.  Each class encapsulates
-# exactly one transformation stage and lazily caches its output.
-# They are never added to the image set directly.
-# ============================================================
-
-class _AverageProvider:
-    """Computes the averaged illumination image from the accumulated state.
-
-    Holds a reference to the shared library_state dict.  The dict is
-    always mutated in place by the composite, so this reference never
-    goes stale across save/restore cycles.
-    """
-
-    def __init__(self, library_state):
-        self._library_state = library_state
-        self._cached = None
-
-    def provide_image(self, image_set):
-        if self._cached is None:
-            avg_pixel_data, avg_mask = calculate_average_from_state(self._library_state)
-            self._cached = Image(avg_pixel_data, avg_mask)
-        return self._cached
-
-    def invalidate(self):
-        self._cached = None
-
-
-class _DilationProvider:
-    """Applies optional Gaussian dilation to the averaged image.
-
-    Receives the _AverageProvider as its upstream source.  When
-    dilate_objects is False this stage is a transparent pass-through.
-    """
-
-    def __init__(self, avg_provider, dilate_objects, object_dilation_radius):
-        self._avg = avg_provider
-        self.dilate_objects = dilate_objects
-        self.object_dilation_radius = object_dilation_radius
-        self._cached = None
-
-    def provide_image(self, image_set):
-        if self._cached is None:
-            avg_image = self._avg.provide_image(image_set)
-            if self.dilate_objects:
-                dilated_pixels = apply_dilation(
-                    avg_image.pixel_data,
-                    avg_image.mask,
-                    self.object_dilation_radius,
-                )
-                self._cached = Image(dilated_pixels, parent_image=avg_image)
-            else:
-                self._cached = avg_image
-        return self._cached
-
-    def invalidate(self):
-        self._cached = None
-
-
-class _SmoothingProvider:
-    """Applies optional smoothing to the dilated image.
-
-    Receives the _DilationProvider as its upstream source (which in turn
-    receives the _AverageProvider).  When the smoothing method is NONE
-    this stage is a transparent pass-through.
-    """
-
-    def __init__(
-        self,
-        dilated_provider,
-        smoothing_method,
-        automatic_object_width,
-        size_of_smoothing_filter,
-        object_width,
-        automatic_splines,
-        spline_bg_mode,
-        spline_points,
-        spline_threshold,
-        spline_convergence,
-        spline_maximum_iterations,
-        spline_rescale,
-    ):
-        self._dilated = dilated_provider
-        self.smoothing_method = smoothing_method
-        self.automatic_object_width = automatic_object_width
-        self.size_of_smoothing_filter = size_of_smoothing_filter
-        self.object_width = object_width
-        self.automatic_splines = automatic_splines
-        self.spline_bg_mode = spline_bg_mode
-        self.spline_points = spline_points
-        self.spline_threshold = spline_threshold
-        self.spline_convergence = spline_convergence
-        self.spline_maximum_iterations = spline_maximum_iterations
-        self.spline_rescale = spline_rescale
-        self._cached = None
-
-    def provide_image(self, image_set):
-        if self._cached is None:
-            dilated_image = self._dilated.provide_image(image_set)
-            if self.smoothing_method != SmoothingMethod.NONE.value:
-                smoothed_pixels = apply_smoothing(
-                    image_pixel_data=dilated_image.pixel_data,
-                    image_mask=dilated_image.mask if dilated_image.has_mask else None,
-                    smoothing_method=self.smoothing_method,
-                    automatic_object_width=self.automatic_object_width,
-                    size_of_smoothing_filter=self.size_of_smoothing_filter,
-                    object_width=self.object_width,
-                    image_shape=dilated_image.pixel_data.shape[:2],
-                    automatic_splines=self.automatic_splines,
-                    spline_bg_mode=self.spline_bg_mode,
-                    spline_points=self.spline_points,
-                    spline_threshold=self.spline_threshold,
-                    spline_convergence=self.spline_convergence,
-                    spline_maximum_iterations=self.spline_maximum_iterations,
-                    spline_rescale=self.spline_rescale,
-                )
-                self._cached = Image(smoothed_pixels, parent_image=dilated_image)
-            else:
-                self._cached = dilated_image
-        return self._cached
-
-    def invalidate(self):
-        self._cached = None
-
-
-class _ScalingProvider:
-    """Applies optional rescaling to the smoothed image.
-
-    Receives the _SmoothingProvider as its upstream source.  When
-    rescale_option is NO this stage is a transparent pass-through.
-    """
-
-    def __init__(self, smoothed_provider, rescale_option):
-        self._smoothed = smoothed_provider
-        self.rescale_option = rescale_option
-        self._cached = None
-
-    def provide_image(self, image_set):
-        if self._cached is None:
-            smoothed_image = self._smoothed.provide_image(image_set)
-            if self.rescale_option != RescaleIlluminationFunction.NO.value:
-                output_pixels = apply_scaling(
-                    image_pixel_data=smoothed_image.pixel_data,
-                    image_mask=smoothed_image.mask if smoothed_image.has_mask else None,
-                    rescale_option=self.rescale_option,
-                )
-                self._cached = Image(output_pixels, parent_image=smoothed_image)
-            else:
-                self._cached = smoothed_image
-        return self._cached
-
-    def invalidate(self):
-        self._cached = None
-
-
 class CorrectIlluminationImageProvider(AbstractImage):
-    """Composite provider for the illumination correction pipeline.
+    """Provider wrapping the single library entry point, correctilluminationcalculate().
 
-    Wires four internal stage providers into a linear pipeline:
-
-        _AverageProvider
-            → _DilationProvider
-                → _SmoothingProvider
-                    → _ScalingProvider
-
-    Each stage is independently lazy-cached; requesting only the averaged
-    image does not trigger smoothing or scaling.  The composite coordinates
-    image accumulation and cache invalidation across all stages.
-
-    The library_state dict is always mutated in place so that
-    _AverageProvider's reference to it remains valid across
-    save_state / restore_from_state cycles.
+    Holds a library_accumulator callback object (an IlluminationAccumulator):
+    set_image()/accumulate_image() drive it via .accumulate(), and image
+    access (provide_image / provide_avg_image / provide_dilated_image) all
+    read from one cached call to .finalize(), which runs the full
+    average -> dilate -> smooth -> rescale pipeline in the library and
+    returns every image this provider can hand out.
     """
 
     D_NAME = "name"
-    D_LIBRARY_STATE = "library_state"
+    D_LIBRARY_STATE = "library_accumulator"
     D_INTENSITY_CHOICE = "intensity_choice"
     D_DILATE_OBJECTS = "dilate_objects"
     D_OBJECT_DILATION_RADIUS = "object_dilation_radius"
@@ -1104,45 +932,35 @@ class CorrectIlluminationImageProvider(AbstractImage):
         self.spline_convergence = spline_convergence
         self.spline_maximum_iterations = spline_maximum_iterations
         self.spline_rescale = spline_rescale
-        # library_state is always mutated in place so _AverageProvider's
-        # reference to it stays valid across save_state / restore_from_state.
-        self.library_state = {}
-        self._build_pipeline()
+        self.library_accumulator = None
+        self._cached_images = None
 
     # ------------------------------------------------------------------
-    # Pipeline construction and cache management
+    # Cache management
     # ------------------------------------------------------------------
 
-    def _build_pipeline(self):
-        """Wire the stage providers into a linear pipeline.
+    def _finalize(self):
+        """Run (and cache) the library's full average/dilate/smooth/rescale pipeline.
 
-        _AverageProvider receives a direct reference to self.library_state;
-        all other stages receive a reference to their upstream provider.
+        Wraps the three pixel arrays as Image objects once and caches those
+        (not just the raw arrays), so repeated calls return the same Image
+        identity — ImageSet.get_image() does no caching of its own, so this
+        is the only place that happens.
+
+        Returns:
+            (output_image, dilated_image, avg_image).
         """
-        self._avg = _AverageProvider(self.library_state)
-        self._dilated = _DilationProvider(
-            self._avg, self.dilate_objects, self.object_dilation_radius
-        )
-        self._smoothed = _SmoothingProvider(
-            self._dilated,
-            self.smoothing_method,
-            self.automatic_object_width,
-            self.size_of_smoothing_filter,
-            self.object_width,
-            self.automatic_splines,
-            self.spline_bg_mode,
-            self.spline_points,
-            self.spline_threshold,
-            self.spline_convergence,
-            self.spline_maximum_iterations,
-            self.spline_rescale,
-        )
-        self._scaling = _ScalingProvider(self._smoothed, self.rescale_option)
+        if self._cached_images is None:
+            output_pixel_data, dilated_pixel_data, avg_pixel_data, mask = self.library_accumulator.finalize()
+            self._cached_images = (
+                Image(output_pixel_data, mask),
+                Image(dilated_pixel_data, mask),
+                Image(avg_pixel_data, mask),
+            )
+        return self._cached_images
 
-    def _invalidate_pipeline(self):
-        """Clear each stage's cached image."""
-        for stage in (self._avg, self._dilated, self._smoothed, self._scaling):
-            stage.invalidate()
+    def _invalidate_cache(self):
+        self._cached_images = None
 
     # ------------------------------------------------------------------
     # Factory and serialization
@@ -1191,7 +1009,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         """
         P = CorrectIlluminationImageProvider
         d[P.D_NAME] = self._name
-        d[P.D_LIBRARY_STATE] = self.library_state
+        d[P.D_LIBRARY_STATE] = self.library_accumulator
         d[P.D_INTENSITY_CHOICE] = self.intensity_choice
         d[P.D_DILATE_OBJECTS] = self.dilate_objects
         d[P.D_OBJECT_DILATION_RADIUS] = self.object_dilation_radius
@@ -1239,9 +1057,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
             spline_maximum_iterations=d[P.D_SPLINE_MAXIMUM_ITERATIONS],
             spline_rescale=d[P.D_SPLINE_RESCALE],
         )
-        # Restore accumulation state in place so _AverageProvider's
-        # reference (established in _build_pipeline) remains valid.
-        provider.library_state.update(d.get(P.D_LIBRARY_STATE, {}))
+        provider.library_accumulator = d.get(P.D_LIBRARY_STATE, None)
         return provider
 
     # ------------------------------------------------------------------
@@ -1250,13 +1066,13 @@ class CorrectIlluminationImageProvider(AbstractImage):
 
     def reset(self):
         """Reset accumulation at the start of a group."""
-        self.library_state.clear()
-        self._invalidate_pipeline()
+        self.library_accumulator = None
+        self._invalidate_cache()
 
     @property
     def has_image(self):
         """True when at least one image has been accumulated."""
-        return len(self.library_state) > 0
+        return self.library_accumulator is not None
 
     def set_image(self, image):
         """Initialize accumulation from the first image.
@@ -1265,18 +1081,27 @@ class CorrectIlluminationImageProvider(AbstractImage):
             image: A cellprofiler_core.image.Image instance.
         """
         mask = image.mask if image.has_mask else None
-        preprocessed = preprocess_image_for_averaging(
+        self.library_accumulator = correctilluminationcalculate(
             image.pixel_data,
             mask,
             self.intensity_choice,
             self.smoothing_method,
             self.block_size,
+            self.dilate_objects,
+            self.object_dilation_radius,
+            self.automatic_object_width,
+            self.size_of_smoothing_filter,
+            self.object_width,
+            self.automatic_splines,
+            self.spline_bg_mode,
+            self.spline_points,
+            self.spline_threshold,
+            self.spline_convergence,
+            self.spline_maximum_iterations,
+            self.spline_rescale,
+            self.rescale_option,
         )
-        new_state = initialize_illumination_accumulation(preprocessed, mask)
-        # Mutate in place to keep _AverageProvider's reference valid.
-        self.library_state.clear()
-        self.library_state.update(new_state)
-        self._invalidate_pipeline()
+        self._invalidate_cache()
 
     def accumulate_image(self, image):
         """Accumulate a subsequent image into the running state.
@@ -1285,31 +1110,27 @@ class CorrectIlluminationImageProvider(AbstractImage):
             image: A cellprofiler_core.image.Image instance.
         """
         mask = image.mask if image.has_mask else None
-        preprocessed = preprocess_image_for_averaging(
-            image.pixel_data,
-            mask,
-            self.intensity_choice,
-            self.smoothing_method,
-            self.block_size,
-        )
-        accumulate_illumination_image(preprocessed, mask, self.library_state)
-        self._invalidate_pipeline()
+        self.library_accumulator = self.library_accumulator.accumulate(image.pixel_data, mask)
+        self._invalidate_cache()
 
     # ------------------------------------------------------------------
-    # Image access — delegates to stage providers
+    # Image access — all backed by one cached call to .finalize()
     # ------------------------------------------------------------------
 
     def provide_avg_image(self):
         """Return the averaged image (before dilation and smoothing)."""
-        return self._avg.provide_image(None)
+        _, _, avg_image = self._finalize()
+        return avg_image
 
     def provide_dilated_image(self):
         """Return the dilated image (after dilation, before smoothing)."""
-        return self._dilated.provide_image(None)
+        _, dilated_image, _ = self._finalize()
+        return dilated_image
 
     def provide_image(self, image_set):
         """Return the final (scaled) illumination correction image."""
-        return self._scaling.provide_image(image_set)
+        output_image, _, _ = self._finalize()
+        return output_image
 
     def get_name(self):
         """Return the name of the output illumination image."""

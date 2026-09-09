@@ -3232,7 +3232,7 @@ def smooth_with_gaussian(
     return output_pixels
 
 def smooth_with_median(
-        pixel_data: Image2D, 
+        pixel_data: Image2D,
         mask: Image2DMask,
         sigma: float
     ) -> Image2D:
@@ -3242,7 +3242,10 @@ def smooth_with_median(
     rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
     rescaled_pixel_data *= mask
     output_pixels = skimage.filters.median(rescaled_pixel_data, strel, behavior="rank")
-    return output_pixels
+    # skimage's rank median preserves the uint16 dtype of its input; rescale
+    # back to the [0, 1]-ish float range the rest of the pipeline expects,
+    # matching the input's precision rather than widening it.
+    return (output_pixels / 65535.0).astype(pixel_data.dtype)
 
 def smooth_to_average(
         pixel_data: Image2D, 

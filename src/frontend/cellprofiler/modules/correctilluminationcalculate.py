@@ -786,7 +786,6 @@ fewer iterations, but less accuracy.
             return f(x, y, image, *args, **kwargs)
 
         imshow(0, 0, avg_image, "Averaged image")
-        pixel_data = output_image
         imshow(
             0,
             1,

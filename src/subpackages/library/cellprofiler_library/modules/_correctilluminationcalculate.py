@@ -5,7 +5,7 @@ import centrosome.cpmorphology
 import scipy.ndimage
 import numpy
 from numpy.typing import NDArray
-from typing import Optional, Tuple, Annotated
+from typing import Optional, Tuple, Annotated, cast
 from typing_extensions import TypeAlias
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.types import Image2D, Image2DMask
@@ -107,7 +107,7 @@ def correctilluminationcalculate(
         An IlluminationAccumulator wrapping the initial accumulation.
     """
     preprocessed = _preprocess_image_for_averaging(image, mask, intensity_choice, smoothing_method, block_size)
-    image_sum = numpy.zeros(preprocessed.shape, preprocessed.dtype)
+    image_sum = cast(Image2D, numpy.zeros(preprocessed.shape, preprocessed.dtype))
     mask_count = numpy.zeros(preprocessed.shape[:2], numpy.int32)
     _mut_accumulate(preprocessed, mask, image_sum, mask_count)
 
@@ -368,7 +368,7 @@ def _calculate_average_image(
         Tuple of (average pixel data, boolean mask where at least one
         image contributed).
     """
-    pixel_data = numpy.zeros(image_sum.shape, image_sum.dtype)
+    pixel_data = cast(Image2D, numpy.zeros(image_sum.shape, image_sum.dtype))
     mask = mask_count > 0
     if pixel_data.ndim == 2:
         pixel_data[mask] = image_sum[mask] / mask_count[mask]
@@ -398,7 +398,7 @@ def _apply_scaling(
     if rescale_option == RescaleIlluminationFunction.NO.value:
         return image_pixel_data
 
-    def scaling_fn_2d(pixel_data):
+    def scaling_fn_2d(pixel_data: Image2D) -> Image2D:
         if image_mask is not None:
             sorted_pixel_data = pixel_data[(pixel_data > 0) & image_mask]
         else:
@@ -423,9 +423,9 @@ def _apply_scaling(
     if image_pixel_data.ndim == 2:
         output_pixels = scaling_fn_2d(image_pixel_data)
     else:
-        output_pixels = numpy.dstack(
+        output_pixels = cast(Image2D, numpy.dstack(
             [scaling_fn_2d(x) for x in image_pixel_data.transpose(2, 0, 1)]
-        )
+        ))
     return output_pixels
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -475,7 +475,7 @@ def _apply_smoothing(
     """
     pixel_data = image_pixel_data
     if pixel_data.ndim == 3:
-        output_pixels = numpy.zeros(pixel_data.shape, pixel_data.dtype)
+        output_pixels = cast(Image2D, numpy.zeros(pixel_data.shape, pixel_data.dtype))
         for i in range(pixel_data.shape[2]):
             output_pixels[:, :, i] = smooth_plane(
                 pixel_data = pixel_data[:, :, i], 
@@ -534,7 +534,7 @@ def _apply_dilation(
         object_dilation_radius, object_dilation_radius * 3
     )
 
-    def fn(image):
+    def fn(image: Image2D):
         return scipy.ndimage.convolve(image, kernel, mode="constant", cval=0)
 
     if pixel_data.ndim == 2:
@@ -554,7 +554,7 @@ def _apply_dilation(
     # downstream smoothing methods (e.g. Splines) are sensitive to the
     # resulting sub-epsilon floating point noise, so match the input's
     # precision rather than silently widening it.
-    return dilated_pixels.astype(pixel_data.dtype)
+    return cast(Image2D, dilated_pixels.astype(pixel_data.dtype))
 
 # NOTE: _mut prefix means the function mutates input numpy arrays, rather than returning new arrays
 def _mut_accumulate(

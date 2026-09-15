@@ -2,8 +2,6 @@
 
 import cellprofiler_core.object
 import numpy
-import scipy.ndimage
-import skimage.segmentation
 from cellprofiler_core.constants.measurement import (
     MCA_AVAILABLE_EACH_CYCLE,
     C_COUNT,
@@ -88,19 +86,7 @@ Measurements made by this module
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-D_NONE = DistanceMethod.NONE
-D_CENTROID = DistanceMethod.CENTROID
-D_MINIMUM = DistanceMethod.MINIMUM
-D_BOTH = DistanceMethod.BOTH
-
-D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
-
 C_MEAN = "Mean"
-
-
-FF_MEAN = TemplateMeasurementFormat.FF_MEAN
-FF_PARENT = TemplateMeasurementFormat.FF_PARENT
-FF_CHILDREN_COUNT = TemplateMeasurementFormat.FF_CHILDREN_COUNT
 
 """Distance category"""
 C_DISTANCE = "Distance"
@@ -110,12 +96,6 @@ FEAT_CENTROID = "Centroid"
 
 """Minimum distance feature"""
 FEAT_MINIMUM = "Minimum"
-
-"""Centroid distance measurement (FF_DISTANCE % parent)"""
-FF_CENTROID = TemplateMeasurementFormat.FF_CENTROID
-
-"""Minimum distance measurement (FF_MINIMUM % parent)"""
-FF_MINIMUM = TemplateMeasurementFormat.FF_MINIMUM
 
 FIXED_SETTING_COUNT = 7
 VARIABLE_SETTING_COUNT = 1
@@ -147,7 +127,7 @@ speckles to the nuclei that contains them, the speckles are the children.
 
         self.find_parent_child_distances = Choice(
             "Calculate child-parent distances?",
-            D_ALL,
+            [DistanceMethod.NONE, DistanceMethod.CENTROID, DistanceMethod.MINIMUM, DistanceMethod.BOTH],
             doc="""\
 Choose the method to calculate distances of each child to its parent.
 For example, these measurements can tell you whether nuclear speckles
@@ -162,10 +142,10 @@ periphery.
 -  *{D_BOTH}:* Calculate both the *{D_MINIMUM}* and *{D_CENTROID}*
    distances.""".format(
                 **{
-                    "D_NONE": D_NONE,
-                    "D_MINIMUM": D_MINIMUM,
-                    "D_CENTROID": D_CENTROID,
-                    "D_BOTH": D_BOTH,
+                    "D_NONE": DistanceMethod.NONE,
+                    "D_MINIMUM": DistanceMethod.MINIMUM,
+                    "D_CENTROID": DistanceMethod.CENTROID,
+                    "D_BOTH": DistanceMethod.BOTH,
                 }
             ),
         )
@@ -324,7 +304,7 @@ parents or children of the parent object.""",
         if self.wants_child_objects_saved:
             visible_settings += [self.output_child_objects_name]
 
-        if self.find_parent_child_distances != D_NONE and self.has_step_parents:
+        if self.find_parent_child_distances != DistanceMethod.NONE and self.has_step_parents:
             visible_settings += [self.wants_step_parent_distances]
 
             if self.wants_step_parent_distances:
@@ -346,8 +326,8 @@ parents or children of the parent object.""",
         parent_ijv = parents.ijv
         child_ijv = children.ijv
 
-        find_centroid = self.find_parent_child_distances in (D_BOTH, D_CENTROID)
-        find_minimum = self.find_parent_child_distances in (D_BOTH, D_MINIMUM)
+        find_centroid = self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID)
+        find_minimum = self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM)
 
         m = workspace.measurements
         all_measurements = m.to_library_measurements()
@@ -614,13 +594,13 @@ parents or children of the parent object.""",
 
     def get_child_measurement_columns(self, pipeline):
         columns = []
-        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+        if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID):
             for parent_name in self.get_parent_names():
-                columns += [(self.y_name.value, FF_CENTROID % parent_name, "integer",)]
+                columns += [(self.y_name.value, TemplateMeasurementFormat.FF_CENTROID % parent_name, "integer",)]
 
-        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+        if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM):
             for parent_name in self.get_parent_names():
-                columns += [(self.y_name.value, FF_MINIMUM % parent_name, "integer",)]
+                columns += [(self.y_name.value, TemplateMeasurementFormat.FF_MINIMUM % parent_name, "integer",)]
 
         return columns
 
@@ -647,8 +627,8 @@ parents or children of the parent object.""",
         """Return the column definitions for this module's measurements"""
 
         columns = [
-            (self.y_name.value, FF_PARENT % self.x_name.value, "integer",),
-            (self.x_name.value, FF_CHILDREN_COUNT % self.y_name.value, "integer",),
+            (self.y_name.value, TemplateMeasurementFormat.FF_PARENT % self.x_name.value, "integer",),
+            (self.x_name.value, TemplateMeasurementFormat.FF_CHILDREN_COUNT % self.y_name.value, "integer",),
         ]
 
         if self.wants_child_objects_saved:
@@ -660,7 +640,7 @@ parents or children of the parent object.""",
             columns += [
                 (
                     self.x_name.value,
-                    FF_MEAN % (self.y_name.value, column[1]),
+                    TemplateMeasurementFormat.FF_MEAN % (self.y_name.value, column[1]),
                     COLTYPE_FLOAT,
                 )
                 for column in child_columns
@@ -691,7 +671,7 @@ parents or children of the parent object.""",
         elif object_name == self.y_name.value:
             result = ["Parent"]
 
-            if self.find_parent_child_distances != D_NONE:
+            if self.find_parent_child_distances != DistanceMethod.NONE:
                 result += [C_DISTANCE]
         elif object_name == "Image":
             result += [C_COUNT]
@@ -719,13 +699,13 @@ parents or children of the parent object.""",
         elif object_name == self.y_name.value and category == C_DISTANCE:
             result = []
 
-            if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+            if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID):
                 result += [
                     "{}_{}".format(FEAT_CENTROID, parent_name)
                     for parent_name in self.get_parent_names()
                 ]
 
-            if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+            if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM):
                 result += [
                     "{}_{}".format(FEAT_MINIMUM, parent_name)
                     for parent_name in self.get_parent_names()
@@ -772,7 +752,7 @@ parents or children of the parent object.""",
             # Added other distance parents
             #
             if setting_values[2] == "Do not use":
-                find_parent_distances = D_NONE
+                find_parent_distances = DistanceMethod.NONE
             else:
                 find_parent_distances = setting_values[2]
 

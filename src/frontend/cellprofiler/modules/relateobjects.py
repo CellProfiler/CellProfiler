@@ -161,7 +161,7 @@ other objects. These objects must be either parents or children of your
 parent object in order for this module to determine the distances. For
 instance, you might find “Nuclei” using **IdentifyPrimaryObjects**, find
 “Cells” using **IdentifySecondaryObjects** and find “Cytoplasm” using
-**IdentifyTertiaryObjects**. You can use **Relate** to relate speckles
+**IdentifyTertiaryObjects**. You can use **RelateObjects** to relate speckles
 to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
 measure distances to nuclei, because nuclei are neither a direct parent

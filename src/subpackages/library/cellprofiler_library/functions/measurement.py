@@ -4005,10 +4005,10 @@ def measure_haralick_features_objects(
 ###############################################################################
 
 def compute_centroid_distances(
-    child_centers: NDArray[np.float64],
-    parent_centers: NDArray[np.float64],
-    parents_of: NDArray[np.int32]
-) -> NDArray[np.float64]:
+    child_centers: NDArray[numpy.float64],
+    parent_centers: NDArray[numpy.float64],
+    parents_of: NDArray[numpy.int32]
+) -> NDArray[numpy.float64]:
     """Calculate the centroid-centroid distance between parent & child
     
     Args:
@@ -4043,10 +4043,10 @@ def compute_centroid_distances(
 
 
 def compute_minimum_distances(
-    child_centers: NDArray[np.float64],
+    child_centers: NDArray[numpy.float64],
     parent_labels: NDArray[ObjectLabel],
-    parents_of: NDArray[np.int32]
-) -> NDArray[np.float64]:
+    parents_of: NDArray[numpy.int32]
+) -> NDArray[numpy.float64]:
     """Calculate the distance from child center to parent perimeter
     
     Args:
@@ -4178,7 +4178,7 @@ def measure_centroid_distances(
     parent_labels: ObjectSegmentation,
     child_labels: ObjectSegmentation,
     parents_of: NDArray[ObjectLabel]
-) -> NDArray[np.float64]:
+) -> NDArray[numpy.float64]:
     """Calculate the centroid-centroid distance between parent & child
     
     Args:
@@ -4227,7 +4227,7 @@ def calculate_centroid_distances(
         parents: ObjectSegmentation,
         children: ObjectSegmentation,
         parents_of: NDArray[ObjectLabel]
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[numpy.float64]:
     """Calculate the centroid-centroid distance between parent & child"""
 
     # pcenters = parents.center_of_mass()
@@ -4258,7 +4258,7 @@ def calculate_minimum_distances(
         children: ObjectSegmentation,
         children_dimensions: int,
         parents_of: NDArray[ObjectLabel]
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[numpy.float64]:
     """Calculate the distance from child center to parent perimeter"""
     if len(parents_of) == 0:
         dist = numpy.zeros((0,))

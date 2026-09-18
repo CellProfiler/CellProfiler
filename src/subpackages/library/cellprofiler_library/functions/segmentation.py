@@ -707,7 +707,7 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
         shape=(parent_count + 1, child_count + 1),
     )
 
-# needs library tests
+# TODO: library - needs library tests
 def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
     """
     Find per pixel overlap of parent labels and child labels

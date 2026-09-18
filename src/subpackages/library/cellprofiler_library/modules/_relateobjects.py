@@ -66,10 +66,10 @@ def run_relate_objects(
         volumetric
     )
     #
-    # Note: Later in the code, you will see add_measurements calls to both lib_measurements and measurements.
-    # The reason for this is that the RelateObjects module optionally procuces per-parent means (aka aggregation) on the measurements
-    # passed in. The optional `measurements` argument should not be merged with the measurements returned by RelateObjects (i.e. lib_measurements) as
-    # the output of this module should be restricted to the measurements produced by RelateObjects.
+    # NOTE: Later in the code, thre are `add_measurements` calls to both `lib_measurements` and `measurements`.
+    # The reason for this is that the `RelateObjects` module optionally procuces per-parent means (aka aggregation) on the measurements
+    # passed in. The optional `measurements` argument should not be merged with the measurements returned by `RelateObjects` (i.e. `lib_measurements`) as
+    # the output of this module should be restricted to the measurements produced by `RelateObjects`.
     #
     lib_measurements.add_measurement(child_name, TemplateMeasurementFormat.FF_PARENT % parent_name, parents_of)
     # No need to add the folloiwng measurement to measurements as it is not an aggregate measurement (see __should_aggregate_feature() below)

@@ -728,6 +728,10 @@ class ModuleView:
             v.test_valid(self.__pipeline)
         except:
             pass
+        # test_valid for Choice calls its `self.__choice_fn` which may set `v.choices` to a new value
+        # since `self.__choice` is being run for the first time since `Choice` instantiation
+        # the reason we take `choices` in as an argument is purely for a consistent function signature with other `make_x` functions
+        choices = v.choices
         if v.value not in choices and style == wx.CB_READONLY:
             choices = choices + [v.value]
         if not control:

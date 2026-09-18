@@ -478,6 +478,7 @@ but the results will be zero or not-a-number (NaN).
         if object_name == self.subregion_objects_name:
             if category == "Location":
                 result += ["Center_X", "Center_Y"]
+            # TODO: 5116 - should use some constant, probably C_PARENT, same above and below
             elif category == "Parent":
                 result += [
                     self.primary_objects_name.value,

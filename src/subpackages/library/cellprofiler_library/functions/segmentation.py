@@ -707,7 +707,7 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
         shape=(parent_count + 1, child_count + 1),
     )
 
-# needs library tests
+# TODO: library - needs library tests
 def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
     """
     Find per pixel overlap of parent labels and child labels
@@ -809,4 +809,43 @@ def relate_histogram(histogram: scipy.sparse.coo_matrix) -> Tuple[NDArray[Object
     # Make sure to remove the background elements at index 0
     #
     return children_per_parent, parents_of_children[1:]
+
+def relate_children(
+        parent_segmentations, 
+        child_segmentations, 
+        parent_ijv, 
+        child_ijv, 
+        volumetric=False
+    ):
+    """Relate the object numbers in one label to the object numbers in another
+
+    children - another "objects" instance: the labels of children within
+                the parent which is "self"
+
+    Returns two 1-d arrays. The first gives the number of children within
+    each parent. The second gives the mapping of each child to its parent's
+    object number.
+    """
+    if volumetric:
+        histogram = histogram_from_labels(parent_segmentations, child_segmentations)
+    else:
+        histogram = histogram_from_ijv(parent_ijv, child_ijv)
+
+    return relate_histogram(histogram)
+
+def histogram_from_ijv(
+        parent_ijv, 
+        child_ijv
+    ):
+    """Find per pixel overlap of parent labels and child labels,
+    stored in ijv format.
+
+    parent_ijv - the parents which contain the children
+    child_ijv - the children to be mapped to a parent
+
+    Returns a sparse matrix of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    return find_ijv_overlaps(parent_ijv, child_ijv, validate=True)
 

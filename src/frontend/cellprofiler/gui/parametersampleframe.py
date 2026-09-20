@@ -35,6 +35,8 @@ from cellprofiler_core.setting.range import (
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, Integer, Name, Text, ImageName
 
+from cellprofiler_core.constants.measurement import IMAGE
+
 import cellprofiler.gui._workspace_model
 
 PARAM_CLASS_TEXT_LABEL = "Input text label"
@@ -742,7 +744,7 @@ class ParameterSampleFrame(wx.Frame):
                 module.module_name,
             )
             self.__measurements.add_measurement(
-                "Image", module_error_measurement, failure
+                IMAGE, module_error_measurement, failure
             )
         return failure == 0
 

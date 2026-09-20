@@ -957,10 +957,10 @@ class Pipeline:
                     if grouping_keys != grouping:
                         to_remove += list(grouping_image_numbers)
 
-            if len(to_remove) > 0 and measurements.has_feature("Image", IMAGE_NUMBER,):
+            if len(to_remove) > 0 and measurements.has_feature(IMAGE, IMAGE_NUMBER,):
                 for image_number in numpy.unique(to_remove):
                     measurements.remove_measurement(
-                        "Image", IMAGE_NUMBER, image_number,
+                        IMAGE, IMAGE_NUMBER, image_number,
                     )
 
             # Keep track of progress for the benefit of the progress window.
@@ -1159,11 +1159,11 @@ class Pipeline:
                     #  have already completed. So we don't report them for it.
                     if module.module_name != "Restart" and should_write_measurements:
                         measurements.add_measurement(
-                            "Image", module_error_measurement, numpy.array([failure])
+                            IMAGE, module_error_measurement, numpy.array([failure])
                         )
 
                         measurements.add_measurement(
-                            "Image",
+                            IMAGE,
                             execution_time_measurement,
                             numpy.array([float(cpu_delta_sec)]),
                         )
@@ -1234,10 +1234,10 @@ class Pipeline:
         """
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[
-            "Image", GROUP_NUMBER,
+            IMAGE, GROUP_NUMBER,
         ]
         measurements.group_index = measurements[
-            "Image", GROUP_INDEX,
+            IMAGE, GROUP_INDEX,
         ]
         object_set = ObjectSet()
         image_set = measurements
@@ -1297,7 +1297,7 @@ class Pipeline:
                 )
                 if should_write_measurements:
                     measurements[
-                        "Image",
+                        IMAGE,
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
                 if get_always_continue():
@@ -1329,11 +1329,11 @@ class Pipeline:
             #  have already completed. So we don't report them for it.
             if should_write_measurements:
                 measurements[
-                    "Image",
+                    IMAGE,
                     "ModuleError_%02d%s" % (module.module_num, module.module_name),
                 ] = 0
                 measurements[
-                    "Image",
+                    IMAGE,
                     "ExecutionTime_%02d%s" % (module.module_num, module.module_name),
                 ] = float(cpu_delta_secs)
 
@@ -1503,10 +1503,10 @@ class Pipeline:
             # Legacy - there may be cached group number/group index
             #          image measurements which may be incorrect.
             m.remove_measurement(
-                "Image", GROUP_INDEX,
+                IMAGE, GROUP_INDEX,
             )
             m.remove_measurement(
-                "Image", GROUP_NUMBER,
+                IMAGE, GROUP_NUMBER,
             )
         self.write_experiment_measurements(m)
 
@@ -1561,7 +1561,7 @@ class Pipeline:
                 )
             return False
 
-        if not m.has_feature("Image", GROUP_NUMBER,):
+        if not m.has_feature(IMAGE, GROUP_NUMBER,):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
@@ -1576,13 +1576,13 @@ class Pipeline:
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
                 group_lengths[iii] = numpy.ones(len(iii), int) * len(iii)
             m.add_all_measurements(
-                "Image", GROUP_NUMBER, group_numbers,
+                IMAGE, GROUP_NUMBER, group_numbers,
             )
             m.add_all_measurements(
-                "Image", GROUP_INDEX, group_indexes,
+                IMAGE, GROUP_INDEX, group_indexes,
             )
             m.add_all_measurements(
-                "Image", GROUP_LENGTH, group_lengths,
+                IMAGE, GROUP_LENGTH, group_lengths,
             )
             #
             # The grouping for legacy pipelines may not be monotonically
@@ -1755,7 +1755,7 @@ class Pipeline:
         current_metadata = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if object_name == "Image" and feature.startswith(C_METADATA):
+            if object_name == IMAGE, and feature.startswith(C_METADATA):
                 current_metadata.append(feature[(len(C_METADATA) + 1) :])
 
         m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
@@ -2549,9 +2549,9 @@ class Pipeline:
                 COLTYPE_VARCHAR,
                 {MCA_AVAILABLE_POST_RUN: True},
             ),
-            ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),
-            ("Image", GROUP_INDEX, COLTYPE_INTEGER,),
-            ("Image", GROUP_LENGTH, COLTYPE_INTEGER,),
+            (IMAGE, GROUP_NUMBER, COLTYPE_INTEGER,),
+            (IMAGE, GROUP_INDEX, COLTYPE_INTEGER,),
+            (IMAGE, GROUP_LENGTH, COLTYPE_INTEGER,),
         ]
         should_write_columns = True
         for module in self.modules():
@@ -2573,8 +2573,8 @@ class Pipeline:
                     module.module_name,
                 )
                 columns += [
-                    ("Image", module_error_measurement, COLTYPE_INTEGER,),
-                    ("Image", execution_time_measurement, COLTYPE_FLOAT,),
+                    (IMAGE, module_error_measurement, COLTYPE_INTEGER,),
+                    (IMAGE, execution_time_measurement, COLTYPE_FLOAT,),
                 ]
         self.__measurement_columns[terminating_module_num] = columns
         return columns

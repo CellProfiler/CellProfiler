@@ -898,11 +898,11 @@ class Module:
 
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""
-        from ..setting.subscriber import FileImageSubscriber
+        from ..setting.text import FileImageName
 
         for setting in self.settings():
             if (
-                    isinstance(setting, FileImageSubscriber, )
+                    isinstance(setting, FileImageName, )
                     and setting.value == image_name
             ):
                 return True

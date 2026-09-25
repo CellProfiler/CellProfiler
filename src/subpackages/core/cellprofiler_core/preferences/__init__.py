@@ -39,6 +39,7 @@ __cp_root = os.path.split(__python_root)[0]
 
 __is_headless = False
 __headless_config = HeadlessConfiguration()
+__wx_app = None
 
 
 def set_headless():
@@ -78,7 +79,7 @@ def get_awt_headless():
 
 
 def get_config():
-    global __is_headless, __headless_config
+    global __is_headless, __headless_config, __wx_app
     if __is_headless:
         return __headless_config
     import wx
@@ -88,7 +89,10 @@ def get_config():
         return __headless_config
 
     if wx.App.Get() is None:
-        app = wx.App(0)
+        # Keep a reference so this App isn't garbage-collected once this
+        # function returns, which would otherwise leave wx.App.Get() as None
+        # and cause a later wx._core.PyNoAppError.
+        __wx_app = wx.App(0)
 
         if sys.platform.startswith("linux"):
             _std_pths = wx.StandardPaths.Get()

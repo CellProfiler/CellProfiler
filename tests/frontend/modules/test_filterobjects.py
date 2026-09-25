@@ -21,6 +21,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import tests.frontend.modules
 from cellprofiler_library.opts.filterobjects import FilterMethod, FilterMode, OverlapAssignment
+from cellprofiler_library.opts.relateobjects import DistanceMethod
 
 INPUT_IMAGE = "input_image"
 INPUT_OBJECTS = "input_objects"
@@ -619,7 +620,7 @@ def test_additional_objects_filter_correctly(get_images_for_issue_4509):
     relate_objects_module.x_name.value = INPUT_OBJECTS
     relate_objects_module.y_name.value = "my_alternates"
     relate_objects_module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_NONE
+        DistanceMethod.NONE
     )
     relate_objects_module.wants_per_parent_means.value = False
     relate_objects_module.set_module_num(1)
@@ -666,7 +667,7 @@ def test_additional_objects_filter_correctly_2(get_images_for_issue_4509):
     relate_objects_module.x_name.value = INPUT_OBJECTS
     relate_objects_module.y_name.value = "my_alternates"
     relate_objects_module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_NONE
+        DistanceMethod.NONE
     )
     relate_objects_module.wants_per_parent_means.value = False
     relate_objects_module.set_module_num(1)

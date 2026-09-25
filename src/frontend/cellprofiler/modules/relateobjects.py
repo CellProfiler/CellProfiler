@@ -24,7 +24,7 @@ from cellprofiler_core.setting.text import LabelName
 from cellprofiler.modules import _help
 
 from cellprofiler_library.opts.relateobjects import DistanceMethod, TemplateMeasurementFormat, Relationship, C_PARENT, C_CHILDREN
-from cellprofiler_library.modules._relateobjects import run_relate_objects
+from cellprofiler_library.modules._relateobjects import relate_objects
 from cellprofiler_library.functions.measurement import find_parents_of as _find_parents_of
 from cellprofiler_library.measurement_model import (
     R_FIRST_OBJECT_NUMBER,
@@ -332,8 +332,9 @@ parents or children of the parent object.""",
         m = workspace.measurements
         all_measurements = m.to_library_measurements()
         step_parent_names = self.get_parent_names()
-        # 1. Relate Primary
-        lib_measurements = run_relate_objects(
+
+        # Relate Primary
+        lib_measurements = relate_objects(
             parent_labels=parent_labels,
             child_labels=child_labels,
             parent_ijv=parent_ijv,
@@ -348,7 +349,6 @@ parents or children of the parent object.""",
             wants_per_parent_means=self.wants_per_parent_means.value,
             measurements=all_measurements
         )
-
 
         # Unpack library measurements
         for obj_name, features in lib_measurements.objects.items():

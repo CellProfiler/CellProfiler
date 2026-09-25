@@ -11,7 +11,6 @@ from cellprofiler_core.constants.measurement import (
     FTR_CENTER_Y,
     FTR_CENTER_Z,
     FTR_OBJECT_NUMBER,
-    M_NUMBER_OBJECT_NUMBER,
     COLTYPE_FLOAT,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
@@ -24,8 +23,10 @@ from cellprofiler_core.setting.text import LabelName
 from cellprofiler.modules import _help
 
 from cellprofiler_library.opts.relateobjects import DistanceMethod, TemplateMeasurementFormat, Relationship, C_PARENT, C_CHILDREN
-from cellprofiler_library.modules._relateobjects import relate_objects
-from cellprofiler_library.functions.measurement import find_parents_of as _find_parents_of
+from cellprofiler_library.modules._relateobjects import (
+    relate_objects,
+    should_aggregate_feature as _should_aggregate_feature,
+)
 from cellprofiler_library.measurement_model import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
@@ -85,8 +86,6 @@ Measurements made by this module
 """.format(
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
-
-C_MEAN = "Mean"
 
 """Distance category"""
 C_DISTANCE = "Distance"
@@ -333,8 +332,10 @@ parents or children of the parent object.""",
         all_measurements = m.to_library_measurements()
         step_parent_names = self.get_parent_names()
 
+        wants_child_objects_saved = self.wants_child_objects_saved.value
+
         # Relate Primary
-        lib_measurements = relate_objects(
+        lib_result = relate_objects(
             parent_labels=parent_labels,
             child_labels=child_labels,
             parent_ijv=parent_ijv,
@@ -347,8 +348,14 @@ parents or children of the parent object.""",
             find_minimum=find_minimum,
             child_dimensions = children.dimensions,
             wants_per_parent_means=self.wants_per_parent_means.value,
-            measurements=all_measurements
+            measurements=all_measurements,
+            wants_child_objects_saved=wants_child_objects_saved,
+            child_small_removed_segmented=children.small_removed_segmented if wants_child_objects_saved else None,
         )
+        if wants_child_objects_saved:
+            lib_measurements, child_objects = lib_result
+        else:
+            lib_measurements = lib_result
 
         # Unpack library measurements
         for obj_name, features in lib_measurements.objects.items():
@@ -378,46 +385,21 @@ parents or children of the parent object.""",
                 object_numbers1=relationship[R_FIRST_OBJECT_NUMBER],
                 object_numbers2=relationship[R_SECOND_OBJECT_NUMBER],
             )       
-        if self.wants_child_objects_saved.value:
-            children_with_parents = numpy.where(parent_labels > 0, child_labels, 0)
-            indexes = numpy.unique(children_with_parents)[1:]
-
-            # Create an array that maps label indexes to their new values
-            # All labels to be deleted have a value in this array of zero
-            #
-            new_object_count = len(indexes)
-            max_label = numpy.max(child_labels)
-            label_indexes = numpy.zeros((max_label + 1,), int)
-            label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
-
-            target_labels = children.segmented.copy()
-            #
-            # Reindex the labels of the old source image
-            #
-            target_labels[target_labels > max_label] = 0
-            target_labels = label_indexes[target_labels]
+        if wants_child_objects_saved:
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
             target_objects = cellprofiler_core.object.Objects()
-            target_objects.segmented = target_labels
+            target_objects.segmented = child_objects.segmented
             target_objects.unedited_segmented = children.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = children.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) & (children.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
+            target_objects.small_removed_segmented = child_objects.small_removed_segmented
             if children.has_parent_image:
                 target_objects.parent_image = children.parent_image
             workspace.object_set.add_objects(
                 target_objects, self.output_child_objects_name.value
             )
-            # TODO: Move this to library 
             self.add_measurements(
                 workspace, self.y_name.value, self.output_child_objects_name.value
             )
@@ -511,39 +493,12 @@ parents or children of the parent object.""",
         return parent_names
 
 
-    def find_parents_of(self, workspace, parent_name):
-        """Return the parents_of measurement or equivalent
-        parent_name - name of parent objects
-
-        Return a vector of parent indexes to the given parent name using
-        the Parent measurement. Look for a direct parent / child link first
-        and then look for relationships between self.parent_name and the
-        named parent.
-        """
-        meas = workspace.measurements
-
-        primary_parent = self.x_name.value
-
-        sub_object_name = self.y_name.value
-
-        return _find_parents_of(parent_name, primary_parent, sub_object_name, meas)
-
-
     def should_aggregate_feature(self, feature_name):
         """Return True if aggregate measurements should be made on a feature
 
         feature_name - name of a measurement, such as Location_Center_X
         """
-        if feature_name.startswith(C_MEAN):
-            return False
-
-        if feature_name.startswith(C_PARENT):
-            return False
-
-        if feature_name in set(M_NUMBER_OBJECT_NUMBER):
-            return False
-
-        return True
+        return _should_aggregate_feature(feature_name)
 
     def validate_module(self, pipeline):
         """Validate the module's settings

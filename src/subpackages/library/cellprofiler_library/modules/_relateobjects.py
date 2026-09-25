@@ -1,10 +1,11 @@
-from typing import Optional, Annotated, List
-from pydantic import validate_call, ConfigDict, Field
-import numpy as np
+from typing import Optional, Annotated, List, Tuple, Union
+from pydantic import BaseModel, validate_call, ConfigDict, Field
+import numpy
 import scipy.ndimage
 
 from cellprofiler_library.types import ObjectSegmentation, ObjectSegmentationIJV
 from cellprofiler_library.functions.segmentation import relate_children
+from cellprofiler_library.functions.object_processing import get_filtered_object
 from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat, Relationship, C_MEAN, C_PARENT, M_NUMBER_OBJECT_NUMBER
 from cellprofiler_library.functions.measurement import (
@@ -13,25 +14,33 @@ from cellprofiler_library.functions.measurement import (
     find_parents_of
 )
 
+
+class RelateObjectsChildObjects(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    segmented: ObjectSegmentation
+    small_removed_segmented: ObjectSegmentation
+
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def relate_objects(
-        parent_labels:          Annotated[ObjectSegmentation, Field(description="Segmentation of parent")],
-        child_labels:           Annotated[ObjectSegmentation, Field(description="Segmentation of children")],
-        parent_ijv:             Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of parent in IJV format")],
-        child_ijv:              Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of children in IJV format")],
-        parent_name:            Annotated[str, Field(description="Name of the parent object")] = Relationship.PARENT.value,
-        child_name:             Annotated[str, Field(description="Name of the child object")] = Relationship.CHILD.value,
-        volumetric:             Annotated[bool, Field(description="Indicates whether objects are 3D")] = False,
-        parent_and_step_parent_names:Annotated[List[str], Field(description="List of parents and step-parent names for which to calculate distances")] = [],
-        find_centroid:          Annotated[bool, Field(description="Indicates whether centroid-centroid distances should be calculated")] = False,
-        find_minimum:           Annotated[bool, Field(description="Indicates whether minimum distances should be calculated")] = False,
-        child_dimensions:       Annotated[int, Field(description="Number of dimensions of the child object")] = 2,
-        wants_per_parent_means: Annotated[bool, Field(description="Inidicates whether per-parent means should be calculated")] = False,
-        measurements:           Annotated[Optional[LibraryMeasurements], Field(description="Measurements object for which per-parent means will be calculated")] = None,
-) -> LibraryMeasurements:
+        parent_labels:                 Annotated[ObjectSegmentation, Field(description="Segmentation of parent")],
+        child_labels:                  Annotated[ObjectSegmentation, Field(description="Segmentation of children")],
+        parent_ijv:                    Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of parent in IJV format")],
+        child_ijv:                     Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of children in IJV format")],
+        parent_name:                   Annotated[str, Field(description="Name of the parent object")] = Relationship.PARENT.value,
+        child_name:                    Annotated[str, Field(description="Name of the child object")] = Relationship.CHILD.value,
+        volumetric:                    Annotated[bool, Field(description="Indicates whether objects are 3D")] = False,
+        parent_and_step_parent_names:  Annotated[List[str], Field(description="List of parents and step-parent names for which to calculate distances")] = [],
+        find_centroid:                 Annotated[bool, Field(description="Indicates whether centroid-centroid distances should be calculated")] = False,
+        find_minimum:                  Annotated[bool, Field(description="Indicates whether minimum distances should be calculated")] = False,
+        child_dimensions:              Annotated[int, Field(description="Number of dimensions of the child object")] = 2,
+        wants_per_parent_means:        Annotated[bool, Field(description="Inidicates whether per-parent means should be calculated")] = False,
+        measurements:                  Annotated[Optional[LibraryMeasurements], Field(description="Measurements object for which per-parent means will be calculated")] = None,
+        wants_child_objects_saved:     Annotated[bool, Field(description="Indicates whether a relabeled child segmentation (keeping only children with a parent) should be computed and returned")] = False,
+        child_small_removed_segmented: Annotated[Optional[ObjectSegmentation], Field(description="Children's small-removed segmentation, required and updated in step with the relabeling when wants_child_objects_saved is True")] = None,
+) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, RelateObjectsChildObjects]]:
     """
     Relate child objects to parent objects, compute basic statistics, and optionally calculate distances between parent and child objects, and optionally calculate per-parent means.
-    
+
     Args:
         parent_labels: Segmentation of primary parent
         child_labels: Segmentation of children
@@ -46,7 +55,12 @@ def relate_objects(
         child_dimensions: Number of dimensions of the child object
         wants_per_parent_means: Inidicates whether per-parent means should be calculated
         measurements: Measurements object for which per-parent means will be calculated
+        wants_child_objects_saved: Indicates whether a relabeled child segmentation (keeping only children with a parent) should be computed and returned
+        child_small_removed_segmented: Children's small-removed segmentation, required and updated in step with the relabeling when wants_child_objects_saved is True
     """
+
+    if wants_child_objects_saved:
+        assert child_small_removed_segmented is not None, "Must provide children's small-removed segmentation"
 
     # lib_measurements is the object that will be returned
     lib_measurements = LibraryMeasurements()
@@ -80,9 +94,9 @@ def relate_objects(
 
     good_parents = parents_of[parents_of != 0]
 
-    good_children = np.argwhere(parents_of != 0).flatten() + 1
+    good_children = numpy.argwhere(parents_of != 0).flatten() + 1
 
-    if np.any(good_parents):
+    if numpy.any(good_parents):
         lib_measurements.add_relate_measurement(
             Relationship.PARENT.value,
             parent_name,
@@ -120,12 +134,12 @@ def relate_objects(
             measurements.add_measurement(child_name, TemplateMeasurementFormat.FF_MINIMUM % parent_step_parent_name, dist)
 
     if wants_per_parent_means:
-        parent_indexes = np.arange(np.max(parent_labels)) + 1
+        parent_indexes = numpy.arange(numpy.max(parent_labels)) + 1
         # Notice the for loop below iterates over measurements, not lib_measurements. This is because
         # the per-parent means are calculated on measurements processed by other modules (and 
         # made available to RelateObjects via the measurements argument).
         for feature_name in measurements.get_feature_names(child_name):
-            if not __should_aggregate_feature(feature_name):
+            if not should_aggregate_feature(feature_name):
                 continue
             # Notice the statement below uses measurements, not lib_measurements. See previous comment for explanation.
             data = measurements.get_measurement(child_name, feature_name) # changed get_current_measurement to get_measurement assuming that when get_meaurements is called they actually correspond to the correct measurements
@@ -136,18 +150,53 @@ def relate_objects(
                         data.astype(float), parents_of, parent_indexes
                     )
                 else:
-                    means = np.zeros((0,))
+                    means = numpy.zeros((0,))
             else:
                 # No child measurements - all NaN
-                means = np.ones(len(parents_of)) * np.nan
+                means = numpy.ones(len(parents_of)) * numpy.nan
 
             mean_feature_name = TemplateMeasurementFormat.FF_MEAN % (child_name, feature_name)
 
             lib_measurements.add_measurement(parent_name, mean_feature_name, means)
 
+    if wants_child_objects_saved:
+        target_labels, small_removed = _filter_child_objects_by_parent(
+            parent_labels, child_labels, child_small_removed_segmented
+        )
+        return lib_measurements, RelateObjectsChildObjects(
+            segmented=target_labels, small_removed_segmented=small_removed
+        )
+
     return lib_measurements
 
-def __should_aggregate_feature(feature_name: str) -> bool:
+
+def _filter_child_objects_by_parent(
+        parent_labels:                  ObjectSegmentation,
+        child_labels:                   ObjectSegmentation,
+        child_small_removed_segmented:  ObjectSegmentation,
+) -> Tuple[ObjectSegmentation, ObjectSegmentation]:
+    """
+    Keep only child objects that have a parent, relabeling the survivors contiguously starting at 1.
+
+    parent_labels - Segmentation of parent objects
+    child_labels - Segmentation of child objects
+    child_small_removed_segmented - Children's small-removed segmentation, updated in step with the relabeling
+
+    Returns a tuple of (relabeled child segmentation, corresponding small-removed segmentation).
+    """
+    children_with_parents = numpy.where(parent_labels > 0, child_labels, 0)
+    indexes = numpy.unique(children_with_parents)[1:]
+    max_label = numpy.max(child_labels)
+
+    target_labels = get_filtered_object(child_labels, indexes, None, max_label, None, False)
+
+    small_removed = child_small_removed_segmented.copy()
+    small_removed[(target_labels == 0) & (child_labels != 0)] = 0
+
+    return target_labels, small_removed
+
+
+def should_aggregate_feature(feature_name: str) -> bool:
     """Return True if aggregate measurements should be made on a feature
 
     feature_name - name of a measurement, such as Location_Center_X

@@ -19,6 +19,11 @@ import cellprofiler.modules.relateobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.relateobjects import (
+    DistanceMethod,
+    TemplateMeasurementFormat,
+    C_MEAN,
+)
 
 PARENT_OBJECTS = "parentobjects"
 CHILD_OBJECTS = "childobjects"
@@ -45,7 +50,7 @@ def make_workspace(parents, children, fake_measurement=False):
     module.x_name.value = PARENT_OBJECTS
     module.y_name.value = CHILD_OBJECTS
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_NONE
+        DistanceMethod.NONE
     )
     module.wants_child_objects_saved.value = False
     new_module_num = 2 if fake_measurement else 1
@@ -245,14 +250,14 @@ def test_04_00_distance_empty():
             isinstance(module, cellprofiler.modules.relateobjects.Relate)
         )
         module.find_parent_child_distances.value = (
-            cellprofiler.modules.relateobjects.D_BOTH
+            DistanceMethod.BOTH
         )
         module.run(workspace)
         features_and_columns_match(workspace)
         meas = workspace.measurements
         for feature in (
-            cellprofiler.modules.relateobjects.FF_CENTROID,
-            cellprofiler.modules.relateobjects.FF_MINIMUM,
+            TemplateMeasurementFormat.FF_CENTROID,
+            TemplateMeasurementFormat.FF_MINIMUM,
         ):
             m = feature % PARENT_OBJECTS
             v = meas.get_current_measurement(CHILD_OBJECTS, m)
@@ -284,14 +289,14 @@ def test_04_01_distance_centroids():
     workspace, module = make_workspace(parent_labels, child_labels)
     assert(isinstance(module, cellprofiler.modules.relateobjects.Relate))
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_BOTH
+        DistanceMethod.BOTH
     )
     module.run(workspace)
     features_and_columns_match(workspace)
     meas = workspace.measurements
     v = meas.get_current_measurement(
         CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
+        TemplateMeasurementFormat.FF_CENTROID % PARENT_OBJECTS,
     )
     assert v.shape[0] == 12
     assert numpy.all(numpy.abs(v - expected) < 0.0001)
@@ -310,7 +315,7 @@ def test_distance_minima():
     workspace, module = make_workspace(parents, children)
 
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
+        DistanceMethod.MINIMUM
     )
 
     module.run(workspace)
@@ -319,7 +324,7 @@ def test_distance_minima():
 
     actual = workspace.measurements.get_current_measurement(
         CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS,
+        TemplateMeasurementFormat.FF_MINIMUM % PARENT_OBJECTS,
     )
 
     numpy.testing.assert_array_equal(actual, expected)
@@ -355,18 +360,18 @@ def test_means_of_distances():
     workspace, module = make_workspace(parent_labels, child_labels)
     assert isinstance(module, cellprofiler.modules.relateobjects.Relate)
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_CENTROID
+        DistanceMethod.CENTROID
     )
     module.wants_per_parent_means.value = True
     mnames = module.get_measurements(
         workspace.pipeline,
         PARENT_OBJECTS,
-        "_".join((cellprofiler.modules.relateobjects.C_MEAN, CHILD_OBJECTS)),
+        "_".join((C_MEAN, CHILD_OBJECTS)),
     )
-    assert cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS in mnames
-    feat_mean = cellprofiler.modules.relateobjects.FF_MEAN % (
+    assert TemplateMeasurementFormat.FF_CENTROID % PARENT_OBJECTS in mnames
+    feat_mean = TemplateMeasurementFormat.FF_MEAN % (
         CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
+        TemplateMeasurementFormat.FF_CENTROID % PARENT_OBJECTS,
     )
     mcolumns = module.get_measurement_columns(workspace.pipeline)
     assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
@@ -404,7 +409,7 @@ def test_calculate_centroid_distances_volume():
     workspace, module = make_workspace(parents, children)
 
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_CENTROID
+        DistanceMethod.CENTROID
     )
 
     module.run(workspace)
@@ -413,7 +418,7 @@ def test_calculate_centroid_distances_volume():
 
     actual = workspace.measurements.get_current_measurement(
         CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
+        TemplateMeasurementFormat.FF_CENTROID % PARENT_OBJECTS,
     )
 
     numpy.testing.assert_array_equal(actual, expected)
@@ -432,7 +437,7 @@ def test_calculate_minimum_distances_volume():
     workspace, module = make_workspace(parents, children)
 
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
+        DistanceMethod.MINIMUM
     )
 
     module.run(workspace)
@@ -441,7 +446,7 @@ def test_calculate_minimum_distances_volume():
 
     actual = workspace.measurements.get_current_measurement(
         CHILD_OBJECTS,
-        cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS,
+        TemplateMeasurementFormat.FF_MINIMUM % PARENT_OBJECTS,
     )
 
     numpy.testing.assert_array_equal(actual, expected)
@@ -469,7 +474,7 @@ def test_relate_zeros_with_step_parent():
     module.wants_step_parent_distances.value = True
 
     module.find_parent_child_distances.value = (
-        cellprofiler.modules.relateobjects.D_MINIMUM
+        DistanceMethod.MINIMUM
     )
 
     module.run(workspace)
@@ -477,7 +482,7 @@ def test_relate_zeros_with_step_parent():
     expected = []
 
     actual = workspace.measurements.get_current_measurement(
-        CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % "Step"
+        CHILD_OBJECTS, TemplateMeasurementFormat.FF_MINIMUM % "Step"
     )
     numpy.testing.assert_array_equal(actual, expected)
 

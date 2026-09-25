@@ -14,7 +14,7 @@ from cellprofiler_library.functions.measurement import (
 )
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def run_relate_objects(
+def relate_objects(
         parent_labels:          Annotated[ObjectSegmentation, Field(description="Segmentation of parent")],
         child_labels:           Annotated[ObjectSegmentation, Field(description="Segmentation of children")],
         parent_ijv:             Annotated[Optional[ObjectSegmentationIJV], Field(description="Segmentation of parent in IJV format")],

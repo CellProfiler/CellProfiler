@@ -6,11 +6,12 @@ import numpy
 from typing import Any, Dict, List
 from numpy.typing import NDArray
 
-# Constants for relationship measurements
-IMAGE_NUMBER = "ImageNumber"
-OBJECT_NUMBER = "ObjectNumber"
-R_FIRST_OBJECT_NUMBER = f"{OBJECT_NUMBER}_First"
-R_SECOND_OBJECT_NUMBER = f"{OBJECT_NUMBER}_Second"
+from cellprofiler_library.opts.measurement import (
+    IMAGE_NUMBER,
+    OBJECT_NUMBER,
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+)
 
 class RelationshipBase:
     """Key for identifying relationship groups."""

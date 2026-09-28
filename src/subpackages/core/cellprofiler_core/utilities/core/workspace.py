@@ -3,7 +3,9 @@ import h5py
 from ..hdf5_dict import HDF5FileList
 from ..hdf5_dict import HDF5Dict
 from cellprofiler_library.measurement_model import LibraryMeasurements, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
-import numpy as np
+import numpy
+
+
 def is_workspace_file(path):
     """Return True if the file along the given path is a workspace file"""
     if not h5py.is_hdf5(path):
@@ -17,10 +19,10 @@ def is_workspace_file(path):
         h5file.close()
 
 def add_library_measurements_to_workspace_measurements(workspace_measurements, library_measurements: LibraryMeasurements, module_num=None):
-    """Add the library measurements to the workspace
+    """Add the library measurements to the workspace measurements
 
+    workspace_measurements - the Measurements instance to add to
     library_measurements - the library measurements to be added
-    workspace - the workspace to which the measurements will be added
     module_num - the module number of the module that generated the library measurements
     """
     #
@@ -47,7 +49,7 @@ def add_library_measurements_to_workspace_measurements(workspace_measurements, l
             relationship.object_name2
         )
         n_records = len(data)
-        img_nums = np.ones(n_records, int) * m.image_set_number
+        img_nums = numpy.ones(n_records, int) * m.image_set_number
 
         m.add_relate_measurement(
             module_num,
@@ -57,5 +59,5 @@ def add_library_measurements_to_workspace_measurements(workspace_measurements, l
             img_nums,
             data[R_FIRST_OBJECT_NUMBER],
             img_nums,
-            data[R_SECOND_OBJECT_NUMBER], 
+            data[R_SECOND_OBJECT_NUMBER],
         )

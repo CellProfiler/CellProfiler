@@ -1,7 +1,8 @@
 from enum import Enum
 
+from cellprofiler_library.opts.measurement import C_LOCATION
+
 C_INTENSITY = "Intensity"
-C_LOCATION = "Location"
 
 class IntensityFeature(str, Enum):
     """Raw strings for intensity and location features."""

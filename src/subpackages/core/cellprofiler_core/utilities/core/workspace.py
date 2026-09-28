@@ -41,8 +41,13 @@ def add_library_measurements_to_workspace_measurements(workspace_measurements, l
         for feature_name, data in features.items():
             m.add_measurement(object_name, feature_name, data)
 
-    for relationship in library_measurements.get_relationship_groups():
-        assert module_num is not None, "Module number must be provided to add relate measurements"
+    relationship_groups = library_measurements.get_relationship_groups()
+    if relationship_groups and module_num is None:
+        raise ValueError(
+            "module_num must be provided to add_library_measurements_to_workspace_measurements "
+            "when library_measurements contains relationships"
+        )
+    for relationship in relationship_groups:
         data = library_measurements.get_relationships(
             relationship.relationship,
             relationship.object_name1,

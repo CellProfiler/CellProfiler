@@ -11,8 +11,8 @@ from cellprofiler_core.constants.measurement import (
     IMAGE,
     M_LOCATION_CENTER_Z,
 )
-from cellprofiler_library.measurements.measurement import get_object_location_measurements
-from cellprofiler_library.measurements.measurement import get_object_count_measurements
+from cellprofiler_library.measurements.wrappers import wrap_object_location_measurements
+from cellprofiler_library.measurements.wrappers import wrap_object_count_measurements
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 
@@ -28,7 +28,7 @@ def add_object_location_measurements(
                    takes the maximum value in the labels matrix which is
                    usually correct.
     """
-    object_location_measurements = get_object_location_measurements(object_name, labels, object_count)
+    object_location_measurements = wrap_object_location_measurements(object_name, labels, object_count)
     add_library_measurements_to_workspace_measurements(measurements, object_location_measurements)
 
 
@@ -61,7 +61,7 @@ def add_object_location_measurements_ijv(
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
-    object_count_measurements = get_object_count_measurements(object_name, object_count)
+    object_count_measurements = wrap_object_count_measurements(object_name, object_count)
     add_library_measurements_to_workspace_measurements(measurements, object_count_measurements)
 
 

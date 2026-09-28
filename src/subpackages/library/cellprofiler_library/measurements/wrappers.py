@@ -18,7 +18,7 @@ from cellprofiler_library.measurements.measurement_model import LibraryMeasureme
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_object_location_measurements(
+def wrap_object_location_measurements(
     object_name: Annotated[str, Field(description="Name of the objects being measured")],
     labels: Annotated[ObjectSegmentation, Field(description="Dense label matrix of the objects")],
     object_count: Annotated[
@@ -70,7 +70,7 @@ def get_object_location_measurements(
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_object_count_measurements(
+def wrap_object_count_measurements(
     object_name: Annotated[str, Field(description="Name of the objects being counted")],
     object_count: Annotated[int, Field(description="Number of objects")],
 ) -> LibraryMeasurements:
@@ -83,7 +83,7 @@ def get_object_count_measurements(
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_relate_object_measurements(
+def wrap_relate_object_measurements(
     object_labels: Annotated[ObjectSegmentation, Field(description="Dense label matrix of the child objects")],
     object_volumetric: Annotated[bool, Field(description="Whether the objects are volumetric (3D)")],
     object_name: Annotated[str, Field(description="Name of the child objects")],
@@ -114,10 +114,10 @@ def get_relate_object_measurements(
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_image_segmentation_measurements(
+def wrap_image_segmentation_measurements(
     object_labels: Annotated[ObjectSegmentation, Field(description="Dense label matrix of the objects")],
-    objects_volumetric: Annotated[bool, Field(description="Whether the objects are volumetric (3D)")],
-    objects_count: Annotated[int, Field(description="Number of objects")],
+    object_volumetric: Annotated[bool, Field(description="Whether the objects are volumetric (3D)")],
+    object_count: Annotated[int, Field(description="Number of objects")],
     object_name: Annotated[str, Field(description="Name of the objects being measured")],
 ) -> LibraryMeasurements:
     """Return the location and count measurements produced by ImageSegmentation.add_measurements"""
@@ -127,7 +127,7 @@ def get_image_segmentation_measurements(
     if len(centers) == 0:
         center_z, center_y, center_x = [], [], []
     else:
-        if objects_volumetric:
+        if object_volumetric:
             center_z, center_y, center_x = centers.transpose()
         else:
             center_z = [0] * len(centers)
@@ -147,17 +147,17 @@ def get_image_segmentation_measurements(
     )
 
     lib_measurements.add_measurement(
-        object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects_count + 1),
+        object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, object_count + 1),
     )
 
     lib_measurements = lib_measurements.merge(
-        get_object_count_measurements(object_name, objects_count)
+        wrap_object_count_measurements(object_name, object_count)
     )
     return lib_measurements
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
-def get_object_processing_measurements(
+def wrap_object_processing_measurements(
     object_labels: Annotated[ObjectSegmentation, Field(description="Dense label matrix of the output objects")],
     object_volumetric: Annotated[bool, Field(description="Whether the output objects are volumetric (3D)")],
     object_count: Annotated[int, Field(description="Number of output objects")],
@@ -168,10 +168,10 @@ def get_object_processing_measurements(
     parent_object_ijv: Annotated[ObjectSegmentationIJV, Field(description="Input object segmentation in IJV format")],
 ) -> LibraryMeasurements:
     """Return the measurements produced by ObjectProcessing.add_measurements"""
-    lib_measurements = get_image_segmentation_measurements(
+    lib_measurements = wrap_image_segmentation_measurements(
         object_labels, object_volumetric, object_count, object_name
     )
-    lib_measurements_relate = get_relate_object_measurements(
+    lib_measurements_relate = wrap_relate_object_measurements(
         object_labels, object_volumetric, object_name, object_ijv,
         parent_object_name, parent_object_labels, parent_object_ijv,
     )

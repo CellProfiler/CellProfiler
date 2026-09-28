@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 import copy
-from cellprofiler_library.measurement_model import (
+from cellprofiler_library.measurements.measurement_model import (
     RelationshipBase,
     Relationship,
     LibraryMeasurements,

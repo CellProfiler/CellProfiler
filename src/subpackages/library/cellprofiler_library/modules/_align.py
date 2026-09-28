@@ -5,7 +5,7 @@ from pydantic import Field, validate_call, ConfigDict, BaseModel
 
 from cellprofiler_library.opts.align import CropMode, AlignmentMethod, AdditionalAlignmentChoice, MEASUREMENT_FORMAT
 from cellprofiler_library.types import Image2D, Image2DMask, ImageBinary
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.image_processing import (
     align_cross_correlation,
     align_mutual_information,

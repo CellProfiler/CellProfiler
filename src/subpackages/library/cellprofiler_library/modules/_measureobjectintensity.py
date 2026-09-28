@@ -6,7 +6,7 @@ from typing import Tuple, Annotated, Optional, List, Any, Union
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_core.utilities.core.object import crop_labels_and_image
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, ObjectLabelSet, Pixel, ObjectLabel
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import measure_object_area_occupied, measure_integrated_intensity, measure_mean_intensity, measure_std_intensity, measure_min_intensity, measure_max_intensity, measure_max_position, measure_center_of_mass_binary, measure_center_of_mass_intensity, measure_mass_displacement, measure_quartile_intensity, measure_mad_intensity
 from cellprofiler_library.opts.measureobjectintensity import TemplateMeasurementFormat, IntensityFeature
 

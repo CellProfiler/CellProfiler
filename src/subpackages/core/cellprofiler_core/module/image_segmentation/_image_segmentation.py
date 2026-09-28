@@ -19,7 +19,7 @@ from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
 from ...setting.subscriber import ImageSubscriber
 from ...setting.text import LabelName
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
-from cellprofiler_library.functions.measurement import get_image_segmentation_measurements
+from cellprofiler_library.measurements.measurement import get_image_segmentation_measurements
 
 class ImageSegmentation(Module):
     category = "Image Segmentation"

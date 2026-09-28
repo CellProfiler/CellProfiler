@@ -4,7 +4,7 @@ import centrosome
 import centrosome.cpmorphology
 from pydantic import validate_call, ConfigDict, Field, BaseModel
 from cellprofiler_library.types import ObjectLabelsDense
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import (
     measure_object_size_shape_2d,
     measure_object_size_shape_3d

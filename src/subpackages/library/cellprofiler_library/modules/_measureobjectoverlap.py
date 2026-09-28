@@ -5,7 +5,7 @@ from typing import Annotated, Tuple, Union, Optional, List, Any
 from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod, Feature, C_IMAGE_OVERLAP
 from cellprofiler_library.types import ObjectLabelSet
 from cellprofiler_library.functions.measurement import calculate_overlap_measurements, compute_earth_movers_distance_objects
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 ObjectOverlapStatistics = List[Tuple[str, float]]
 

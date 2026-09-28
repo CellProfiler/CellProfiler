@@ -5,7 +5,7 @@ from cellprofiler_library.types import Image2DBinary, ObjectSegmentation, Image2
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.functions.measurement import calculate_object_skeleton
 from cellprofiler_library.opts.measureobjectskeleton import SkeletonMeasurements, C_OBJSKELETON
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 
 ObjectSkeletonStatistics = List[None]

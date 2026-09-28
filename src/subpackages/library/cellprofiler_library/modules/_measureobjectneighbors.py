@@ -4,7 +4,7 @@ from typing import Optional, Tuple, Annotated, Union, List
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 
 from cellprofiler_library.types import ObjectSegmentation, ObjectLabelMask
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectneighbors import (
     DistanceMethod as NeighborsDistanceMethod,
     Measurement as NeighborsMeasurement,

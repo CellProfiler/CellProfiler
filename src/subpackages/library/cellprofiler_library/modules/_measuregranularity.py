@@ -3,7 +3,7 @@ from typing import Annotated, List, Tuple, Union
 from enum import Enum
 import numpy as np
 
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.measurement import get_granularity_measurements, ObjectRecord
 from cellprofiler_library.functions.image_processing import apply_grayscale_tophat_filter, downsample_image_and_mask
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask

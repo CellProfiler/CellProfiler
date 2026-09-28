@@ -98,7 +98,7 @@ from cellprofiler_library.functions.image_processing import apply_threshold_to_o
 import cellprofiler_library.opts.threshold as Threshold
 from cellprofiler_library.opts.measurecolocalization import MeasurementType, TemplateMeasurementFormat, Target, CostesMethod
 from cellprofiler_library.modules._measurecolocalization import run_image_pair_images, run_image_pair_objects, crop_image_pair_similarly, crop_image_pair_and_object_similarly
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 # The number of settings per threshold
 THRESHOLD_SETTING_COUNT = 2

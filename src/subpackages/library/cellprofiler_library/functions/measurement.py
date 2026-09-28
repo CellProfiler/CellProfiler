@@ -4444,7 +4444,6 @@ def get_object_location_measurements(object_name, labels, object_count=None):
         centers = numpy.array(centers)
         centers = centers.reshape((object_count, len(labels.shape)))
         if centers.shape[1] != 3:
-            location_center_z = None
             location_center_y = centers[:, 0]
             location_center_x = centers[:, 1]
         else:
@@ -4476,7 +4475,9 @@ def get_object_location_measurements(object_name, labels, object_count=None):
 def get_object_count_measurements(object_name, object_count):
     """Add the # of objects to the measurements"""
     lib_measurements = LibraryMeasurements()
-    lib_measurements.add_image_measurement(FF_COUNT % object_name, object_count)
+    lib_measurements.add_image_measurement(
+        FF_COUNT % object_name, numpy.array([object_count], dtype=float),
+    )
     return lib_measurements
 
 def get_object_processing_measurements(
@@ -4559,8 +4560,8 @@ def get_image_segmentation_measurements(
         object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects_count + 1),
     )
 
-    lib_measurements.add_image_measurement( 
-        FF_COUNT % object_name, numpy.array([objects_count], dtype=float),
+    lib_measurements = lib_measurements.merge(
+        get_object_count_measurements(object_name, objects_count)
     )
     return lib_measurements
 

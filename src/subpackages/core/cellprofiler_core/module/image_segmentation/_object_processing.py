@@ -6,7 +6,6 @@ from ...constants.measurement import C_CHILDREN
 from ...constants.measurement import C_NUMBER
 from ...constants.measurement import C_PARENT
 from ...constants.measurement import FF_CHILDREN_COUNT
-from ...constants.measurement import FF_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
 from ...object import Objects

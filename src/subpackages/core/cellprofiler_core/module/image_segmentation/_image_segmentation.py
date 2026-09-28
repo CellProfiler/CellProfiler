@@ -33,7 +33,6 @@ class ImageSegmentation(Module):
             object_name = self.y_name.value
 
         objects = workspace.object_set.get_objects(object_name)
-        # I have tested this when debugging relateobjects while working on the library/object_count _measurements branch and confirmed that it works.
         lib_measurements = get_image_segmentation_measurements(
             objects.segmented,
             objects.volumetric,

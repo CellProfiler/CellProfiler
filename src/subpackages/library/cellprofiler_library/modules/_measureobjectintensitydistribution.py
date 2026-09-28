@@ -12,7 +12,7 @@ from cellprofiler_library.functions.measurement import (
     compute_radial_indexes,
     prepare_object_zernike_polynomials, # passthrough import
 )
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureobjectintensitydistribution import (
     C_RADIAL_DISTRIBUTION,
     CenterChoice,

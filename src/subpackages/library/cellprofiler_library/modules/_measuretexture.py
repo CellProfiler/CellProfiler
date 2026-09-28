@@ -5,7 +5,7 @@ from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Objec
 from pydantic import validate_call, Field, ConfigDict, BaseModel
 from cellprofiler_library.functions.measurement import measure_haralick_features_image, measure_haralick_features_objects
 from cellprofiler_library.opts.measuretexture import F_HARALICK, TEXTURE
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 
 MeasureTextureStatistics = List[Tuple[

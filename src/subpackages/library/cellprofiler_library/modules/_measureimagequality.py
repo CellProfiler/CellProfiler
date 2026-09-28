@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 from typing import Optional, List, Sequence, Annotated, Union, Tuple, Any
 from pydantic import BaseModel, Field, validate_call, ConfigDict
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimagequality import (
      Feature, ScaledThresholdMethod, TemplateMeasurementFormat
 )

@@ -11,8 +11,8 @@ from cellprofiler_core.constants.measurement import (
     IMAGE,
     M_LOCATION_CENTER_Z,
 )
-from cellprofiler_library.functions.measurement import get_object_location_measurements
-from cellprofiler_library.functions.measurement import get_object_count_measurements
+from cellprofiler_library.measurements.measurement import get_object_location_measurements
+from cellprofiler_library.measurements.measurement import get_object_count_measurements
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 

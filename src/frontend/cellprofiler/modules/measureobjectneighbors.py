@@ -84,7 +84,7 @@ from cellprofiler_core.workspace import Workspace
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod, Measurement, MeasurementScale, C_NEIGHBORS, M_ALL, D_ALL
 from cellprofiler_library.types import ObjectSegmentation
 from cellprofiler_library.modules._measureobjectneighbors import measure_object_neighbors
-from cellprofiler_library.measurement_model import (
+from cellprofiler_library.measurements.measurement_model import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )

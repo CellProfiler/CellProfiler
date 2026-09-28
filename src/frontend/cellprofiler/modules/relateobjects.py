@@ -27,7 +27,7 @@ from cellprofiler_library.modules._relateobjects import (
     relate_objects,
     should_aggregate_feature as _should_aggregate_feature,
 )
-from cellprofiler_library.measurement_model import (
+from cellprofiler_library.measurements.measurement_model import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )

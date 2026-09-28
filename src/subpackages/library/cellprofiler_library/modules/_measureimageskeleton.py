@@ -6,7 +6,7 @@ from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.types import ImageGrayscale
 from cellprofiler_library.opts.measureimageskeleton import TemplateMeasurementFormat
 from cellprofiler_library.functions.measurement import branches, endpoints
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 
 ImageSkeletonStatistics = List[Tuple[int, int]]

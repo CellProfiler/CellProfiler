@@ -4,7 +4,7 @@ from typing import Annotated, Optional, Tuple, List, Union
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.types import ImageBinary, ObjectSegmentation, ImageAnyMask
 from cellprofiler_library.functions.measurement import measure_area_occupied, measure_total_area, measure_perimeter, measure_object_perimeter, measure_objects_area_occupied, measure_objects_total_area
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.measureimageareaoccupied import TemplateMeasurementFormat
 
 ImageAreaOccupiedStatistics = List[List[str]]

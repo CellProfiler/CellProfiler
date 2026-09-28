@@ -6,7 +6,7 @@ import scipy.ndimage
 from cellprofiler_library.types import ObjectSegmentation, ObjectSegmentationIJV
 from cellprofiler_library.functions.segmentation import relate_children
 from cellprofiler_library.functions.object_processing import get_filtered_object
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat, Relationship, C_MEAN, C_PARENT, M_NUMBER_OBJECT_NUMBER
 from cellprofiler_library.functions.measurement import (
     calculate_centroid_distances,

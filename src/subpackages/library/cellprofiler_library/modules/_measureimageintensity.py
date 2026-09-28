@@ -4,7 +4,7 @@ from typing import List, Annotated, Optional, Tuple, Union
 from pydantic import Field, validate_call, ConfigDict, BaseModel
 from cellprofiler_library.functions.measurement import measure_image_intensities
 from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat, Feature, FORMATED_FEATURE_NAMES, FORMATED_PERCENTILE_TEMPLATE 
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 ImageIntensityStatistics = List[Union[List[str], Tuple[str,float]]]
 

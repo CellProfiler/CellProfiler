@@ -30,7 +30,6 @@ from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 from cellprofiler_library.functions.segmentation import convert_label_set_to_ijv
-from cellprofiler_library.functions.segmentation import relate_children
 from cellprofiler_library.functions.image_processing import masked_erode, restore_scale, get_morphology_footprint
 from cellprofiler_library.functions.object_processing import size_similarly
 from cellprofiler_library.functions.segmentation import relate_labels
@@ -43,18 +42,9 @@ from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABEL
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
 from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.segmentation import center_of_labels_mass
-from cellprofiler_library.opts.measurement import (
-    M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y,
-    M_LOCATION_CENTER_Z,
-    C_LOCATION,
-    M_NUMBER_OBJECT_NUMBER,
-    FF_CHILDREN_COUNT,
-    FF_COUNT,
-    FF_PARENT,
-)
+from cellprofiler_library.opts.measurement import FF_PARENT
 
 ###############################################################################
 # MeasureImageOverlap
@@ -4429,139 +4419,3 @@ def find_parents_of(
         )
 
     return parents_of
-
-def get_object_location_measurements(object_name, labels, object_count=None):
-    measurements = LibraryMeasurements()
-    if object_count is None:
-        object_count = numpy.max(labels)
-    #
-    # Get the centers of each object - center_of_mass <- list of two-tuples.
-    #
-    if object_count:
-        centers = scipy.ndimage.center_of_mass(
-            numpy.ones(labels.shape), labels, list(range(1, object_count + 1))
-        )
-        centers = numpy.array(centers)
-        centers = centers.reshape((object_count, len(labels.shape)))
-        if centers.shape[1] != 3:
-            location_center_y = centers[:, 0]
-            location_center_x = centers[:, 1]
-        else:
-            location_center_z = centers[:, 0]
-            location_center_y = centers[:, 1]
-            location_center_x = centers[:, 2]
-        number = numpy.arange(1, object_count + 1)
-    else:
-        location_center_z = numpy.zeros((0,), dtype=float)
-        location_center_y = numpy.zeros((0,), dtype=float)
-        location_center_x = numpy.zeros((0,), dtype=float)
-        number = numpy.zeros((0,), dtype=int)
-    measurements.add_measurement(
-        object_name, M_LOCATION_CENTER_X, location_center_x,
-    )
-    measurements.add_measurement(
-        object_name, M_LOCATION_CENTER_Y, location_center_y,
-    )
-    if len(labels.shape) > 2:
-        measurements.add_measurement(
-            object_name, M_LOCATION_CENTER_Z, location_center_z,
-        )
-
-    measurements.add_measurement(
-        object_name, M_NUMBER_OBJECT_NUMBER, number,
-    )
-    return measurements
-
-def get_object_count_measurements(object_name, object_count):
-    """Add the # of objects to the measurements"""
-    lib_measurements = LibraryMeasurements()
-    lib_measurements.add_image_measurement(
-        FF_COUNT % object_name, numpy.array([object_count], dtype=float),
-    )
-    return lib_measurements
-
-def get_object_processing_measurements(
-        object_labels,
-        object_volumetric,
-        object_count,
-        object_name,
-        object_ijv,
-        parent_object_name,  
-        parent_object_labels,
-        parent_object_ijv,
-    ):
-
-    lib_measurements = get_image_segmentation_measurements(
-        object_labels, object_volumetric, object_count, object_name
-    )
-    lib_measurements_relate = get_relate_object_measurements(
-        object_labels, object_volumetric, object_name, object_ijv, 
-        parent_object_name, parent_object_labels, parent_object_ijv, 
-    )
-    lib_measurements = lib_measurements.merge(lib_measurements_relate)
-
-    return lib_measurements
-
-def get_relate_object_measurements(
-        object_labels, object_volumetric, object_name, object_ijv,
-        parent_object_name, parent_object_labels, parent_object_ijv,
-    ):
-    lib_measurements = LibraryMeasurements()
-    children_per_parent, parents_of_children = relate_children(
-        parent_object_labels, 
-        object_labels, 
-        parent_object_ijv, 
-        object_ijv, 
-        volumetric=object_volumetric
-    )
-    lib_measurements.add_measurement(
-        parent_object_name,
-        FF_CHILDREN_COUNT % object_name,
-        children_per_parent,
-    )
-
-    lib_measurements.add_measurement(
-        object_name, FF_PARENT % parent_object_name, parents_of_children,
-    )
-    return lib_measurements
-
-def get_image_segmentation_measurements(
-        object_labels, 
-        objects_volumetric, 
-        objects_count, 
-        object_name
-    ):
-    lib_measurements = LibraryMeasurements()
-    centers = center_of_labels_mass(object_labels, validate=False)
-
-    if len(centers) == 0:
-        center_z, center_y, center_x = [], [], []
-    else:
-        if objects_volumetric:
-            center_z, center_y, center_x = centers.transpose()
-        else:
-            center_z = [0] * len(centers)
-
-            center_y, center_x = centers.transpose()
-
-    lib_measurements.add_measurement(
-        object_name, M_LOCATION_CENTER_X, center_x,
-    )
-
-    lib_measurements.add_measurement(
-        object_name, M_LOCATION_CENTER_Y, center_y,
-    )
-
-    lib_measurements.add_measurement(
-        object_name, M_LOCATION_CENTER_Z, center_z,
-    )
-
-    lib_measurements.add_measurement(
-        object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects_count + 1),
-    )
-
-    lib_measurements = lib_measurements.merge(
-        get_object_count_measurements(object_name, objects_count)
-    )
-    return lib_measurements
-

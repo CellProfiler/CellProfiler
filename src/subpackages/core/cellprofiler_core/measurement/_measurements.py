@@ -60,7 +60,7 @@ from ..utilities.hdf5_dict import HDF5Dict, NullLock
 from ..utilities.measurement import agg_ignore_feature
 from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
-from cellprofiler_library.measurement_model import LibraryMeasurements, Relationship
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements, Relationship
 
 LOGGER = logging.getLogger(__name__)
 

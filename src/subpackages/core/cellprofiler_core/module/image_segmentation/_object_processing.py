@@ -9,7 +9,7 @@ from ...constants.measurement import FF_CHILDREN_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
 from ...object import Objects
-from cellprofiler_library.functions.measurement import get_object_processing_measurements
+from cellprofiler_library.measurements.measurement import get_object_processing_measurements
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 class ObjectProcessing(ImageSegmentation):

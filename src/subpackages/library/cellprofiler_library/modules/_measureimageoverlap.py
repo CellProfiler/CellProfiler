@@ -7,7 +7,7 @@ from cellprofiler_library.functions.measurement import (
     compute_earth_movers_distance,
 )
 from cellprofiler_library.types import ImageBinary, ImageBinaryMask
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 ImageOverlapStatistics = List[Tuple[str, Union[int, float, numpy.float_, numpy.int_]]]
 

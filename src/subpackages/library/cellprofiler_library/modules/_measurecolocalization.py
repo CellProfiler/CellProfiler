@@ -6,7 +6,7 @@ from cellprofiler_library.functions.measurement import measure_correlation_and_s
 from cellprofiler_library.opts.measurecolocalization import TemplateMeasurementFormat, MeasurementType
 from cellprofiler_library.types import ImageGrayscale, ImageGrayscaleMask, Pixel, ObjectLabel, ObjectSegmentation, ImageAny, ImageAnyMask
 from cellprofiler_library.opts.measurecolocalization import CostesMethod
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.image_processing import crop_image_similarly
 from cellprofiler_library.functions.object_processing import size_similarly, object_crop_image_similarly
 

@@ -6,7 +6,7 @@ from pydantic import Field, validate_call, ConfigDict, BaseModel
 
 from cellprofiler_library.types import Image2DBinary, Image2DBinaryMask, ObjectLabel
 from cellprofiler_library.functions.image_processing import get_3d_adjacent_after_erosion, process_all_connected_components, find_adjacent_by_distance
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
 from cellprofiler_library.opts.identifydeadworms import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_ANGLE, M_NUMBER_OBJECT_NUMBER, TemplateMeasurementFormat
 

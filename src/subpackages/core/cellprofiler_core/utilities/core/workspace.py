@@ -2,7 +2,7 @@ import h5py
 
 from ..hdf5_dict import HDF5FileList
 from ..hdf5_dict import HDF5Dict
-from cellprofiler_library.measurement_model import LibraryMeasurements, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
 import numpy
 
 

@@ -52,9 +52,9 @@ from cellprofiler_core.setting.subscriber import (
     ImageListSubscriber,
     LabelListSubscriber,
 )
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 from cellprofiler_library.modules._measureimageareaoccupied import measure_image_area_perimeter, measure_objects_area_perimeter
 from cellprofiler_library.opts.measureimageareaoccupied import MeasurementType, Target, C_AREA_OCCUPIED
-from cellprofiler_library.measurement_model import LibraryMeasurements
 # The number of settings per image or object group
 IMAGE_SETTING_COUNT = 1
 
@@ -156,7 +156,9 @@ Select the previously identified objects you would like to measure.""".format(
                     pipeline_volumetric, 
                     return_visualization_data=True,
                     )
-                add_library_measurements_to_workspace(_lib_measurements, workspace)
+                add_library_measurements_to_workspace_measurements(
+                    workspace.measurements, _lib_measurements, module_num=self.module_num,
+                )
                 statistics += _lib_display.statistics
         if self.operand_choice.value in (Target.BOTH, Target.OBJECTS):
             if len(self.objects_list.value) == 0:
@@ -177,7 +179,9 @@ Select the previously identified objects you would like to measure.""".format(
                     pipeline_volumetric, 
                     return_visualization_data=True,
                 )
-                add_library_measurements_to_workspace(_lib_measurements, workspace)
+                add_library_measurements_to_workspace_measurements(
+                    workspace.measurements, _lib_measurements, module_num=self.module_num,
+                )
                 statistics += _lib_display.statistics
 
         if self.show_window:
@@ -353,27 +357,3 @@ Select the previously identified objects you would like to measure.""".format(
 
     def volumetric(self):
         return True
-
-
-def add_library_measurements_to_workspace(library_measurements: LibraryMeasurements, workspace):
-    """Add the library measurements to the workspace
-
-    library_measurements - the library measurements to be added
-    workspace - the workspace to which the measurements will be added
-    """
-    #
-    # Record the measurements
-    #
-    # assume isinstance(workspace, Workspace)
-    m = workspace.measurements
-    # assume isinstance(m, Measurements)
-    
-    # Record Image Measurements
-    for feature_name, value in library_measurements.image.items():
-        m.add_image_measurement(feature_name, value)
-    
-    # Record Object Measurements
-    for object_name, features in library_measurements.objects.items():
-        for feature_name, data in features.items():
-            m.add_measurement(object_name, feature_name, data)
-

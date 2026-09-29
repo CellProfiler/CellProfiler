@@ -17,7 +17,6 @@ from cellprofiler_core.utilities.core.module.identify import get_object_measurem
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, ObjectIntensityMethod
 from cellprofiler_library.modules._splitormergeobjects import split_or_merge_objects
-from cellprofiler_library.functions.segmentation import copy_labels
 
 
 __doc__ = """\
@@ -361,10 +360,12 @@ above):
         #
         # Run split_or_merge_objects
         #
-        output_labels, lib_measurements = split_or_merge_objects(
+        output_labels, output_small_removed_segmented, output_unedited_segmented, lib_measurements = split_or_merge_objects(
             labels=labels,
             relabel_option=RelabelOption(self.relabel_option.value),
             objects_name=objects_name,
+            objects_small_removed_segmented=objects.small_removed_segmented if objects.has_small_removed_segmented else None,
+            objects_unedited_segmented=objects.unedited_segmented if objects.has_unedited_segmented else None,
             parent_name=self.parent_object.value,
             merge_option=MergeOption(self.merge_option.value),
             distance_threshold=self.distance_threshold.value,
@@ -384,14 +385,10 @@ above):
         #
         output_objects = Objects()
         output_objects.segmented = output_labels
-        if objects.has_small_removed_segmented:
-            output_objects.small_removed_segmented = copy_labels(
-                objects.small_removed_segmented, output_labels
-            )
-        if objects.has_unedited_segmented:
-            output_objects.unedited_segmented = copy_labels(
-                objects.unedited_segmented, output_labels
-            )
+        if output_small_removed_segmented is not None:
+            output_objects.small_removed_segmented = output_small_removed_segmented
+        if output_unedited_segmented is not None:
+            output_objects.unedited_segmented = output_unedited_segmented
         output_objects.parent_image = objects.parent_image
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 

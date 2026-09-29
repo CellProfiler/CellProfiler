@@ -41,7 +41,6 @@ from cellprofiler_library.opts.measureobjectoverlap import DecimationMethod as O
 from cellprofiler_library.opts.measureobjectskeleton import VF_I, VF_J, VF_LABELS, VF_KIND, EF_V1, EF_V2, EF_LENGTH, EF_TOTAL_INTENSITY
 from cellprofiler_library.opts.measureobjectneighbors import DistanceMethod as NeighborsDistanceMethod
 from cellprofiler_library.opts.measureobjectneighbors import MeasurementScale as NeighborsMeasurementScale
-from cellprofiler_library.opts.relateobjects import TemplateMeasurementFormat
 from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.segmentation import center_of_labels_mass
 from cellprofiler_library.opts.measurement import FF_PARENT

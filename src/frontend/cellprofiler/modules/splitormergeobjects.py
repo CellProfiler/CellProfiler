@@ -1,4 +1,5 @@
 import numpy
+from cellprofiler.modules import _help
 from cellprofiler_core.constants.measurement import (
     C_PARENT,
     FF_CHILDREN_COUNT,
@@ -12,18 +13,13 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float, LabelName
-from cellprofiler_core.utilities.core.module.identify import (
-    add_object_count_measurements,
-    add_object_location_measurements,
-    get_object_measurement_columns,
-)
-
+from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
 from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
-from cellprofiler.modules import _help
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, ObjectIntensityMethod
 from cellprofiler_library.modules._splitormergeobjects import split_or_merge_objects
-from cellprofiler_library.measurement_model import LibraryMeasurements
 from cellprofiler_library.functions.segmentation import copy_labels
+
+
 __doc__ = """\
 SplitOrMergeObjects
 ===================
@@ -353,16 +349,14 @@ above):
         assert isinstance(objects, Objects)
         labels = objects.segmented
 
-        parent_measurements = LibraryMeasurements()
+        parents_of = None
         if self.merge_option == MergeOption.UNIFY_PARENT.value:
             feature_name = "_".join((C_PARENT, self.parent_object.value))
-            parent_measurements.add_measurement(objects_name, feature_name, workspace.measurements[objects_name, feature_name])
+            parents_of = workspace.measurements[objects_name, feature_name]
+
         image = None
         if self.relabel_option.value != RelabelOption.SPLIT.value and self.merge_option.value == MergeOption.UNIFY_DISTANCE.value and self.wants_image.value:
             image = self.get_image(workspace)
-        if self.show_window:
-            # Save the image for display
-            workspace.display_data.image = image
 
         #
         # Run split_or_merge_objects
@@ -374,9 +368,9 @@ above):
             parent_name=self.parent_object.value,
             merge_option=MergeOption(self.merge_option.value),
             distance_threshold=self.distance_threshold.value,
-            relaitonship_measurement=parent_measurements,
+            parents_of=parents_of,
             merging_method=self.merging_method.value,
-            image=image if self.wants_image.value else None,
+            image=image,
             merge_condition=self.where_algorithm.value,
             minimum_intensity_fraction=self.minimum_intensity_fraction.value,
             output_objects_name = self.output_objects_name.value,
@@ -405,6 +399,8 @@ above):
         add_library_measurements_to_workspace_measurements(measurements, lib_measurements)
 
         if self.show_window:
+            if image is not None:
+                workspace.display_data.image = image
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
             if self.merge_option == MergeOption.UNIFY_PARENT.value:

@@ -4013,7 +4013,7 @@ def compute_centroid_distances(
         parent_centers: (M, 2) or (M, 3) array of parent object centroids
         parents_of: Array of length N mapping each child to its parent index (1-based).
                    0 indicates no parent.
-                   
+
     Returns:
         Array of length N containing distances. NaN for unparented children.
     """

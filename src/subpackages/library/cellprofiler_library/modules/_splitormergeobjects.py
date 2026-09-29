@@ -1,11 +1,11 @@
 import numpy as np
 from pydantic import validate_call, Field, ConfigDict
 from typing import Annotated, Optional, Tuple, Union
-from cellprofiler_library.types import ObjectSegmentation, Image2DGrayscale
-from cellprofiler_library.measurement_model import LibraryMeasurements
+from cellprofiler_library.types import ObjectSegmentation, Image2DGrayscale, ParentsOf
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, C_PARENT, ObjectIntensityMethod
 from cellprofiler_library.functions.object_processing import split_objects, merge_unify_distance, merge_unify_parent
-from cellprofiler_library.functions.measurement import get_object_count_measurements, get_object_location_measurements, get_relate_object_measurements
+from cellprofiler_library.measurements.wrappers import wrap_object_count_measurements, wrap_object_location_measurements, wrap_relate_object_measurements
 from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -18,7 +18,7 @@ def split_or_merge_objects(
         merging_method:             Annotated[Optional[MergingMethod], Field(description="Whether to keep merged objects as disconnected pieces or create a convex hull.")], 
         distance_threshold:         Annotated[Optional[float], Field(description="The maximum distance (in pixels) within which to merge objects.")], 
         image:                      Annotated[Optional[Image2DGrayscale], Field(description="The grayscale image used to guide merging. You must also pass the minimum intensity fraction and where algorithm if using this option.")],
-        relaitonship_measurement:   Annotated[Optional[LibraryMeasurements], Field(description="Measurements containing the parent-child relationships.")], 
+        parents_of:                 Annotated[Optional[ParentsOf], Field(description="1-base array containing the parent-child relationships.")],
         merge_condition:            Annotated[Optional[ObjectIntensityMethod], Field(description="The algorithm used to evaluate intensity between objects (Centroids or Closest Point).")],
         minimum_intensity_fraction: Annotated[Optional[float], Field(description="The minimum intensity fraction required to merge objects when using an image.")],
         output_objects_name:        Annotated[Optional[str], Field(description="The name of the output objects. Only used if returning measurements.")],
@@ -44,27 +44,24 @@ def split_or_merge_objects(
         elif merge_option == MergeOption.UNIFY_PARENT:
             assert parent_name is not None, "Parent name must be provided when merge_option is Unify Parent"
             assert merging_method is not None, "Merging method must be provided when merge_option is Unify Parent"
-            assert relaitonship_measurement is not None, "Relationship measurement must be provided when merge_option is Unify Parent"
-            parents_of = relaitonship_measurement.get_measurement(
-                objects_name, "_".join((C_PARENT, parent_name))
-            )
+            assert parents_of is not None, "Parent-child relationships must be provided when merge_option is Unify Parent"
             output_labels = merge_unify_parent(
                 labels,
                 parents_of,
                 merging_method,
             )
-        else: 
+        else:
             raise NotImplementedError(f"Unimplemented merging method: {merging_method}")
     if return_measurements:
         assert labels_ijv is not None, "labels_ijv must be provided if returning measurements"
         assert output_object_volumetric is not None, "output_object_volumetric must be provided if returning measurements"
         assert output_objects_name is not None, "output_objects_name must be provided if returning measurements"
-    
+
         output_object_ijv = convert_labels_to_ijv(output_labels)
-        
-        lib_measurements_object_count = get_object_count_measurements(output_objects_name, np.max(output_labels))
-        lib_mesaurements_object_location = get_object_location_measurements(output_objects_name, output_labels)
-        lib_measurements_relate = get_relate_object_measurements(
+
+        lib_measurements_object_count = wrap_object_count_measurements(output_objects_name, np.max(output_labels))
+        lib_mesaurements_object_location = wrap_object_location_measurements(output_objects_name, output_labels)
+        lib_measurements_relate = wrap_relate_object_measurements(
         output_labels, output_object_volumetric, output_objects_name, output_object_ijv,
         objects_name, labels, labels_ijv
         )

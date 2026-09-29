@@ -139,3 +139,5 @@ Image3DMask =           Union[Image3DColorMask, Image3DGrayscaleMask]
 ImageInt =              Union[Image2DInt, Image3DInt]
 
 StructuringElement =    NDArray[np.uint8]
+
+ParentsOf =             Annotated[NDArray[np.int_], Field(description="Array of length N mapping each child to its parent index (1-based) where 0 indicates no parent.")]

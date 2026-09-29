@@ -9,7 +9,6 @@ from cellprofiler_core.constants.measurement import (
     COLTYPE_FLOAT,
     COLTYPE_INTEGER,
     IMAGE,
-    M_LOCATION_CENTER_Z,
 )
 from cellprofiler_library.measurements.wrappers import wrap_object_location_measurements
 from cellprofiler_library.measurements.wrappers import wrap_object_count_measurements

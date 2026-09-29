@@ -7,8 +7,6 @@ from typing import Any, Dict, List
 from numpy.typing import NDArray
 
 from cellprofiler_library.opts.measurement import (
-    IMAGE_NUMBER,
-    OBJECT_NUMBER,
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )

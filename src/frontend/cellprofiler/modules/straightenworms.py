@@ -131,9 +131,8 @@ from cellprofiler_core.utilities.core.module.identify import (
 )
 from scipy.interpolate import interp1d
 
-from cellprofiler.modules.untangleworms import C_WORM
-from cellprofiler.modules.untangleworms import TemplateMeasurementFormat, Feature
-from cellprofiler.modules.untangleworms import read_params
+from cellprofiler_library.opts.untangleworms import TemplateMeasurementFormat, Feature, C_WORM
+from cellprofiler_library.modules._untangleworms import read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
 
 FTR_MEAN_INTENSITY = "MeanIntensity"

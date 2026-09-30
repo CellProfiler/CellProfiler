@@ -5,7 +5,7 @@ import scipy.sparse
 import centrosome.index
 from typing import Tuple
 from numpy.typing import NDArray
-from ..types import ObjectLabel, ObjectSegmentation
+from ..types import ObjectLabel, ObjectSegmentation, ObjectSegmentationIJV
 
 class SPARSE_FIELD(Enum):
     label = "label"
@@ -865,3 +865,24 @@ def copy_labels(labels, segmented):
     labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
     return labels_new
 
+
+###############################################################################
+# UntangleWorms
+###############################################################################
+
+def remove_overlapping_labels(
+    ijv: ObjectSegmentationIJV,
+    image_shape: Tuple[int, int]
+    ) -> ObjectSegmentation:  
+    #
+    # Sum up the number of overlaps using a sparse matrix
+    #
+    overlap_hits = scipy.sparse.coo_matrix(
+        (np.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image_shape
+    )
+    overlap_hits = overlap_hits.toarray()
+    mask = overlap_hits == 1
+    labels = scipy.sparse.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
+    labels = labels.toarray()
+    labels[~mask] = 0
+    return labels

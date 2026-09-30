@@ -1,5 +1,6 @@
 import numpy
 import scipy.ndimage
+from numpy.typing import NDArray
 from typing import Annotated, Optional
 from pydantic import Field, validate_call, ConfigDict
 
@@ -177,4 +178,35 @@ def wrap_object_processing_measurements(
     )
     lib_measurements = lib_measurements.merge(lib_measurements_relate)
 
+    return lib_measurements
+
+
+###############################################################################
+# UntangleWorms
+###############################################################################
+
+def wrap_object_location_measurements_ijv_include_overlap(
+        object_name: str, 
+        ijv: ObjectSegmentationIJV, 
+        object_count: int, 
+        object_indices: NDArray[numpy.int32], 
+        object_areas: NDArray[numpy.int32]
+    ) -> LibraryMeasurements:
+    #
+    # These object location measurements are not the same as 
+    # `wrap_object_location_measurements()`.
+    # Key difference is that this function works on the ijv labels whereas the other function works on the
+    #  `labels` attribute of the object which is a 2D array of object numbers. Unlike the dense label format,
+    #  IJV representation can be used to store overlapping objects
+    #  
+    lib_measurements = LibraryMeasurements()
+    if object_count == 0:
+        center_x = numpy.zeros(0)
+        center_y = numpy.zeros(0)
+    else:
+        center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[object_indices] / object_areas
+        center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[object_indices] / object_areas
+    lib_measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
+    lib_measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
+    lib_measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, object_indices)
     return lib_measurements

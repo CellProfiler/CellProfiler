@@ -4,25 +4,16 @@ import scipy.ndimage
 import six.moves
 
 import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, COLTYPE_INTEGER, \
+    COLTYPE_FLOAT, M_NUMBER_OBJECT_NUMBER, FF_COUNT
 
-from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.constants.measurement import (
-    C_COUNT,
-    M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y,
-    COLTYPE_INTEGER,
-    COLTYPE_FLOAT,
-    M_NUMBER_OBJECT_NUMBER,
-    FF_COUNT,
-)
 
 import cellprofiler.modules.identifydeadworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-
-from cellprofiler_library.modules._identifydeadworms import find_adjacent_by_distance 
-
 
 IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"
@@ -117,7 +108,7 @@ def make_workspace(pixel_data, mask=None):
         module,
         image_set,
         cellprofiler_core.object.ObjectSet(),
-        Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -150,7 +141,7 @@ def test_one_worm():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m,Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
         "_".join((C_COUNT, OBJECTS_NAME))
     )
@@ -196,7 +187,7 @@ def test_crossing_worms():
     module.angle_count.value = 16
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m,Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(
         "_".join((C_COUNT, OBJECTS_NAME))
     )
@@ -268,8 +259,8 @@ def test_find_adjacent_by_distance_empty():
     workspace, module = make_workspace(numpy.zeros((20, 10), bool))
     assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
-    first, second = find_adjacent_by_distance(
-        numpy.zeros(0), numpy.zeros(0), numpy.zeros(0), module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value
+    first, second = module.find_adjacent_by_distance(
+        numpy.zeros(0), numpy.zeros(0), numpy.zeros(0)
     )
     assert len(first) == 0
     assert len(second) == 0
@@ -279,8 +270,8 @@ def test_find_adjacent_by_distance_one():
     workspace, module = make_workspace(numpy.zeros((20, 10), bool))
     assert isinstance(module, cellprofiler.modules.identifydeadworms.IdentifyDeadWorms)
 
-    first, second = find_adjacent_by_distance(
-        numpy.zeros(1), numpy.zeros(1), numpy.zeros(1), module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value
+    first, second = module.find_adjacent_by_distance(
+        numpy.zeros(1), numpy.zeros(1), numpy.zeros(1)
     )
     assert len(first) == 1
     assert first[0] == 0
@@ -304,7 +295,7 @@ def test_find_adjacent_by_distance_easy():
     # Break into two groups: 0-4 (5x5) and 5-9 (5x5)
     j[5:] += 10
     a = numpy.zeros(10)
-    first, second = find_adjacent_by_distance(i, j, a, module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value)
+    first, second = module.find_adjacent_by_distance(i, j, a)
     order = numpy.lexsort((second, first))
     first = first[order]
     second = second[order]
@@ -356,7 +347,7 @@ def test_find_adjacent_by_distance_hard():
         #
         unscramble = numpy.zeros(13, int)
         unscramble[scramble] = numpy.arange(13)
-        first, second = find_adjacent_by_distance(i, j, a, module.wants_automatic_distance.value, module.worm_width.value, module.worm_length.value, module.angle_count.value, module.space_distance.value, module.angular_distance.value)
+        first, second = module.find_adjacent_by_distance(i, j, a)
         assert len(first) == 9 + 16 + 25 + 1
         assert len(second) == 9 + 16 + 25 + 1
         for f, s in zip(first, second):

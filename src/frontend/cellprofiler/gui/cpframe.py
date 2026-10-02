@@ -40,6 +40,7 @@ from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
 from .preferences_dialog._preferences_dialog import PreferencesDialog
 from .readers_dialog._readers_dialog import ReadersDialog
+from .plugins_dialog._plugins_dialog import PluginsDialog
 from .preferences_view import PreferencesView
 from .utilities.module_view import stop_validation_queue_thread
 
@@ -119,6 +120,7 @@ ID_FIND_USAGES = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
 ID_OPTIONS_READERS = wx.NewId()
+ID_FILE_PLUGINS = wx.NewId()
 ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
@@ -686,6 +688,11 @@ class CPFrame(wx.Frame):
             "&Preferences...",
             "Set global application preferences",
         )
+        self.__menu_file.Append(
+            ID_FILE_PLUGINS,
+            "&Plugins...",
+            "Manage CellProfiler plugins",
+        )
 
         self.recent_files = wx.Menu()
         self.recent_pipeline_files = wx.Menu()
@@ -915,6 +922,7 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_readers, id=ID_OPTIONS_READERS)
         
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
+        self.Bind(wx.EVT_MENU, self.__on_plugins, id=ID_FILE_PLUGINS)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
         self.Bind(wx.EVT_MENU, self.__on_debug_help, id=ID_DEBUG_HELP)
@@ -1069,6 +1077,11 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_preferences(event):
         dlg = PreferencesDialog()
+        dlg.Show()
+
+    @staticmethod
+    def __on_plugins(event):
+        dlg = PluginsDialog()
         dlg.Show()
 
     def __on_close_all(self, event):

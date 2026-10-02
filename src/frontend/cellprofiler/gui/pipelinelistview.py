@@ -30,6 +30,7 @@ from cellprofiler_core.setting.text import Name
 from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 from cellprofiler_core.setting import Measurement
+from cellprofiler_core.utilities.core.plugins import get_module_display_name
 
 import cellprofiler.gui
 import cellprofiler.gui.figure
@@ -1247,6 +1248,11 @@ class PipelineListCtrl(wx.ScrolledWindow):
             """The module name of the item's module"""
             return self.module.module_name
 
+        @property
+        def display_name(self):
+            """The module name of the item's module, decorated if it's a plugin"""
+            return get_module_display_name(self.module)
+
         def set_state(self, state, state_mask):
             """Set the item's state
 
@@ -1653,7 +1659,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         x0 = self.column_width * 3 + self.slider_width + self.text_gap
         max_width = 0
         for i, item in enumerate(self.items):
-            width, height, _, _ = self.GetFullTextExtent(item.module_name)
+            width, height, _, _ = self.GetFullTextExtent(item.display_name)
             max_width = max(width, max_width)
         total_width = x0 + max_width + self.border * 2 + self.gap + self.text_gap
         height = max((len(self.items) - 1) * self.line_height, 0)
@@ -1824,7 +1830,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
             dc.SetTextForeground(item_text_color)
 
             dc.DrawText(
-                item.module_name,
+                item.display_name,
                 rectangle.GetLeft() + self.text_gap,
                 rectangle.GetTop(),
             )

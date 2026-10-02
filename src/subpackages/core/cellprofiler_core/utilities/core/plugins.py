@@ -31,6 +31,22 @@ OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
 # Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None}.
 PLUGIN_STATUS = {}
 
+# Prepended to a plugin module's display name (GUI only, never to module_name
+# itself, which is also the pipeline-file serialization key).
+PLUGIN_NAME_PREFIX = "\U0001F9E9 "
+
+
+def get_module_display_name(module):
+    """Return a module's display name, decorated if it came from a plugin.
+
+    `module` may be a Module subclass or an instance of one. Does not use
+    or affect `module_name`, which is the pipeline-file serialization key.
+    """
+    name = module.module_name
+    if getattr(module, "is_plugin", False):
+        return PLUGIN_NAME_PREFIX + name
+    return name
+
 
 def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
@@ -180,6 +196,7 @@ def add_module(cp_module):
                 inspect.getfile(cp_module),
             )
         all_modules[name] = cp_module
+        cp_module.is_plugin = True
         from cellprofiler_core.utilities.core.modules import check_module
         check_module(cp_module, name)
         # attempt to instantiate

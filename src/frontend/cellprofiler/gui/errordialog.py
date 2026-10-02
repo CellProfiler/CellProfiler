@@ -445,7 +445,7 @@ def display_error_message(parent, message, title, buttons=None, size=(300, 200))
         sizer.Add(
             wx.StaticBitmap(dlg, bitmap=icon),
             0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL,
+            wx.ALIGN_TOP | wx.ALL,
             10,
         )
         sizer.AddSpacer(10)

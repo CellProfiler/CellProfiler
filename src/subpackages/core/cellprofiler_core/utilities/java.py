@@ -30,9 +30,7 @@ def start_java():
 
     # Add Bio-Formats Java dependency.
     scyjava.config.endpoints.append("ome:formats-gpl")
-    #scyjava.config.endpoints.append("org.scijava:scijava-config")
-    # temp until updated scijava-config brings in the new version
-    scyjava.config.endpoints.append("ch.qos.logback:logback-classic:1.3.15")
+    scyjava.config.endpoints.append("org.scijava:scijava-config")
 
     LOGGER.info("Initializing Java Virtual Machine")
     args = [

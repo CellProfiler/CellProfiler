@@ -1162,7 +1162,7 @@ environments:
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
       - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.3-cp39-cp39-linux_x86_64.whl
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -1309,7 +1309,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -1458,7 +1458,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -1609,7 +1609,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -2454,7 +2454,7 @@ environments:
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
       - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.3-cp39-cp39-linux_x86_64.whl
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -2607,7 +2607,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -2762,7 +2762,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -2919,7 +2919,7 @@ environments:
       - pypi: ./src/frontend
       - pypi: ./src/subpackages/core
       - pypi: ./src/subpackages/library
-      - pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+      - pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
       - pypi: https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/15/e56f351cf6ef1cfea58e6ac226a7318ed1deb2218c4b3cc9bd9e4b786c5a/google_api_core-2.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/19/90d7d4ed51932c022d53f1d02d564b62d10e272692a1f9b76425c1ad2a02/s3transfer-0.16.1-py3-none-any.whl
@@ -7686,7 +7686,7 @@ packages:
   - numpy ; python_full_version >= '3' and python_full_version < '3.12'
   - typing-extensions ; python_full_version < '3.11'
   requires_python: '>=3.9'
-- pypi: git+https://github.com/apposed/appose-python.git?branch=bump-pixi-version#ccdddfeccb10b86e67cd92b1deb7d27a5d639065
+- pypi: git+https://github.com/apposed/appose-python.git#2a11025d0c95517c87ea4fb0b2bebc3fd614fd38
   name: appose
   version: 0.12.1.dev0
   requires_python: '>=3.9'

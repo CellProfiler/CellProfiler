@@ -16,14 +16,21 @@ since the frontend file's own top-level imports are always satisfiable in
 the default environment, it loads like any other plugin.
 """
 
+import atexit
 import pathlib
 import threading
+import time
 
 import appose
 import numpy
 
 _environments = {}
 _environments_lock = threading.Lock()
+
+_services = {}
+_services_lock = threading.Lock()
+
+_CLOSE_TIMEOUT_SECONDS = 5.0
 
 
 def get_environment(env_spec):
@@ -44,8 +51,9 @@ def get_environment(env_spec):
             environment = appose.file(env_spec).build()
             try:
                 # Explicitly target the "default" environment rather than
-                # relying on Appose's bundled `pixi run` to pick one on its
-                # own. If CellProfiler itself is running inside an
+                # relying on Appose's bundled `pixi run` to pick one on its own.
+                # Why?: https://github.com/prefix-dev/pixi/issues/7170
+                # TL;DR: If CellProfiler itself is running inside an
                 # activated, named pixi environment (e.g. this repo's own
                 # `dev` environment), `PIXI_IN_SHELL`/`PIXI_ENVIRONMENT_NAME`
                 # leak into that subprocess and pixi tries to find a
@@ -57,6 +65,133 @@ def get_environment(env_spec):
                 pass
             _environments[env_spec] = environment
         return environment
+
+
+def _start_as_daemon(service):
+    """
+    Start `service`'s worker process from within a short-lived daemon
+    thread, instead of directly on the calling thread.
+
+    Why:
+    For more details see: https://github.com/apposed/appose/issues/37
+    Appose's `Service.start()` launches the worker subprocess and
+    spawns its stdout/stderr/monitor plumbing as plain `threading.Thread`s,
+    with no `daemon=` argument - so each one inherits the daemon flag of
+    *whichever thread constructs it* (standard `threading.Thread` behavior:
+    `daemon=None` means "same as `threading.current_thread().daemon`").
+    Called directly from a normal (non-daemon) thread - e.g. CellProfiler's
+    main GUI thread - those threads come out non-daemon too.
+
+    That matters because CPython's interpreter shutdown joins all
+    non-daemon threads *before* running `atexit` callbacks. Appose's
+    reader threads only return once the worker subprocess's pipes hit EOF,
+    i.e. once something has told the worker to exit - but if that "someone"
+    is an `atexit` callback (as with `close_service` below), it never gets
+    scheduled, because the thread-join step it would need to unblock is
+    already stuck. The result is an unconditional, permanent hang at
+    process exit, with no exception and no log output.
+
+    Running `service.start()` from a thread that is itself a daemon makes
+    every thread it transitively creates a daemon too, by the same
+    inheritance rule. Daemon threads are abandoned (not joined) at
+    interpreter exit, so this makes the hang structurally impossible -
+    with or without `close_service()`/`atexit` ever getting a chance to run.
+    `close_service()` remains worthwhile on top of this, purely to avoid
+    leaking the worker subprocess itself (and anything it spawned) when a
+    service is never explicitly closed.
+    """
+    thread = threading.Thread(target=service.start, daemon=True)
+    thread.start()
+    thread.join()
+
+
+def get_service(env_spec):
+    """
+    Start (or reuse a cached) persistent Appose Python service for the
+    environment built from `env_spec`.
+
+    Unlike `run_python_task`'s default fresh-service-per-call behavior, a
+    service returned here stays alive across many calls, so a worker script
+    using `task.export(...)` (see `run_python_task`'s docstring) can keep an
+    expensive resource - a loaded ML model, for instance - warm in the
+    worker process between calls instead of re-creating it every time.
+
+    Callers are responsible for eventually passing this same `env_spec` to
+    `close_service()` once the service is no longer needed (e.g. a module's
+    `post_run`), to avoid leaking its worker subprocess. A service left open
+    is also closed automatically at process exit - see `close_service()`
+    for why this is a bounded operation, and `_start_as_daemon()` for why
+    failing to close a service can no longer hang CellProfiler itself.
+    """
+    env_spec = str(pathlib.Path(env_spec).resolve())
+    with _services_lock:
+        service = _services.get(env_spec)
+        if service is None or not service.is_alive():
+            service = get_environment(env_spec).python()
+            _start_as_daemon(service)
+            atexit.register(close_service, env_spec)
+            _services[env_spec] = service
+        return service
+
+
+def close_service(env_spec, timeout=_CLOSE_TIMEOUT_SECONDS):
+    """
+    Close a persistent service previously obtained via `get_service()` for
+    the same `env_spec`, if one is cached. Safe to call even if no service
+    was ever created for this spec, or if it's already been closed.
+
+    Asks the worker process to shut down gracefully (by closing its stdin),
+    waits up to `timeout` seconds, then force-kills it (and any descendant
+    processes - see `_kill_process_tree()`) if it's still alive.
+
+    Why?: https://github.com/apposed/appose/issues/37
+    TL;DR: This bound matters because Appose's `Service` runs its
+    stdout/stderr/ monitor plumbing on plain, non-daemon threads,
+    which only return once the worker process's pipes hit EOF -
+    i.e. once the worker has actually exited.
+    CellProfiler's own process (the GUI in particular) cannot fully
+    exit until those threads do. A worker that is slow to tear down (e.g.
+    unloading a model, releasing a GPU context) or still mid-task would
+    otherwise translate directly into an indefinite hang on quit rather than
+    a graceful exit, so this function never waits unboundedly - it always
+    kills the worker rather than risking that.
+    """
+    env_spec = str(pathlib.Path(env_spec).resolve())
+    with _services_lock:
+        service = _services.pop(env_spec, None)
+    if service is None or not service.is_alive():
+        return
+    service.close()
+    deadline = time.monotonic() + timeout
+    while service.is_alive() and time.monotonic() < deadline:
+        time.sleep(0.05)
+    if service.is_alive():
+        # NOTE: service._process is the *immediate* child only.
+        # Appose's PixiBuilder invokes `pixi run ... python -c "...python_worker..."`
+        # and that's the wrapper, not the actual worker - Service.kill() alone
+        # would leave the real worker running as an orphan indefinitely.
+        _kill_process_tree(service._process.pid)
+    service.wait_for()
+
+
+def _kill_process_tree(pid):
+    """
+    Force-kill the process `pid` and all of its descendants.
+    """
+    import psutil
+
+    try:
+        parent = psutil.Process(pid)
+    except psutil.NoSuchProcess:
+        return
+    procs = parent.children(recursive=True)
+    procs.append(parent)
+    for proc in procs:
+        try:
+            proc.kill()
+        except psutil.NoSuchProcess:
+            pass
+    psutil.wait_procs(procs, timeout=_CLOSE_TIMEOUT_SECONDS)
 
 
 def _to_ndarray(value):
@@ -76,10 +211,40 @@ def _from_ndarray(value):
     return array
 
 
-def run_python_task(environment, script, inputs=None):
+def run_python_task(script, inputs=None, environment=None, service=None):
     """
-    Run `script` to completion in a new Python service backed by
-    `environment`, passing `inputs` and returning the task's outputs.
+    Run `script` to completion in a Python service, passing `inputs` and
+    returning the task's outputs. Exactly one of `environment` or `service`
+    must be given.
+
+    By default, pass `environment` (as returned by `get_environment()`): a
+    fresh `environment.python()` service is started for this call alone and
+    shut down before returning - the simplest, safest option, at the cost of
+    paying for a new worker process (and, for model-based plugins, a fresh
+    model load) every time. For a module invoked once per image set in a
+    real pipeline run, this can be the dominant cost.
+
+    To amortize that cost, pass `service` (as returned by `get_service()`)
+    instead: it is reused as-is (not closed) across calls, so the worker
+    process, its imports, and anything it caches all survive between them.
+    To actually keep an expensive resource warm across calls, the worker
+    script must opt in explicitly with `task.export(name=value)` - plain
+    variables/imports in the script do NOT automatically persist to the
+    next call, since each task resets its global name space to only
+    `task` plus whatever was previously exported. A typical pattern in a
+    worker script:
+
+        _model_cache_key = (model_name, weights_path)
+        if globals().get("_cache_key") != _model_cache_key:
+            _model = load_model(model_name, weights_path)
+            task.export(_cache_key=_model_cache_key, _model=_model)
+        # ... use `_model` ...
+
+    recomputing/re-exporting only when the relevant settings actually
+    change, so settings edits (e.g. in the GUI's test/debug mode, which
+    reuses the same module instance and the same service across repeated,
+    manually-triggered runs) are picked up correctly instead of silently
+    using a stale cached resource.
 
     Any `numpy.ndarray` values in `inputs` are copied into Appose shared
     memory so the worker process can read them without a serialization
@@ -95,6 +260,9 @@ def run_python_task(environment, script, inputs=None):
     Raises `appose.service.TaskException` if the worker-side script fails,
     is canceled, or the worker process crashes.
     """
+    if (environment is None) == (service is None):
+        raise ValueError("Pass exactly one of `environment` or `service`")
+
     ndarray_inputs = []
 
     def convert_input(value):
@@ -107,14 +275,20 @@ def run_python_task(environment, script, inputs=None):
     converted_inputs = {
         key: convert_input(value) for key, value in (inputs or {}).items()
     }
+
+    def run_task(python_env):
+        task = python_env.task(script, inputs=converted_inputs)
+        task.wait_for()
+        return {
+            key: _from_ndarray(value) if isinstance(value, appose.NDArray) else value
+            for key, value in task.outputs.items()
+        }
+
     try:
+        if service is not None:
+            return run_task(service)
         with environment.python() as python_env:
-            task = python_env.task(script, inputs=converted_inputs)
-            task.wait_for()
-            return {
-                key: _from_ndarray(value) if isinstance(value, appose.NDArray) else value
-                for key, value in task.outputs.items()
-            }
+            return run_task(python_env)
     finally:
         for ndarray in ndarray_inputs:
             ndarray.shm.dispose()

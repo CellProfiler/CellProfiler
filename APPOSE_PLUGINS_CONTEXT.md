@@ -58,10 +58,17 @@ architectural quarantine, not a flag CellProfiler has to check for — no
 3. **Worker glue dispatch**: rather than baking per-call string
    substitution into the glue appended to a plugin's `_worker.py` (as the
    original PixelShuffle POC did), pass a plain string/scalar `model` (or
-   similar) task input and have a static, module-level glue epilogue
-   `if`/`elif` branch on it at runtime. The glue string itself is then
-   computed once at import time instead of being rebuilt per `run()` call.
-   See `cellcast.py` for the pattern.
+   similar) task input and dispatch on it at runtime. The glue string is
+   then computed once at import time instead of being rebuilt per `run()`
+   call. As of `RunCellcast`'s current form, the dispatch `if`/`elif`
+   itself lives in `_worker.py` (a `get_model_scaffold(...)` function
+   returning a `{"cache_key", "init", "predict_labels"}` dict), while the
+   epilogue appended in `cellcast.py` is fully generic Appose plumbing
+   (NDArray marshaling + the `_get_cached_model` caching helper, see
+   "Persistent services" below) that calls whatever scaffold dict
+   `_worker.py` hands back. See `cellcast.py`/`cellcast/_worker.py` for the
+   pattern — this generic epilogue shape is a good candidate to eventually
+   factor out per open question 1 below.
 
 ## Per-plugin file layout convention
 
@@ -86,12 +93,13 @@ active_plugins/<name>/_worker.py    # pure processing function(s); never importe
   need to match. If a dependency isn't on conda-forge, declare it under
   `[pypi-dependencies]` instead — this now works fine (see Gotchas, pixi
   version).
-- `<name>/_worker.py`: pure functions, zero `cellprofiler_core` imports —
-  this file is read as **plain text** by the frontend `.py` file and
-  concatenated with a small inline "glue" epilogue (see design decision #3
-  above) that converts the raw input `appose.NDArray` to a numpy array,
-  dispatches to the right worker function, wraps the result back into a
-  fresh `NDArray`, and assigns it to `task.outputs["<key>"]`.
+- `<name>/_worker.py`: pure functions (plus, per the current `RunCellcast`
+  shape, the per-case dispatch itself — see design decision #3), zero
+  `cellprofiler_core` imports. This file is read as **plain text** by the
+  frontend `.py` file and concatenated with a small inline "glue" epilogue
+  that converts the raw input `appose.NDArray` to a numpy array, calls into
+  `_worker.py`'s dispatch, wraps the result back into a fresh `NDArray`,
+  and assigns it to `task.outputs["<key>"]`.
 
 ## Reference implementation: `RunCellcast`
 
@@ -125,15 +133,68 @@ its own docstrings cover the API). Key behaviors to remember:
   `Environment` from a spec file, and tries `environment.activate("default")`
   (swallowing `NotImplementedError` for builders that don't support named
   sub-environments) — see Gotcha 2 below for why.
-- `run_python_task(environment, script, inputs=None)` copies any
-  `numpy.ndarray` inputs into Appose shared memory, runs `script` in a
-  **fresh** `environment.python()` service, copies any `appose.NDArray`
-  outputs back into plain numpy arrays, and releases all shared memory
-  before returning (see Open Questions for the "fresh service per call"
-  performance tradeoff).
-- Both only use the oldest-common-denominator Appose `NDArray` API (manual
-  `appose.NDArray(dtype=..., shape=...)` construct + `.ndarray()`) — see
-  Gotcha 1.
+- `get_service(env_spec)` / `close_service(env_spec)` start (or reuse a
+  cached) **persistent** `environment.python()` service — i.e. a worker
+  process that stays alive across many calls, instead of one per call. See
+  "Persistent services" below.
+- `run_python_task(script, inputs=None, environment=None, service=None)`
+  copies any `numpy.ndarray` inputs into Appose shared memory, runs `script`
+  against either a fresh `environment.python()` service (pass
+  `environment`) or a reused one (pass `service`), copies any
+  `appose.NDArray` outputs back into plain numpy arrays, and releases all
+  shared memory before returning.
+- All of the above only use the oldest-common-denominator Appose `NDArray`
+  API (manual `appose.NDArray(dtype=..., shape=...)` construct +
+  `.ndarray()`) — see Gotcha 1.
+
+## Persistent services (performance)
+
+A fresh service per call is simplest but pays for a new worker process —
+and, for model-based plugins, a fresh model load — on every image set.
+`get_service()`/`close_service()` plus `run_python_task(..., service=...)`
+let a plugin reuse one long-lived worker process across calls instead.
+
+Reusing the *process* is automatic once you pass `service=` instead of
+`environment=`. Reusing an expensive *resource inside* that process (e.g. a
+loaded model) is not automatic — each task's script starts with a fresh
+global namespace containing only `task` plus whatever a previous task
+explicitly persisted via `task.export(name=value)`. `RunCellcast`'s glue
+(`cellcast.py`'s `_get_cached_model` helper) shows the pattern: compute a
+cache key from whatever settings actually affect model construction, check
+it against `globals().get("_cellcast_cache_key")`, and only rebuild +
+re-export when it differs. This way a settings change (including one made
+interactively in GUI test/debug mode, which reruns the same module instance
+and reuses the same service) is still picked up correctly instead of
+silently serving stale results. Measured effect for `RunCellcast`: first
+call ~0.57s (service start + model build), subsequent calls with an
+unchanged cache key ~0.03s.
+
+Lifecycle, across CellProfiler's three execution modes (see
+`cellprofiler_core/module/_module.py` for the hooks referenced below):
+
+- **Headless** and **GUI run mode's main process**: `Module.prepare_run`/
+  `post_run` run once per whole pipeline run, so `post_run` is a correct
+  place to call `close_service()`. `RunCellcast.post_run` does this.
+- **GUI run mode's worker subprocesses** (where `Module.run` — and
+  therefore the plugin's actual service — lives): workers are long-lived
+  OS subprocesses that process many jobs over the analysis's lifetime,
+  reusing the same deserialized `Module` instance throughout, which is
+  exactly what makes caching worthwhile here. But `prepare_run`/`post_run`
+  are **never called inside a worker process** — only in the GUI's main
+  process, which holds a *different* `Module` instance. There is no
+  teardown hook reachable from worker-local module code at all, so cleanup
+  here relies entirely on `get_service()`'s `atexit.register(close_service,
+  env_spec)` firing when the worker process itself exits (normal end of
+  analysis, or a crash) — see Gotcha 5 for why `close_service()` has to be
+  a *bounded*, tree-aware kill rather than a graceful `service.close()`.
+- **GUI test/debug mode**: never calls `prepare_run`/`post_run` either, and
+  reruns the same module instance (so the same cached service) arbitrarily,
+  including after settings edits. Caching still works and self-invalidates
+  correctly (same mechanism as above), but nothing ever explicitly calls
+  `close_service()` in this mode until the process exits — same
+  atexit-only cleanup story as the worker case above, and the same reason
+  Gotcha 5's bound matters here too (this is literally the mode where the
+  original hang-on-quit bug was discovered).
 
 ## Gotchas discovered (load-bearing, re-derive-costly — don't rediscover)
 
@@ -204,6 +265,106 @@ pin to an old commit/branch, and if `[pypi-dependencies]`-based plugin
 environments ever start failing with the same "unexpected end of file"
 symptom again, check this pin first before assuming it's a new bug.
 
+### 5. A persistent `Service`'s own threads can deadlock CellProfiler's quit sequence — `atexit` alone cannot fix this
+
+Symptom: quitting the CellProfiler GUI (after using a persistent-service
+plugin like `RunCellcast`) hung indefinitely until force-killed from the
+shell. A first fix attempt — making `close_service()` bounded and
+process-tree-aware (see below) and registering it via
+`atexit.register(close_service, env_spec)` in `get_service()` — did not
+resolve it. Root cause has two parts, confirmed independently of
+CellProfiler via a standalone, Appose-only MCVE (see below) before being
+fixed here.
+
+**Part 1 (the actual hang, dominant cause): `atexit` runs too late to help.**
+Appose's `Service` runs its stdout/stderr/monitor plumbing on plain,
+non-daemon `threading.Thread`s (`appose/service.py`'s `start()`). CPython's
+interpreter shutdown (`Py_FinalizeEx`) joins **all non-daemon threads**
+(`wait_for_thread_shutdown()`) **before** running `atexit` callbacks
+(`call_py_exitfuncs()`) — confirmed empirically with a minimal, non-Appose
+script. Appose's reader threads only return once the worker's pipes hit
+EOF, i.e. once something has told the worker to exit. If that "something"
+is an `atexit` callback (the standard, idiomatic place to put this kind of
+cleanup — and exactly what `get_service()` does), it **never gets
+scheduled**, because the thread-join step it would need to unblock is
+already stuck, waiting for it. Any caller that registers `atexit.register`
+to close a still-open `Service` hits this — it is not specific to
+`PixiBuilder`, pixi, or cellcast. The result is a permanent hang with no
+exception and no log output, as opposed to a bounded delay.
+
+**Part 2 (compounding, only matters once something does call `close()`):**
+For a `PixiBuilder`-built environment, the worker is launched as `pixi run
+--manifest-path ... python -c "...python_worker..."` — Appose's
+`Service._process` is the **`pixi` wrapper**, not the actual
+`python_worker` process `pixi` spawns as its child. Confirmed via `psutil`:
+calling `Service.kill()` only kills the wrapper; the real worker survives
+as an orphan (reparented to pid 1) and keeps running until it finishes
+whatever task it was mid-execution on (if ever) and only then notices
+stdin EOF.
+
+**Fix applied**, in `cellprofiler_core/utilities/appose.py`:
+
+- `get_service()` now starts the service via a new `_start_as_daemon()`
+  helper instead of calling `service.start()` directly: it runs
+  `service.start()` from inside a short-lived daemon thread. Since
+  `threading.Thread(daemon=None)` (Appose's default - it never passes
+  `daemon=`) inherits the daemon flag of *whichever thread constructs it*,
+  every thread Appose creates transitively - its three I/O threads included
+  - comes out daemon too. Daemon threads are **abandoned, not joined**, at
+  interpreter exit, so the Part 1 deadlock is now structurally impossible,
+  regardless of whether anything ever calls `close()`/whether `atexit` gets
+  a chance to run. This is the real fix for the hang itself.
+- `close_service()` is still bounded and process-tree-aware (closes
+  gracefully, waits up to `_CLOSE_TIMEOUT_SECONDS` = 5s, then force-kills
+  via `_kill_process_tree()`, which uses `psutil` — already a
+  `cellprofiler-core` dependency — to enumerate and kill `Service._process`
+  and all its descendants, not just the immediate child). This remains
+  worthwhile purely to avoid *leaking* the worker subprocess (Part 2) when
+  a service is never explicitly closed — and now that Part 1's deadlock is
+  gone, `atexit`-triggered calls to it actually get to run.
+
+Verified together: a service with a 30s task in flight, cleaned up via
+`atexit` only (no explicit `close()`/`post_run` call anywhere in the test),
+exits with code 0 in ~8s total, with zero surviving processes afterward
+(checked via `ps aux | grep python_worker` immediately after exit) — versus
+hanging forever (confirmed via `timeout`, process never exited) before this
+fix.
+
+**Standalone MCVE** (no CellProfiler involved): a bare pixi project
+(`python` + `appose` + `psutil`, all conda-forge) at
+`appose-hang-mcve/{pixi.toml,repro.py}` (built during this session; ask for
+its current location/to have it re-created if it's no longer on disk - it
+lived under a session scratch directory) with five `pixi run
+scenario-{a,b,c,d,e}` targets:
+- **a**: open a service, run one task, return without closing it →
+  process hangs forever at exit (`timeout` has to kill it); the real worker
+  survives untouched as an orphan unless manually killed afterward.
+- **b**: a long task in flight, shut down using only Appose's *documented*
+  public API (`close()`, wait, `kill()`) → two compounding problems:
+  `kill()` only signals the `pixi` wrapper, never the real worker; and even
+  though `close()` *does* reach the real worker (same inherited stdin pipe)
+  and its read loop returns promptly, the worker process still can't exit
+  until the in-flight task finishes, because the task runs on its own
+  non-daemon thread (`python_worker.py`'s per-task thread) that the
+  worker's own interpreter shutdown must join first - the same root cause
+  as scenario c, one level deeper. `wait_for()` doesn't return until
+  close to the task's full duration, not shortly after `kill()`.
+- **c**: same long task, cleaned up via `atexit.register` only (the
+  idiomatic pattern) → hangs forever; the atexit callback's own print
+  statement never fires, proving `atexit` never ran at all - the one that
+  actually matters for the hang this session chased down.
+- **d**: identical to **c**, except `service.start()` is called from a
+  daemon thread first → exits in ~1s, `atexit` callback fires correctly
+  (confirms the fix we applied in `_start_as_daemon()`).
+- **e**: identical to **b**, but after `close()` the real worker PID (found
+  via `psutil`, not any public API) is SIGKILL-ed directly instead of/in
+  addition to `service.kill()` → `wait_for()` returns in well under a
+  second regardless of remaining task duration, confirming scenario b's
+  delay is attributable entirely to the real worker process, not the
+  wrapper.
+
+Filed upstream: <https://github.com/apposed/appose/issues/37>.
+
 ## Existing reference code in CellProfiler-plugins (pre-existing, not ours)
 
 In `CellProfiler-plugins/CP5/active_plugins/`:
@@ -217,16 +378,7 @@ In `CellProfiler-plugins/CP5/active_plugins/`:
 
 ## Open questions / not yet decided
 
-1. **Service lifecycle / performance**: `run_python_task` currently opens a
-   **fresh** `environment.python()` service per call (simplest, safest
-   resource semantics). For a plugin processing many image sets in a real
-   pipeline run, this means a fresh process (and, for model-based plugins
-   like cellcast, a fresh model load) per image, which may be too slow.
-   Keeping one persistent `Service` alive for a module instance's lifetime
-   would need a CellProfiler module lifecycle hook to close it at the end
-   of a run (not investigated — look at whether `Module` has something
-   like `post_run`/`on_deactivated`).
-2. **Worker glue templating**: the per-plugin glue (convert input `NDArray`
+1. **Worker glue templating**: the per-plugin glue (convert input `NDArray`
    → numpy → dispatch to worker function(s) → wrap output back into
    `NDArray` → assign to `task.outputs[...]`) is still hand-written per
    plugin, appended as a string onto its `_worker.py` source. `cellcast.py`

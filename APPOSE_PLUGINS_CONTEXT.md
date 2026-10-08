@@ -387,7 +387,7 @@ downloading/configuring plugins, backed by discovery/loading logic in
 `PLUGIN_STATUS`, `get_plugin_statuses()`). Three improvements are planned
 on top of that dialog. Design decisions below — implement in this order.
 
-### Project 1: stop listing shadowed/superseded official plugins
+### Project 1: stop listing shadowed/superseded official plugins — done
 
 **Problem**: `_plugin_directories()` returns `[user_dir, official_dir]`.
 `load_plugin(source)` skips re-importing `source` if
@@ -426,7 +426,7 @@ effective plugin name, full stop.
   `get_plugin_directory()` / `get_official_plugins_directory()`) rather
   than from which loop iteration produced it.
 
-### Project 2: mark + prebuild appose-backed plugins
+### Project 2: mark + prebuild appose-backed plugins — done
 
 **Problem**: no way today to tell, from the dialog, that a plugin (like
 `RunCellcast`) launches a separate Appose-managed subprocess/environment —
@@ -442,24 +442,74 @@ environment spec file — e.g., in `cellcast.py`:
         appose_env_spec = _ENV_SPEC
         ...
 
-**Plan**:
-- `add_module()` (in `plugins.py`) reads
-  `getattr(cp_module, "appose_env_spec", None)` right after a successful
-  load and records it in `PLUGIN_STATUS[source]["appose_env_spec"]`.
-- `PluginsDialog` shows a distinct icon for rows where this is set, and
-  adds a "Build environment" button (enabled only when the selected row has
-  one) that calls `cellprofiler_core.utilities.appose.get_environment(
-  spec_path)` on a background thread (same pattern as the dialog's existing
-  official-plugins download flow), so the build is driven through the same
-  in-process cache the plugin's own `run()` will hit later — a build
-  triggered from the dialog is "warm" for the plugin's first real
+**Implemented** (`cellprofiler_core/utilities/core/plugins.py`,
+`gui/plugins_dialog/_plugins_dialog.py`, `cellcast.py`):
+
+- `load_plugin()` (not `add_module()` — it already has `plugin_class` in
+  scope, no need to thread anything new through `add_module`'s return
+  value) reads `getattr(plugin_class, "appose_env_spec", None)` right after
+  a successful `Module` load and records it as
+  `PLUGIN_STATUS[source]["appose_env_spec"]` (always `None` for readers and
+  failed/unattempted entries — see the updated `PLUGIN_STATUS` docstring
+  comment at the top of the file).
+- `PluginsDialog` gained a second icon column (column 1, between the
+  existing status icon and the "Plugin" name column): `IMG_UPDATE.png` when
+  `appose_env_spec` is set, otherwise a fully transparent blank bitmap
+  (`wx.Image(16, 16)` + `InitAlpha()` + all-zero alpha) — a real
+  `SetItemColumnImage` icon rather than a text/emoji prefix, consistent
+  with the existing status-icon column's approach.
+- A "Build Environment" button next to "Get Info...", enabled only when the
+  selected row has an `appose_env_spec`. Calls
+  `cellprofiler_core.utilities.appose.get_environment(spec_path)` on a
+  background `threading.Thread` (mirrors the dialog's existing
+  official-plugins download flow: `wx.CallAfter` back to the main thread
+  when done), so the build goes through the same in-process
+  `_environments` cache the plugin's own `run()` will hit later — a build
+  triggered from the dialog is actually warm for the plugin's first real
   pipeline run, not a separate, redundant build.
 - No separate "force rebuild" action: Appose/pixi's `build()` is already
   incremental (a fast no-op if the spec is unchanged and already resolved,
   a real rebuild if the spec changed), so one button covers both "build in
   advance" and "rebuild".
-- Retrofit `cellcast.py` with `appose_env_spec = _ENV_SPEC` as part of this
-  project (it's currently the only plugin this would apply to).
+- `cellcast.py`'s `RunCellcast` now declares `appose_env_spec = _ENV_SPEC`
+  (it's currently the only plugin this applies to).
+
+Verified by constructing `PluginsDialog` directly (headless `wx.App()`,
+no event loop) after a real `load_plugins()`: `cellcast`'s row correctly
+carries its real `cellcast/pixi.toml` path and `loaded: True`; every other
+plugin shows `appose_env_spec: None`. Selecting the `cellcast` row enables
+"Build Environment"; selecting any other plugin's row keeps it disabled.
+With `get_environment` monkeypatched to a no-op stub, clicking "Build
+Environment" on the `cellcast` row calls it with exactly `cellcast`'s
+resolved `pixi.toml` path and updates the status label to "Environment for
+cellcast is up to date." New/updated tests in
+`tests/core/utilities/core/test_plugins.py` cover the `appose_env_spec`
+capture at the `PLUGIN_STATUS`/`get_plugin_statuses()` level.
+
+**Follow-ups from review (2026-10-08), also implemented**:
+- `appose_env_spec` detection isn't Module-only: `load_plugin()`'s Reader
+  branch now also reads `getattr(plugin_class, "appose_env_spec", None)`
+  (previously hardcoded to `None`), even though no Reader plugin uses it
+  yet — there's no architectural reason a Reader couldn't run via Appose
+  too, so the dialog/icon/build-button machinery supports it uniformly.
+- The new icon column is now labeled ("Appose" header, column widened to
+  60px from the original icon-only 28px) instead of being header-less like
+  column 0.
+- **Not implemented, by design**: an indicator for "has this environment
+  already been built" (as distinct from "is it up to date", which Project
+  2 already treats as irrelevant — we always want `build()`'s own
+  incremental sync to run on every real use regardless). Appose has no
+  public API for this. The only way to know an environment's resolved
+  directory ahead of calling `build()` is `Builder._resolve_env_dir()`
+  (private; falls back to `Path(appose_envs_dir()) / scheme.env_name(content)`
+  when no explicit name/base was set, which is also true of every path
+  reachable from this codebase's `get_environment()`/`appose.file(path)`
+  usage). `appose_envs_dir()` and `scheme.env_name()` are themselves public,
+  so the check is *reconstructible*, but only by duplicating Appose's
+  private default-naming algorithm outside of Appose itself — fragile by
+  construction, since nothing obligates that algorithm to stay stable
+  across Appose releases. Deliberately not implemented; flagged for the
+  user to file upstream if wanted, rather than hacked around here.
 
 ### Project 3: per-module safety/trust warning banner
 

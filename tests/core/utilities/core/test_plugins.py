@@ -103,28 +103,72 @@ class TestPlugins:
         (tmp_path / "badplugin.py").write_text(bad_source)
 
         monkeypatch.syspath_prepend(str(tmp_path))
+        monkeypatch.setattr(plugins, "_plugin_directories", lambda: [str(tmp_path)])
         try:
-            plugins.load_plugin("goodplugin")
-            plugins.load_plugin("badplugin")
+            plugins.load_plugin("goodplugin", directory=str(tmp_path))
+            plugins.load_plugin("badplugin", directory=str(tmp_path))
 
             good_status = plugins.PLUGIN_STATUS["goodplugin"]
-            assert good_status == {"loaded": True, "kind": "module", "error": None}
+            assert good_status == {
+                "loaded": True,
+                "kind": "module",
+                "error": None,
+                "directory": str(tmp_path),
+            }
 
             bad_status = plugins.PLUGIN_STATUS["badplugin"]
             assert bad_status["loaded"] is False
             assert bad_status["kind"] is None
             assert "this_module_does_not_exist_anywhere" in bad_status["error"]
+            assert bad_status["directory"] == str(tmp_path)
 
-            statuses = {s["name"]: s for s in plugins.get_plugin_statuses(str(tmp_path))}
+            statuses = {s["name"]: s for s in plugins.get_plugin_statuses()}
             assert statuses["goodplugin"]["loaded"] is True
             assert statuses["badplugin"]["loaded"] is False
 
             # A second call should skip the already-loaded plugin rather than
             # re-registering it (which would log a "multiple definitions" warning).
-            plugins.load_plugin("goodplugin")
+            plugins.load_plugin("goodplugin", directory=str(tmp_path))
             assert cellprofiler_core.constants.modules.all_modules["SomeTestModule"].__name__ == "SomeTestModule"
         finally:
             for name in ("goodplugin", "badplugin"):
                 plugins.PLUGIN_STATUS.pop(name, None)
                 sys.modules.pop(name, None)
             cellprofiler_core.constants.modules.all_modules.pop("SomeTestModule", None)
+
+    def test_get_plugin_statuses_hides_shadowed_official_plugin(self, tmp_path, monkeypatch):
+        user_dir = tmp_path / "user"
+        official_dir = tmp_path / "official"
+        user_dir.mkdir()
+        official_dir.mkdir()
+
+        module_source = (
+            "from cellprofiler_core.module import Module\n\n"
+            "class Shared(Module):\n"
+            "    module_name = 'Shared'\n"
+            "    category = 'Other'\n"
+            "    variable_revision_number = 1\n\n"
+            "    def create_settings(self):\n"
+            "        pass\n\n"
+            "    def settings(self):\n"
+            "        return []\n\n"
+            "    def run(self, workspace):\n"
+            "        pass\n"
+        )
+        (user_dir / "shared.py").write_text(module_source)
+        (official_dir / "shared.py").write_text(module_source)
+
+        monkeypatch.setattr(
+            plugins, "_plugin_directories", lambda: [str(user_dir), str(official_dir)]
+        )
+        try:
+            plugins.load_plugins()
+
+            statuses = [s for s in plugins.get_plugin_statuses() if s["name"] == "shared"]
+            assert len(statuses) == 1
+            assert statuses[0]["loaded"] is True
+            assert statuses[0]["directory"] == str(user_dir)
+        finally:
+            plugins.PLUGIN_STATUS.pop("shared", None)
+            sys.modules.pop("shared", None)
+            cellprofiler_core.constants.modules.all_modules.pop("Shared", None)

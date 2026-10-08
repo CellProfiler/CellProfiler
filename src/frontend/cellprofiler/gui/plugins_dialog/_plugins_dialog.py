@@ -109,17 +109,23 @@ class PluginsDialog(wx.Dialog):
     def populate_list(self):
         self.list_ctrl.DeleteAllItems()
         self.rows = []
-        sources = []
         user_directory = get_plugin_directory()
-        if user_directory and os.path.isdir(user_directory):
-            sources.append(("User", user_directory))
         official_directory = get_official_plugins_directory()
-        if os.path.isdir(official_directory):
-            sources.append(("Official", official_directory))
-        for source_label, directory in sources:
-            for status in get_plugin_statuses(directory):
-                self.add_row(source_label, status)
+        for status in get_plugin_statuses():
+            source_label = self._source_label(status["directory"], user_directory, official_directory)
+            self.add_row(source_label, status)
         self.get_info_button.Disable()
+
+    @staticmethod
+    def _source_label(directory, user_directory, official_directory):
+        if directory is None:
+            return "Unknown"
+        real = os.path.realpath(directory)
+        if user_directory and real == os.path.realpath(user_directory):
+            return "User"
+        if real == os.path.realpath(official_directory):
+            return "Official"
+        return "Unknown"
 
     def add_row(self, source_label, status):
         row_index = self.list_ctrl.GetItemCount()

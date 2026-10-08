@@ -28,7 +28,14 @@ OFFICIAL_PLUGINS_REPO_ZIP_URL = (
 OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
 
 # Per-plugin load status, keyed by plugin source name (as returned by plugin_list).
-# Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None}.
+# Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None,
+# "directory": str|None} - "directory" is whichever plugin directory this name was
+# actually last attempted from. If the same name exists in more than one plugin
+# directory, only the highest-priority one that successfully loads is ever
+# attempted (see load_plugin's skip-guard, and _plugin_directories for priority
+# order) - so this dict only ever holds one entry per name, reflecting whichever
+# attempt is actually responsible for that name's current state, never a
+# shadowed/superseded one.
 PLUGIN_STATUS = {}
 
 # Prepended to a plugin module's display name (GUI only, never to module_name
@@ -103,10 +110,30 @@ def download_official_plugins_repo():
     return get_official_plugins_directory()
 
 
-def get_plugin_statuses(directory):
+def get_plugin_statuses():
+    """
+    Return one status entry per plugin *name* found across all plugin
+    directories (see _plugin_directories), merging in PLUGIN_STATUS where
+    available. A name present in more than one directory (e.g. a user
+    plugin shadowing a same-named official one) still produces exactly one
+    entry, reflecting whichever directory's attempt is actually responsible
+    for that name's current state - never a separate entry for the
+    shadowed/superseded one.
+    """
+    default_directory_by_name = {}
+    for directory in _plugin_directories():
+        for name in plugin_list(directory):
+            default_directory_by_name.setdefault(name, directory)
     statuses = []
-    for name in sorted(plugin_list(directory)):
-        status = PLUGIN_STATUS.get(name, {"loaded": False, "kind": None, "error": None})
+    for name in sorted(default_directory_by_name):
+        status = PLUGIN_STATUS.get(name)
+        if status is None:
+            status = {
+                "loaded": False,
+                "kind": None,
+                "error": None,
+                "directory": default_directory_by_name[name],
+            }
         statuses.append({"name": name, **status})
     return statuses
 
@@ -132,12 +159,12 @@ def load_plugins(modules_only=False):
         sys.path.insert(0, plugin_directory)
         try:
             for plugin in plugin_list(plugin_directory):
-                load_plugin(plugin, modules_only=modules_only)
+                load_plugin(plugin, directory=plugin_directory, modules_only=modules_only)
         finally:
             sys.path = old_path
 
 
-def load_plugin(source, modules_only=False):
+def load_plugin(source, directory=None, modules_only=False):
     if PLUGIN_STATUS.get(source, {}).get("loaded"):
         return
     try:
@@ -148,18 +175,18 @@ def load_plugin(source, modules_only=False):
         for name, plugin_class in available_classes:
             if issubclass(plugin_class, Module):
                 loaded, error = add_module(plugin_class)
-                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "module", "error": error}
+                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "module", "error": error, "directory": directory}
                 break
             elif modules_only:
                 continue
             elif issubclass(plugin_class, Reader):
                 loaded, error = add_reader(plugin_class)
-                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "reader", "error": error}
+                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "reader", "error": error, "directory": directory}
                 break
         else:
             message = f"Could not find Module{' or Reader' if not modules_only else ''} class in {m.__file__}"
             LOGGER.warning(message)
-            PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": message}
+            PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": message, "directory": directory}
     except Exception as e:
         tb = traceback.format_exc()
         if not modules_only:
@@ -179,7 +206,7 @@ def load_plugin(source, modules_only=False):
             except Exception:
                 pass
         LOGGER.warning("Could not load %s", source, exc_info=False)
-        PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": tb}
+        PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": tb, "directory": directory}
         return
 
 

@@ -376,6 +376,134 @@ In `CellProfiler-plugins/CP5/active_plugins/`:
   pattern — not kept as real plugins. `cellcast.py` (see above) is the
   first one that landed for real.
 
+## Plugin management dialog: three follow-on projects (2026-10-08)
+
+The `appose` branch has been rebased onto `plugins-dialog`, which adds a
+GUI dialog (`PluginsDialog`,
+`src/frontend/cellprofiler/gui/plugins_dialog/_plugins_dialog.py`) for
+downloading/configuring plugins, backed by discovery/loading logic in
+`cellprofiler_core/utilities/core/plugins.py`
+(`_plugin_directories()`, `load_plugins()`/`load_plugin()`,
+`PLUGIN_STATUS`, `get_plugin_statuses()`). Three improvements are planned
+on top of that dialog. Design decisions below — implement in this order.
+
+### Project 1: stop listing shadowed/superseded official plugins
+
+**Problem**: `_plugin_directories()` returns `[user_dir, official_dir]`.
+`load_plugin(source)` skips re-importing `source` if
+`PLUGIN_STATUS[source]` is already `loaded: True` — so a user plugin
+correctly takes priority over an official plugin with the same module
+name. But `PluginsDialog.populate_list()` calls `get_plugin_statuses(directory)`
+**once per directory** and unions the rows; since `get_plugin_statuses`
+looks entries up in the single, name-keyed global `PLUGIN_STATUS` dict with
+no notion of *which* directory actually produced that status, a shadowed
+official plugin shows up as its own row, *also* marked `loaded: True` —
+i.e. the dialog shows two "loaded" rows for one active plugin, with no way
+to tell the official one was never actually imported.
+
+**Decision**: shadowed entries should not be listed at all — one row per
+effective plugin name, full stop.
+
+**Plan**:
+- Thread `plugin_directory` through `load_plugins()` → `load_plugin()`, and
+  record it in `PLUGIN_STATUS[source]["directory"]` whenever `load_plugin`
+  actually attempts an import (i.e., whenever it does *not* hit the
+  already-loaded skip-guard). This also incidentally fixes a secondary
+  data-loss bug: today, if a user plugin fails and its official same-named
+  fallback *also* fails, the official attempt's traceback silently
+  overwrites the user attempt's in the global dict, since there was never
+  a directory to disambiguate by — tracking `directory` per entry makes
+  "whichever attempt actually ran most recently" explicit rather than
+  accidental.
+- `get_plugin_statuses()` drops its `directory` parameter and instead
+  returns one entry per known plugin *name* (merging `PLUGIN_STATUS` with
+  the on-disk `plugin_list()` of both directories, for names never
+  attempted yet — e.g. before the first `load_plugins()` call, or
+  `modules_only=True` skipping reader-only files).
+- `PluginsDialog.populate_list()` calls `get_plugin_statuses()` once (no
+  loop over directories), and derives each row's "Source" column from the
+  entry's own recorded `directory` (compared against
+  `get_plugin_directory()` / `get_official_plugins_directory()`) rather
+  than from which loop iteration produced it.
+
+### Project 2: mark + prebuild appose-backed plugins
+
+**Problem**: no way today to tell, from the dialog, that a plugin (like
+`RunCellcast`) launches a separate Appose-managed subprocess/environment —
+nor any way to trigger that environment's build ahead of a plugin's first
+real use (avoiding the first-run download/resolve cost happening
+mid-pipeline).
+
+**Decision**: explicit opt-in. A plugin's `Module` subclass declares a new
+class attribute, `appose_env_spec`, holding the (absolute) path to its
+environment spec file — e.g., in `cellcast.py`:
+
+    class RunCellcast(ImageSegmentation):
+        appose_env_spec = _ENV_SPEC
+        ...
+
+**Plan**:
+- `add_module()` (in `plugins.py`) reads
+  `getattr(cp_module, "appose_env_spec", None)` right after a successful
+  load and records it in `PLUGIN_STATUS[source]["appose_env_spec"]`.
+- `PluginsDialog` shows a distinct icon for rows where this is set, and
+  adds a "Build environment" button (enabled only when the selected row has
+  one) that calls `cellprofiler_core.utilities.appose.get_environment(
+  spec_path)` on a background thread (same pattern as the dialog's existing
+  official-plugins download flow), so the build is driven through the same
+  in-process cache the plugin's own `run()` will hit later — a build
+  triggered from the dialog is "warm" for the plugin's first real
+  pipeline run, not a separate, redundant build.
+- No separate "force rebuild" action: Appose/pixi's `build()` is already
+  incremental (a fast no-op if the spec is unchanged and already resolved,
+  a real rebuild if the spec changed), so one button covers both "build in
+  advance" and "rebuild".
+- Retrofit `cellcast.py` with `appose_env_spec = _ENV_SPEC` as part of this
+  project (it's currently the only plugin this would apply to).
+
+### Project 3: per-module safety/trust warning banner
+
+**Problem**: nothing in the module settings view tells a user whether the
+module they've added is built-in, an official plugin, an official plugin
+that happens to run its own downloaded dependencies via appose, or a fully
+user-supplied plugin — distinctions that matter for how much scrutiny to
+apply.
+
+**Decision**: every *plugin* module (i.e. `is_plugin` is true — built-in,
+non-plugin modules get no banner at all) gets a static, always-visible
+(non-dismissible) warning banner rendered between the Notes box and the
+Settings controls, with exactly one of three texts depending on
+`(official vs. user-supplied) × (appose vs. not)`:
+
+- Official, non-appose: `"<plugin_name>" is an official plugin, however
+  care should still be taken to ensure it is executing correct code, and
+  that your environment is able to run it. See
+  https://github.com/CellProfiler/CellProfiler-plugins/ for more info.`
+- Official, appose: `"<plugin_name>" is an official plugin, which will
+  automatically download dependencies and configure its environment,
+  however care should still be taken to ensure it is executing correct
+  code. See https://github.com/CellProfiler/CellProfiler-plugins/ for more
+  info.`
+- User-supplied (appose or not — same text either way): `"<plugin_name>" is
+  a non-official plugin. Great care should be taken to ensure it is
+  executing safe and trusted code, and that your environment is able to run
+  it. See https://github.com/CellProfiler/CellProfiler-plugins/ for
+  official plugins info.`
+
+**Plan**:
+- "Official" vs. "user-supplied", and "appose vs. not", both come from the
+  same `PLUGIN_STATUS` entry Projects 1/2 already populate (`directory`,
+  `appose_env_spec`) — exposed on the loaded `Module` class itself (next to
+  the existing loader-set `is_plugin` attribute) so `ModuleView` doesn't
+  need to reach into `cellprofiler_core.utilities.core.plugins` internals
+  at render time.
+- `ModuleView.make_notes_gui()` (`gui/module_view/_module_view.py`) changes
+  `notes_panel`'s sizer from a single horizontal sizer around the notes
+  `TextCtrl` to a vertical sizer containing the notes `TextCtrl` followed
+  by a new static-text banner widget; `set_selection()` sets the banner's
+  text (or hides it entirely for non-plugin modules) alongside its
+  existing notes-population logic.
+
 ## Open questions / not yet decided
 
 1. **Worker glue templating**: the per-plugin glue (convert input `NDArray`

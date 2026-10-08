@@ -29,13 +29,16 @@ OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
 
 # Per-plugin load status, keyed by plugin source name (as returned by plugin_list).
 # Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None,
-# "directory": str|None} - "directory" is whichever plugin directory this name was
-# actually last attempted from. If the same name exists in more than one plugin
-# directory, only the highest-priority one that successfully loads is ever
-# attempted (see load_plugin's skip-guard, and _plugin_directories for priority
-# order) - so this dict only ever holds one entry per name, reflecting whichever
-# attempt is actually responsible for that name's current state, never a
-# shadowed/superseded one.
+# "directory": str|None, "appose_env_spec": str|pathlib.Path|None} -
+# "directory" is whichever plugin directory this name was actually last
+# attempted from. If the same name exists in more than one plugin directory,
+# only the highest-priority one that successfully loads is ever attempted (see
+# load_plugin's skip-guard, and _plugin_directories for priority order) - so
+# this dict only ever holds one entry per name, reflecting whichever attempt
+# is actually responsible for that name's current state, never a
+# shadowed/superseded one. "appose_env_spec" is the plugin class's (Module
+# or Reader) own declared `appose_env_spec` class attribute (see
+# load_plugin), or None for plugins that don't run via Appose.
 PLUGIN_STATUS = {}
 
 # Prepended to a plugin module's display name (GUI only, never to module_name
@@ -133,6 +136,7 @@ def get_plugin_statuses():
                 "kind": None,
                 "error": None,
                 "directory": default_directory_by_name[name],
+                "appose_env_spec": None,
             }
         statuses.append({"name": name, **status})
     return statuses
@@ -175,18 +179,36 @@ def load_plugin(source, directory=None, modules_only=False):
         for name, plugin_class in available_classes:
             if issubclass(plugin_class, Module):
                 loaded, error = add_module(plugin_class)
-                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "module", "error": error, "directory": directory}
+                PLUGIN_STATUS[source] = {
+                    "loaded": loaded,
+                    "kind": "module",
+                    "error": error,
+                    "directory": directory,
+                    "appose_env_spec": getattr(plugin_class, "appose_env_spec", None),
+                }
                 break
             elif modules_only:
                 continue
             elif issubclass(plugin_class, Reader):
                 loaded, error = add_reader(plugin_class)
-                PLUGIN_STATUS[source] = {"loaded": loaded, "kind": "reader", "error": error, "directory": directory}
+                PLUGIN_STATUS[source] = {
+                    "loaded": loaded,
+                    "kind": "reader",
+                    "error": error,
+                    "directory": directory,
+                    "appose_env_spec": getattr(plugin_class, "appose_env_spec", None),
+                }
                 break
         else:
             message = f"Could not find Module{' or Reader' if not modules_only else ''} class in {m.__file__}"
             LOGGER.warning(message)
-            PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": message, "directory": directory}
+            PLUGIN_STATUS[source] = {
+                "loaded": False,
+                "kind": None,
+                "error": message,
+                "directory": directory,
+                "appose_env_spec": None,
+            }
     except Exception as e:
         tb = traceback.format_exc()
         if not modules_only:
@@ -206,7 +228,13 @@ def load_plugin(source, directory=None, modules_only=False):
             except Exception:
                 pass
         LOGGER.warning("Could not load %s", source, exc_info=False)
-        PLUGIN_STATUS[source] = {"loaded": False, "kind": None, "error": tb, "directory": directory}
+        PLUGIN_STATUS[source] = {
+            "loaded": False,
+            "kind": None,
+            "error": tb,
+            "directory": directory,
+            "appose_env_spec": None,
+        }
         return
 
 

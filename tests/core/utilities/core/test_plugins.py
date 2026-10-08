@@ -3,6 +3,7 @@ import sys
 import zipfile
 
 import cellprofiler_core.constants.modules
+import cellprofiler_core.constants.reader
 from cellprofiler_core.utilities.core import plugins
 
 
@@ -114,6 +115,7 @@ class TestPlugins:
                 "kind": "module",
                 "error": None,
                 "directory": str(tmp_path),
+                "appose_env_spec": None,
             }
 
             bad_status = plugins.PLUGIN_STATUS["badplugin"]
@@ -172,3 +174,55 @@ class TestPlugins:
             plugins.PLUGIN_STATUS.pop("shared", None)
             sys.modules.pop("shared", None)
             cellprofiler_core.constants.modules.all_modules.pop("Shared", None)
+
+    def test_load_plugin_captures_appose_env_spec(self, tmp_path, monkeypatch):
+        source = (
+            "from cellprofiler_core.module import Module\n\n"
+            "class ApposeTestModule(Module):\n"
+            "    module_name = 'ApposeTestModule'\n"
+            "    category = 'Other'\n"
+            "    variable_revision_number = 1\n"
+            "    appose_env_spec = '/some/plugin/pixi.toml'\n\n"
+            "    def create_settings(self):\n"
+            "        pass\n\n"
+            "    def settings(self):\n"
+            "        return []\n\n"
+            "    def run(self, workspace):\n"
+            "        pass\n"
+        )
+        (tmp_path / "apposeplugin.py").write_text(source)
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+        try:
+            plugins.load_plugin("apposeplugin", directory=str(tmp_path))
+
+            status = plugins.PLUGIN_STATUS["apposeplugin"]
+            assert status["loaded"] is True
+            assert status["appose_env_spec"] == "/some/plugin/pixi.toml"
+        finally:
+            plugins.PLUGIN_STATUS.pop("apposeplugin", None)
+            sys.modules.pop("apposeplugin", None)
+            cellprofiler_core.constants.modules.all_modules.pop("ApposeTestModule", None)
+
+    def test_load_plugin_captures_appose_env_spec_for_reader(self, tmp_path, monkeypatch):
+        source = (
+            "from cellprofiler_core.reader import Reader\n\n"
+            "class ApposeTestReader(Reader):\n"
+            "    reader_name = 'ApposeTestReader'\n"
+            "    appose_env_spec = '/some/reader/pixi.toml'\n"
+        )
+        (tmp_path / "apposereader.py").write_text(source)
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+        try:
+            plugins.load_plugin("apposereader", directory=str(tmp_path))
+
+            status = plugins.PLUGIN_STATUS["apposereader"]
+            assert status["loaded"] is True
+            assert status["kind"] == "reader"
+            assert status["appose_env_spec"] == "/some/reader/pixi.toml"
+        finally:
+            plugins.PLUGIN_STATUS.pop("apposereader", None)
+            sys.modules.pop("apposereader", None)
+            cellprofiler_core.constants.reader.ALL_READERS.pop("ApposeTestReader", None)
+            cellprofiler_core.constants.reader.AVAILABLE_READERS.pop("ApposeTestReader", None)

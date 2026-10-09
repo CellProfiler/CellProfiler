@@ -1,6 +1,6 @@
 # Context: porting CellProfiler plugins to run via Appose
 
-Handoff doc for a fresh session continuing this work. Last updated 2026-10-08.
+Handoff doc for a fresh session continuing this work. Last updated 2026-10-09.
 
 ## Goal
 
@@ -60,15 +60,17 @@ architectural quarantine, not a flag CellProfiler has to check for — no
    original PixelShuffle POC did), pass a plain string/scalar `model` (or
    similar) task input and dispatch on it at runtime. The glue string is
    then computed once at import time instead of being rebuilt per `run()`
-   call. As of `RunCellcast`'s current form, the dispatch `if`/`elif`
-   itself lives in `_worker.py` (a `get_model_scaffold(...)` function
-   returning a `{"cache_key", "init", "predict_labels"}` dict), while the
-   epilogue appended in `cellcast.py` is fully generic Appose plumbing
-   (NDArray marshaling + the `_get_cached_model` caching helper, see
-   "Persistent services" below) that calls whatever scaffold dict
-   `_worker.py` hands back. See `cellcast.py`/`cellcast/_worker.py` for the
-   pattern — this generic epilogue shape is a good candidate to eventually
-   factor out per open question 1 below.
+   call. The dispatch `if`/`elif` itself lives in `_worker.py` (a
+   `predict(...)` function), while `cellcast.py`'s `_WORKER_SCRIPT` is now
+   just generic Appose plumbing: NDArray marshaling, `from cellcast_worker
+   import predict`, call it, wrap the result. As of `RunCellcast`'s current
+   form (see Gotcha 8), `_worker.py` is registered with the worker as a real
+   importable module via `Service.import_library()`, rather than being read
+   as text and concatenated — so it can hold plain module-level state (a
+   `models_cache` dict) instead of needing the `task.export`/`globals()`
+   dance described in "Persistent services" below. See `cellcast.py`/
+   `cellcast/_worker.py` for the pattern — this generic epilogue shape is a
+   good candidate to eventually factor out per open question 1 below.
 
 ## Per-plugin file layout convention
 
@@ -93,13 +95,20 @@ active_plugins/<name>/_worker.py    # pure processing function(s); never importe
   need to match. If a dependency isn't on conda-forge, declare it under
   `[pypi-dependencies]` instead — this now works fine (see Gotchas, pixi
   version).
-- `<name>/_worker.py`: pure functions (plus, per the current `RunCellcast`
-  shape, the per-case dispatch itself — see design decision #3), zero
-  `cellprofiler_core` imports. This file is read as **plain text** by the
-  frontend `.py` file and concatenated with a small inline "glue" epilogue
-  that converts the raw input `appose.NDArray` to a numpy array, calls into
-  `_worker.py`'s dispatch, wraps the result back into a fresh `NDArray`,
-  and assigns it to `task.outputs["<key>"]`.
+- `<name>/_worker.py`: pure, ordinary Python module (plus, per the current
+  `RunCellcast` shape, the per-case dispatch itself — see design decision
+  #3), zero `cellprofiler_core` imports. It's never imported by
+  CellProfiler's own process; instead the frontend `.py` file registers it
+  with the worker process via `service.import_library(name, path=...)` (see
+  Gotcha 8), making it `import`-able by name from worker-side task scripts.
+  A small inline "glue" script (`_WORKER_SCRIPT` in the frontend file) then
+  converts the raw input `appose.NDArray` to a numpy array, imports and
+  calls into `_worker.py`, wraps the result back into a fresh `NDArray`,
+  and assigns it to `task.outputs["<key>"]`. Being a real module (not
+  text concatenated into a bigger script), `_worker.py` can be developed
+  and type-checked like any other file, and can carry its own
+  `if __name__ == "__main__":` block for standalone/offline testing
+  outside of Appose entirely (see `cellcast/_worker.py`).
 
 ## Reference implementation: `RunCellcast`
 
@@ -123,6 +132,11 @@ Notable cellcast-specific details, in case they come up again:
   test input triggered a Rust-side panic/`InvalidParameterEmptyArray`; 32
   planes worked fine) — not a bug in our plugin, just a model input-size
   floor worth knowing about if a user reports a crash on tiny stacks.
+- `cellcast.py`/`cellcast/_worker.py` were reworked (2026-10-09) to use
+  `Service.import_library()` instead of text-concatenation + `task.export`
+  for model caching — see design decision #3, the "Persistent services"
+  section above, and Gotcha 8 below for the full story and the unreleased-
+  Appose-feature caveat that comes with it.
 
 ## The bridge: `cellprofiler_core/utilities/appose.py`
 
@@ -156,18 +170,27 @@ let a plugin reuse one long-lived worker process across calls instead.
 
 Reusing the *process* is automatic once you pass `service=` instead of
 `environment=`. Reusing an expensive *resource inside* that process (e.g. a
-loaded model) is not automatic — each task's script starts with a fresh
-global namespace containing only `task` plus whatever a previous task
-explicitly persisted via `task.export(name=value)`. `RunCellcast`'s glue
-(`cellcast.py`'s `_get_cached_model` helper) shows the pattern: compute a
-cache key from whatever settings actually affect model construction, check
-it against `globals().get("_cellcast_cache_key")`, and only rebuild +
-re-export when it differs. This way a settings change (including one made
-interactively in GUI test/debug mode, which reruns the same module instance
-and reuses the same service) is still picked up correctly instead of
-silently serving stale results. Measured effect for `RunCellcast`: first
-call ~0.57s (service start + model build), subsequent calls with an
-unchanged cache key ~0.03s.
+loaded model) used to require extra care: each task script's global
+namespace starts out fresh, containing only `task` plus whatever a previous
+task explicitly persisted via `task.export(name=value)`.
+
+**Superseded by `Service.import_library()` (see Gotcha 8).** Rather than
+threading a cache key through `task.export`/`globals()` by hand,
+`RunCellcast` now registers `_worker.py` as a real importable module in the
+worker process (`cellcast.py`'s `run()`: `get_service(_ENV_SPEC)
+.import_library("cellcast_worker", path=_PLUGIN_DIR / "_worker.py")`).
+Since an imported module lives in the worker's `sys.modules`, its
+module-level state persists across tasks for free — `_worker.py` simply
+keeps a plain `models_cache = dict()` at module scope, keyed by whatever
+settings actually affect model construction (model name, weights path,
+GPU flag, anisotropy for the 3D model), and only builds+caches a model the
+first time a given key is seen. No `task.export`, no `globals()` lookups.
+This also means a settings change (including one made interactively in GUI
+test/debug mode, which reruns the same module instance and reuses the same
+service) is still picked up correctly — a new cache key just misses the
+dict and builds fresh — instead of silently serving stale results. Measured
+effect for `RunCellcast`: first call ~0.57s (service start + model build),
+subsequent calls with an unchanged cache key ~0.03s.
 
 Lifecycle, across CellProfiler's three execution modes (see
 `cellprofiler_core/module/_module.py` for the hooks referenced below):
@@ -420,6 +443,59 @@ identically.
 right when that notification actually fires, rather than passively
 re-querying `wx.SystemSettings` whenever some unrelated event happens to
 run next.
+
+### 8. `Service.import_library()` is a real (and, as of 2026-10-09, unreleased) Appose feature — requires `appose` from git `main` on *both* host and worker, not just the host's existing float-to-main pin
+
+Appose gained a `Service.import_library(name, *, path=..., source=...)`
+method (`appose/service.py`, worker-side support in the new
+`appose/library.py`) that registers a module or package's source with the
+worker process so later task scripts can `import` it by name like any
+normal module — living in the worker's `sys.modules`, so its module-level
+state (a plain cache dict, a loaded model, etc.) persists across tasks for
+free, no `task.export`/`globals()` dance needed (see "Persistent services"
+above). `RunCellcast` adopted this: `cellcast.py`'s `run()` now does
+`get_service(_ENV_SPEC).import_library("cellcast_worker", path=_PLUGIN_DIR
+/ "_worker.py")` before calling `run_python_task`, and `_worker.py`'s
+worker-side glue does `from cellcast_worker import predict`.
+
+This method does not exist in any published Appose release yet — only on
+git `main`. Gotcha 4 already established that CellProfiler's own
+(host-side) `pixi.toml` floats `appose` to unpinned `main` (not a release),
+so the host picks this up automatically once its lock is refreshed. But a
+plugin's own `pixi.toml` builds a **separate, independent** environment for
+the **worker** process — and `import_library`'s worker-side half
+(`appose/library.py`'s import-hook machinery) has to be present there too.
+`cellcast/pixi.toml`'s own `appose` pypi-dependency therefore had to be
+switched from a released version to the same unpinned
+`git = "https://github.com/apposed/appose-python.git"` reference as the
+host, purely to get this feature. If `import_library` ever starts raising
+`AttributeError`/`NotImplementedError`, check first whether the relevant
+`pixi.toml` (host's root one, or a plugin's own) has drifted onto a
+released `appose` version instead of `main`.
+
+Other behaviors worth remembering about this API:
+
+- Registration is **idempotent on unchanged source**: `import_library()`
+  hashes/compares the file content it's about to send; if it matches what's
+  already registered under that name, it's a cheap no-op that leaves the
+  already-imported module (and any state built up in it) alone. This makes
+  it safe to call on every `run()` invocation (as `cellcast.py` does)
+  rather than needing to track "have I already registered this" at the
+  frontend-module level.
+- Registering *changed* source (e.g. iterating on `_worker.py` during
+  development against an already-started service, such as in GUI
+  test/debug mode) evicts the stale module from the worker's `sys.modules`
+  and re-imports fresh on next use — so edits are picked up without
+  needing to restart the service, as long as `import_library()` is called
+  again (which happens automatically here, since it's called every
+  `run()`).
+- The source is read from disk once, at the moment `import_library()` is
+  called — not lazily at the worker's actual `import` statement. A file
+  edited on disk has no effect until the next `import_library()` call.
+- Calling it on an already-started service (the normal case here, since
+  `get_service()` already started it) is not free: it goes through a real
+  task round-trip to the worker and blocks until that completes, so it's
+  cheap but not literally zero cost per `run()` call.
 
 ## Existing reference code in CellProfiler-plugins (pre-existing, not ours)
 
@@ -686,11 +762,13 @@ banner-text variants, plus the non-plugin `None` case).
 ## Open questions / not yet decided
 
 1. **Worker glue templating**: the per-plugin glue (convert input `NDArray`
-   → numpy → dispatch to worker function(s) → wrap output back into
-   `NDArray` → assign to `task.outputs[...]`) is still hand-written per
-   plugin, appended as a string onto its `_worker.py` source. `cellcast.py`
-   improved this slightly by making the glue a static, runtime-dispatching
-   template (see Design decision #3) rather than rebuilding a string per
-   call, but it's still duplicated per plugin rather than factored into a
+   → numpy → call into the registered worker library → wrap output back
+   into `NDArray` → assign to `task.outputs[...]`) is still hand-written
+   per plugin, as a small static `_WORKER_SCRIPT` string in the frontend
+   module (see Design decision #3). Adopting `Service.import_library()`
+   (Gotcha 8) already shrank this considerably — `_worker.py` is now a real
+   module imported by name, not text concatenated with inline caching
+   logic — but the remaining `_WORKER_SCRIPT` boilerplate (NDArray in/out
+   marshaling) is still duplicated per plugin rather than factored into a
    shared helper in `cellprofiler_core/utilities/appose.py`. Worth doing
    once a third plugin is ported and the shape of the duplication is clearer.

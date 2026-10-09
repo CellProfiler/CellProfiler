@@ -16,10 +16,8 @@ since the frontend file's own top-level imports are always satisfiable in
 the default environment, it loads like any other plugin.
 """
 
-import atexit
 import pathlib
 import threading
-import time
 
 import appose
 import numpy
@@ -67,44 +65,6 @@ def get_environment(env_spec):
         return environment
 
 
-def _start_as_daemon(service):
-    """
-    Start `service`'s worker process from within a short-lived daemon
-    thread, instead of directly on the calling thread.
-
-    Why:
-    For more details see: https://github.com/apposed/appose/issues/37
-    Appose's `Service.start()` launches the worker subprocess and
-    spawns its stdout/stderr/monitor plumbing as plain `threading.Thread`s,
-    with no `daemon=` argument - so each one inherits the daemon flag of
-    *whichever thread constructs it* (standard `threading.Thread` behavior:
-    `daemon=None` means "same as `threading.current_thread().daemon`").
-    Called directly from a normal (non-daemon) thread - e.g. CellProfiler's
-    main GUI thread - those threads come out non-daemon too.
-
-    That matters because CPython's interpreter shutdown joins all
-    non-daemon threads *before* running `atexit` callbacks. Appose's
-    reader threads only return once the worker subprocess's pipes hit EOF,
-    i.e. once something has told the worker to exit - but if that "someone"
-    is an `atexit` callback (as with `close_service` below), it never gets
-    scheduled, because the thread-join step it would need to unblock is
-    already stuck. The result is an unconditional, permanent hang at
-    process exit, with no exception and no log output.
-
-    Running `service.start()` from a thread that is itself a daemon makes
-    every thread it transitively creates a daemon too, by the same
-    inheritance rule. Daemon threads are abandoned (not joined) at
-    interpreter exit, so this makes the hang structurally impossible -
-    with or without `close_service()`/`atexit` ever getting a chance to run.
-    `close_service()` remains worthwhile on top of this, purely to avoid
-    leaking the worker subprocess itself (and anything it spawned) when a
-    service is never explicitly closed.
-    """
-    thread = threading.Thread(target=service.start, daemon=True)
-    thread.start()
-    thread.join()
-
-
 def get_service(env_spec):
     """
     Start (or reuse a cached) persistent Appose Python service for the
@@ -116,20 +76,21 @@ def get_service(env_spec):
     expensive resource - a loaded ML model, for instance - warm in the
     worker process between calls instead of re-creating it every time.
 
-    Callers are responsible for eventually passing this same `env_spec` to
-    `close_service()` once the service is no longer needed (e.g. a module's
-    `post_run`), to avoid leaking its worker subprocess. A service left open
-    is also closed automatically at process exit - see `close_service()`
-    for why this is a bounded operation, and `_start_as_daemon()` for why
-    failing to close a service can no longer hang CellProfiler itself.
+    Callers may pass this same `env_spec` to `close_service()` once the
+    service is no longer needed (e.g. a module's `post_run`), to shut it
+    down promptly. This is a courtesy, not a requirement: Appose itself
+    tracks every started `Service` and shuts down any still running at
+    process exit (closing it, then killing its whole worker process tree if
+    it hasn't exited within `Service.exit_timeout` seconds - see
+    `close_service()`)
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _services_lock:
         service = _services.get(env_spec)
         if service is None or not service.is_alive():
             service = get_environment(env_spec).python()
-            _start_as_daemon(service)
-            atexit.register(close_service, env_spec)
+            service.exit_timeout = _CLOSE_TIMEOUT_SECONDS
+            service.start()
             _services[env_spec] = service
         return service
 
@@ -140,58 +101,18 @@ def close_service(env_spec, timeout=_CLOSE_TIMEOUT_SECONDS):
     the same `env_spec`, if one is cached. Safe to call even if no service
     was ever created for this spec, or if it's already been closed.
 
-    Asks the worker process to shut down gracefully (by closing its stdin),
-    waits up to `timeout` seconds, then force-kills it (and any descendant
-    processes - see `_kill_process_tree()`) if it's still alive.
-
-    Why?: https://github.com/apposed/appose/issues/37
-    TL;DR: This bound matters because Appose's `Service` runs its
-    stdout/stderr/ monitor plumbing on plain, non-daemon threads,
-    which only return once the worker process's pipes hit EOF -
-    i.e. once the worker has actually exited.
-    CellProfiler's own process (the GUI in particular) cannot fully
-    exit until those threads do. A worker that is slow to tear down (e.g.
-    unloading a model, releasing a GPU context) or still mid-task would
-    otherwise translate directly into an indefinite hang on quit rather than
-    a graceful exit, so this function never waits unboundedly - it always
-    kills the worker rather than risking that.
+    Delegates to `Service.close(timeout=...)`: asks the worker to shut down
+    gracefully (by closing its stdin), waits up to `timeout` seconds, then
+    kills its whole process tree - not just the immediately launched
+    process, which matters for a `PixiBuilder`-built environment, whose
+    worker is a child of a `pixi run` launcher - if it hasn't exited by then.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _services_lock:
         service = _services.pop(env_spec, None)
     if service is None or not service.is_alive():
         return
-    service.close()
-    deadline = time.monotonic() + timeout
-    while service.is_alive() and time.monotonic() < deadline:
-        time.sleep(0.05)
-    if service.is_alive():
-        # NOTE: service._process is the *immediate* child only.
-        # Appose's PixiBuilder invokes `pixi run ... python -c "...python_worker..."`
-        # and that's the wrapper, not the actual worker - Service.kill() alone
-        # would leave the real worker running as an orphan indefinitely.
-        _kill_process_tree(service._process.pid)
-    service.wait_for()
-
-
-def _kill_process_tree(pid):
-    """
-    Force-kill the process `pid` and all of its descendants.
-    """
-    import psutil
-
-    try:
-        parent = psutil.Process(pid)
-    except psutil.NoSuchProcess:
-        return
-    procs = parent.children(recursive=True)
-    procs.append(parent)
-    for proc in procs:
-        try:
-            proc.kill()
-        except psutil.NoSuchProcess:
-            pass
-    psutil.wait_procs(procs, timeout=_CLOSE_TIMEOUT_SECONDS)
+    service.close(timeout=timeout)
 
 
 def _to_ndarray(value):

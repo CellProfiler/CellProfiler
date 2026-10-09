@@ -1,0 +1,830 @@
+# Context: porting CellProfiler plugins to run via Appose
+
+Handoff doc for a fresh session continuing this work. Last updated 2026-10-09.
+
+## Goal
+
+Some "officially supported" plugins in `CellProfiler-plugins/CP5/active_plugins/`
+(sibling repo at `/Users/Nodar/Developer/CellProfiler/CellProfiler-plugins`)
+require heavy/exotic Python dependencies that aren't in the default
+CellProfiler environment (torch, cellpose, etc.). Today the user has to
+manually install those deps into CellProfiler's own environment.
+
+Plan: move the `run()` logic of such plugins into a separate process,
+running in its own, plugin-owned, pixi-managed environment, launched via
+[Appose](https://docs.apposed.org/en/latest/index.html). CellProfiler's
+main process only gathers inputs from the workspace, ships them to the
+subprocess, and unpacks the results — conceptually the same "pure logic in
+one layer, workspace plumbing in another" split as the
+`cellprofiler_library` refactor pattern (`REFACTOR_PATTERN.md` in this
+repo), except the "other layer" here is a different OS process/environment
+instead of just a different Python module.
+
+## Key architectural finding (load-bearing — don't redo this research)
+
+**CellProfiler's plugin loader needs no changes.** Traced in
+`cellprofiler_core/utilities/core/plugins.py`:
+
+- `plugin_list()` does a flat, non-recursive
+  `glob.glob(plugin_dir + "/[!_]*.py")` — files in subdirectories, or
+  leading-underscore files, are invisible to it automatically.
+- `load_plugin()` does `importlib.import_module(source)` after
+  `sys.path.insert(0, plugin_dir)`. Any `ImportError` anywhere in the
+  plugin file's top-level code is caught by a bare `except Exception`,
+  logged as a warning, and the plugin is **silently dropped** — no
+  manifest/metadata mechanism exists, and it's strictly all-or-nothing (no
+  lazy-import tolerance).
+
+Since `appose` is already a pixi dependency of CellProfiler's own default
+environment (`pixi.toml`, `[feature.mod.pypi-dependencies]`:
+`appose = { git = "https://github.com/apposed/appose-python.git" }`,
+unpinned — floats to whatever git main resolves to at lock time), a
+plugin's **frontend** file loads fine in the default environment as long as
+it only imports `cellprofiler_core`, `appose`, `numpy`, `pathlib`/stdlib at
+top level. The actual heavy dependencies only need to exist inside the
+plugin's own Appose-managed subprocess, never in the host process. This is
+architectural quarantine, not a flag CellProfiler has to check for — no
+"detect this is an Appose plugin" logic is needed or wanted anywhere in
+`cellprofiler_core`.
+
+## Design decisions made
+
+1. **Bridge helper location**: `cellprofiler_core/utilities/appose.py`
+   (committed). Reusable by any plugin in either repo, since `appose` is
+   already a core dependency.
+2. **Environment build strategy**: build on demand from a `pixi.toml`
+   shipped next to the plugin, via `appose.file(path).build()`.
+   Self-contained: drop in the plugin + its `pixi.toml` and go.
+3. **Worker glue dispatch**: rather than baking per-call string
+   substitution into the glue appended to a plugin's `_worker.py` (as the
+   original PixelShuffle POC did), pass a plain string/scalar `model` (or
+   similar) task input and dispatch on it at runtime. The glue string is
+   then computed once at import time instead of being rebuilt per `run()`
+   call. The dispatch `if`/`elif` itself lives in `_worker.py` (a
+   `predict(...)` function), while `cellcast.py`'s `_WORKER_SCRIPT` is now
+   just generic Appose plumbing: NDArray marshaling, `from cellcast_worker
+   import predict`, call it, wrap the result. As of `RunCellcast`'s current
+   form (see Gotcha 8), `_worker.py` is registered with the worker as a real
+   importable module via `Service.import_library()`, rather than being read
+   as text and concatenated — so it can hold plain module-level state (a
+   `models_cache` dict) instead of needing the `task.export`/`globals()`
+   dance described in "Persistent services" below. See `cellcast.py`/
+   `cellcast/_worker.py` for the pattern — this generic epilogue shape is a
+   good candidate to eventually factor out per open question 1 below.
+
+## Per-plugin file layout convention
+
+```
+active_plugins/<name>.py            # frontend Module — thin, light imports only
+active_plugins/<name>/pixi.toml     # plugin's OWN env spec (its real deps + appose itself)
+active_plugins/<name>/_worker.py    # pure processing function(s); never imported by CellProfiler
+```
+
+- `<name>.py`: only imports `cellprofiler.*`, `cellprofiler_core.*`, `pathlib`, and
+  `cellprofiler_core.utilities.appose` (`get_environment`,
+  `run_python_task`). In `run()`: pull `pixel_data` etc. out of the
+  workspace, call `get_environment(spec_path)` (cheap — cached), call
+  `run_python_task(environment, script, inputs={...})`, unpack the
+  returned dict into a `cellprofiler_core.image.Image(...)` or
+  `cellprofiler_core.object.Objects()` and add it to the image/object set.
+- `<name>/pixi.toml`: must declare `appose` itself (the worker subprocess
+  runs `appose.python_worker`, Appose's own wire-protocol implementation,
+  so it must be installed there too), plus whatever real/heavy deps the
+  plugin needs. Keep `python` permissive (e.g. `>=3.9`) — host and worker
+  are fully separate interpreters/processes, their Python versions don't
+  need to match. If a dependency isn't on conda-forge, declare it under
+  `[pypi-dependencies]` instead — this now works fine (see Gotchas, pixi
+  version).
+- `<name>/_worker.py`: pure, ordinary Python module (plus, per the current
+  `RunCellcast` shape, the per-case dispatch itself — see design decision
+  #3), zero `cellprofiler_core` imports. It's never imported by
+  CellProfiler's own process; instead the frontend `.py` file registers it
+  with the worker process via `service.import_library(name, path=...)` (see
+  Gotcha 8), making it `import`-able by name from worker-side task scripts.
+  A small inline "glue" script (`_WORKER_SCRIPT` in the frontend file) then
+  converts the raw input `appose.NDArray` to a numpy array, imports and
+  calls into `_worker.py`, wraps the result back into a fresh `NDArray`,
+  and assigns it to `task.outputs["<key>"]`. Being a real module (not
+  text concatenated into a bigger script), `_worker.py` can be developed
+  and type-checked like any other file, and can carry its own
+  `if __name__ == "__main__":` block for standalone/offline testing
+  outside of Appose entirely (see `cellcast/_worker.py`).
+
+## Reference implementation: `RunCellcast`
+
+`CellProfiler-plugins/CP5/active_plugins/cellcast.py` (+ `cellcast/pixi.toml`,
+`cellcast/_worker.py`) is the first real plugin ported with this pattern —
+wraps the [cellcast](https://github.com/uw-loci/cellcast) project's
+StarDist2D (fluo + H&E) and StarDist3D (fluo) models. Verified end-to-end
+(real `pixi.toml` build, real Appose subprocess, all three model paths) —
+treat it as the canonical example when porting the next plugin, alongside
+the bridge module's own docstrings.
+
+Notable cellcast-specific details, in case they come up again:
+
+- `cellcast` ships PyPI-only wheels (cp38-abi3), not on conda-forge — hence
+  the `[pypi-dependencies]` entry in its `pixi.toml`.
+- `cellcast.models.StarDist2D`/`StarDist3D` methods (`init_fluo`, `init_he`,
+  `predict_fluo`, `predict_he`) return/accept plain numpy arrays; labels
+  come back as `uint64`. Weights auto-download to `~/.cache/cellcast/weights/`
+  on first use and are reused across subsequent worker-process launches.
+- `StarDist3D.predict_fluo` needs a reasonably-sized Z-stack (an 8-plane
+  test input triggered a Rust-side panic/`InvalidParameterEmptyArray`; 32
+  planes worked fine) — not a bug in our plugin, just a model input-size
+  floor worth knowing about if a user reports a crash on tiny stacks.
+- `cellcast.py`/`cellcast/_worker.py` were reworked (2026-10-09) to use
+  `Service.import_library()` instead of text-concatenation + `task.export`
+  for model caching — see design decision #3, the "Persistent services"
+  section above, and Gotcha 8 below for the full story and the unreleased-
+  Appose-feature caveat that comes with it.
+
+## The bridge: `cellprofiler_core/utilities/appose.py`
+
+Committed (not reproduced here — read the file directly; it's short and
+its own docstrings cover the API). Key behaviors to remember:
+
+- `get_environment(env_spec)` builds (or reuses a cached) Appose
+  `Environment` from a spec file, and tries `environment.activate("default")`
+  (swallowing `NotImplementedError` for builders that don't support named
+  sub-environments) — see Gotcha 2 below for why.
+- `get_service(env_spec)` / `close_service(env_spec)` start (or reuse a
+  cached) **persistent** `environment.python()` service — i.e. a worker
+  process that stays alive across many calls, instead of one per call. See
+  "Persistent services" below.
+- `run_python_task(script, inputs=None, environment=None, service=None)`
+  copies any `numpy.ndarray` inputs into Appose shared memory, runs `script`
+  against either a fresh `environment.python()` service (pass
+  `environment`) or a reused one (pass `service`), copies any
+  `appose.NDArray` outputs back into plain numpy arrays, and releases all
+  shared memory before returning.
+- All of the above only use the oldest-common-denominator Appose `NDArray`
+  API (manual `appose.NDArray(dtype=..., shape=...)` construct +
+  `.ndarray()`) — see Gotcha 1.
+
+## Persistent services (performance)
+
+A fresh service per call is simplest but pays for a new worker process —
+and, for model-based plugins, a fresh model load — on every image set.
+`get_service()`/`close_service()` plus `run_python_task(..., service=...)`
+let a plugin reuse one long-lived worker process across calls instead.
+
+Reusing the *process* is automatic once you pass `service=` instead of
+`environment=`. Reusing an expensive *resource inside* that process (e.g. a
+loaded model) used to require extra care: each task script's global
+namespace starts out fresh, containing only `task` plus whatever a previous
+task explicitly persisted via `task.export(name=value)`.
+
+**Superseded by `Service.import_library()` (see Gotcha 8).** Rather than
+threading a cache key through `task.export`/`globals()` by hand,
+`RunCellcast` now registers `_worker.py` as a real importable module in the
+worker process (`cellcast.py`'s `run()`: `get_service(_ENV_SPEC)
+.import_library("cellcast_worker", path=_PLUGIN_DIR / "_worker.py")`).
+Since an imported module lives in the worker's `sys.modules`, its
+module-level state persists across tasks for free — `_worker.py` simply
+keeps a plain `models_cache = dict()` at module scope, keyed by whatever
+settings actually affect model construction (model name, weights path,
+GPU flag, anisotropy for the 3D model), and only builds+caches a model the
+first time a given key is seen. No `task.export`, no `globals()` lookups.
+This also means a settings change (including one made interactively in GUI
+test/debug mode, which reruns the same module instance and reuses the same
+service) is still picked up correctly — a new cache key just misses the
+dict and builds fresh — instead of silently serving stale results. Measured
+effect for `RunCellcast`: first call ~0.57s (service start + model build),
+subsequent calls with an unchanged cache key ~0.03s.
+
+Lifecycle, across CellProfiler's three execution modes (see
+`cellprofiler_core/module/_module.py` for the hooks referenced below):
+
+- **Headless** and **GUI run mode's main process**: `Module.prepare_run`/
+  `post_run` run once per whole pipeline run, so `post_run` is a correct
+  place to call `close_service()`. `RunCellcast.post_run` does this.
+- **GUI run mode's worker subprocesses** (where `Module.run` — and
+  therefore the plugin's actual service — lives): workers are long-lived
+  OS subprocesses that process many jobs over the analysis's lifetime,
+  reusing the same deserialized `Module` instance throughout, which is
+  exactly what makes caching worthwhile here. But `prepare_run`/`post_run`
+  are **never called inside a worker process** — only in the GUI's main
+  process, which holds a *different* `Module` instance. There is no
+  teardown hook reachable from worker-local module code at all, so cleanup
+  here relies entirely on `get_service()`'s `atexit.register(close_service,
+  env_spec)` firing when the worker process itself exits (normal end of
+  analysis, or a crash) — see Gotcha 5 for why `close_service()` has to be
+  a *bounded*, tree-aware kill rather than a graceful `service.close()`.
+- **GUI test/debug mode**: never calls `prepare_run`/`post_run` either, and
+  reruns the same module instance (so the same cached service) arbitrarily,
+  including after settings edits. Caching still works and self-invalidates
+  correctly (same mechanism as above), but nothing ever explicitly calls
+  `close_service()` in this mode until the process exits — same
+  atexit-only cleanup story as the worker case above, and the same reason
+  Gotcha 5's bound matters here too (this is literally the mode where the
+  original hang-on-quit bug was discovered).
+
+## Gotchas discovered (load-bearing, re-derive-costly — don't rediscover)
+
+### 1. Host vs. worker Appose version skew
+
+CellProfiler's own `appose` pin floats to git main, which may have a newer
+API (`NDArray.copy_of(arr)`, `numpy.asarray(ndarray)` via `__array__`,
+etc.) than whatever a plugin's own `pixi.toml` resolves (e.g. conda-forge's
+latest *release*, which lacks those newer methods).
+
+**Rule: always use only the oldest-common-denominator NDArray API**
+(manual construct + `.ndarray()`) in both the bridge (`appose.py`) and any
+worker glue code — never `.copy_of()` or `numpy.asarray(an_ndarray)` —
+since host and worker environments are built independently and will not
+necessarily have matching Appose releases.
+
+The installed appose package under `.pixi/envs/dev/lib/python3.9/site-packages/appose/`
+is the ground truth for "what API is actually available right now" in the
+host — check it directly (or pull fresh) rather than trusting a loose
+sibling checkout's HEAD, which can silently be a different snapshot.
+
+### 2. `pixi` bug: ambient `PIXI_IN_SHELL`+`PIXI_ENVIRONMENT_NAME` leak into unrelated `pixi run --manifest-path`
+
+Appose's `PixiBuilder` shells out to its bundled `pixi` binary as
+`pixi run --manifest-path <plugin-pixi.toml> <python-exe> ...` to build and
+launch the plugin's own, unrelated pixi project. If the *calling* process
+(CellProfiler) is itself running inside an activated, named pixi
+environment (e.g. this repo's `dev` environment, via `pixi run -e dev` /
+`pixi shell`), pixi sets `PIXI_IN_SHELL=1` and `PIXI_ENVIRONMENT_NAME=dev`,
+and both leak into Appose's subprocess call. `pixi` then — reproducibly,
+confirmed as a genuine `pixi` bug — trusts the ambient
+`PIXI_ENVIRONMENT_NAME` for environment selection whenever `PIXI_IN_SHELL=1`
+is also set, even when an explicit `--manifest-path` names a completely
+different project with no same-named environment. Fails with
+`Error: × unknown environment 'dev'`.
+
+**Filed upstream**: <https://github.com/prefix-dev/pixi/issues/7170>.
+
+**Fix applied** in the bridge's `get_environment()`: call
+`environment.activate("default")` after building, which bakes
+`["--environment", "default"]` into the environment's `launch_args()`,
+sidestepping the bug entirely. Wrapped in `try/except NotImplementedError`
+since not every builder/environment type supports named sub-environments.
+Verified fixed by running a full round trip from inside the actual
+CellProfiler `dev` pixi shell (the exact failure conditions originally hit).
+
+### 3. `appose` must be a dependency of the plugin's own environment too
+
+The worker subprocess runs `appose.python_worker` (Appose's wire-protocol
+implementation) — it needs `appose` installed in the *plugin's* pixi
+environment, not just the host's. Easy to forget since the host already
+has it.
+
+### 4. Appose's bundled pixi version matters — pin to `main`, not an old release
+
+Appose's `PixiBuilder` doesn't use whatever `pixi` is on `$PATH`; it
+downloads and pins its own copy (`appose/tool/pixi.py:PIXI_VERSION`). The
+pin was `v0.58.0` for a long time, which has a real, deterministic bug:
+`pixi install` fails with `io error: unexpected end of file` on **any**
+`[pypi-dependencies]` entry (reproduced even with a trivial package like
+`six` — nothing cellcast-specific). This was fixed upstream in
+`apposed/appose-python` by bumping the pin to `v0.81.0`, and that fix has
+since landed on `main`, which now also has a daily workflow to keep its
+bundled pixi pin current. **Make sure CellProfiler's `appose` dependency in
+`pixi.toml` tracks plain `main`** (`appose = { git =
+"https://github.com/apposed/appose-python.git" }`, no branch pin) — do not
+pin to an old commit/branch, and if `[pypi-dependencies]`-based plugin
+environments ever start failing with the same "unexpected end of file"
+symptom again, check this pin first before assuming it's a new bug.
+
+### 5. A persistent `Service`'s own threads can deadlock CellProfiler's quit sequence — `atexit` alone cannot fix this
+
+Symptom: quitting the CellProfiler GUI (after using a persistent-service
+plugin like `RunCellcast`) hung indefinitely until force-killed from the
+shell. A first fix attempt — making `close_service()` bounded and
+process-tree-aware (see below) and registering it via
+`atexit.register(close_service, env_spec)` in `get_service()` — did not
+resolve it. Root cause has two parts, confirmed independently of
+CellProfiler via a standalone, Appose-only MCVE (see below) before being
+fixed here.
+
+**Part 1 (the actual hang, dominant cause): `atexit` runs too late to help.**
+Appose's `Service` runs its stdout/stderr/monitor plumbing on plain,
+non-daemon `threading.Thread`s (`appose/service.py`'s `start()`). CPython's
+interpreter shutdown (`Py_FinalizeEx`) joins **all non-daemon threads**
+(`wait_for_thread_shutdown()`) **before** running `atexit` callbacks
+(`call_py_exitfuncs()`) — confirmed empirically with a minimal, non-Appose
+script. Appose's reader threads only return once the worker's pipes hit
+EOF, i.e. once something has told the worker to exit. If that "something"
+is an `atexit` callback (the standard, idiomatic place to put this kind of
+cleanup — and exactly what `get_service()` does), it **never gets
+scheduled**, because the thread-join step it would need to unblock is
+already stuck, waiting for it. Any caller that registers `atexit.register`
+to close a still-open `Service` hits this — it is not specific to
+`PixiBuilder`, pixi, or cellcast. The result is a permanent hang with no
+exception and no log output, as opposed to a bounded delay.
+
+**Part 2 (compounding, only matters once something does call `close()`):**
+For a `PixiBuilder`-built environment, the worker is launched as `pixi run
+--manifest-path ... python -c "...python_worker..."` — Appose's
+`Service._process` is the **`pixi` wrapper**, not the actual
+`python_worker` process `pixi` spawns as its child. Confirmed via `psutil`:
+calling `Service.kill()` only kills the wrapper; the real worker survives
+as an orphan (reparented to pid 1) and keeps running until it finishes
+whatever task it was mid-execution on (if ever) and only then notices
+stdin EOF.
+
+**Fix applied at the time (superseded — see the 2026-10-09 update below)**,
+in `cellprofiler_core/utilities/appose.py`:
+
+- `get_service()` now starts the service via a new `_start_as_daemon()`
+  helper instead of calling `service.start()` directly: it runs
+  `service.start()` from inside a short-lived daemon thread. Since
+  `threading.Thread(daemon=None)` (Appose's default - it never passes
+  `daemon=`) inherits the daemon flag of *whichever thread constructs it*,
+  every thread Appose creates transitively - its three I/O threads included
+  - comes out daemon too. Daemon threads are **abandoned, not joined**, at
+  interpreter exit, so the Part 1 deadlock is now structurally impossible,
+  regardless of whether anything ever calls `close()`/whether `atexit` gets
+  a chance to run. This is the real fix for the hang itself.
+- `close_service()` is still bounded and process-tree-aware (closes
+  gracefully, waits up to `_CLOSE_TIMEOUT_SECONDS` = 5s, then force-kills
+  via `_kill_process_tree()`, which uses `psutil` — already a
+  `cellprofiler-core` dependency — to enumerate and kill `Service._process`
+  and all its descendants, not just the immediate child). This remains
+  worthwhile purely to avoid *leaking* the worker subprocess (Part 2) when
+  a service is never explicitly closed — and now that Part 1's deadlock is
+  gone, `atexit`-triggered calls to it actually get to run.
+
+Verified together: a service with a 30s task in flight, cleaned up via
+`atexit` only (no explicit `close()`/`post_run` call anywhere in the test),
+exits with code 0 in ~8s total, with zero surviving processes afterward
+(checked via `ps aux | grep python_worker` immediately after exit) — versus
+hanging forever (confirmed via `timeout`, process never exited) before this
+fix.
+
+**Standalone MCVE** (no CellProfiler involved): a bare pixi project
+(`python` + `appose` + `psutil`, all conda-forge) at
+`appose-hang-mcve/{pixi.toml,repro.py}` (built during this session; ask for
+its current location/to have it re-created if it's no longer on disk - it
+lived under a session scratch directory) with five `pixi run
+scenario-{a,b,c,d,e}` targets:
+- **a**: open a service, run one task, return without closing it →
+  process hangs forever at exit (`timeout` has to kill it); the real worker
+  survives untouched as an orphan unless manually killed afterward.
+- **b**: a long task in flight, shut down using only Appose's *documented*
+  public API (`close()`, wait, `kill()`) → two compounding problems:
+  `kill()` only signals the `pixi` wrapper, never the real worker; and even
+  though `close()` *does* reach the real worker (same inherited stdin pipe)
+  and its read loop returns promptly, the worker process still can't exit
+  until the in-flight task finishes, because the task runs on its own
+  non-daemon thread (`python_worker.py`'s per-task thread) that the
+  worker's own interpreter shutdown must join first - the same root cause
+  as scenario c, one level deeper. `wait_for()` doesn't return until
+  close to the task's full duration, not shortly after `kill()`.
+- **c**: same long task, cleaned up via `atexit.register` only (the
+  idiomatic pattern) → hangs forever; the atexit callback's own print
+  statement never fires, proving `atexit` never ran at all - the one that
+  actually matters for the hang this session chased down.
+- **d**: identical to **c**, except `service.start()` is called from a
+  daemon thread first → exits in ~1s, `atexit` callback fires correctly
+  (confirms the fix we applied in `_start_as_daemon()`).
+- **e**: identical to **b**, but after `close()` the real worker PID (found
+  via `psutil`, not any public API) is SIGKILL-ed directly instead of/in
+  addition to `service.kill()` → `wait_for()` returns in well under a
+  second regardless of remaining task duration, confirming scenario b's
+  delay is attributable entirely to the real worker process, not the
+  wrapper.
+
+Filed upstream: <https://github.com/apposed/appose/issues/37>.
+
+**Update (2026-10-09): fixed upstream natively — our workaround has been
+removed.** Appose's own maintainers fixed both parts directly in `Service`
+itself:
+[apposed/appose-python@3813bf7](https://github.com/apposed/appose-python/commit/3813bf7fa8b8d4df5907faec39fc0ac8f4cfd06b)
+(code) and
+[apposed/appose@c076856](https://github.com/apposed/appose/commit/c0768568ff0f9f1ff5eed85dfe00038249a725a9)
+(docs), both referencing this issue. What changed, and how it maps onto the
+two parts above:
+
+- **Part 1 fix**: `Service.start()` now creates its stdout/stderr/monitor
+  threads with `daemon=True` explicitly, rather than relying on inheriting
+  the calling thread's daemon flag. Calling `service.start()` directly from
+  any thread — including CellProfiler's own main thread — is now safe; our
+  `_start_as_daemon()` thread-wrapper workaround is no longer needed.
+- **Part 2 fix**: the worker subprocess is now launched in its own process
+  group on POSIX (`start_new_session=True`) / process tree on Windows, and
+  `Service.kill()` (via a new `appose.util.process.kill_tree()`) kills that
+  whole tree — not just the immediately-launched process — so a
+  `PixiBuilder`-built worker (launched as `pixi run ...`) can no longer
+  survive as an orphan. Our `_kill_process_tree()` (hand-rolled via
+  `psutil`) is no longer needed.
+- **New native lifecycle management**: `Service` now tracks every started
+  instance in a module-level `WeakSet` and registers *its own* `atexit`
+  hook (once, lazily, on first `start()`) that shuts down any instance
+  still alive at program exit — closing it, then killing it if it hasn't
+  exited within `Service.exit_timeout` seconds (a new class/instance
+  attribute, default `5.0`). This makes our own `atexit.register(close_service,
+  ...)` call in `get_service()` redundant — Appose now does this for every
+  `Service`, whether or not a caller ever heard of `close_service()`.
+- **New `close(timeout=...)`/`wait_for(timeout=...)` signatures**: `close()`
+  now optionally blocks (returning the exit code), waiting up to `timeout`
+  seconds before killing the worker (tree) itself if it's still alive. This
+  is exactly the bounded-wait-then-kill logic `close_service()` used to
+  implement by hand with a manual `time.sleep` polling loop.
+
+**`cellprofiler_core/utilities/appose.py` was simplified accordingly**:
+`get_service()` now just does `service = get_environment(env_spec).python();
+service.exit_timeout = _CLOSE_TIMEOUT_SECONDS; service.start()` — no thread
+wrapper, no manual `atexit.register`. `close_service()` is now a thin
+`service.close(timeout=timeout)` call — no manual poll loop, no `psutil`
+tree-walk. Re-verified the exact scenarios Gotcha 5 originally chased down,
+now through the simplified bridge: closing a real, busy `cellcast` service
+(a genuine `PixiBuilder`/`pixi run`-wrapped worker) with a short timeout
+kills it and returns in ~1s (was: indefinite hang pre-fix); leaving a busy
+`cellcast` service running with **no explicit `close_service()` call at
+all** still exits cleanly (exit code 0, zero leaked `python_worker`
+processes) in ~`exit_timeout` seconds, relying purely on Appose's own
+native atexit hook.
+
+This requires an `appose` version including the above commits — i.e., git
+`main`, same floating dependency already required for other reasons (Gotcha
+4, Gotcha 8). The standalone MCVE below remains useful as a from-scratch
+reproduction of the original bug, independent of CellProfiler or cellcast,
+should anything like it resurface.
+
+### 6. `wx.html.HtmlWindow` ignores `SetBackgroundColour()`/`SetForegroundColour()` — colors must be baked into the HTML itself
+
+`wx.html.HtmlWindow` (and subclasses like `HtmlClickableWindow`,
+`gui/html/htmlwindow.py`, already used elsewhere in this codebase — e.g.
+`ModuleView.make_html_control`/`make_help_control`) is a small, largely
+HTML-3.2-era rendering engine with its own hardcoded default page style
+(white background, black text, classic web-blue links). Calling
+`SetBackgroundColour()`/`SetForegroundColour()` on it has **no effect on
+what actually gets painted** — confirmed by rendering the control to an
+offscreen `wx.Bitmap` via `cell.Draw(dc, ...)`
+(`cell = control.GetInternalRepresentation()`) and scanning real pixel
+values; those calls only affect what `GetBackgroundColour()`/
+`GetForegroundColour()` report back afterward, never the rendered page.
+
+The only way to make rendered content match a theme is to say so directly
+in the HTML, via the legacy `<body bgcolor="..." text="..." link="...">`
+attributes wx.html's parser does support (confirmed both by
+`wx.html.HtmlWinParser.GetActualColor()`/`GetLinkColor()` correctly
+reflecting parsed values right after `SetPage()`, and by the pixel-level
+rendering check above). Separately, `SetPage()` resets the control's own
+background attribute to its internal default (white) every time it's
+called — if you also want `GetBackgroundColour()` itself to stay in sync
+(e.g. to avoid a mismatched edge at the control's boundary), set it
+*after* `SetPage()`, not before.
+
+Also: `HtmlWindow` has no `Wrap()`/best-size equivalent for "fit my height
+to this content at this width" — the working idiom is to set the
+control's width via `SetSize()`, call `SetPage()`, then read
+`GetInternalRepresentation().GetHeight()` and `SetMinSize()` to that. It
+*does* reflow already-set content to a new width automatically on resize
+(no need to call `SetPage()` again) — but doing the
+measure-then-`SetMinSize()`-then-`Layout()` dance directly inside its own
+`EVT_SIZE` handler can trigger another resize of the same panel, recursing
+until `RecursionError`; guard with a reentrancy flag.
+
+### 7. `wx.SystemSettings` colors/appearance can go stale after a live OS theme toggle — listen for `EVT_SYS_COLOUR_CHANGED`
+
+No widget's `GetForegroundColour()` (a plain `wx.Panel`'s, a real
+`wx.TextCtrl`'s) nor any `wx.SystemSettings.GetColour()` token
+(`SYS_COLOUR_WINDOWTEXT`, `SYS_COLOUR_HOTLIGHT`) reliably reflected this
+app's actual live text color when the OS appearance was toggled **without
+restarting the app** — confirmed directly with the user. `wx.SystemSettings`
+-backed values are cached by wx and are not guaranteed to refresh just
+because the OS theme changes mid-session; native widget *background*
+painting, by contrast, is handled directly by the OS compositor with no
+such cache — which is exactly why a plain, never-customized `wx.Panel`
+reliably matches its equally-plain sibling panels' background in both
+light and dark mode with zero extra code, while every
+`wx.SystemSettings`-sourced foreground/link color attempt failed
+identically.
+
+**Fix**: bind `wx.EVT_SYS_COLOUR_CHANGED` and re-derive/re-render colors
+right when that notification actually fires, rather than passively
+re-querying `wx.SystemSettings` whenever some unrelated event happens to
+run next.
+
+### 8. `Service.import_library()` is a real (and, as of 2026-10-09, unreleased) Appose feature — requires `appose` from git `main` on *both* host and worker, not just the host's existing float-to-main pin
+
+Appose gained a `Service.import_library(name, *, path=..., source=...)`
+method (`appose/service.py`, worker-side support in the new
+`appose/library.py`) that registers a module or package's source with the
+worker process so later task scripts can `import` it by name like any
+normal module — living in the worker's `sys.modules`, so its module-level
+state (a plain cache dict, a loaded model, etc.) persists across tasks for
+free, no `task.export`/`globals()` dance needed (see "Persistent services"
+above). `RunCellcast` adopted this: `cellcast.py`'s `run()` now does
+`get_service(_ENV_SPEC).import_library("cellcast_worker", path=_PLUGIN_DIR
+/ "_worker.py")` before calling `run_python_task`, and `_worker.py`'s
+worker-side glue does `from cellcast_worker import predict`.
+
+This method does not exist in any published Appose release yet — only on
+git `main`. Gotcha 4 already established that CellProfiler's own
+(host-side) `pixi.toml` floats `appose` to unpinned `main` (not a release),
+so the host picks this up automatically once its lock is refreshed. But a
+plugin's own `pixi.toml` builds a **separate, independent** environment for
+the **worker** process — and `import_library`'s worker-side half
+(`appose/library.py`'s import-hook machinery) has to be present there too.
+`cellcast/pixi.toml`'s own `appose` pypi-dependency therefore had to be
+switched from a released version to the same unpinned
+`git = "https://github.com/apposed/appose-python.git"` reference as the
+host, purely to get this feature. If `import_library` ever starts raising
+`AttributeError`/`NotImplementedError`, check first whether the relevant
+`pixi.toml` (host's root one, or a plugin's own) has drifted onto a
+released `appose` version instead of `main`.
+
+Other behaviors worth remembering about this API:
+
+- Registration is **idempotent on unchanged source**: `import_library()`
+  hashes/compares the file content it's about to send; if it matches what's
+  already registered under that name, it's a cheap no-op that leaves the
+  already-imported module (and any state built up in it) alone. This makes
+  it safe to call on every `run()` invocation (as `cellcast.py` does)
+  rather than needing to track "have I already registered this" at the
+  frontend-module level.
+- Registering *changed* source (e.g. iterating on `_worker.py` during
+  development against an already-started service, such as in GUI
+  test/debug mode) evicts the stale module from the worker's `sys.modules`
+  and re-imports fresh on next use — so edits are picked up without
+  needing to restart the service, as long as `import_library()` is called
+  again (which happens automatically here, since it's called every
+  `run()`).
+- The source is read from disk once, at the moment `import_library()` is
+  called — not lazily at the worker's actual `import` statement. A file
+  edited on disk has no effect until the next `import_library()` call.
+- Calling it on an already-started service (the normal case here, since
+  `get_service()` already started it) is not free: it goes through a real
+  task round-trip to the worker and blocks until that completes, so it's
+  cheap but not literally zero cost per `run()` call.
+
+## Existing reference code in CellProfiler-plugins (pre-existing, not ours)
+
+In `CellProfiler-plugins/CP5/active_plugins/`:
+
+- **`cpij/`**: an older, pre-Appose, unrelated `multiprocessing.managers`-based
+  ImageJ bridge. Not relevant to this work.
+- Earlier Appose proofs-of-concept (`appose_demo.py`, `apposednapari/`, an
+  apposified `pixelshuffle.py`) were all reverted after validating the
+  pattern — not kept as real plugins. `cellcast.py` (see above) is the
+  first one that landed for real.
+
+## Plugin management dialog: three follow-on projects (2026-10-08)
+
+The `appose` branch has been rebased onto `plugins-dialog`, which adds a
+GUI dialog (`PluginsDialog`,
+`src/frontend/cellprofiler/gui/plugins_dialog/_plugins_dialog.py`) for
+downloading/configuring plugins, backed by discovery/loading logic in
+`cellprofiler_core/utilities/core/plugins.py`
+(`_plugin_directories()`, `load_plugins()`/`load_plugin()`,
+`PLUGIN_STATUS`, `get_plugin_statuses()`). Three improvements were made on
+top of that dialog (all done); design decisions and final implementation
+below.
+
+### Project 1: stop listing shadowed/superseded official plugins — done
+
+**Problem**: `_plugin_directories()` returns `[user_dir, official_dir]`.
+`load_plugin(source)` skips re-importing `source` if
+`PLUGIN_STATUS[source]` is already `loaded: True` — so a user plugin
+correctly takes priority over an official plugin with the same module
+name. But `PluginsDialog.populate_list()` calls `get_plugin_statuses(directory)`
+**once per directory** and unions the rows; since `get_plugin_statuses`
+looks entries up in the single, name-keyed global `PLUGIN_STATUS` dict with
+no notion of *which* directory actually produced that status, a shadowed
+official plugin shows up as its own row, *also* marked `loaded: True` —
+i.e. the dialog shows two "loaded" rows for one active plugin, with no way
+to tell the official one was never actually imported.
+
+**Decision**: shadowed entries should not be listed at all — one row per
+effective plugin name, full stop.
+
+**Plan**:
+- Thread `plugin_directory` through `load_plugins()` → `load_plugin()`, and
+  record it in `PLUGIN_STATUS[source]["directory"]` whenever `load_plugin`
+  actually attempts an import (i.e., whenever it does *not* hit the
+  already-loaded skip-guard). This also incidentally fixes a secondary
+  data-loss bug: today, if a user plugin fails and its official same-named
+  fallback *also* fails, the official attempt's traceback silently
+  overwrites the user attempt's in the global dict, since there was never
+  a directory to disambiguate by — tracking `directory` per entry makes
+  "whichever attempt actually ran most recently" explicit rather than
+  accidental.
+- `get_plugin_statuses()` drops its `directory` parameter and instead
+  returns one entry per known plugin *name* (merging `PLUGIN_STATUS` with
+  the on-disk `plugin_list()` of both directories, for names never
+  attempted yet — e.g. before the first `load_plugins()` call, or
+  `modules_only=True` skipping reader-only files).
+- `PluginsDialog.populate_list()` calls `get_plugin_statuses()` once (no
+  loop over directories), and derives each row's "Source" column from the
+  entry's own recorded `directory` (compared against
+  `get_plugin_directory()` / `get_official_plugins_directory()`) rather
+  than from which loop iteration produced it.
+
+### Project 2: mark + prebuild appose-backed plugins — done
+
+**Problem**: no way today to tell, from the dialog, that a plugin (like
+`RunCellcast`) launches a separate Appose-managed subprocess/environment —
+nor any way to trigger that environment's build ahead of a plugin's first
+real use (avoiding the first-run download/resolve cost happening
+mid-pipeline).
+
+**Decision**: explicit opt-in. A plugin's `Module` subclass declares a new
+class attribute, `appose_env_spec`, holding the (absolute) path to its
+environment spec file — e.g., in `cellcast.py`:
+
+    class RunCellcast(ImageSegmentation):
+        appose_env_spec = _ENV_SPEC
+        ...
+
+**Implemented** (`cellprofiler_core/utilities/core/plugins.py`,
+`gui/plugins_dialog/_plugins_dialog.py`, `cellcast.py`):
+
+- `load_plugin()` (not `add_module()` — it already has `plugin_class` in
+  scope, no need to thread anything new through `add_module`'s return
+  value) reads `getattr(plugin_class, "appose_env_spec", None)` right after
+  a successful `Module` load and records it as
+  `PLUGIN_STATUS[source]["appose_env_spec"]` (always `None` for readers and
+  failed/unattempted entries — see the updated `PLUGIN_STATUS` docstring
+  comment at the top of the file).
+- `PluginsDialog` gained a second icon column (column 1, between the
+  existing status icon and the "Plugin" name column): `IMG_UPDATE.png` when
+  `appose_env_spec` is set, otherwise a fully transparent blank bitmap
+  (`wx.Image(16, 16)` + `InitAlpha()` + all-zero alpha) — a real
+  `SetItemColumnImage` icon rather than a text/emoji prefix, consistent
+  with the existing status-icon column's approach.
+- A "Build Environment" button next to "Get Info...", enabled only when the
+  selected row has an `appose_env_spec`. Calls
+  `cellprofiler_core.utilities.appose.get_environment(spec_path)` on a
+  background `threading.Thread` (mirrors the dialog's existing
+  official-plugins download flow: `wx.CallAfter` back to the main thread
+  when done), so the build goes through the same in-process
+  `_environments` cache the plugin's own `run()` will hit later — a build
+  triggered from the dialog is actually warm for the plugin's first real
+  pipeline run, not a separate, redundant build.
+- No separate "force rebuild" action: Appose/pixi's `build()` is already
+  incremental (a fast no-op if the spec is unchanged and already resolved,
+  a real rebuild if the spec changed), so one button covers both "build in
+  advance" and "rebuild".
+- `cellcast.py`'s `RunCellcast` now declares `appose_env_spec = _ENV_SPEC`
+  (it's currently the only plugin this applies to).
+
+Verified by constructing `PluginsDialog` directly (headless `wx.App()`,
+no event loop) after a real `load_plugins()`: `cellcast`'s row correctly
+carries its real `cellcast/pixi.toml` path and `loaded: True`; every other
+plugin shows `appose_env_spec: None`. Selecting the `cellcast` row enables
+"Build Environment"; selecting any other plugin's row keeps it disabled.
+With `get_environment` monkeypatched to a no-op stub, clicking "Build
+Environment" on the `cellcast` row calls it with exactly `cellcast`'s
+resolved `pixi.toml` path and updates the status label to "Environment for
+cellcast is up to date." New/updated tests in
+`tests/core/utilities/core/test_plugins.py` cover the `appose_env_spec`
+capture at the `PLUGIN_STATUS`/`get_plugin_statuses()` level.
+
+**Follow-ups from review (2026-10-08), also implemented**:
+- `appose_env_spec` detection isn't Module-only: `load_plugin()`'s Reader
+  branch now also reads `getattr(plugin_class, "appose_env_spec", None)`
+  (previously hardcoded to `None`), even though no Reader plugin uses it
+  yet — there's no architectural reason a Reader couldn't run via Appose
+  too, so the dialog/icon/build-button machinery supports it uniformly.
+- The new icon column is now labeled ("Appose" header, column widened to
+  60px from the original icon-only 28px) instead of being header-less like
+  column 0.
+- **Not implemented, by design**: an indicator for "has this environment
+  already been built" (as distinct from "is it up to date", which Project
+  2 already treats as irrelevant — we always want `build()`'s own
+  incremental sync to run on every real use regardless). Appose has no
+  public API for this. The only way to know an environment's resolved
+  directory ahead of calling `build()` is `Builder._resolve_env_dir()`
+  (private; falls back to `Path(appose_envs_dir()) / scheme.env_name(content)`
+  when no explicit name/base was set, which is also true of every path
+  reachable from this codebase's `get_environment()`/`appose.file(path)`
+  usage). `appose_envs_dir()` and `scheme.env_name()` are themselves public,
+  so the check is *reconstructible*, but only by duplicating Appose's
+  private default-naming algorithm outside of Appose itself — fragile by
+  construction, since nothing obligates that algorithm to stay stable
+  across Appose releases. Deliberately not implemented; flagged for the
+  user to file upstream if wanted, rather than hacked around here.
+
+### Project 3: per-module safety/trust warning banner — done
+
+**Problem**: nothing in the module settings view tells a user whether the
+module they've added is built-in, an official plugin, an official plugin
+that happens to run its own downloaded dependencies via appose, or a fully
+user-supplied plugin — distinctions that matter for how much scrutiny to
+apply.
+
+**Decision**: every *plugin* module (i.e. `is_plugin` is true — built-in,
+non-plugin modules get no banner at all) gets a static, always-visible
+(non-dismissible) warning banner rendered between the Notes box and the
+Settings controls, with exactly one of three texts depending on
+`(official vs. user-supplied) × (appose vs. not)`:
+
+- Official, non-appose: `"<plugin_name>" is an official plugin, however
+  care should still be taken to ensure it is executing correct code, and
+  that your environment is able to run it. See
+  https://github.com/CellProfiler/CellProfiler-plugins/ for more info.`
+- Official, appose: `"<plugin_name>" is an official plugin, which will
+  automatically download dependencies and configure its environment,
+  however care should still be taken to ensure it is executing correct
+  code. See https://github.com/CellProfiler/CellProfiler-plugins/ for more
+  info.`
+- User-supplied (appose or not — same text either way): `"<plugin_name>" is
+  a non-official plugin. Great care should be taken to ensure it is
+  executing safe and trusted code, and that your environment is able to run
+  it. See https://github.com/CellProfiler/CellProfiler-plugins/ for
+  official plugins info.`
+
+**Implemented** (`cellprofiler_core/utilities/core/plugins.py`,
+`gui/cpframe.py`, `gui/module_view/_module_view.py`):
+
+- `load_plugin()` sets `plugin_class.plugin_directory = directory`
+  (alongside the existing `is_plugin = True` set by `add_module`), for both
+  Module and Reader branches — exposed directly on the live class so
+  `ModuleView` doesn't need to reach into `PLUGIN_STATUS`/`plugin_list()`
+  internals at render time.
+- Three small functions in `plugins.py`, reusable by both the dialog and
+  the GUI module view (`PluginsDialog` calls the first of these too, no
+  more duplicate `_source_label`):
+  - `classify_plugin_directory(directory)` → `"User"`/`"Official"`/
+    `"Unknown"`, comparing a raw directory path (via realpath) against the
+    currently configured `get_plugin_directory()`/
+    `get_official_plugins_directory()`.
+  - `get_plugin_source_label(module)` → same, but from a Module/Reader
+    class or instance's own `is_plugin`/`plugin_directory` attributes;
+    `None` if `module` isn't a plugin at all.
+  - `get_plugin_warning_text(module)` → the fully-formatted banner string
+    for `module` (combining `get_plugin_source_label()` with
+    `bool(module.appose_env_spec)` to pick the right template, using the
+    `PLUGIN_INFO_URL` constant for the link), or `None` for non-plugin
+    modules.
+- **The banner is a dedicated sibling panel, not a child of `notes_panel`.**
+  `cpframe.py`'s `__right_win` creates `__plugin_warning_panel` and inserts
+  it into `__right_win`'s own sizer directly between `__notes_panel` and
+  `__path_module_imageset_panel` (same spacing convention as the existing
+  gap between notes and settings), then passes it into
+  `ModuleView(..., plugin_warning_panel=self.__plugin_warning_panel)` as an
+  independent constructor parameter alongside `notes_panel`. The two are
+  built by separate methods (`make_notes_gui()`, untouched; new
+  `make_plugin_warning_gui()`) and shown/hidden independently in
+  `set_selection()`/`clear_selection()`, gated on
+  `plugin_warning_panel is not None` rather than on `notes_panel`'s own
+  gate. This matters because nothing guarantees `notes_panel`'s own
+  background exactly matches its neighboring settings panel — nesting the
+  banner inside `notes_panel` would only ever blend it with `notes_panel`
+  itself, not with the surrounding module view.
+- `make_plugin_warning_gui()` builds a single, uncustomized `wx.Panel` -
+  no `SetBackgroundColour()`/`SetOwnBackgroundColour()` ever called on it -
+  so it automatically renders with the exact same background as its
+  equally-vanilla siblings via ordinary wx theming, no color-tracking code
+  needed. A bound `wx.EVT_PAINT` handler draws *only* a `WARNING_COLOR`
+  rectangle outline on top (`wx.Pen` + `wx.TRANSPARENT_BRUSH`; none of
+  wx's built-in border styles expose a way to set a custom border color).
+  The message itself renders via an `HtmlClickableWindow`
+  (`gui/html/htmlwindow.py` — the same control this codebase already uses
+  elsewhere, e.g. `make_html_control`/`make_help_control`), so the
+  `PLUGIN_INFO_URL` link in the text is a real, clickable link, not inert
+  text (its `OnLinkClicked` already routes any `http(s)://` href to
+  `webbrowser.open`).
+- `_plugin_warning_html(text, background_colour, text_colour, link_colour)`
+  HTML-escapes the message, turns the embedded `PLUGIN_INFO_URL` into a
+  real `<a href>` anchor, and bakes all three colors into the `<body
+  bgcolor=... text=... link=...>` tag as hex strings. Background comes
+  from `plugin_warning_panel.GetBackgroundColour()` (correct by
+  construction, per above); text/link color come from
+  `wx.SystemSettings.GetAppearance().IsDark()`, picking one of two fixed
+  color pairs — see Gotcha 6 for why colors must be baked into the HTML
+  markup itself and why this specific pair of sources was the one that
+  actually worked.
+- `make_plugin_warning_gui()` also binds `wx.EVT_SYS_COLOUR_CHANGED` to
+  re-render (with the same text) whenever the OS appearance changes, and
+  `show_module_ui()` (the "is any module selected at all" coarse toggle)
+  only ever force-hides `plugin_warning_panel`, never force-shows it — see
+  Gotcha 6 and Gotcha 7 for why both of these matter.
+- Resize: a `wx.EVT_SIZE` handler re-measures `HtmlWindow`'s content height
+  at the new width (it reflows automatically on resize, no fresh
+  `SetPage()` needed) and calls `SetMinSize()` + `Layout()` on
+  `plugin_warning_panel.GetParent()` (`__right_win`) — guarded by a
+  reentrancy flag, since that `Layout()` can itself trigger another resize
+  of the same panel.
+
+Verified: headless tests constructing a real three-sibling-panel structure
+confirm all three share an identical, uncustomized background; the
+generated `<body bgcolor=.../>` hex always matches `plugin_warning_panel`'s
+own live background; `OnLinkClicked` dispatches to `webbrowser.open` with
+the right URL; resize/re-measure and the `EVT_SYS_COLOUR_CHANGED` handler
+both work as wired. See Gotchas 5–7 below for the specific wx behaviors
+this design depends on — each was confirmed empirically (pixel-level
+rendering checks, parser-state inspection, or a direct answer from the
+user) before being relied on here, not assumed. New/updated tests in
+`tests/core/utilities/core/test_plugins.py` cover `classify_plugin_directory`,
+`get_plugin_source_label`, and `get_plugin_warning_text` (all three
+banner-text variants, plus the non-plugin `None` case).
+
+## Open questions / not yet decided
+
+1. **Worker glue templating**: the per-plugin glue (convert input `NDArray`
+   → numpy → call into the registered worker library → wrap output back
+   into `NDArray` → assign to `task.outputs[...]`) is still hand-written
+   per plugin, as a small static `_WORKER_SCRIPT` string in the frontend
+   module (see Design decision #3). Adopting `Service.import_library()`
+   (Gotcha 8) already shrank this considerably — `_worker.py` is now a real
+   module imported by name, not text concatenated with inline caching
+   logic — but the remaining `_WORKER_SCRIPT` boilerplate (NDArray in/out
+   marshaling) is still duplicated per plugin rather than factored into a
+   shared helper in `cellprofiler_core/utilities/appose.py`. Worth doing
+   once a third plugin is ported and the shape of the duplication is clearer.

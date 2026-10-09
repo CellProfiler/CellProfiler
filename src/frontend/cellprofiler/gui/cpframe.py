@@ -214,6 +214,7 @@ class CPFrame(wx.Frame):
         #
         #  right_win
         #    Notes window
+        #    plugin_warning_panel (conditional)
         #    path_module_imageset_panel
         #        path_list_sash
         #            group_box
@@ -228,6 +229,13 @@ class CPFrame(wx.Frame):
         self.__right_win.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.__notes_panel = wx.Panel(self.__right_win)
         self.__right_win.GetSizer().Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
+        self.__right_win.GetSizer().AddSpacer(4)
+        self.__plugin_warning_panel = wx.Panel(
+            self.__right_win, name="plugin_warning_panel"
+        )
+        self.__right_win.GetSizer().Add(
+            self.__plugin_warning_panel, 0, wx.EXPAND | wx.LEFT | wx.RIGHT
+        )
         self.__right_win.GetSizer().AddSpacer(4)
         self.__path_module_imageset_panel = wx.Panel(self.__right_win, name="path_module_imageset_panel")
         self.__right_win.GetSizer().Add(
@@ -452,6 +460,18 @@ class CPFrame(wx.Frame):
         right_sizer = self.__right_win.GetSizer()
         assert isinstance(right_sizer, wx.Sizer)
         right_sizer.Show(self.__notes_panel, show)
+        # whether plugin_warning_panel itself should be shown is
+        # per-module (most modules don't get a warning at all) and is
+        # governed entirely by ModuleView.set_selection()/clear_selection(),
+        # which runs independently of this method and may well have
+        # already run *before* this call (e.g. __on_pipeline_loaded()
+        # selects the first module, then calls show_module_ui(True)) - so
+        # only ever force it off here (nothing selected => definitely no
+        # warning either), never force it on, or this would clobber
+        # whatever ModuleView correctly decided for the actual selected
+        # module with a blank, unstyled panel.
+        if not show:
+            right_sizer.Show(self.__plugin_warning_panel, False)
         right_sizer.Show(self.__path_module_imageset_panel, show)
         self.__right_win.Layout()
         if show:
@@ -1313,6 +1333,7 @@ class CPFrame(wx.Frame):
             self.__workspace,
             frame=self,
             notes_panel=self.__notes_panel,
+            plugin_warning_panel=self.__plugin_warning_panel,
         )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)

@@ -1,11 +1,11 @@
 import logging
-import os
 import threading
 
 import wx
 
-from cellprofiler_core.preferences import get_plugin_directory
+from cellprofiler_core.utilities.appose import get_environment
 from cellprofiler_core.utilities.core.plugins import (
+    classify_plugin_directory,
     get_official_plugins_directory,
     official_plugins_repo_exists,
     download_official_plugins_repo,
@@ -45,6 +45,11 @@ class PluginsDialog(wx.Dialog):
         self.image_list = wx.ImageList(16, 16)
         self.image_ok = self.image_list.Add(get_builtin_image("IMG_DISABLED").ConvertToBitmap())
         self.image_error = self.image_list.Add(get_builtin_image("IMG_ERROR").ConvertToBitmap())
+        self.image_appose = self.image_list.Add(get_builtin_image("IMG_UPDATE").ConvertToBitmap())
+        blank_image = wx.Image(16, 16)
+        blank_image.InitAlpha()
+        blank_image.SetAlpha(bytes(16 * 16))
+        self.image_blank = self.image_list.Add(blank_image.ConvertToBitmap())
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
@@ -63,13 +68,15 @@ class PluginsDialog(wx.Dialog):
         self.list_ctrl = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         self.list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
         self.list_ctrl.InsertColumn(0, "")
-        self.list_ctrl.InsertColumn(1, "Plugin")
-        self.list_ctrl.InsertColumn(2, "Type")
-        self.list_ctrl.InsertColumn(3, "Source")
+        self.list_ctrl.InsertColumn(1, "Apposed")
+        self.list_ctrl.InsertColumn(2, "Plugin")
+        self.list_ctrl.InsertColumn(3, "Type")
+        self.list_ctrl.InsertColumn(4, "Source")
         self.list_ctrl.SetColumnWidth(0, 28)
-        self.list_ctrl.SetColumnWidth(1, 300)
-        self.list_ctrl.SetColumnWidth(2, 100)
+        self.list_ctrl.SetColumnWidth(1, 60)
+        self.list_ctrl.SetColumnWidth(2, 300)
         self.list_ctrl.SetColumnWidth(3, 100)
+        self.list_ctrl.SetColumnWidth(4, 100)
         main_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_select, self.list_ctrl)
         self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.on_select, self.list_ctrl)
@@ -79,6 +86,10 @@ class PluginsDialog(wx.Dialog):
         self.get_info_button.Disable()
         self.Bind(wx.EVT_BUTTON, self.on_get_info, self.get_info_button)
         button_sizer.Add(self.get_info_button, 0, wx.RIGHT, 10)
+        self.build_env_button = wx.Button(self, label="Build Environment")
+        self.build_env_button.Disable()
+        self.Bind(wx.EVT_BUTTON, self.on_build_environment, self.build_env_button)
+        button_sizer.Add(self.build_env_button, 0, wx.RIGHT, 10)
         self.refresh_button = wx.Button(self, label="Refresh")
         self.Bind(wx.EVT_BUTTON, self.on_refresh, self.refresh_button)
         button_sizer.Add(self.refresh_button, 0)
@@ -109,31 +120,28 @@ class PluginsDialog(wx.Dialog):
     def populate_list(self):
         self.list_ctrl.DeleteAllItems()
         self.rows = []
-        sources = []
-        user_directory = get_plugin_directory()
-        if user_directory and os.path.isdir(user_directory):
-            sources.append(("User", user_directory))
-        official_directory = get_official_plugins_directory()
-        if os.path.isdir(official_directory):
-            sources.append(("Official", official_directory))
-        for source_label, directory in sources:
-            for status in get_plugin_statuses(directory):
-                self.add_row(source_label, status)
+        for status in get_plugin_statuses():
+            source_label = classify_plugin_directory(status["directory"])
+            self.add_row(source_label, status)
         self.get_info_button.Disable()
 
     def add_row(self, source_label, status):
         row_index = self.list_ctrl.GetItemCount()
         image_index = self.image_ok if status["loaded"] else self.image_error
         self.list_ctrl.InsertItem(row_index, "", image_index)
-        self.list_ctrl.SetItem(row_index, 1, status["name"])
-        self.list_ctrl.SetItem(row_index, 2, (status["kind"] or "unknown").capitalize())
-        self.list_ctrl.SetItem(row_index, 3, source_label)
+        appose_image_index = self.image_appose if status.get("appose_env_spec") else self.image_blank
+        self.list_ctrl.SetItemColumnImage(row_index, 1, appose_image_index)
+        self.list_ctrl.SetItem(row_index, 2, status["name"])
+        self.list_ctrl.SetItem(row_index, 3, (status["kind"] or "unknown").capitalize())
+        self.list_ctrl.SetItem(row_index, 4, source_label)
         self.rows.append(status)
 
     def on_select(self, event):
         selected = self.list_ctrl.GetFirstSelected()
         can_show_info = selected != -1 and not self.rows[selected]["loaded"]
         self.get_info_button.Enable(can_show_info)
+        can_build = selected != -1 and bool(self.rows[selected].get("appose_env_spec"))
+        self.build_env_button.Enable(can_build)
 
     def on_get_info(self, event):
         selected = self.list_ctrl.GetFirstSelected()
@@ -142,6 +150,41 @@ class PluginsDialog(wx.Dialog):
         status = self.rows[selected]
         message = status["error"] or "No additional information is available."
         display_error_message(self, message, title=f"Error loading {status['name']}")
+
+    def on_build_environment(self, event):
+        selected = self.list_ctrl.GetFirstSelected()
+        if selected == -1:
+            return
+        status = self.rows[selected]
+        spec = status.get("appose_env_spec")
+        if not spec:
+            return
+        self.build_env_button.Disable()
+        self.status_label.SetLabel(f"Building environment for {status['name']}...")
+        threading.Thread(
+            target=self._build_env_worker, args=(status["name"], spec), daemon=True
+        ).start()
+
+    def _build_env_worker(self, name, spec):
+        try:
+            get_environment(spec)
+            error = None
+        except Exception as e:
+            LOGGER.warning("Failed to build environment for %s", name, exc_info=True)
+            error = str(e)
+        wx.CallAfter(self._on_build_environment_complete, name, error)
+
+    def _on_build_environment_complete(self, name, error):
+        self.on_select(None)
+        if error:
+            self.status_label.SetLabel("Build failed.")
+            wx.MessageBox(
+                f"Failed to build environment for {name}:\n{error}",
+                "Build failed",
+                style=wx.ICON_ERROR,
+            )
+            return
+        self.status_label.SetLabel(f"Environment for {name} is up to date.")
 
     def on_refresh(self, event):
         load_plugins()

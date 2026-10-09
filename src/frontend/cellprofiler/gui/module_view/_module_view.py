@@ -1,3 +1,4 @@
+import html
 import logging
 import os
 import stat
@@ -7,6 +8,7 @@ import matplotlib.cm
 import numpy
 import wx
 import wx.grid
+import wx.html
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
@@ -24,6 +26,8 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_error_color
+from cellprofiler_core.utilities.core.plugins import get_plugin_warning_text
+from cellprofiler_core.utilities.core.plugins import PLUGIN_INFO_URL
 from cellprofiler_core.setting import Binary, PathListDisplay, Setting
 from cellprofiler_core.setting import BinaryMatrix
 from cellprofiler_core.setting import Color
@@ -113,6 +117,42 @@ from ..utilities.module_view import y_control_name
 LOGGER = logging.getLogger(__name__)
 
 
+def _wx_colour_to_hex(colour):
+    return "#%02x%02x%02x" % (colour.Red(), colour.Green(), colour.Blue())
+
+
+def _plugin_warning_text_and_link_colours():
+    if wx.SystemSettings.GetAppearance().IsDark():
+        return wx.Colour(255, 255, 255), wx.Colour(100, 170, 255)
+    return wx.Colour(0, 0, 0), wx.Colour(0, 0, 238)
+
+
+def _plugin_warning_html(text, background_colour, text_colour, link_colour):
+    """HTML-escape `text` (a get_plugin_warning_text() result), turn its
+    embedded PLUGIN_INFO_URL into a real, clickable `<a href>` link, and set
+    its colors explicitly via legacy `<body bgcolor=/text=/link=>`
+    attributes.
+
+    wx.html.HtmlWindow's own default rendering (white page, black text, web
+    blue links) ignores `SetBackgroundColour()`/`SetForegroundColour()`
+    entirely - those only affect what `GetBackgroundColour()` etc. report
+    back, not what's actually painted. The only way to make the rendered
+    page itself match CellProfiler's current (possibly dark) theme is to
+    say so directly in the HTML.
+    """
+    escaped = html.escape(text)
+    escaped_url = html.escape(PLUGIN_INFO_URL)
+    linked = escaped.replace(
+        escaped_url, f'<a href="{PLUGIN_INFO_URL}">{escaped_url}</a>'
+    )
+    body_attrs = (
+        f'bgcolor="{_wx_colour_to_hex(background_colour)}" '
+        f'text="{_wx_colour_to_hex(text_colour)}" '
+        f'link="{_wx_colour_to_hex(link_colour)}"'
+    )
+    return f"<html><body {body_attrs}>{linked}</body></html>"
+
+
 class ModuleView:
     """The module view implements a view on CellProfiler.Module
 
@@ -122,18 +162,30 @@ class ModuleView:
     gives the ui for editing the setting.
     """
 
-    def __init__(self, top_panel, workspace, frame=None, notes_panel=None):
+    def __init__(
+        self,
+        top_panel,
+        workspace,
+        frame=None,
+        notes_panel=None,
+        plugin_warning_panel=None,
+    ):
         """Constructor
 
         module_panel - the top-level panel used by the view
         workspace - the current workspace
         notes_panel - panel in which to construct the notes GUI
+        plugin_warning_panel - panel (a sibling of notes_panel, not a
+            child of it, so it shares the exact same plain background as
+            its neighbors - see make_plugin_warning_gui) in which to build
+            the plugin safety/trust warning banner
         """
         pipeline = workspace.pipeline
         self.__workspace = workspace
         self.__module = None
         self.refresh_pending = False
         self.notes_panel = notes_panel
+        self.plugin_warning_panel = plugin_warning_panel
         self.__frame = frame
         self.top_panel = top_panel
         background_color = get_background_color()
@@ -164,6 +216,8 @@ class ModuleView:
         self.module_panel.Bind(wx.EVT_CHILD_FOCUS, self.skip_event)
         if notes_panel is not None:
             self.make_notes_gui()
+        if plugin_warning_panel is not None:
+            self.make_plugin_warning_gui()
 
         self.__pipeline = pipeline
         self.__listeners = []
@@ -212,6 +266,8 @@ class ModuleView:
         self.__sizer.Reset(0)
         if self.notes_panel is not None:
             self.notes_panel.Hide()
+        if self.plugin_warning_panel is not None:
+            self.__set_plugin_warning(None)
 
     def get_module_settings_label(self):
         if self.__module is None:
@@ -298,6 +354,8 @@ class ModuleView:
                 self.module_notes_control.SetValue(
                     "\n".join([str(note) for note in self.__module.notes])
                 )
+            if self.plugin_warning_panel is not None:
+                self.__set_plugin_warning(get_plugin_warning_text(self.__module))
 
             #################################
             #
@@ -640,6 +698,125 @@ class ModuleView:
                 )
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)
+
+    def make_plugin_warning_gui(self):
+        """Build the plugin safety/trust warning banner inside
+        plugin_warning_panel - a sibling of notes_panel,
+        sitting between the Notes box and the Settings controls
+
+        A bound EVT_PAINT handler draws just a WARNING_COLOR border stroke
+        on top, since none of wx's built-in border styles (BORDER_SIMPLE,
+        BORDER_THEME, etc.) expose a way to set a custom border color. The
+        text itself renders via an HtmlClickableWindow, so the URL in the
+        message is a real, clickable link.
+        """
+        from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+
+        self.__PLUGIN_WARNING_BORDER_WIDTH = 2
+        self.__plugin_warning_full_text = None
+        self.__plugin_warning_resizing = False
+        plugin_warning_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.plugin_warning_panel.SetSizer(plugin_warning_sizer)
+        self.__plugin_warning_html = HtmlClickableWindow(
+            self.plugin_warning_panel, -1, style=wx.html.HW_SCROLLBAR_NEVER
+        )
+        margin = self.__PLUGIN_WARNING_BORDER_WIDTH + 5
+        plugin_warning_sizer.Add(self.__plugin_warning_html, 0, wx.EXPAND | wx.ALL, margin)
+        self.plugin_warning_panel.Hide()
+        self.plugin_warning_panel.Bind(wx.EVT_PAINT, self.__on_plugin_warning_paint)
+        self.plugin_warning_panel.Bind(wx.EVT_SIZE, self.__on_plugin_warning_panel_size)
+        # Toggling the OS light/dark appearance *without restarting
+        # CellProfiler* leaves wx.SystemSettings' cached colors/appearance
+        # stale until wx is actually notified of the change - querying them
+        # again later, e.g. on the next module selection, can still return
+        # the old value. Re-render right when that notification arrives,
+        # rather than waiting for some unrelated later event to happen to
+        # re-query a still-possibly-stale cache.
+        self.plugin_warning_panel.Bind(
+            wx.EVT_SYS_COLOUR_CHANGED, self.__on_system_colour_changed
+        )
+
+    def __on_system_colour_changed(self, event):
+        event.Skip()
+        if self.__plugin_warning_full_text:
+            self.__set_plugin_warning(self.__plugin_warning_full_text)
+
+    def __on_plugin_warning_paint(self, event):
+        # Deliberately does not touch the background at all - that's left
+        # to wx's normal default painting, so it keeps showing whatever
+        # color this panel actually inherits from its real parent.
+        dc = wx.PaintDC(self.plugin_warning_panel)
+        border_width = self.__PLUGIN_WARNING_BORDER_WIDTH
+        dc.SetPen(wx.Pen(WARNING_COLOR, border_width))
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        width, height = self.plugin_warning_panel.GetClientSize()
+        inset = border_width // 2
+        dc.DrawRectangle(
+            inset, inset, max(width - border_width, 0), max(height - border_width, 0)
+        )
+
+    def __on_plugin_warning_panel_size(self, event):
+        event.Skip()
+        # HtmlWindow reflows its already-set page to its new width on its
+        # own on resize (no need to call SetPage() again) - just re-measure
+        # the now-current content height and tell the sizer about it.
+        self.__resize_plugin_warning_to_content()
+
+    def __resize_plugin_warning_to_content(self):
+        if not self.__plugin_warning_full_text:
+            return
+        # Re-entrancy guard: SetMinSize()/Layout() below can themselves
+        # trigger another EVT_SIZE on this same panel (e.g. if a scrollbar
+        # or sibling's space changes as a result) - without this, that
+        # recurses until RecursionError.
+        if self.__plugin_warning_resizing:
+            return
+        self.__plugin_warning_resizing = True
+        try:
+            control = self.__plugin_warning_html
+            width = control.GetClientSize()[0]
+            if width <= 0:
+                return
+            height = control.GetInternalRepresentation().GetHeight()
+            if control.GetMinSize() == (width, height):
+                return
+            control.SetMinSize((width, height))
+            self.plugin_warning_panel.GetParent().Layout()
+        finally:
+            self.__plugin_warning_resizing = False
+
+    def __set_plugin_warning(self, text):
+        self.__plugin_warning_full_text = text
+        if text:
+            self.plugin_warning_panel.Show()
+            # Layout *before* rendering, so the panel's width reflects its
+            # current real size rather than whatever (possibly stale/unset)
+            # size it had before this selection - then layout again after,
+            # since the content's height changes with width.
+            self.plugin_warning_panel.GetParent().Layout()
+            margin = self.__PLUGIN_WARNING_BORDER_WIDTH + 5
+            width = max(
+                self.plugin_warning_panel.GetClientSize()[0] - 2 * margin, 20
+            )
+            control = self.__plugin_warning_html
+            control.SetSize((width, 1))
+            background_colour = self.plugin_warning_panel.GetBackgroundColour()
+            text_colour, link_colour = _plugin_warning_text_and_link_colours()
+            control.SetPage(
+                _plugin_warning_html(text, background_colour, text_colour, link_colour)
+            )
+            # Also set these on the control itself: SetPage() resets them to
+            # wx.html.HtmlWindow's own defaults, and while the HTML's own
+            # bgcolor/text/link attributes above are what actually get
+            # painted, keeping GetBackgroundColour() in sync avoids a
+            # mismatched flash/edge at the control's own boundary.
+            control.SetBackgroundColour(background_colour)
+            control.SetForegroundColour(text_colour)
+            self.__resize_plugin_warning_to_content()
+            self.plugin_warning_panel.GetParent().Layout()
+        else:
+            self.plugin_warning_panel.Hide()
+        self.plugin_warning_panel.GetParent().Layout()
 
     def make_binary_control(self, v, control_name, control):
         """Make a checkbox control for a Binary setting"""

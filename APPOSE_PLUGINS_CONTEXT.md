@@ -325,7 +325,8 @@ as an orphan (reparented to pid 1) and keeps running until it finishes
 whatever task it was mid-execution on (if ever) and only then notices
 stdin EOF.
 
-**Fix applied**, in `cellprofiler_core/utilities/appose.py`:
+**Fix applied at the time (superseded — see the 2026-10-09 update below)**,
+in `cellprofiler_core/utilities/appose.py`:
 
 - `get_service()` now starts the service via a new `_start_as_daemon()`
   helper instead of calling `service.start()` directly: it runs
@@ -387,6 +388,61 @@ scenario-{a,b,c,d,e}` targets:
   wrapper.
 
 Filed upstream: <https://github.com/apposed/appose/issues/37>.
+
+**Update (2026-10-09): fixed upstream natively — our workaround has been
+removed.** Appose's own maintainers fixed both parts directly in `Service`
+itself:
+[apposed/appose-python@3813bf7](https://github.com/apposed/appose-python/commit/3813bf7fa8b8d4df5907faec39fc0ac8f4cfd06b)
+(code) and
+[apposed/appose@c076856](https://github.com/apposed/appose/commit/c0768568ff0f9f1ff5eed85dfe00038249a725a9)
+(docs), both referencing this issue. What changed, and how it maps onto the
+two parts above:
+
+- **Part 1 fix**: `Service.start()` now creates its stdout/stderr/monitor
+  threads with `daemon=True` explicitly, rather than relying on inheriting
+  the calling thread's daemon flag. Calling `service.start()` directly from
+  any thread — including CellProfiler's own main thread — is now safe; our
+  `_start_as_daemon()` thread-wrapper workaround is no longer needed.
+- **Part 2 fix**: the worker subprocess is now launched in its own process
+  group on POSIX (`start_new_session=True`) / process tree on Windows, and
+  `Service.kill()` (via a new `appose.util.process.kill_tree()`) kills that
+  whole tree — not just the immediately-launched process — so a
+  `PixiBuilder`-built worker (launched as `pixi run ...`) can no longer
+  survive as an orphan. Our `_kill_process_tree()` (hand-rolled via
+  `psutil`) is no longer needed.
+- **New native lifecycle management**: `Service` now tracks every started
+  instance in a module-level `WeakSet` and registers *its own* `atexit`
+  hook (once, lazily, on first `start()`) that shuts down any instance
+  still alive at program exit — closing it, then killing it if it hasn't
+  exited within `Service.exit_timeout` seconds (a new class/instance
+  attribute, default `5.0`). This makes our own `atexit.register(close_service,
+  ...)` call in `get_service()` redundant — Appose now does this for every
+  `Service`, whether or not a caller ever heard of `close_service()`.
+- **New `close(timeout=...)`/`wait_for(timeout=...)` signatures**: `close()`
+  now optionally blocks (returning the exit code), waiting up to `timeout`
+  seconds before killing the worker (tree) itself if it's still alive. This
+  is exactly the bounded-wait-then-kill logic `close_service()` used to
+  implement by hand with a manual `time.sleep` polling loop.
+
+**`cellprofiler_core/utilities/appose.py` was simplified accordingly**:
+`get_service()` now just does `service = get_environment(env_spec).python();
+service.exit_timeout = _CLOSE_TIMEOUT_SECONDS; service.start()` — no thread
+wrapper, no manual `atexit.register`. `close_service()` is now a thin
+`service.close(timeout=timeout)` call — no manual poll loop, no `psutil`
+tree-walk. Re-verified the exact scenarios Gotcha 5 originally chased down,
+now through the simplified bridge: closing a real, busy `cellcast` service
+(a genuine `PixiBuilder`/`pixi run`-wrapped worker) with a short timeout
+kills it and returns in ~1s (was: indefinite hang pre-fix); leaving a busy
+`cellcast` service running with **no explicit `close_service()` call at
+all** still exits cleanly (exit code 0, zero leaked `python_worker`
+processes) in ~`exit_timeout` seconds, relying purely on Appose's own
+native atexit hook.
+
+This requires an `appose` version including the above commits — i.e., git
+`main`, same floating dependency already required for other reasons (Gotcha
+4, Gotcha 8). The standalone MCVE below remains useful as a from-scratch
+reproduction of the original bug, independent of CellProfiler or cellcast,
+should anything like it resurface.
 
 ### 6. `wx.html.HtmlWindow` ignores `SetBackgroundColour()`/`SetForegroundColour()` — colors must be baked into the HTML itself
 

@@ -58,6 +58,76 @@ def get_module_display_name(module):
     return name
 
 
+def classify_plugin_directory(directory):
+    """
+    Classify a plugin directory path as "User", "Official", or "Unknown",
+    by comparing it (via realpath) against the currently configured user
+    plugin directory (get_plugin_directory()) and the official plugins
+    directory (get_official_plugins_directory()). Returns "Unknown" for
+    None, or for a directory matching neither (e.g. stale/unconfigured).
+    """
+    if directory is None:
+        return "Unknown"
+    real = os.path.realpath(directory)
+    user_directory = get_plugin_directory()
+    if user_directory and real == os.path.realpath(user_directory):
+        return "User"
+    if real == os.path.realpath(get_official_plugins_directory()):
+        return "Official"
+    return "Unknown"
+
+
+def get_plugin_source_label(module):
+    """
+    Return "User", "Official", or "Unknown" for a loaded plugin Module or
+    Reader (class or instance) - based on its `plugin_directory` attribute,
+    set by load_plugin() at load time. Returns None if `module` isn't a
+    plugin at all (`is_plugin` falsy).
+    """
+    if not getattr(module, "is_plugin", False):
+        return None
+    return classify_plugin_directory(getattr(module, "plugin_directory", None))
+
+
+PLUGIN_INFO_URL = "https://github.com/CellProfiler/CellProfiler-plugins/"
+
+_PLUGIN_WARNING_OFFICIAL_NON_APPOSE = (
+    '"{name}" is an official plugin, however care should still be taken to '
+    "ensure it is executing correct code, and that your environment is able "
+    "to run it. See {url} for more info."
+)
+_PLUGIN_WARNING_OFFICIAL_APPOSE = (
+    '"{name}" is an official plugin, which will automatically download '
+    "dependencies and configure its environment, however care should still "
+    "be taken to ensure it is executing correct code. See {url} for more "
+    "info."
+)
+_PLUGIN_WARNING_USER_SUPPLIED = (
+    '"{name}" is a non-official plugin. Great care should be taken to '
+    "ensure it is executing safe and trusted code, and that your "
+    "environment is able to run it. See {url} for official plugins info."
+)
+
+
+def get_plugin_warning_text(module):
+    """
+    Return the safety/trust warning banner text for `module` (a Module
+    class or instance), or None if `module` isn't a plugin at all.
+    """
+    if not getattr(module, "is_plugin", False):
+        return None
+    is_appose = bool(getattr(module, "appose_env_spec", None))
+    if get_plugin_source_label(module) == "Official":
+        template = (
+            _PLUGIN_WARNING_OFFICIAL_APPOSE
+            if is_appose
+            else _PLUGIN_WARNING_OFFICIAL_NON_APPOSE
+        )
+    else:
+        template = _PLUGIN_WARNING_USER_SUPPLIED
+    return template.format(name=module.module_name, url=PLUGIN_INFO_URL)
+
+
 def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
         file_list = glob.glob(os.path.join(plugin_dir, "[!_]*.py"))
@@ -179,6 +249,7 @@ def load_plugin(source, directory=None, modules_only=False):
         for name, plugin_class in available_classes:
             if issubclass(plugin_class, Module):
                 loaded, error = add_module(plugin_class)
+                plugin_class.plugin_directory = directory
                 PLUGIN_STATUS[source] = {
                     "loaded": loaded,
                     "kind": "module",
@@ -191,6 +262,7 @@ def load_plugin(source, directory=None, modules_only=False):
                 continue
             elif issubclass(plugin_class, Reader):
                 loaded, error = add_reader(plugin_class)
+                plugin_class.plugin_directory = directory
                 PLUGIN_STATUS[source] = {
                     "loaded": loaded,
                     "kind": "reader",

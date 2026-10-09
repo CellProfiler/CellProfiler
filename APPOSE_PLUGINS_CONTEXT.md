@@ -1,6 +1,6 @@
 # Context: porting CellProfiler plugins to run via Appose
 
-Handoff doc for a fresh session continuing this work. Last updated 2026-10-06.
+Handoff doc for a fresh session continuing this work. Last updated 2026-10-08.
 
 ## Goal
 
@@ -365,6 +365,62 @@ scenario-{a,b,c,d,e}` targets:
 
 Filed upstream: <https://github.com/apposed/appose/issues/37>.
 
+### 6. `wx.html.HtmlWindow` ignores `SetBackgroundColour()`/`SetForegroundColour()` — colors must be baked into the HTML itself
+
+`wx.html.HtmlWindow` (and subclasses like `HtmlClickableWindow`,
+`gui/html/htmlwindow.py`, already used elsewhere in this codebase — e.g.
+`ModuleView.make_html_control`/`make_help_control`) is a small, largely
+HTML-3.2-era rendering engine with its own hardcoded default page style
+(white background, black text, classic web-blue links). Calling
+`SetBackgroundColour()`/`SetForegroundColour()` on it has **no effect on
+what actually gets painted** — confirmed by rendering the control to an
+offscreen `wx.Bitmap` via `cell.Draw(dc, ...)`
+(`cell = control.GetInternalRepresentation()`) and scanning real pixel
+values; those calls only affect what `GetBackgroundColour()`/
+`GetForegroundColour()` report back afterward, never the rendered page.
+
+The only way to make rendered content match a theme is to say so directly
+in the HTML, via the legacy `<body bgcolor="..." text="..." link="...">`
+attributes wx.html's parser does support (confirmed both by
+`wx.html.HtmlWinParser.GetActualColor()`/`GetLinkColor()` correctly
+reflecting parsed values right after `SetPage()`, and by the pixel-level
+rendering check above). Separately, `SetPage()` resets the control's own
+background attribute to its internal default (white) every time it's
+called — if you also want `GetBackgroundColour()` itself to stay in sync
+(e.g. to avoid a mismatched edge at the control's boundary), set it
+*after* `SetPage()`, not before.
+
+Also: `HtmlWindow` has no `Wrap()`/best-size equivalent for "fit my height
+to this content at this width" — the working idiom is to set the
+control's width via `SetSize()`, call `SetPage()`, then read
+`GetInternalRepresentation().GetHeight()` and `SetMinSize()` to that. It
+*does* reflow already-set content to a new width automatically on resize
+(no need to call `SetPage()` again) — but doing the
+measure-then-`SetMinSize()`-then-`Layout()` dance directly inside its own
+`EVT_SIZE` handler can trigger another resize of the same panel, recursing
+until `RecursionError`; guard with a reentrancy flag.
+
+### 7. `wx.SystemSettings` colors/appearance can go stale after a live OS theme toggle — listen for `EVT_SYS_COLOUR_CHANGED`
+
+No widget's `GetForegroundColour()` (a plain `wx.Panel`'s, a real
+`wx.TextCtrl`'s) nor any `wx.SystemSettings.GetColour()` token
+(`SYS_COLOUR_WINDOWTEXT`, `SYS_COLOUR_HOTLIGHT`) reliably reflected this
+app's actual live text color when the OS appearance was toggled **without
+restarting the app** — confirmed directly with the user. `wx.SystemSettings`
+-backed values are cached by wx and are not guaranteed to refresh just
+because the OS theme changes mid-session; native widget *background*
+painting, by contrast, is handled directly by the OS compositor with no
+such cache — which is exactly why a plain, never-customized `wx.Panel`
+reliably matches its equally-plain sibling panels' background in both
+light and dark mode with zero extra code, while every
+`wx.SystemSettings`-sourced foreground/link color attempt failed
+identically.
+
+**Fix**: bind `wx.EVT_SYS_COLOUR_CHANGED` and re-derive/re-render colors
+right when that notification actually fires, rather than passively
+re-querying `wx.SystemSettings` whenever some unrelated event happens to
+run next.
+
 ## Existing reference code in CellProfiler-plugins (pre-existing, not ours)
 
 In `CellProfiler-plugins/CP5/active_plugins/`:
@@ -384,8 +440,9 @@ GUI dialog (`PluginsDialog`,
 downloading/configuring plugins, backed by discovery/loading logic in
 `cellprofiler_core/utilities/core/plugins.py`
 (`_plugin_directories()`, `load_plugins()`/`load_plugin()`,
-`PLUGIN_STATUS`, `get_plugin_statuses()`). Three improvements are planned
-on top of that dialog. Design decisions below — implement in this order.
+`PLUGIN_STATUS`, `get_plugin_statuses()`). Three improvements were made on
+top of that dialog (all done); design decisions and final implementation
+below.
 
 ### Project 1: stop listing shadowed/superseded official plugins — done
 
@@ -511,7 +568,7 @@ capture at the `PLUGIN_STATUS`/`get_plugin_statuses()` level.
   across Appose releases. Deliberately not implemented; flagged for the
   user to file upstream if wanted, rather than hacked around here.
 
-### Project 3: per-module safety/trust warning banner
+### Project 3: per-module safety/trust warning banner — done
 
 **Problem**: nothing in the module settings view tells a user whether the
 module they've added is built-in, an official plugin, an official plugin
@@ -540,19 +597,91 @@ Settings controls, with exactly one of three texts depending on
   it. See https://github.com/CellProfiler/CellProfiler-plugins/ for
   official plugins info.`
 
-**Plan**:
-- "Official" vs. "user-supplied", and "appose vs. not", both come from the
-  same `PLUGIN_STATUS` entry Projects 1/2 already populate (`directory`,
-  `appose_env_spec`) — exposed on the loaded `Module` class itself (next to
-  the existing loader-set `is_plugin` attribute) so `ModuleView` doesn't
-  need to reach into `cellprofiler_core.utilities.core.plugins` internals
-  at render time.
-- `ModuleView.make_notes_gui()` (`gui/module_view/_module_view.py`) changes
-  `notes_panel`'s sizer from a single horizontal sizer around the notes
-  `TextCtrl` to a vertical sizer containing the notes `TextCtrl` followed
-  by a new static-text banner widget; `set_selection()` sets the banner's
-  text (or hides it entirely for non-plugin modules) alongside its
-  existing notes-population logic.
+**Implemented** (`cellprofiler_core/utilities/core/plugins.py`,
+`gui/cpframe.py`, `gui/module_view/_module_view.py`):
+
+- `load_plugin()` sets `plugin_class.plugin_directory = directory`
+  (alongside the existing `is_plugin = True` set by `add_module`), for both
+  Module and Reader branches — exposed directly on the live class so
+  `ModuleView` doesn't need to reach into `PLUGIN_STATUS`/`plugin_list()`
+  internals at render time.
+- Three small functions in `plugins.py`, reusable by both the dialog and
+  the GUI module view (`PluginsDialog` calls the first of these too, no
+  more duplicate `_source_label`):
+  - `classify_plugin_directory(directory)` → `"User"`/`"Official"`/
+    `"Unknown"`, comparing a raw directory path (via realpath) against the
+    currently configured `get_plugin_directory()`/
+    `get_official_plugins_directory()`.
+  - `get_plugin_source_label(module)` → same, but from a Module/Reader
+    class or instance's own `is_plugin`/`plugin_directory` attributes;
+    `None` if `module` isn't a plugin at all.
+  - `get_plugin_warning_text(module)` → the fully-formatted banner string
+    for `module` (combining `get_plugin_source_label()` with
+    `bool(module.appose_env_spec)` to pick the right template, using the
+    `PLUGIN_INFO_URL` constant for the link), or `None` for non-plugin
+    modules.
+- **The banner is a dedicated sibling panel, not a child of `notes_panel`.**
+  `cpframe.py`'s `__right_win` creates `__plugin_warning_panel` and inserts
+  it into `__right_win`'s own sizer directly between `__notes_panel` and
+  `__path_module_imageset_panel` (same spacing convention as the existing
+  gap between notes and settings), then passes it into
+  `ModuleView(..., plugin_warning_panel=self.__plugin_warning_panel)` as an
+  independent constructor parameter alongside `notes_panel`. The two are
+  built by separate methods (`make_notes_gui()`, untouched; new
+  `make_plugin_warning_gui()`) and shown/hidden independently in
+  `set_selection()`/`clear_selection()`, gated on
+  `plugin_warning_panel is not None` rather than on `notes_panel`'s own
+  gate. This matters because nothing guarantees `notes_panel`'s own
+  background exactly matches its neighboring settings panel — nesting the
+  banner inside `notes_panel` would only ever blend it with `notes_panel`
+  itself, not with the surrounding module view.
+- `make_plugin_warning_gui()` builds a single, uncustomized `wx.Panel` -
+  no `SetBackgroundColour()`/`SetOwnBackgroundColour()` ever called on it -
+  so it automatically renders with the exact same background as its
+  equally-vanilla siblings via ordinary wx theming, no color-tracking code
+  needed. A bound `wx.EVT_PAINT` handler draws *only* a `WARNING_COLOR`
+  rectangle outline on top (`wx.Pen` + `wx.TRANSPARENT_BRUSH`; none of
+  wx's built-in border styles expose a way to set a custom border color).
+  The message itself renders via an `HtmlClickableWindow`
+  (`gui/html/htmlwindow.py` — the same control this codebase already uses
+  elsewhere, e.g. `make_html_control`/`make_help_control`), so the
+  `PLUGIN_INFO_URL` link in the text is a real, clickable link, not inert
+  text (its `OnLinkClicked` already routes any `http(s)://` href to
+  `webbrowser.open`).
+- `_plugin_warning_html(text, background_colour, text_colour, link_colour)`
+  HTML-escapes the message, turns the embedded `PLUGIN_INFO_URL` into a
+  real `<a href>` anchor, and bakes all three colors into the `<body
+  bgcolor=... text=... link=...>` tag as hex strings. Background comes
+  from `plugin_warning_panel.GetBackgroundColour()` (correct by
+  construction, per above); text/link color come from
+  `wx.SystemSettings.GetAppearance().IsDark()`, picking one of two fixed
+  color pairs — see Gotcha 6 for why colors must be baked into the HTML
+  markup itself and why this specific pair of sources was the one that
+  actually worked.
+- `make_plugin_warning_gui()` also binds `wx.EVT_SYS_COLOUR_CHANGED` to
+  re-render (with the same text) whenever the OS appearance changes, and
+  `show_module_ui()` (the "is any module selected at all" coarse toggle)
+  only ever force-hides `plugin_warning_panel`, never force-shows it — see
+  Gotcha 6 and Gotcha 7 for why both of these matter.
+- Resize: a `wx.EVT_SIZE` handler re-measures `HtmlWindow`'s content height
+  at the new width (it reflows automatically on resize, no fresh
+  `SetPage()` needed) and calls `SetMinSize()` + `Layout()` on
+  `plugin_warning_panel.GetParent()` (`__right_win`) — guarded by a
+  reentrancy flag, since that `Layout()` can itself trigger another resize
+  of the same panel.
+
+Verified: headless tests constructing a real three-sibling-panel structure
+confirm all three share an identical, uncustomized background; the
+generated `<body bgcolor=.../>` hex always matches `plugin_warning_panel`'s
+own live background; `OnLinkClicked` dispatches to `webbrowser.open` with
+the right URL; resize/re-measure and the `EVT_SYS_COLOUR_CHANGED` handler
+both work as wired. See Gotchas 5–7 below for the specific wx behaviors
+this design depends on — each was confirmed empirically (pixel-level
+rendering checks, parser-state inspection, or a direct answer from the
+user) before being relied on here, not assumed. New/updated tests in
+`tests/core/utilities/core/test_plugins.py` cover `classify_plugin_directory`,
+`get_plugin_source_label`, and `get_plugin_warning_text` (all three
+banner-text variants, plus the non-plugin `None` case).
 
 ## Open questions / not yet decided
 

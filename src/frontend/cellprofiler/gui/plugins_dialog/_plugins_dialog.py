@@ -1,12 +1,11 @@
 import logging
-import os
 import threading
 
 import wx
 
-from cellprofiler_core.preferences import get_plugin_directory
 from cellprofiler_core.utilities.appose import get_environment
 from cellprofiler_core.utilities.core.plugins import (
+    classify_plugin_directory,
     get_official_plugins_directory,
     official_plugins_repo_exists,
     download_official_plugins_repo,
@@ -121,23 +120,10 @@ class PluginsDialog(wx.Dialog):
     def populate_list(self):
         self.list_ctrl.DeleteAllItems()
         self.rows = []
-        user_directory = get_plugin_directory()
-        official_directory = get_official_plugins_directory()
         for status in get_plugin_statuses():
-            source_label = self._source_label(status["directory"], user_directory, official_directory)
+            source_label = classify_plugin_directory(status["directory"])
             self.add_row(source_label, status)
         self.get_info_button.Disable()
-
-    @staticmethod
-    def _source_label(directory, user_directory, official_directory):
-        if directory is None:
-            return "Unknown"
-        real = os.path.realpath(directory)
-        if user_directory and real == os.path.realpath(user_directory):
-            return "User"
-        if real == os.path.realpath(official_directory):
-            return "Official"
-        return "Unknown"
 
     def add_row(self, source_label, status):
         row_index = self.list_ctrl.GetItemCount()

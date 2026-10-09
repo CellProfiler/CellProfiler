@@ -226,3 +226,78 @@ class TestPlugins:
             sys.modules.pop("apposereader", None)
             cellprofiler_core.constants.reader.ALL_READERS.pop("ApposeTestReader", None)
             cellprofiler_core.constants.reader.AVAILABLE_READERS.pop("ApposeTestReader", None)
+
+    def test_classify_plugin_directory(self, tmp_path, monkeypatch):
+        user_dir = tmp_path / "user"
+        official_dir = tmp_path / "official"
+        user_dir.mkdir()
+        official_dir.mkdir()
+        monkeypatch.setattr(plugins, "get_plugin_directory", lambda: str(user_dir))
+        monkeypatch.setattr(
+            plugins, "get_official_plugins_directory", lambda: str(official_dir)
+        )
+
+        assert plugins.classify_plugin_directory(str(user_dir)) == "User"
+        assert plugins.classify_plugin_directory(str(official_dir)) == "Official"
+        assert (
+            plugins.classify_plugin_directory(str(tmp_path / "elsewhere")) == "Unknown"
+        )
+        assert plugins.classify_plugin_directory(None) == "Unknown"
+
+    def test_get_plugin_source_label(self, tmp_path, monkeypatch):
+        official_dir = tmp_path / "official"
+        official_dir.mkdir()
+        monkeypatch.setattr(plugins, "get_plugin_directory", lambda: None)
+        monkeypatch.setattr(
+            plugins, "get_official_plugins_directory", lambda: str(official_dir)
+        )
+
+        class FakeModule:
+            is_plugin = True
+            plugin_directory = str(official_dir)
+
+        assert plugins.get_plugin_source_label(FakeModule) == "Official"
+
+        class NotAPlugin:
+            is_plugin = False
+
+        assert plugins.get_plugin_source_label(NotAPlugin) is None
+
+    def test_get_plugin_warning_text(self, tmp_path, monkeypatch):
+        user_dir = tmp_path / "user"
+        official_dir = tmp_path / "official"
+        user_dir.mkdir()
+        official_dir.mkdir()
+        monkeypatch.setattr(plugins, "get_plugin_directory", lambda: str(user_dir))
+        monkeypatch.setattr(
+            plugins, "get_official_plugins_directory", lambda: str(official_dir)
+        )
+
+        class OfficialNonApposeModule:
+            is_plugin = True
+            plugin_directory = str(official_dir)
+            module_name = "MyPlugin"
+            appose_env_spec = None
+
+        text = plugins.get_plugin_warning_text(OfficialNonApposeModule)
+        assert text.startswith('"MyPlugin" is an official plugin, however')
+
+        class OfficialApposeModule(OfficialNonApposeModule):
+            appose_env_spec = "/path/to/pixi.toml"
+
+        text = plugins.get_plugin_warning_text(OfficialApposeModule)
+        assert "automatically download dependencies" in text
+
+        class UserModule:
+            is_plugin = True
+            plugin_directory = str(user_dir)
+            module_name = "MyUserPlugin"
+            appose_env_spec = None
+
+        text = plugins.get_plugin_warning_text(UserModule)
+        assert text.startswith('"MyUserPlugin" is a non-official plugin')
+
+        class NotAPlugin:
+            is_plugin = False
+
+        assert plugins.get_plugin_warning_text(NotAPlugin) is None

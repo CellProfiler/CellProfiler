@@ -16,11 +16,14 @@ since the frontend file's own top-level imports are always satisfiable in
 the default environment, it loads like any other plugin.
 """
 
+import logging
 import pathlib
 import threading
 
 import appose
 import numpy
+
+LOGGER = logging.getLogger(__name__)
 
 _environments = {}
 _environments_lock = threading.Lock()
@@ -31,7 +34,62 @@ _services_lock = threading.Lock()
 _CLOSE_TIMEOUT_SECONDS = 5.0
 
 
-def get_environment(env_spec):
+def _env_label(env_spec):
+    """A short name for `env_spec` to prefix its build log lines with.
+
+    Per the plugin layout convention, a spec lives at
+    `<plugin_dir>/pixi.toml`, so the parent directory names the plugin.
+    """
+    return pathlib.Path(env_spec).parent.name or pathlib.Path(env_spec).name
+
+
+def _build(env_spec, progress=None):
+    """
+    Build `env_spec` with Appose's build reporting wired up to logging,
+    and to `progress` if given.
+
+    Appose exposes three subscription points, which differ in volume by
+    orders of magnitude, hence the split in log levels:
+
+    - progress: `(title, current, maximum)` phase events, e.g.
+      ("Installing conda packages", 12, 27). A handful per build, so these
+      go to INFO - this is what makes a build visible by default.
+    - output/error: raw lines from the `pixi` subprocess. In practice pixi
+      writes everything to stderr and nothing to stdout. Note that
+      registering *any* progress subscriber makes Appose add `-vv` to the
+      install command (that's how its `PixiInstallMonitor` recognizes
+      phase transitions), which inflates stderr to well over a hundred
+      lines of DEBUG-level pixi internals per build - so these go to
+      DEBUG, where `--log-level DEBUG` can still surface them in full.
+    """
+    label = _env_label(env_spec)
+
+    def on_progress(title, current, maximum):
+        if maximum > 0:
+            LOGGER.info("%s: %s (%d/%d)", label, title, current, maximum)
+        else:
+            LOGGER.info("%s: %s", label, title)
+        if progress is not None:
+            try:
+                progress(title, current, maximum)
+            except Exception:
+                # Never let a consumer's callback break the build: this
+                # runs on Appose's own stderr-reader/polling threads.
+                LOGGER.warning(
+                    "Progress callback failed for %s", label, exc_info=True
+                )
+
+    builder = appose.file(env_spec)
+    builder.subscribe_progress(on_progress)
+    builder.subscribe_output(lambda line: LOGGER.info("%s: %s", label, line.rstrip()))
+    builder.subscribe_error(lambda line: LOGGER.debug("%s: %s", label, line.rstrip()))
+    LOGGER.info("Building Appose environment for %s from %s", label, env_spec)
+    environment = builder.build()
+    LOGGER.info("Appose environment for %s is ready", label)
+    return environment
+
+
+def get_environment(env_spec, progress=None):
     """
     Build (or reuse a cached) Appose environment from an environment spec
     file, e.g. a `pixi.toml`, `pyproject.toml`, or `environment.yml`.
@@ -41,12 +99,18 @@ def get_environment(env_spec):
     changes. This additionally caches the in-memory `Environment` object
     per spec path within the current process, so repeated calls (e.g. once
     per image set) skip even that up-to-date check.
+
+    Build progress is logged (see `_build()`). Pass `progress` - a
+    callable taking `(title, current, maximum)`, e.g. to drive a progress
+    bar - to also receive those phase events directly; it is called on
+    Appose's own background threads, not the caller's. It is not called at
+    all when a cached environment is returned, since nothing is built.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _environments_lock:
         environment = _environments.get(env_spec)
         if environment is None:
-            environment = appose.file(env_spec).build()
+            environment = _build(env_spec, progress)
             try:
                 # Explicitly target the "default" environment rather than
                 # relying on Appose's bundled `pixi run` to pick one on its own.
@@ -84,10 +148,11 @@ def environment_exists(env_spec):
     return appose.file(env_spec).status() is not appose.EnvStatus.MISSING
 
 
-def rebuild_environment(env_spec):
+def rebuild_environment(env_spec, progress=None):
     """
     Delete the environment previously built from `env_spec` and build it
-    again from scratch, returning the fresh `Environment`.
+    again from scratch, returning the fresh `Environment`. `progress` is
+    forwarded to `get_environment()`.
 
     Prefer `get_environment()` for ordinary use: its `build()` already
     syncs an existing environment to the current spec incrementally. This
@@ -105,8 +170,9 @@ def rebuild_environment(env_spec):
     close_service(env_spec)
     with _environments_lock:
         _environments.pop(env_spec, None)
+    LOGGER.info("Deleting Appose environment for %s", _env_label(env_spec))
     appose.file(env_spec).delete()
-    return get_environment(env_spec)
+    return get_environment(env_spec, progress)
 
 
 def get_service(env_spec):

@@ -72,6 +72,8 @@ class App(wx.App):
 
         self.SetAppDisplayName("CellProfiler {0:s}".format(cellprofiler_version))
         self.SetAppName("CellProfiler")
+        # useful for Linux - e.g. window manager's "class hint"
+        self.SetClassName("CellProfiler")
 
         self.frame = CPFrame(None, -1, "CellProfiler")
 

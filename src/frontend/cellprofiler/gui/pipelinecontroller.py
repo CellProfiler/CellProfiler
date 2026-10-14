@@ -1678,20 +1678,21 @@ class PipelineController(object):
 
     def set_title(self):
         """Set the title of the parent frame"""
+        displayname = wx.GetApp().GetAppDisplayName()
         pathname = get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler_version
+            self.__frame.Title = displayname
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
-            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
-                cellprofiler_version,
+            self.__frame.Title = "%s: %s* (%s)" % (
+                displayname,
                 filename,
                 path,
             )
         else:
-            self.__frame.Title = "CellProfiler %s: %s (%s)" % (
-                cellprofiler_version,
+            self.__frame.Title = "%s: %s (%s)" % (
+                displayname,
                 filename,
                 path,
             )

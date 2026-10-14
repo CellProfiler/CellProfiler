@@ -70,7 +70,8 @@ class App(wx.App):
 
         # wx.lib.inspection.InspectionTool().Show()
 
-        self.SetAppName("CellProfiler{0:s}".format(cellprofiler_version))
+        self.SetAppDisplayName("CellProfiler {0:s}".format(cellprofiler_version))
+        self.SetAppName("CellProfiler")
 
         self.frame = CPFrame(None, -1, "CellProfiler")
 

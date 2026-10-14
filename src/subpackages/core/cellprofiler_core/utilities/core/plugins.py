@@ -16,7 +16,7 @@ import requests
 from cellprofiler_core.constants.modules import all_modules
 from cellprofiler_core.constants.modules import pymodules
 from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS, AVAILABLE_READERS
-from cellprofiler_core.preferences import get_plugin_directory, get_default_output_directory, config_read_typed
+from cellprofiler_core.preferences import get_plugin_directory, get_user_data_directory, config_read_typed
 from cellprofiler_core.module import Module
 from cellprofiler_core.reader import Reader
 
@@ -135,10 +135,11 @@ def plugin_list(plugin_dir):
     return []
 
 
+OFFICIAL_PLUGINS_DIRECTORY_NAME = "official_plugins"
+
+
 def get_official_plugins_directory():
-    return os.path.join(
-        get_default_output_directory(), "CellProfiler-plugins", "active_plugins"
-    )
+    return os.path.join(get_user_data_directory(), OFFICIAL_PLUGINS_DIRECTORY_NAME)
 
 
 def official_plugins_repo_exists():

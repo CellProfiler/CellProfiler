@@ -751,6 +751,46 @@ Confirmed on the live failure below: the env-dir copy was byte-identical
 to the edited plugin copy and carried a later mtime than the directory's
 creation.
 
+### Build progress reporting (2026-10-14)
+
+Builds used to be completely silent — no log output, not even raw pixi
+output — because nothing ever subscribed to Appose's reporting hooks.
+`Builder` exposes three, and they differ in volume by orders of magnitude,
+which drives how `_build()` in the bridge maps them onto log levels:
+
+- `subscribe_progress(fn)` — `fn(title, current, maximum)` phase events.
+  Titles observed in practice: `Downloading pixi`, `Solving`, `Installing
+  conda packages`, `Downloading PyPI packages`, `Installing PyPI
+  packages`, `Done`. Only a handful fire per build (7 for a warm
+  `cellcast` rebuild), so these go to **INFO** — this is what makes a
+  build visible by default, since CellProfiler's default log level is INFO
+  with a stream handler already attached (`utilities/logging.py`).
+- `subscribe_output(fn)` / `subscribe_error(fn)` — raw lines from the
+  `pixi` subprocess. **pixi writes everything to stderr and nothing to
+  stdout** (measured: 0 stdout lines, 159 stderr). So raw output arrives
+  via the *error* hook, not the output one.
+- Both go to **DEBUG**, because registering any progress subscriber makes
+  Appose append `-vv` to the install command (that's how
+  `PixiInstallMonitor` recognizes phase transitions by regex), inflating
+  stderr to ~160 lines of pixi internals per build. `cellprofiler -L
+  DEBUG` surfaces them in full.
+
+`get_environment(env_spec, progress=None)` and
+`rebuild_environment(env_spec, progress=None)` forward `progress` to the
+builder. It is invoked on **Appose's own stderr-reader and conda-polling
+threads**, not the caller's, and `_build()` wraps it in try/except so a
+failing consumer callback can't break the build on those threads. It is
+not called at all on an `_environments` cache hit, since nothing is built.
+
+`PluginsDialog` drives a `wx.Gauge` from it (`wx.CallAfter` to hop
+threads). Two details worth keeping: the gauge **pulses on a `wx.Timer`**
+until the first event with `maximum > 0`, because pixi's solve phase —
+often the longest part of a cold build — reports nothing at all (the
+`Solving` title only fires when `_FETCHED_RECORDS` matches, which it
+didn't on either observed run); and both `wx.CallAfter` targets start with
+`if not self: return`, since the build thread outlives a closed dialog
+(the build itself correctly carries on to completion either way).
+
 **Triggering real-world case, and its diagnosis (2026-10-14)**: building
 `cellcast` from the dialog failed twice with `ModuleNotFoundError: No
 module named 'setuptools'` raised from

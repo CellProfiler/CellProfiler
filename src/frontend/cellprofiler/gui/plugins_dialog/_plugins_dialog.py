@@ -45,6 +45,7 @@ class PluginsDialog(wx.Dialog):
     ):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style, name)
         self.rows = []
+        self.build_verb = "Building"
 
         self.image_list = wx.ImageList(16, 16)
         self.image_ok = self.image_list.Add(get_builtin_image("IMG_DISABLED").ConvertToBitmap())
@@ -68,6 +69,17 @@ class PluginsDialog(wx.Dialog):
         self.status_label = wx.StaticText(self)
         download_sizer.Add(self.status_label, 0, wx.ALIGN_CENTER_VERTICAL)
         main_sizer.Add(download_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
+
+        self.progress_gauge = wx.Gauge(self, range=100)
+        self.progress_gauge.Hide()
+        main_sizer.Add(
+            self.progress_gauge, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10
+        )
+        # Appose reports nothing at all during pixi's solve phase, which is
+        # often the longest part of a cold build, so the gauge pulses until
+        # the first countable phase event arrives.
+        self.pulse_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_pulse, self.pulse_timer)
 
         self.list_ctrl = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         self.list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
@@ -200,30 +212,62 @@ class PluginsDialog(wx.Dialog):
             if response != wx.YES:
                 return
         self.build_env_button.Disable()
-        verb = "Rebuilding" if rebuild else "Building"
-        self.status_label.SetLabel(f"{verb} environment for {status['name']}...")
+        self.refresh_button.Disable()
+        self.build_verb = "Rebuilding" if rebuild else "Building"
+        self.status_label.SetLabel(f"{self.build_verb} environment for {status['name']}...")
+        self.progress_gauge.Show()
+        self.pulse_timer.Start(100)
+        self.Layout()
         threading.Thread(
             target=self._build_env_worker,
             args=(status["name"], spec, rebuild),
             daemon=True,
         ).start()
 
+    def on_pulse(self, event):
+        self.progress_gauge.Pulse()
+
     def _build_env_worker(self, name, spec, rebuild):
+        def progress(title, current, maximum):
+            wx.CallAfter(self._on_build_progress, name, title, current, maximum)
+
         try:
             # A rebuild discards the existing environment directory first,
             # so a build that failed partway can't leave state behind that
             # an incremental build would keep working against.
             if rebuild:
-                rebuild_environment(spec)
+                rebuild_environment(spec, progress=progress)
             else:
-                get_environment(spec)
+                get_environment(spec, progress=progress)
             error = None
         except Exception as e:
             LOGGER.warning("Failed to build environment for %s", name, exc_info=True)
             error = str(e)
         wx.CallAfter(self._on_build_environment_complete, name, error)
 
+    def _on_build_progress(self, name, title, current, maximum):
+        # Queued from Appose's own threads, so the dialog may already be
+        # gone by the time this runs; the build itself carries on either way.
+        if not self:
+            return
+        if maximum > 0:
+            self.pulse_timer.Stop()
+            self.progress_gauge.SetRange(maximum)
+            self.progress_gauge.SetValue(min(current, maximum))
+            self.status_label.SetLabel(
+                f"{self.build_verb} {name}: {title} ({current}/{maximum})"
+            )
+        else:
+            self.status_label.SetLabel(f"{self.build_verb} {name}: {title}")
+        self.Layout()
+
     def _on_build_environment_complete(self, name, error):
+        if not self:
+            return
+        self.pulse_timer.Stop()
+        self.progress_gauge.Hide()
+        self.refresh_button.Enable()
+        self.Layout()
         self.on_select(None)
         if error:
             self.status_label.SetLabel("Build failed.")

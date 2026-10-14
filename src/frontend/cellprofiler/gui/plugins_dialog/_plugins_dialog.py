@@ -31,6 +31,14 @@ class PluginsDialog(wx.Dialog):
     CellProfiler-plugins repository, and shows which plugins (from both
     the configured plugin directory and the official set) loaded
     successfully, with tracebacks available for the ones that didn't.
+
+    An indicator is placed next to apposed plugins, with the ability
+    to build their environments, rather than auto-building when they
+    are run the first time.
+    
+    Environment builds have a two-phase progress bar,
+    1) the dependency solve phase
+    2) the download/install phase
     """
 
     def __init__(
@@ -172,9 +180,8 @@ class PluginsDialog(wx.Dialog):
         Whether building `spec`'s environment would be a rebuild - i.e.
         whether Appose has already created a directory for it on disk.
 
-        Any failure to tell (an unreadable or malformed spec file, say) is
-        reported as "not built yet": the same question gets asked again,
-        for real, by the build itself.
+        Any failure to tell (e.g. an unreadable or malformed spec file) is
+        reported as "not built yet"
         """
         try:
             return environment_exists(spec)

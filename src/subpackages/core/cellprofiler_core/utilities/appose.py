@@ -3,17 +3,12 @@ process/environment via Appose (https://docs.apposed.org).
 
 A plugin using this module ships:
 - a lightweight frontend `Module` file, importable in the default
-  CellProfiler environment (only `cellprofiler_core`, `appose`, `numpy`,
-  and standard library at module level);
+  CellProfiler environment (only standard cellprofiler dependencies at module
+  level)
 - an environment spec file (e.g. `pixi.toml`) declaring the plugin's own,
   possibly heavy, dependencies;
 - a worker script (plain Python source) that uses those dependencies and
-  is only ever executed inside the Appose-managed subprocess, never
-  imported by the main CellProfiler process.
-
-No changes to CellProfiler's plugin discovery/import mechanism are needed:
-since the frontend file's own top-level imports are always satisfiable in
-the default environment, it loads like any other plugin.
+  is only ever executed inside the Appose-managed subprocess.
 """
 
 import logging
@@ -45,22 +40,19 @@ def _env_label(env_spec):
 
 def _build(env_spec, progress=None):
     """
-    Build `env_spec` with Appose's build reporting wired up to logging,
+    Build `env_spec` with Appose's build reporting wired up to console logging,
     and to `progress` if given.
-
-    Appose exposes three subscription points, which differ in volume by
-    orders of magnitude, hence the split in log levels:
 
     - progress: `(title, current, maximum)` phase events, e.g.
       ("Installing conda packages", 12, 27). A handful per build, so these
-      go to INFO - this is what makes a build visible by default.
+      go to INFO
     - output/error: raw lines from the `pixi` subprocess. In practice pixi
       writes everything to stderr and nothing to stdout. Note that
       registering *any* progress subscriber makes Appose add `-vv` to the
       install command (that's how its `PixiInstallMonitor` recognizes
-      phase transitions), which inflates stderr to well over a hundred
-      lines of DEBUG-level pixi internals per build - so these go to
-      DEBUG, where `--log-level DEBUG` can still surface them in full.
+      phase transitions), which inflates stderr to hundreds of
+      lines of DEBUG-level pixi internals per build, so these go to
+      DEBUG
     """
     label = _env_label(env_spec)
 
@@ -96,15 +88,13 @@ def get_environment(env_spec, progress=None):
 
     Appose itself caches the built environment on disk, keyed off of the
     spec's content, and only re-resolves dependencies when the spec
-    changes. This additionally caches the in-memory `Environment` object
+    changes. This fn additionally caches the in-memory `Environment` object
     per spec path within the current process, so repeated calls (e.g. once
     per image set) skip even that up-to-date check.
 
-    Build progress is logged (see `_build()`). Pass `progress` - a
-    callable taking `(title, current, maximum)`, e.g. to drive a progress
-    bar - to also receive those phase events directly; it is called on
-    Appose's own background threads, not the caller's. It is not called at
-    all when a cached environment is returned, since nothing is built.
+    Build progress is logged (see `_build()`) via `progress` callback.
+    It's called on Appose's own background threads, not the caller's.
+    It's not called at all when a cached environment is returned, since nothing is built.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _environments_lock:
@@ -112,16 +102,6 @@ def get_environment(env_spec, progress=None):
         if environment is None:
             environment = _build(env_spec, progress)
             try:
-                # Explicitly target the "default" environment rather than
-                # relying on Appose's bundled `pixi run` to pick one on its own.
-                # Why?: https://github.com/prefix-dev/pixi/issues/7170
-                # TL;DR: If CellProfiler itself is running inside an
-                # activated, named pixi environment (e.g. this repo's own
-                # `dev` environment), `PIXI_IN_SHELL`/`PIXI_ENVIRONMENT_NAME`
-                # leak into that subprocess and pixi tries to find a
-                # same-named environment in the *plugin's* unrelated
-                # project, failing with "unknown environment '<name>'".
-                # Passing --environment default explicitly sidesteps that.
                 environment = environment.activate("default")
             except NotImplementedError:
                 pass
@@ -131,12 +111,8 @@ def get_environment(env_spec, progress=None):
 
 def environment_exists(env_spec):
     """
-    Report whether an environment has already been created on disk for
-    `env_spec` - i.e. whether building it again would be a *rebuild*.
-
-    This is a cheap, side-effect-free filesystem query (it never downloads
-    tools, installs packages, or creates directories), so it's fine to call
-    it from GUI code, e.g. to decide a button's label.
+    Reports whether an env has been created on disk for `env_spec`.
+    Cheap and side-effect-free FS query. No build/sync is triggered.
 
     True for every Appose `EnvStatus` except `MISSING`: an environment
     directory that exists but is of a foreign type (`INCOMPATIBLE`), was
@@ -151,23 +127,19 @@ def environment_exists(env_spec):
 def rebuild_environment(env_spec, progress=None):
     """
     Delete the environment previously built from `env_spec` and build it
-    again from scratch, returning the fresh `Environment`. `progress` is
-    forwarded to `get_environment()`.
+    again from scratch, returning the fresh `Environment`.
 
     Prefer `get_environment()` for ordinary use: its `build()` already
     syncs an existing environment to the current spec incrementally. This
-    is for the case where that isn't enough - a previous build that failed
-    partway leaves behind a half-populated environment directory, along
-    with a lock file pinning the very resolution that failed, and a plain
-    `build()` keeps working against that leftover state.
-
-    Closes any persistent service cached for this spec first, since its
-    worker process lives inside the directory about to be deleted, and
-    drops the in-process `Environment` cache entry so the rebuilt
-    environment is the one subsequent `get_environment()` calls see.
+    is for the case where that isn't enough, e.g. a previous build that failed
+    partway, which leaves artifacts tricking build() into thinking it's fully built.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
+    # close any persistent service cached for this spec first, since its
+    # worker process lives inside the directory about to be deleted
     close_service(env_spec)
+    # drop the in-process `Environment` cache entry so the rebuilt
+    # environment is the one subsequent `get_environment()` calls see
     with _environments_lock:
         _environments.pop(env_spec, None)
     LOGGER.info("Deleting Appose environment for %s", _env_label(env_spec))
@@ -176,23 +148,17 @@ def rebuild_environment(env_spec, progress=None):
 
 
 def get_service(env_spec):
-    """
-    Start (or reuse a cached) persistent Appose Python service for the
+    """Start (or reuse a cached) persistent Appose Python service for the
     environment built from `env_spec`.
 
     Unlike `run_python_task`'s default fresh-service-per-call behavior, a
     service returned here stays alive across many calls, so a worker script
     using `task.export(...)` (see `run_python_task`'s docstring) can keep an
-    expensive resource - a loaded ML model, for instance - warm in the
-    worker process between calls instead of re-creating it every time.
+    expensive resource, e.g. keeping a DL model "warm" to avoid model init.
 
     Callers may pass this same `env_spec` to `close_service()` once the
     service is no longer needed (e.g. a module's `post_run`), to shut it
-    down promptly. This is a courtesy, not a requirement: Appose itself
-    tracks every started `Service` and shuts down any still running at
-    process exit (closing it, then killing its whole worker process tree if
-    it hasn't exited within `Service.exit_timeout` seconds - see
-    `close_service()`)
+    down promptly.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _services_lock:
@@ -206,16 +172,13 @@ def get_service(env_spec):
 
 
 def close_service(env_spec, timeout=_CLOSE_TIMEOUT_SECONDS):
-    """
-    Close a persistent service previously obtained via `get_service()` for
-    the same `env_spec`, if one is cached. Safe to call even if no service
-    was ever created for this spec, or if it's already been closed.
+    """Close a persistent service previously obtained via `get_service()` for
+    the same `env_spec`, if one is cached.
 
-    Delegates to `Service.close(timeout=...)`: asks the worker to shut down
-    gracefully (by closing its stdin), waits up to `timeout` seconds, then
-    kills its whole process tree - not just the immediately launched
-    process, which matters for a `PixiBuilder`-built environment, whose
-    worker is a child of a `pixi run` launcher - if it hasn't exited by then.
+    This is not strictly a requirement as Appose itself
+    tracks every started `Service` and shuts down any still running at
+    process exit (closing it, then killing its whole worker process tree if
+    it hasn't exited within `Service.exit_timeout` seconds.
     """
     env_spec = str(pathlib.Path(env_spec).resolve())
     with _services_lock:
@@ -226,16 +189,16 @@ def close_service(env_spec, timeout=_CLOSE_TIMEOUT_SECONDS):
 
 
 def _to_ndarray(value):
-    """Copy a numpy array into a new Appose shared-memory NDArray."""
+    """numpy array -> Appose shared-memory NDArray."""
     ndarray = appose.NDArray(dtype=value.dtype.name, shape=list(value.shape))
     ndarray.ndarray()[:] = value
     return ndarray
 
 
 def _from_ndarray(value):
-    """Copy an Appose NDArray's data out into a plain numpy array, then
-    release its shared memory (the host attached to, but did not create,
-    this segment, so disposal alone would only close it, not free it)."""
+    """Appose NDArray data -> plain numpy array
+    then, release shared memory
+    """
     array = numpy.array(value.ndarray())
     value.shm.unlink_on_dispose(True)
     value.shm.dispose()
@@ -245,48 +208,18 @@ def _from_ndarray(value):
 def run_python_task(script, inputs=None, environment=None, service=None):
     """
     Run `script` to completion in a Python service, passing `inputs` and
-    returning the task's outputs. Exactly one of `environment` or `service`
+    returning the task's outputs. Only one of `environment` or `service`
     must be given.
 
-    By default, pass `environment` (as returned by `get_environment()`): a
-    fresh `environment.python()` service is started for this call alone and
-    shut down before returning - the simplest, safest option, at the cost of
-    paying for a new worker process (and, for model-based plugins, a fresh
-    model load) every time. For a module invoked once per image set in a
-    real pipeline run, this can be the dominant cost.
+    Pass `environment` (as returned by `get_environment()`) to get
+    a fresh `environment.python()` service started for this call alone and
+    shut down before returning.
+    The cost is paying for a new worker process (and, for model-based plugins, a fresh
+    model load) every time.
 
-    To amortize that cost, pass `service` (as returned by `get_service()`)
-    instead: it is reused as-is (not closed) across calls, so the worker
-    process, its imports, and anything it caches all survive between them.
-    To actually keep an expensive resource warm across calls, the worker
-    script must opt in explicitly with `task.export(name=value)` - plain
-    variables/imports in the script do NOT automatically persist to the
-    next call, since each task resets its global name space to only
-    `task` plus whatever was previously exported. A typical pattern in a
-    worker script:
-
-        _model_cache_key = (model_name, weights_path)
-        if globals().get("_cache_key") != _model_cache_key:
-            _model = load_model(model_name, weights_path)
-            task.export(_cache_key=_model_cache_key, _model=_model)
-        # ... use `_model` ...
-
-    recomputing/re-exporting only when the relevant settings actually
-    change, so settings edits (e.g. in the GUI's test/debug mode, which
-    reuses the same module instance and the same service across repeated,
-    manually-triggered runs) are picked up correctly instead of silently
-    using a stale cached resource.
-
-    Any `numpy.ndarray` values in `inputs` are copied into Appose shared
-    memory so the worker process can read them without a serialization
-    round-trip; any `appose.NDArray` values among the task's outputs are
-    copied back into plain `numpy.ndarray` in the returned dict. All shared
-    memory allocated for the call, on either side, is released before
-    returning.
-
-    Uses only the lowest-common-denominator Appose `NDArray` API
-    (construct + `.ndarray()`), since the host and worker environments are
-    built independently and may end up with different Appose releases.
+    Pass `service` (as returned by `get_service()`) to reuse it as-is (not closed)
+    across calls, so the worker process, its imports, and anything it caches all
+    survive between them.
 
     Raises `appose.service.TaskException` if the worker-side script fails,
     is canceled, or the worker process crashes.

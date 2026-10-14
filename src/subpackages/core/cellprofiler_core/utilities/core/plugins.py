@@ -22,74 +22,30 @@ from cellprofiler_core.reader import Reader
 
 LOGGER = logging.getLogger(__name__)
 
-OFFICIAL_PLUGINS_REPO_ZIP_URL = (
-    "https://github.com/CellProfiler/CellProfiler-plugins/archive/refs/heads/appose-demo.zip"
-)
+OFFICIAL_PLUGINS_URL = "https://github.com/CellProfiler/CellProfiler-plugins"
+OFFICIAL_PLUGINS_REPO_ZIP_URL = f"{OFFICIAL_PLUGINS_URL}/archive/refs/heads/appose-demo.zip"
 OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
+OFFICIAL_PLUGINS_DIRECTORY_NAME = "official_plugins"
 
 # Per-plugin load status, keyed by plugin source name (as returned by plugin_list).
+#
 # Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None,
-# "directory": str|None, "appose_env_spec": str|pathlib.Path|None} -
+# "directory": str|None, "appose_env_spec": str|pathlib.Path|None}
+#
 # "directory" is whichever plugin directory this name was actually last
 # attempted from. If the same name exists in more than one plugin directory,
 # only the highest-priority one that successfully loads is ever attempted (see
-# load_plugin's skip-guard, and _plugin_directories for priority order) - so
-# this dict only ever holds one entry per name, reflecting whichever attempt
-# is actually responsible for that name's current state, never a
-# shadowed/superseded one. "appose_env_spec" is the plugin class's (Module
-# or Reader) own declared `appose_env_spec` class attribute (see
-# load_plugin), or None for plugins that don't run via Appose.
+# load_plugin's skip-guard, and _plugin_directories for priority order), so
+# this dict only ever holds one entry per name reflecting whichever attempt
+# is actually responsible for that name's current state.
+#
+# "appose_env_spec" is the plugin class's (Module or Reader) declared
+# `appose_env_spec` class attribute (see load_plugin), or None for plugins
+# that don't run via Appose.
 PLUGIN_STATUS = {}
 
-# Prepended to a plugin module's display name (GUI only, never to module_name
-# itself, which is also the pipeline-file serialization key).
+# display-only module name prefix
 PLUGIN_NAME_PREFIX = "\U0001F9E9 "
-
-
-def get_module_display_name(module):
-    """Return a module's display name, decorated if it came from a plugin.
-
-    `module` may be a Module subclass or an instance of one. Does not use
-    or affect `module_name`, which is the pipeline-file serialization key.
-    """
-    name = module.module_name
-    if getattr(module, "is_plugin", False):
-        return PLUGIN_NAME_PREFIX + name
-    return name
-
-
-def classify_plugin_directory(directory):
-    """
-    Classify a plugin directory path as "User", "Official", or "Unknown",
-    by comparing it (via realpath) against the currently configured user
-    plugin directory (get_plugin_directory()) and the official plugins
-    directory (get_official_plugins_directory()). Returns "Unknown" for
-    None, or for a directory matching neither (e.g. stale/unconfigured).
-    """
-    if directory is None:
-        return "Unknown"
-    real = os.path.realpath(directory)
-    user_directory = get_plugin_directory()
-    if user_directory and real == os.path.realpath(user_directory):
-        return "User"
-    if real == os.path.realpath(get_official_plugins_directory()):
-        return "Official"
-    return "Unknown"
-
-
-def get_plugin_source_label(module):
-    """
-    Return "User", "Official", or "Unknown" for a loaded plugin Module or
-    Reader (class or instance) - based on its `plugin_directory` attribute,
-    set by load_plugin() at load time. Returns None if `module` isn't a
-    plugin at all (`is_plugin` falsy).
-    """
-    if not getattr(module, "is_plugin", False):
-        return None
-    return classify_plugin_directory(getattr(module, "plugin_directory", None))
-
-
-PLUGIN_INFO_URL = "https://github.com/CellProfiler/CellProfiler-plugins/"
 
 _PLUGIN_WARNING_OFFICIAL_NON_APPOSE = (
     '"{name}" is an official plugin, however care should still be taken to '
@@ -109,10 +65,50 @@ _PLUGIN_WARNING_USER_SUPPLIED = (
 )
 
 
+def get_module_display_name(module):
+    """Return a module's display name, decorated if it came from a plugin.
+
+    Does not use or affect `module_name`, which is the pipeline-file serialization key.
+    """
+    name = module.module_name
+    if getattr(module, "is_plugin", False):
+        return PLUGIN_NAME_PREFIX + name
+    return name
+
+
+def classify_plugin_directory(directory):
+    """
+    Classify a plugin directory path as "User", "Official", or "Unknown"
+    Returns "Unknown" for None or a directory matching neither (e.g. stale/unconfigured).
+    """
+    if directory is None:
+        return "Unknown"
+    real = os.path.realpath(directory)
+    user_directory = get_plugin_directory()
+    if user_directory and real == os.path.realpath(user_directory):
+        return "User"
+    if real == os.path.realpath(get_official_plugins_directory()):
+        return "Official"
+    return "Unknown"
+
+
+def get_plugin_source_label(module):
+    """
+    Return "User", "Official", or "Unknown" for a loaded plugin Module or
+    Reader (class or instance).
+
+    NOTE: `is_plugin` (`add_module()`) and `plugin_directory` (`load_plugin()`)
+    are injected at plugin load time.
+    """
+    if not getattr(module, "is_plugin", False):
+        return None
+    return classify_plugin_directory(getattr(module, "plugin_directory", None))
+
+
 def get_plugin_warning_text(module):
     """
-    Return the safety/trust warning banner text for `module` (a Module
-    class or instance), or None if `module` isn't a plugin at all.
+    Return the safety/trust warning banner text for `module` based on value
+    returned by `classify_plugin_directory()`, or None if not a plugin.
     """
     if not getattr(module, "is_plugin", False):
         return None
@@ -125,7 +121,7 @@ def get_plugin_warning_text(module):
         )
     else:
         template = _PLUGIN_WARNING_USER_SUPPLIED
-    return template.format(name=module.module_name, url=PLUGIN_INFO_URL)
+    return template.format(name=module.module_name, url=OFFICIAL_PLUGINS_URL)
 
 
 def plugin_list(plugin_dir):
@@ -133,9 +129,6 @@ def plugin_list(plugin_dir):
         file_list = glob.glob(os.path.join(plugin_dir, "[!_]*.py"))
         return [os.path.basename(f)[:-3] for f in file_list]
     return []
-
-
-OFFICIAL_PLUGINS_DIRECTORY_NAME = "official_plugins"
 
 
 def get_official_plugins_directory():
@@ -149,7 +142,7 @@ def official_plugins_repo_exists():
 
 def download_official_plugins_repo():
     """Download the officially-supported CellProfiler-plugins subset and
-    extract it into get_official_plugins_directory(), replacing any
+    extract it into `get_official_plugins_directory()`, replacing any
     existing copy there.
     """
     response = requests.get(OFFICIAL_PLUGINS_REPO_ZIP_URL, stream=True, timeout=30)
@@ -187,12 +180,10 @@ def download_official_plugins_repo():
 def get_plugin_statuses():
     """
     Return one status entry per plugin *name* found across all plugin
-    directories (see _plugin_directories), merging in PLUGIN_STATUS where
-    available. A name present in more than one directory (e.g. a user
-    plugin shadowing a same-named official one) still produces exactly one
-    entry, reflecting whichever directory's attempt is actually responsible
-    for that name's current state - never a separate entry for the
-    shadowed/superseded one.
+    directories, merging in PLUGIN_STATUS where available.
+
+    A name present in all gets resolved to the single highest priority
+    (i.e. user plugins take priority over official ones).
     """
     default_directory_by_name = {}
     for directory in _plugin_directories():

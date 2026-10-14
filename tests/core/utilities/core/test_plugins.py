@@ -19,14 +19,14 @@ class TestPlugins:
         assert plugins.plugin_list(None) == []
 
     def test_get_official_plugins_directory(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(plugins, "get_default_output_directory", lambda: str(tmp_path))
-        expected = str(tmp_path / "CellProfiler-plugins" / "active_plugins")
+        monkeypatch.setattr(plugins, "get_user_data_directory", lambda: str(tmp_path))
+        expected = str(tmp_path / "official_plugins")
         assert plugins.get_official_plugins_directory() == expected
 
     def test_official_plugins_repo_exists(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(plugins, "get_default_output_directory", lambda: str(tmp_path))
+        monkeypatch.setattr(plugins, "get_user_data_directory", lambda: str(tmp_path))
         assert not plugins.official_plugins_repo_exists()
-        official_dir = tmp_path / "CellProfiler-plugins" / "active_plugins"
+        official_dir = tmp_path / "official_plugins"
         official_dir.mkdir(parents=True)
         assert not plugins.official_plugins_repo_exists()
         (official_dir / "foo.py").write_text("")
@@ -41,7 +41,7 @@ class TestPlugins:
         return buffer.getvalue()
 
     def test_download_official_plugins_repo(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(plugins, "get_default_output_directory", lambda: str(tmp_path))
+        monkeypatch.setattr(plugins, "get_user_data_directory", lambda: str(tmp_path))
 
         class FakeResponse:
             def raise_for_status(self_inner):
@@ -57,14 +57,14 @@ class TestPlugins:
 
         result = plugins.download_official_plugins_repo()
 
-        official_dir = tmp_path / "CellProfiler-plugins" / "active_plugins"
+        official_dir = tmp_path / "official_plugins"
         assert result == str(official_dir)
         assert (official_dir / "foo.py").read_text() == "X = 1\n"
         assert not (official_dir / "README.md").exists()
 
     def test_download_official_plugins_repo_replaces_existing(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(plugins, "get_default_output_directory", lambda: str(tmp_path))
-        official_dir = tmp_path / "CellProfiler-plugins" / "active_plugins"
+        monkeypatch.setattr(plugins, "get_user_data_directory", lambda: str(tmp_path))
+        official_dir = tmp_path / "official_plugins"
         official_dir.mkdir(parents=True)
         (official_dir / "stale.py").write_text("")
 

@@ -11,6 +11,7 @@ import logging
 import os
 import os.path
 import pathlib
+import shutil
 import sys
 import tempfile
 import threading
@@ -27,6 +28,15 @@ from ..utilities.image import image_resource
 
 
 LOGGER = logging.getLogger(__name__)
+
+"""The wx application name. Also determines the per-user data directory,
+since wx derives it from the app name (see get_user_data_directory)."""
+APP_NAME = "CellProfiler"
+
+"""Name of the per-user config file, living in get_user_data_directory()"""
+LOCAL_CONFIG_FILE_NAME = "CellProfilerLocal.cfg"
+
+GLOBAL_CONFIG_FILE_NAME = "CellProfilerGlobal.cfg"
 
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
@@ -78,6 +88,121 @@ def get_awt_headless():
     return __awt_headless
 
 
+def _xdg_data_home():
+    """$XDG_DATA_HOME, falling back to the ~/.local/share default the XDG
+    Base Directory Specification mandates when it is unset, empty, or not
+    an absolute path.
+    """
+    data_home = os.environ.get("XDG_DATA_HOME", "")
+    if not os.path.isabs(data_home):
+        return os.path.join(os.path.expanduser("~"), ".local", "share")
+    return data_home
+
+
+def get_user_data_directory():
+    """Return the per-user CellProfiler data directory.
+
+    Both the config file (see get_config) and the official plugins
+    directory (see cellprofiler_core.utilities.core.plugins) live in here.
+
+    The directory isn't created here - callers that write into it are
+    responsible for that.
+
+    These are the locations wx.StandardPaths.Get().GetUserDataDir() returns,
+    with one deliberate exception: on *nix (other than macOS) wx answers
+    ~/.<appname> and ignores the XDG file layout for this particular directory
+    (verified reading wxWidgets' src/unix/stdpaths.cpp), so we override it for
+    Linux in particular to force XDG adherence.
+
+    The reason for deliberately computing directly rather than by calling
+    wx.StandardPaths is that the GUI and headless runs have to agree on
+    this path, and headless runs never create the wx.App that
+    wx.StandardPaths.Get() requires
+    """
+    if sys.platform == "darwin":
+        return os.path.join(
+            os.path.expanduser("~"), "Library", "Application Support", APP_NAME
+        )
+    if sys.platform.startswith("win"):
+        return os.path.join(
+            os.environ.get("APPDATA", os.path.expanduser("~")), APP_NAME
+        )
+    return os.path.join(_xdg_data_home(), APP_NAME)
+
+
+def use_xdg_file_layout():
+    """Select wx's XDG file layout on Linux.
+
+    Affects where wx looks for a user config file: with wx's default
+    (FileLayout_Classic) GetUserConfigDir() is the home directory itself,
+    with FileLayout_XDG it is $XDG_CONFIG_HOME. It has no bearing on
+    get_user_data_directory(), which is a workaround for even stricter
+    XDG adherence and doesn't go through wx at all.
+    """
+    import wx
+
+    if not sys.platform.startswith("linux"):
+        return
+    standard_paths = wx.StandardPaths.Get()
+    if standard_paths.GetFileLayout() != wx.StandardPaths.FileLayout_XDG:
+        LOGGER.debug("Setting file layout to XDG")
+        standard_paths.SetFileLayout(wx.StandardPaths.FileLayout_XDG)
+
+
+def get_legacy_config_path():
+    """Location of local config pre CellProfiler 5.
+
+    Reason for legacy location being deprecated:
+    wx recommends only using GetUserConfigDir() if there is a single config
+    file. In v5+, since we have the config file, plus extra data like official
+    plugins, we want to use the data dir instead.
+
+    See: https://docs.wxpython.org/wx.StandardPaths.html#wx.StandardPaths.GetUserConfigDir
+    """
+    import wx
+
+    use_xdg_file_layout()
+    return os.path.join(
+        wx.StandardPaths.Get().GetUserConfigDir(), LOCAL_CONFIG_FILE_NAME
+    )
+
+
+def _copy_legacy_config(config_path):
+    """Seed this v5+'s config from an older pre-V5's config.
+
+    Copies get_legacy_config_path() to new `config_path`, if there's nothing
+    there yet, so an existing user keeps their preferences. It's a copy
+    rather than a move because the legacy location is shared with
+    v4, which is still reading and writing it on machines
+    running both versions.
+
+    Returns True if a file was copied.
+    """
+    # stop if v5 config already exists - keep as is
+    if os.path.exists(config_path):
+        return False
+    # stop if v4 config doesn't exist - nothing to copy
+    legacy_path = get_legacy_config_path()
+    if not os.path.exists(legacy_path):
+        return False
+    try:
+        shutil.copy2(legacy_path, config_path)
+    except OSError:
+        LOGGER.warning(
+            f"Unable to copy config from {legacy_path} to {config_path}",
+            exc_info=True,
+        )
+        return False
+    LOGGER.info(
+        f"Copied existing preferences from {legacy_path} to {config_path}. "
+        f"This version of CellProfiler now reads and writes {config_path} "
+        f"only, and will not touch the old file again - it is safe to delete "
+        f"if this is the only version of CellProfiler you use, and should be "
+        f"kept if you also still use CellProfiler 4."
+    )
+    return True
+
+
 def get_config():
     global __is_headless, __headless_config, __wx_app
     if __is_headless:
@@ -94,24 +219,22 @@ def get_config():
         # and cause a later wx._core.PyNoAppError.
         __wx_app = wx.App(0)
 
-        if sys.platform.startswith("linux"):
-            _std_pths = wx.StandardPaths.Get()
-            if _std_pths.GetFileLayout() != wx.StandardPaths.FileLayout_XDG:
-                LOGGER.debug("Setting file layout to XDG")
-                # use XDG standard file layout
-                _std_pths.SetFileLayout(wx.StandardPaths.FileLayout_XDG)
-
+    use_xdg_file_layout()
 
     config = wx.Config.Get(False)
 
     if not config:
-        LOGGER.debug(f"Init Config - location is {wx.StandardPaths.Get().GetUserConfigDir()}/CellProfilerLocal.cfg")
+        data_directory = get_user_data_directory()
+        os.makedirs(data_directory, exist_ok=True)
+        local_config_path = os.path.join(data_directory, LOCAL_CONFIG_FILE_NAME)
+        _copy_legacy_config(local_config_path)
+        LOGGER.debug(f"Init Config - location is {local_config_path}")
         wx.Config.Set(
             wx.Config(
-                "CellProfiler",
+                APP_NAME,
                 "BroadInstitute",
-                "CellProfilerLocal.cfg",
-                "CellProfilerGlobal.cfg",
+                local_config_path,
+                GLOBAL_CONFIG_FILE_NAME,
                 wx.CONFIG_USE_LOCAL_FILE,
             )
         )
@@ -1238,9 +1361,7 @@ def get_plugin_directory():
         import wx
 
         if wx.GetApp() is not None:
-            __plugin_directory = os.path.join(
-                wx.StandardPaths.Get().GetUserDataDir(), "plugins"
-            )
+            __plugin_directory = os.path.join(get_user_data_directory(), "plugins")
     return __plugin_directory
 
 

@@ -65,6 +65,50 @@ def get_environment(env_spec):
         return environment
 
 
+def environment_exists(env_spec):
+    """
+    Report whether an environment has already been created on disk for
+    `env_spec` - i.e. whether building it again would be a *rebuild*.
+
+    This is a cheap, side-effect-free filesystem query (it never downloads
+    tools, installs packages, or creates directories), so it's fine to call
+    it from GUI code, e.g. to decide a button's label.
+
+    True for every Appose `EnvStatus` except `MISSING`: an environment
+    directory that exists but is of a foreign type (`INCOMPATIBLE`), was
+    not created by Appose (`EXTERNAL`, which also covers one left behind by
+    a build that failed partway), or was created by Appose and is either
+    out of date (`STALE`) or current (`CURRENT`) all count as existing.
+    """
+    env_spec = str(pathlib.Path(env_spec).resolve())
+    return appose.file(env_spec).status() is not appose.EnvStatus.MISSING
+
+
+def rebuild_environment(env_spec):
+    """
+    Delete the environment previously built from `env_spec` and build it
+    again from scratch, returning the fresh `Environment`.
+
+    Prefer `get_environment()` for ordinary use: its `build()` already
+    syncs an existing environment to the current spec incrementally. This
+    is for the case where that isn't enough - a previous build that failed
+    partway leaves behind a half-populated environment directory, along
+    with a lock file pinning the very resolution that failed, and a plain
+    `build()` keeps working against that leftover state.
+
+    Closes any persistent service cached for this spec first, since its
+    worker process lives inside the directory about to be deleted, and
+    drops the in-process `Environment` cache entry so the rebuilt
+    environment is the one subsequent `get_environment()` calls see.
+    """
+    env_spec = str(pathlib.Path(env_spec).resolve())
+    close_service(env_spec)
+    with _environments_lock:
+        _environments.pop(env_spec, None)
+    appose.file(env_spec).delete()
+    return get_environment(env_spec)
+
+
 def get_service(env_spec):
     """
     Start (or reuse a cached) persistent Appose Python service for the

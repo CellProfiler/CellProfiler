@@ -92,7 +92,10 @@ active_plugins/<name>/_worker.py    # pure processing function(s); never importe
   so it must be installed there too), plus whatever real/heavy deps the
   plugin needs. Keep `python` permissive (e.g. `>=3.9`) — host and worker
   are fully separate interpreters/processes, their Python versions don't
-  need to match. If a dependency isn't on conda-forge, declare it under
+  need to match. **But cap the upper bound** (`>=3.9,<3.14`): an unbounded
+  spec silently adopts each brand-new CPython the day conda-forge ships it
+  — see "Build vs. Rebuild Environment" below, where `>=3.9` resolved to
+  Python 3.15.0. If a dependency isn't on conda-forge, declare it under
   `[pypi-dependencies]` instead — this now works fine (see Gotchas, pixi
   version).
 - `<name>/_worker.py`: pure, ordinary Python module (plus, per the current
@@ -656,9 +659,9 @@ environment spec file — e.g., in `cellcast.py`:
   `_environments` cache the plugin's own `run()` will hit later — a build
   triggered from the dialog is actually warm for the plugin's first real
   pipeline run, not a separate, redundant build.
-- No separate "force rebuild" action: Appose/pixi's `build()` is already
-  incremental (a fast no-op if the spec is unchanged and already resolved,
-  a real rebuild if the spec changed), so one button covers both "build in
+- ~~No separate "force rebuild" action~~ — superseded 2026-10-14, see
+  "Build vs. Rebuild Environment" below. Originally: Appose/pixi's
+  `build()` is already incremental, so one button covers both "build in
   advance" and "rebuild".
 - `cellcast.py`'s `RunCellcast` now declares `appose_env_spec = _ENV_SPEC`
   (it's currently the only plugin this applies to).
@@ -684,21 +687,121 @@ capture at the `PLUGIN_STATUS`/`get_plugin_statuses()` level.
 - The new icon column is now labeled ("Appose" header, column widened to
   60px from the original icon-only 28px) instead of being header-less like
   column 0.
-- **Not implemented, by design**: an indicator for "has this environment
-  already been built" (as distinct from "is it up to date", which Project
-  2 already treats as irrelevant — we always want `build()`'s own
-  incremental sync to run on every real use regardless). Appose has no
-  public API for this. The only way to know an environment's resolved
-  directory ahead of calling `build()` is `Builder._resolve_env_dir()`
-  (private; falls back to `Path(appose_envs_dir()) / scheme.env_name(content)`
-  when no explicit name/base was set, which is also true of every path
-  reachable from this codebase's `get_environment()`/`appose.file(path)`
-  usage). `appose_envs_dir()` and `scheme.env_name()` are themselves public,
-  so the check is *reconstructible*, but only by duplicating Appose's
-  private default-naming algorithm outside of Appose itself — fragile by
-  construction, since nothing obligates that algorithm to stay stable
-  across Appose releases. Deliberately not implemented; flagged for the
-  user to file upstream if wanted, rather than hacked around here.
+- ~~**Not implemented, by design**: an indicator for "has this environment
+  already been built"~~ — **no longer true as of 2026-10-14**; Appose now
+  has public API for exactly this (see below). Originally: Appose had no
+  public way to ask, and the only route to an environment's resolved
+  directory ahead of `build()` was the private
+  `Builder._resolve_env_dir()`, so answering the question meant
+  duplicating Appose's private default-naming algorithm
+  (`Path(appose_envs_dir()) / scheme.env_name(content)`) outside of
+  Appose — fragile by construction, hence deliberately skipped.
+
+### Build vs. Rebuild Environment (2026-10-14)
+
+**Appose gained the API that Project 2 concluded didn't exist.** The
+installed Appose (`0.12.1.dev0`, floating git `main`) now exposes, on
+`Builder` — and therefore on the `DynamicBuilder` that `appose.file(path)`
+returns, which delegates each of these to the real `PixiBuilder`:
+
+- `status()` → `appose.EnvStatus` (`MISSING`, `INCOMPATIBLE`, `EXTERNAL`,
+  `STALE`, `CURRENT`). Documented as a cheap, side-effect-free filesystem
+  query: it never downloads tools, installs packages, or creates
+  directories — so it's safe to call from GUI event handlers. Backed by a
+  new `appose.json` state file that `build()` writes into the environment
+  directory on success, recording the builder's full configuration
+  (content, scheme, channels, flags, env vars, lock hash); `CURRENT` means
+  that file matches the builder's current state exactly.
+- `delete()` (rmtree of the resolved env dir) and `rebuild()`
+  (`delete()` then `build()`).
+
+Two helpers were added to `cellprofiler_core/utilities/appose.py` on top of
+these:
+
+- `environment_exists(env_spec)` → `status() is not EnvStatus.MISSING`.
+  "Already built" deliberately includes `EXTERNAL`: a build that dies
+  partway leaves a populated `.pixi/envs/default` behind *without* writing
+  `appose.json`, which is exactly how the real-world case below presented.
+- `rebuild_environment(env_spec)` → `close_service()` (the worker process
+  lives inside the directory about to be deleted), drop the in-process
+  `_environments` cache entry, `appose.file(spec).delete()`, then
+  `get_environment(spec)` — so the fresh environment goes through the
+  normal cache + `activate("default")` path (Gotcha 2) rather than being
+  constructed a second, divergent way.
+
+`PluginsDialog` now labels the button per selected row: "Build
+Environment" when `environment_exists()` is false, "Rebuild Environment"
+otherwise (recomputed in `on_select`, with `self.Layout()` since the two
+labels differ in width). The rebuild path prompts for confirmation first
+(it discards a potentially large download) and calls
+`rebuild_environment()`; the build path is unchanged. If `status()` raises
+at all — unreadable/malformed spec file — `environment_already_built()`
+logs and falls back to "Build Environment", letting the build itself
+surface the real error.
+
+**Why a destructive rebuild, and not just another `build()`**: a build
+that fails partway leaves behind both a half-populated
+`.pixi/envs/default` *and* a `pixi.lock` pinning the exact resolution that
+failed, and `build()` keeps working against that leftover state. Note that
+the manifest itself is *not* the stale part — `PixiBuilder.build()`
+rewrites `<env_dir>/pixi.toml` from the spec's current content on every
+non-`CURRENT` build (`builder/pixi.py`, the `_scheme.name() == "pixi.toml"`
+branch), so an edit to a plugin's own `pixi.toml` does get copied over.
+Confirmed on the live failure below: the env-dir copy was byte-identical
+to the edited plugin copy and carried a later mtime than the directory's
+creation.
+
+**Triggering real-world case, and its diagnosis (2026-10-14)**: building
+`cellcast` from the dialog failed twice with `ModuleNotFoundError: No
+module named 'setuptools'` raised from
+`setuptools.build_meta.get_requires_for_build_wheel`, while uv built the
+git-sourced `appose` dependency from its sdist.
+
+**Not a manifest problem — do not "fix" it in the plugin's `pixi.toml`.**
+`appose-python`'s own `pyproject.toml` declares `[build-system] requires =
+["setuptools>=61.2"]`, `build-backend = "setuptools.build_meta"`, which is
+correct and complete. Adding `setuptools` to the plugin's
+`[pypi-dependencies]` cannot help by construction: that populates the
+plugin's *runtime* environment, not the ephemeral PEP 517 build
+environment uv creates for the sdist. That edit was tried and reverted.
+
+**Not reproducible.** The unmodified manifest was rebuilt successfully
+under four separate conditions: raw `pixi install` with a warm cache; raw
+`pixi install` with a fully cold cache (`PIXI_CACHE_DIR` to a scratch
+directory — verified genuinely cold, it rebuilt `appose` from the git
+checkout); raw `pixi install` with the full ambient `PIXI_IN_SHELL=1` /
+`PIXI_ENVIRONMENT_NAME=dev` environment inherited from the repo's `dev`
+pixi shell (Gotcha 2's conditions); and `rebuild_environment()` through
+the real `cellprofiler_core` code path. The resulting environment passes
+an end-to-end worker round trip (`import cellcast`, `import appose` in the
+subprocess).
+
+**What the uv cache shows about the failed run.** uv had bumped its cache
+generation, so `~/Library/Caches/rattler/cache/uv-cache/{simple-v25,git-v1}`
+were both created from scratch during the failing run — every PyPI lookup
+was cold. In that same run uv *did* download and unpack `setuptools
+84.0.0` into `archive-v0`, and wrote the `appose` git checkout's `.ok`
+marker — yet the backend hook still could not import setuptools. (The
+later successful build consumed that very same 16:09 archive directory,
+unmodified, so the cached setuptools was not corrupt.) So the declaration
+side was right and the package was present in uv's cache; what failed was
+uv populating the isolated build venv from it. `builds-v0` also holds
+nine leaked `.tmp*` build environments from earlier months, i.e. abandoned
+build envs are a thing that happens here. Conclusion: a transient uv
+build-isolation failure against a cold cache, not anything the plugin or
+CellProfiler controls. If it recurs, the lever is the Rebuild Environment
+button plus (if needed) clearing uv's cache — not the manifest.
+
+**Standing risk worth knowing: `python = ">=3.9"` currently resolves to
+Python 3.15.0.** An unbounded upper bound means each new CPython release
+silently becomes a plugin environment's interpreter the moment conda-forge
+ships it, which is exactly when the PyPI wheel ecosystem is thinnest and
+source builds (like `appose`'s, which is always built from an sdist since
+it's a git dependency) are most exposed. `cellcast` itself is fine on 3.15
+(its wheels are `cp38-abi3`) and the rebuilt environment works, but the
+"Keep `python` permissive (e.g. `>=3.9`)" advice in the per-plugin layout
+section above should be read as "permissive *within a tested range*" — a
+cap like `>=3.9,<3.14` costs nothing and removes this exposure.
 
 ### Project 3: per-module safety/trust warning banner — done
 

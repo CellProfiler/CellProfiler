@@ -579,7 +579,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % cellprofiler_version)
+        wx.GetApp().GetAppDisplayName()
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):

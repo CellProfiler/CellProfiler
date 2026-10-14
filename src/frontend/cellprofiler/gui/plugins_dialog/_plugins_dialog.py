@@ -3,7 +3,11 @@ import threading
 
 import wx
 
-from cellprofiler_core.utilities.appose import get_environment
+from cellprofiler_core.utilities.appose import (
+    environment_exists,
+    get_environment,
+    rebuild_environment,
+)
 from cellprofiler_core.utilities.core.plugins import (
     classify_plugin_directory,
     get_official_plugins_directory,
@@ -140,8 +144,33 @@ class PluginsDialog(wx.Dialog):
         selected = self.list_ctrl.GetFirstSelected()
         can_show_info = selected != -1 and not self.rows[selected]["loaded"]
         self.get_info_button.Enable(can_show_info)
-        can_build = selected != -1 and bool(self.rows[selected].get("appose_env_spec"))
-        self.build_env_button.Enable(can_build)
+        spec = self.rows[selected].get("appose_env_spec") if selected != -1 else None
+        self.build_env_button.Enable(bool(spec))
+        self.build_env_button.SetLabel(
+            "Rebuild Environment"
+            if spec and self.environment_already_built(spec)
+            else "Build Environment"
+        )
+        # The two labels differ in width, so the button needs re-laying out.
+        self.Layout()
+
+    @staticmethod
+    def environment_already_built(spec):
+        """
+        Whether building `spec`'s environment would be a rebuild - i.e.
+        whether Appose has already created a directory for it on disk.
+
+        Any failure to tell (an unreadable or malformed spec file, say) is
+        reported as "not built yet": the same question gets asked again,
+        for real, by the build itself.
+        """
+        try:
+            return environment_exists(spec)
+        except Exception:
+            LOGGER.warning(
+                "Failed to determine environment status for %s", spec, exc_info=True
+            )
+            return False
 
     def on_get_info(self, event):
         selected = self.list_ctrl.GetFirstSelected()
@@ -159,15 +188,35 @@ class PluginsDialog(wx.Dialog):
         spec = status.get("appose_env_spec")
         if not spec:
             return
+        rebuild = self.environment_already_built(spec)
+        if rebuild:
+            response = wx.MessageBox(
+                f"This will delete the existing environment for {status['name']} and "
+                "build it again from scratch, re-downloading its dependencies.\n\n"
+                "Continue?",
+                "Rebuild environment",
+                style=wx.YES_NO | wx.ICON_WARNING,
+            )
+            if response != wx.YES:
+                return
         self.build_env_button.Disable()
-        self.status_label.SetLabel(f"Building environment for {status['name']}...")
+        verb = "Rebuilding" if rebuild else "Building"
+        self.status_label.SetLabel(f"{verb} environment for {status['name']}...")
         threading.Thread(
-            target=self._build_env_worker, args=(status["name"], spec), daemon=True
+            target=self._build_env_worker,
+            args=(status["name"], spec, rebuild),
+            daemon=True,
         ).start()
 
-    def _build_env_worker(self, name, spec):
+    def _build_env_worker(self, name, spec, rebuild):
         try:
-            get_environment(spec)
+            # A rebuild discards the existing environment directory first,
+            # so a build that failed partway can't leave state behind that
+            # an incremental build would keep working against.
+            if rebuild:
+                rebuild_environment(spec)
+            else:
+                get_environment(spec)
             error = None
         except Exception as e:
             LOGGER.warning("Failed to build environment for %s", name, exc_info=True)

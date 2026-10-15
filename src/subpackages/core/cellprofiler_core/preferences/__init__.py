@@ -226,8 +226,13 @@ def get_config():
     if not config:
         data_directory = get_user_data_directory()
         os.makedirs(data_directory, exist_ok=True)
-        local_config_path = os.path.join(data_directory, LOCAL_CONFIG_FILE_NAME)
-        _copy_legacy_config(local_config_path)
+        if sys.platform.startswith("linux"):
+            # for linux continue to use legacy path, which is properly set to XDG_CONFIG_HOME
+            local_config_path = get_legacy_config_path()
+        else:
+            local_config_path = os.path.join(data_directory, LOCAL_CONFIG_FILE_NAME)
+            # copy v4 to v5+ if necessary
+            _copy_legacy_config(local_config_path)
         LOGGER.debug(f"Init Config - location is {local_config_path}")
         wx.Config.Set(
             wx.Config(

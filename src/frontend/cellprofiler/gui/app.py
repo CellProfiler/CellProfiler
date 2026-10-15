@@ -72,8 +72,10 @@ class App(wx.App):
         # wx.lib.inspection.InspectionTool().Show()
 
         # WARN: APP_NAME also names the user data directory
-        # (cellprofiler_core.preferences.get_user_data_directory), which is
-        # where the config file and the official plugins live.
+        # (cellprofiler_core.preferences.get_user_data_directory), where the
+        # official plugins live, and the user config directory
+        # (cellprofiler_core.preferences.get_user_config_directory), where the
+        # config file lives.
         # Be careful changing this, as it will change the config file location,
         # and where official plugins live.
         self.SetAppName(APP_NAME)

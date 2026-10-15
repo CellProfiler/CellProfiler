@@ -1,6 +1,7 @@
 import pytest
 import numpy
 import skimage.io as io
+import tifffile
 from cellprofiler_core.reader import fill_readers, filter_active_readers
 from cellprofiler_core.constants.reader import ALL_READERS, AVAILABLE_READERS
 from cellprofiler_core.image import MonochromeImage
@@ -438,3 +439,103 @@ class TestReaders:
                 # img_data.astype('float64'), atol=1, rtol=2**(-18)
             ), "precision mismatch"
 
+
+
+# Colour-mapped ("indexed"/palette) images reach a code path none of the plain
+# ramps above touch. Their pixel values are row numbers into a table of display
+# colours chosen at acquisition time, and a reader could either hand back those
+# raw indices or expand them to RGB through the table.
+#
+# CellProfiler hands back the indices. The colour table is a presentation
+# decision, so expanding it would have us quantify someone's pseudo-colouring
+# instead of the signal - and it would silently turn a single-channel
+# measurement into a three-channel one. Every reader must agree on this,
+# whether the table is a redundant grayscale ramp or a genuine false-colour
+# table. See issue #5151.
+
+def palette_colormap(bits, false_colour):
+    """Build a TIFF colour table. TIFF tables are always 16 bit, so an 8 bit
+    image's table entries are its indices scaled up into the 16 bit range."""
+    n_entries = 2 ** bits
+    full_scale = 2 ** 16 - 1
+    ramp = (numpy.arange(n_entries, dtype="uint32") * (2 ** (16 - bits))).astype("uint16")
+    if not false_colour:
+        # the identity table - a no-op lookup that leaves the image grayscale
+        return numpy.stack([ramp, ramp, ramp])
+    # a deliberately non-monotonic table, with entries past the signed
+    # half-range of the table's storage type, which is where signed/unsigned
+    # confusion first shows up
+    return numpy.stack([ramp, full_scale - ramp, numpy.full(n_entries, 50_000, dtype="uint16")])
+
+
+@pytest.fixture(scope="function", ids=idfn, params=[
+    {
+        "img_ext": "tiff",
+        "img_name": "uint8_identity_palette",
+        "dtype": "uint8",
+        "bits": 8,
+        "false_colour": False,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "uint8_false_colour_palette",
+        "dtype": "uint8",
+        "bits": 8,
+        "false_colour": True,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "uint16_identity_palette",
+        "dtype": "uint16",
+        "bits": 16,
+        "false_colour": False,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "uint16_false_colour_palette",
+        "dtype": "uint16",
+        "bits": 16,
+        "false_colour": True,
+    },
+])
+def palette_img_details(request, tmp_path):
+    dtype = request.param["dtype"]
+    bits = request.param["bits"]
+    false_colour = request.param["false_colour"]
+    img_name = request.param["img_name"]
+    img_ext = request.param["img_ext"]
+
+    n_data_root = 20
+    img_data = numpy.linspace(
+        numpy.iinfo(dtype).min, numpy.iinfo(dtype).max,
+        num=n_data_root**2, dtype=numpy.dtype(dtype)
+    ).reshape(n_data_root, n_data_root)
+
+    path = tmp_path / f"{img_name}.{img_ext}"
+    tifffile.imwrite(
+        path, img_data, photometric="palette",
+        colormap=palette_colormap(bits, false_colour),
+    )
+
+    yield img_data, path, dtype, numpy.float64(2**bits - 1)
+
+
+class TestIndexedReaders:
+    @pytest.mark.parametrize("reader", readers())
+    def test_palette_is_never_applied(self, palette_img_details, reader):
+        """A colour table must never be applied, identity or not."""
+        img_data, path, dtype, divisor = palette_img_details
+
+        test_img = create_image(reader, path, metadata_rescale=False, rescale_range=None)
+
+        # ext not supported, skip testing reader for this image
+        if test_img == None:
+            return
+
+        test_img_data = test_img.pixel_data
+        ref_img_data = (img_data.astype("float64") / divisor).astype("float32")
+
+        assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
+        # a colour table must not turn a single-channel plane into RGB
+        assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
+        assert numpy.all(test_img_data == ref_img_data), "data mismatch"

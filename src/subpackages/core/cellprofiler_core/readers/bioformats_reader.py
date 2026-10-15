@@ -164,37 +164,14 @@ class BioformatsReader(Reader):
                     if channel_name is None:
                         channel_name = metadata.getChannelID(index, i)
                     channel_names.append(channel_name)
-        elif self._reader.isIndexed():
-            # TODO: can we use ChannelFiller, which automatically expands channels if they
-            # are "true" color and does nothing if they are "false" (e.g. applied color table)?
-            #
-            # The image data is indexes into a color lookup-table
-            # But sometimes the table is the identity table and just generates
-            # a monochrome RGB image
-            #
-            index = self._reader.getIndex(z,0,t)
-            image = np.frombuffer(openBytes_func(index),dtype)
-            lut = None
-            if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
-                lut = self._reader.get16BitLookupTable()
-                lut_dtype = np.uint16
-            else:
-                lut = self._reader.get8BitLookupTable()
-                lut_dtype = np.uint8
-            if lut is not None:
-                # Java has no unsigned types, so Bio-Formats hands colour tables
-                # back as signed byte[][]/short[][] even though the entries are
-                # really unsigned, and scyjava faithfully preserves that
-                # signedness. Reinterpret them as unsigned; otherwise entries
-                # past half-range arrive negative, the identity-table check
-                # below never matches, and lut[image, :] indexes from the wrong
-                # end of the table. See issue #5151.
-                lut = np.array([d for d in lut]).astype(lut_dtype).transpose()
-            image.shape = (height, width)
-            if (lut is not None) \
-               and not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):
-                image = lut[image, :]
         else:
+            # Indexed ("palette") planes land here too, and we deliberately do
+            # not expand them through their color lookup-table. Their pixel
+            # values are row numbers into a table of display colors chosen at
+            # acquisition time, so applying it would have us quantify someone's
+            # pseudo-coloring rather than the signal. The raw indices are the
+            # measurement. CellProfiler 4 and the ImageIO readers both hand
+            # back the indices; match them. See issue #5151.
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index),dtype)
             image.shape = (height,width)

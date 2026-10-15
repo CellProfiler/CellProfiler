@@ -27,7 +27,7 @@ from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_error_color
 from cellprofiler_core.utilities.core.plugins import get_plugin_warning_text
-from cellprofiler_core.utilities.core.plugins import PLUGIN_INFO_URL
+from cellprofiler_core.utilities.core.plugins import OFFICIAL_PLUGINS_URL
 from cellprofiler_core.setting import Binary, PathListDisplay, Setting
 from cellprofiler_core.setting import BinaryMatrix
 from cellprofiler_core.setting import Color
@@ -129,7 +129,7 @@ def _plugin_warning_text_and_link_colours():
 
 def _plugin_warning_html(text, background_colour, text_colour, link_colour):
     """HTML-escape `text` (a get_plugin_warning_text() result), turn its
-    embedded PLUGIN_INFO_URL into a real, clickable `<a href>` link, and set
+    embedded OFFICIAL_PLUGINS_URL into a real, clickable `<a href>` link, and set
     its colors explicitly via legacy `<body bgcolor=/text=/link=>`
     attributes.
 
@@ -141,9 +141,9 @@ def _plugin_warning_html(text, background_colour, text_colour, link_colour):
     say so directly in the HTML.
     """
     escaped = html.escape(text)
-    escaped_url = html.escape(PLUGIN_INFO_URL)
+    escaped_url = html.escape(OFFICIAL_PLUGINS_URL)
     linked = escaped.replace(
-        escaped_url, f'<a href="{PLUGIN_INFO_URL}">{escaped_url}</a>'
+        escaped_url, f'<a href="{OFFICIAL_PLUGINS_URL}">{escaped_url}</a>'
     )
     body_attrs = (
         f'bgcolor="{_wx_colour_to_hex(background_colour)}" '

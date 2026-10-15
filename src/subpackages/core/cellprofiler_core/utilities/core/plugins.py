@@ -50,18 +50,21 @@ PLUGIN_NAME_PREFIX = "\U0001F9E9 "
 _PLUGIN_WARNING_OFFICIAL_NON_APPOSE = (
     '"{name}" is an official plugin, however care should still be taken to '
     "ensure it is executing correct code, and that your environment is able "
-    "to run it. See {url} for more info."
+    "to run it. Plugins are provided as-is and may throw errors or provide "
+    "unexpected results. See {url} for more info."
 )
 _PLUGIN_WARNING_OFFICIAL_APPOSE = (
     '"{name}" is an official plugin, which will automatically download '
     "dependencies and configure its environment, however care should still "
-    "be taken to ensure it is executing correct code. See {url} for more "
-    "info."
+    "be taken to ensure it is executing correct code. Plugins are provided "
+    "as-is and may throw errors or provide unexpected results. See {url} for "
+    "more info."
 )
 _PLUGIN_WARNING_USER_SUPPLIED = (
     '"{name}" is a non-official plugin. Great care should be taken to '
-    "ensure it is executing safe and trusted code, and that your "
-    "environment is able to run it. See {url} for official plugins info."
+    "ensure it is executing safe and trusted code, and that your environment "
+    "is able to run it. Plugins are loaded and executed as-is and may throw "
+    "errors or provide unexpected results. See {url} for official plugins info."
 )
 
 

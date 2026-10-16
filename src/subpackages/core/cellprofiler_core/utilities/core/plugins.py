@@ -23,7 +23,7 @@ from cellprofiler_core.reader import Reader
 LOGGER = logging.getLogger(__name__)
 
 OFFICIAL_PLUGINS_URL = "https://plugins.cellprofiler.org/"
-OFFICIAL_PLUGINS_REPO_ZIP_URL = "https://github.com/CellProfiler/CellProfiler-plugins/archive/refs/heads/appose-demo.zip"
+OFFICIAL_PLUGINS_REPO_ZIP_URL = "https://github.com/CellProfiler/CellProfiler-plugins/archive/refs/heads/master.zip"
 OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
 OFFICIAL_PLUGINS_DIRECTORY_NAME = "official_plugins"
 

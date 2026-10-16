@@ -117,7 +117,7 @@ def measure_image_quality(
         TemplateMeasurementFormat.IQ_FOCUS_SCORE: f"{image_name} focus score @%d",
         TemplateMeasurementFormat.IQ_LOCAL_FOCUS_SCORE: f"{image_name} local focus score @%d",
         TemplateMeasurementFormat.IQ_CORR: f"{image_name} {Feature.CORRELATION.value} @%d",
-        TemplateMeasurementFormat.IQ_THRESHOLD: f"{image_name} %s",
+        TemplateMeasurementFormat.IQ_THRESHOLD: f"{image_name} %s threshold",
     }
     def add_measurement(
             feature_template: str,
@@ -170,7 +170,8 @@ def measure_image_quality(
                 local_focus_score[idx],
                 stat_template_val=scale,
             )
-            # Correlation
+
+        for scale in blur_scales:
             add_measurement(
                 TemplateMeasurementFormat.IQ_CORR,
                 f"{image_name}_{scale}",
@@ -197,13 +198,13 @@ def measure_image_quality(
             TemplateMeasurementFormat.IQ_PERCENT_MAXIMAL,
             image_name,
             percent_maximal,
-            feat_val_template="%.1f",
+            feat_val_template="%.1f %%",
         )
         add_measurement(
             TemplateMeasurementFormat.IQ_PERCENT_MINIMAL,
             image_name,
             percent_minimal,
-            feat_val_template="%.1f",
+            feat_val_template="%.1f %%",
         )
 
     # Intensity Measurements
@@ -219,12 +220,6 @@ def measure_image_quality(
             pixel_max,
         ) = get_intensity_measurement_values(image, image_mask)
 
-        add_measurement(
-            TemplateMeasurementFormat.IQ_TOTAL_VOLUME if volumetric else TemplateMeasurementFormat.IQ_TOTAL_AREA,
-            image_name,
-            pixel_count,
-            feat_val_template="%.2f",
-        )
         add_measurement(
             TemplateMeasurementFormat.IQ_TOTAL_INTENSITY,
             image_name,
@@ -256,15 +251,21 @@ def measure_image_quality(
             feat_val_template="%.2f",
         )
         add_measurement(
+            TemplateMeasurementFormat.IQ_MIN_INTENSITY,
+            image_name,
+            pixel_min,
+            feat_val_template="%.2f",
+        )
+        add_measurement(
             TemplateMeasurementFormat.IQ_MAX_INTENSITY,
             image_name,
             pixel_max,
             feat_val_template="%.2f",
         )
         add_measurement(
-            TemplateMeasurementFormat.IQ_MIN_INTENSITY,
+            TemplateMeasurementFormat.IQ_TOTAL_VOLUME if volumetric else TemplateMeasurementFormat.IQ_TOTAL_AREA,
             image_name,
-            pixel_min,
+            pixel_count,
             feat_val_template="%.2f",
         )
 
@@ -292,7 +293,8 @@ def measure_image_quality(
                 TemplateMeasurementFormat.IQ_THRESHOLD,
                 f"{algo}_{image_name}_{scale}" if scale else f"{algo}_{image_name}",
                 global_threshold,
-                stat_template_val=f"{algo}" + (f" {scale}" if scale else "")
+                stat_template_val=f"{algo}" + (f" {scale}" if scale else ""),
+                feat_val_template="%s",
             )
 
     if return_visualization_data:

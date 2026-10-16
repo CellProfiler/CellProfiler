@@ -352,7 +352,7 @@ module.""".format(
             for obj_name, features in lib_measurements.objects.items():
                 for feature_name, values in features.items():
                     if not feature_name.startswith(ObjectSizeShapeFeatures.AREA_SHAPE.value):
-                        f = "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
+                        f = "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name)
                     else:
                         f = feature_name
                     workspace.measurements.add_measurement(object_name, f, values)

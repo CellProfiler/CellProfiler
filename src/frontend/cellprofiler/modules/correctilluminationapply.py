@@ -354,6 +354,14 @@ somewhat empirical.
                     % image.rescale_option,
                     image.divide_or_subtract,
                 )
+        for image in self.images:
+            image_name = image.image_name.value
+            illum_correct_name = image.illum_correct_function_image_name.value
+            if image_name == illum_correct_name:
+                raise ValidationError(
+                    "You are applying an image to itself. Check your input image/s and illumination function/s.",
+                    self.images,
+                )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust settings based on revision # of save file

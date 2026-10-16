@@ -317,6 +317,16 @@ module.""".format(
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
 
+        if self.show_window:
+            workspace.display_data.col_labels = (
+                "Object",
+                "Feature",
+                "Mean",
+                "Median",
+                "STD",
+            )
+
+            workspace.display_data.statistics = []
         for object_name in self.objects_list.value:
 
             objects = workspace.get_objects(object_name)
@@ -334,16 +344,7 @@ module.""".format(
             )
             if self.show_window:
                 lib_measurements, lib_display = res
-
-                workspace.display_data.col_labels = (
-                    "Object",
-                    "Feature",
-                    "Mean",
-                    "Median",
-                    "STD",
-                )
-
-                workspace.display_data.statistics = lib_display.statistics
+                workspace.display_data.statistics += lib_display.statistics
             else:
                 lib_measurements = res
 

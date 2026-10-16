@@ -106,7 +106,7 @@ def measureobjectsizeshape(
             stat_data = data[finite_data]
             statistics.append((
                     object_name,
-                    feature_name,
+                    feature_name.removeprefix(f"{ObjectSizeShapeFeatures.AREA_SHAPE.value}_"),
                     "%.2f" % numpy.mean(stat_data),
                     "%.2f" % numpy.median(stat_data),
                     "%.2f" % numpy.std(stat_data),

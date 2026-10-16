@@ -12,6 +12,7 @@ A plugin using this module ships:
 """
 
 import logging
+import os
 import pathlib
 import threading
 
@@ -19,6 +20,14 @@ import appose
 import numpy
 
 LOGGER = logging.getLogger(__name__)
+
+# macOS `pythonw` (conda's python.app launcher) exports PYTHONEXECUTABLE,
+# which every Appose subprocess inherits. Any venv-based interpreter that sees
+# it (e.g. the isolated PEP 517 build venvs uv creates while pixi builds an
+# sdist) ignores its own pyvenv.cfg, loses its site-packages, and fails with
+# `No module named 'setuptools'`. It only matters at interpreter startup, so
+# dropping it from this, already-running, process is safe.
+os.environ.pop("PYTHONEXECUTABLE", None)
 
 _environments = {}
 _environments_lock = threading.Lock()

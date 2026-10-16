@@ -440,15 +440,14 @@ class TestReaders:
             ), "precision mismatch"
 
 
-
 # Colour-mapped ("indexed"/palette) images reach a code path none of the plain
 # ramps above touch. Their pixel values are row numbers into a table of display
-# colours chosen at acquisition time, and a reader could either hand back those
-# raw indices or expand them to RGB through the table.
+# colours chosen at acquisition time, and an arbitrary reader could choose to
+# either hand back those raw indices or expand them to RGB through the table.
 #
-# CellProfiler hands back the indices. The colour table is a presentation
-# decision, so expanding it would have us quantify someone's pseudo-colouring
-# instead of the signal - and it would silently turn a single-channel
+# CellProfiler hands back the indices. The colour table is display data,
+# so expanding it would have us quantify someone's pseudo-colouring
+# instead of the real signal, and it would silently turn a single-channel
 # measurement into a three-channel one. Every reader must agree on this,
 # whether the table is a redundant grayscale ramp or a genuine false-colour
 # table. See issue #5151.
@@ -517,14 +516,14 @@ def palette_img_details(request, tmp_path):
         colormap=palette_colormap(bits, false_colour),
     )
 
-    yield img_data, path, dtype, numpy.float64(2**bits - 1)
+    yield img_data, path, numpy.float64(2**bits - 1)
 
 
 class TestIndexedReaders:
     @pytest.mark.parametrize("reader", readers())
     def test_palette_is_never_applied(self, palette_img_details, reader):
         """A colour table must never be applied, identity or not."""
-        img_data, path, dtype, divisor = palette_img_details
+        img_data, path, divisor = palette_img_details
 
         test_img = create_image(reader, path, metadata_rescale=False, rescale_range=None)
 

@@ -92,7 +92,7 @@ class BioformatsReader(Reader):
             openBytes_func = self._reader.openBytes
             width, height = self._reader.getSizeX(), self._reader.getSizeY()
 
-        # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
+        # FIXME: instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
         if pixel_type == FormatTools.INT8:
@@ -111,6 +111,7 @@ class BioformatsReader(Reader):
             dtype = '<f4' if little_endian else '>f4'
         elif pixel_type == FormatTools.DOUBLE:
             dtype = '<f8' if little_endian else '>f8'
+
         if index is not None:
             image = np.frombuffer(openBytes_func(index), dtype)
             if len(image) / height / width in (3,4):
@@ -165,13 +166,14 @@ class BioformatsReader(Reader):
                         channel_name = metadata.getChannelID(index, i)
                     channel_names.append(channel_name)
         else:
-            # Indexed ("palette") planes land here too, and we deliberately do
-            # not expand them through their color lookup-table. Their pixel
-            # values are row numbers into a table of display colors chosen at
-            # acquisition time, so applying it would have us quantify someone's
-            # pseudo-coloring rather than the signal. The raw indices are the
-            # measurement. CellProfiler 4 and the ImageIO readers both hand
-            # back the indices; match them. See issue #5151.
+            # NOTE: Indexed ("palette") planes land here too
+            # (self._reader.isIndexed()) and we deliberately do not expand them
+            # through their color lookup-table. Their pixel values are row
+            # numbers into a table of display colors chosen at acquisition time,
+            # so applying it would have us quantify someone's pseudo-coloring
+            # rather than the signal. The raw indices are the measurement.
+            # CellProfiler 4 and the ImageIO readers both hand back the indices;
+            # match them. See issue #5151.
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index),dtype)
             image.shape = (height,width)

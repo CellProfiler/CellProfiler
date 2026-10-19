@@ -208,7 +208,6 @@ Modules
    modules/objectprocessing
    modules/measurement
    modules/advanced
-   modules/wormtoolbox
    modules/other
 
 `(Jump to top)`_

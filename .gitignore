@@ -1,0 +1,20 @@
+.DS_Store
+*.cpp
+*.pyc
+*.pyd
+*.so
+.cache
+.eggs
+.idea
+.tox
+centrosome/_propagate.c
+__pycache__
+build
+centrosome.egg-info/
+dist
+pip-wheel-metadata/
+venv
+
+# pixi environments
+.pixi
+*.egg-info

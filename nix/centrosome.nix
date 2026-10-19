@@ -3,38 +3,50 @@
   # build deps
   buildPythonPackage,
   fetchFromGitHub,
-  pip,
-  setuptools,
   # test deps
   pytest,
   cython,
   # runtime deps
   deprecation,
+  contourpy,
+  pywavelets,
   numpy,
   scipy,
   scikit-image,
+  python3Packages,
 }:
+let
+  helper = import ./version_patch.nix { inherit lib python3Packages; };
+in
 buildPythonPackage {
   pname = "centrosome";
-  version = "1.3.3";
+  version = "1.3.0";
+
   src = fetchFromGitHub {
-    owner = "afermg";
+    owner = "CellProfiler";
     repo = "centrosome";
-    rev = "4eff192965db7815755b5823d5eeb8fc63303b81";
-    sha256 = "sha256-F9bVzj0e3VhPOkBPlV+IxLbT9hBcqJiXlnbnxEckrtM=";
+    rev = "570b3f8c9568b3ffe1743f3a9fe3b223cc43fcb4";
+    sha256 = "sha256-w0rrMFovPzsg02J8oMZKaSYk7l/kqsNeSY44q1dQ8KI=";
   };
-  pyproject = true;
+
+  # Relax deps constraints
+  postPatch = ''
+    substituteInPlace setup.py \
+      ${(helper.patchPackageVersions ../src/subpackages/library/pyproject.toml).subStr}
+  '';
+
   buildInputs = [
+    pytest
     cython
-    pip
-    setuptools
   ];
+
   propagatedBuildInputs = [
     deprecation
+    contourpy
+    pywavelets
     numpy
     scipy
     scikit-image
-    pytest
   ];
   pythonImportsCheck = [ ];
 

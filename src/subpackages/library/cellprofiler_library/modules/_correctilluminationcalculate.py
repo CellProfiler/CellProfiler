@@ -1,7 +1,7 @@
 from functools import partial
 from collections.abc import Callable
-import centrosome.smooth
-import centrosome.cpmorphology
+import centriole.smooth
+import centriole.cpmorphology
 import scipy.ndimage
 import numpy
 from numpy.typing import NDArray
@@ -338,7 +338,7 @@ def _preprocess_image_for_averaging(
     else:
         # For background, we create a labels image using the block
         # size and find the minimum within each block.
-        labels, indexes = centrosome.cpmorphology.block(
+        labels, indexes = centriole.cpmorphology.block(
             pixel_data.shape[:2], (block_size, block_size)
         )
         if mask is not None:
@@ -346,13 +346,13 @@ def _preprocess_image_for_averaging(
 
         min_block = numpy.zeros(pixel_data.shape)
         if pixel_data.ndim == 2:
-            minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            minima = centriole.cpmorphology.fixup_scipy_ndimage_result(
                 scipy.ndimage.minimum(pixel_data, labels, indexes)
             )
             min_block[labels != -1] = minima[labels[labels != -1]]
         else:
             for i in range(pixel_data.shape[2]):
-                minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                minima = centriole.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.minimum(pixel_data[:, :, i], labels, indexes)
                 )
                 min_block[labels != -1, i] = minima[labels[labels != -1]]
@@ -530,7 +530,7 @@ def _apply_dilation(
     Returns:
         Dilated pixel data of same shape as input.
     """
-    kernel = centrosome.smooth.circular_gaussian_kernel(
+    kernel = centriole.smooth.circular_gaussian_kernel(
         object_dilation_radius, object_dilation_radius * 3
     )
 
@@ -538,13 +538,13 @@ def _apply_dilation(
         return scipy.ndimage.convolve(image, kernel, mode="constant", cval=0)
 
     if pixel_data.ndim == 2:
-        dilated_pixels = centrosome.smooth.smooth_with_function_and_mask(
+        dilated_pixels = centriole.smooth.smooth_with_function_and_mask(
             pixel_data, fn, mask
         )
     else:
         dilated_pixels = numpy.dstack(
             [
-                centrosome.smooth.smooth_with_function_and_mask(
+                centriole.smooth.smooth_with_function_and_mask(
                     x, fn, mask
                 )
                 for x in pixel_data.transpose(2, 0, 1)

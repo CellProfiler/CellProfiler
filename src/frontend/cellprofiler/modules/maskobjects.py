@@ -20,8 +20,8 @@ from cellprofiler_core.utilities.core.module.identify import (
     get_object_measurement_columns,
 )
 from cellprofiler_core.utilities.core.object import size_similarly
-from centrosome.cpmorphology import fixup_scipy_ndimage_result
-from centrosome.outline import outline
+from centriole.cpmorphology import fixup_scipy_ndimage_result
+from centriole.outline import outline
 
 from cellprofiler.modules import _help
 

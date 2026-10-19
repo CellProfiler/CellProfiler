@@ -38,7 +38,7 @@ help for more information on saving cropping shapes.
 """
 
 import logging
-import centrosome.filter
+import centriole.filter
 import matplotlib.axes
 import matplotlib.cm
 import matplotlib.figure
@@ -527,7 +527,7 @@ objects:
         import wx
 
         """Show the cropping user interface"""
-        pixel_data = centrosome.filter.stretch(orig_image)
+        pixel_data = centriole.filter.stretch(orig_image)
         #
         # Create the UI - a dialog with a figure inside
         #

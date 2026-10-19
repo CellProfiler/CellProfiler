@@ -1,4 +1,4 @@
-import centrosome.cpmorphology
+import centriole.cpmorphology
 import numpy
 import pytest
 import six.moves
@@ -157,7 +157,7 @@ def make_workspace(measurement, labels=None, image=None):
         o.segmented = labels
         object_set.add_objects(o, OBJECTS_NAME)
         m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, numpy.array(measurement))
-        y, x = centrosome.cpmorphology.centers_of_labels(labels)
+        y, x = centriole.cpmorphology.centers_of_labels(labels)
         m.add_measurement(OBJECTS_NAME, "Location_Center_X", x)
         m.add_measurement(OBJECTS_NAME, "Location_Center_Y", y)
         if image is None:

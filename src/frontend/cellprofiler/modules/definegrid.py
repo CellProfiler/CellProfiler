@@ -47,7 +47,7 @@ Measurements made by this module
 
 import logging
 
-import centrosome.cpmorphology
+import centriole.cpmorphology
 import numpy
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
@@ -628,7 +628,7 @@ first image.
         Returns a CPGridInfo object
         """
         objects = workspace.object_set.get_objects(self.object_name.value)
-        centroids = centrosome.cpmorphology.centers_of_labels(objects.segmented)
+        centroids = centriole.cpmorphology.centers_of_labels(objects.segmented)
         try:
             if centroids.shape[1] < 2:
                 #

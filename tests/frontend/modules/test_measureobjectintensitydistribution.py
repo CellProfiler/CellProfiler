@@ -1,6 +1,6 @@
 import io
 
-import centrosome.propagate
+import centriole.propagate
 import numpy
 import scipy.stats
 
@@ -1039,7 +1039,7 @@ def test_edges_of_objects():
         wants_scaled=False,
     )
 
-    _, d_from_center = centrosome.propagate.propagate(
+    _, d_from_center = centriole.propagate.propagate(
         numpy.zeros(labels.shape), centers, (labels > 0), 1
     )
     good_mask = (labels > 0) & (centers == 0)

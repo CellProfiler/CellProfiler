@@ -234,22 +234,22 @@ from cellprofiler_core.setting import (
 )
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.preferences import get_default_colormap
-from centrosome.lapjv import lapjv
-import centrosome.filter
-from centrosome.cpmorphology import (
+from centriole.lapjv import lapjv
+import centriole.filter
+from centriole.cpmorphology import (
     fixup_scipy_ndimage_result,
     centers_of_labels,
     associate_by_distance,
     all_connected_components,
 )
-from centrosome.index import Indexes
+from centriole.index import Indexes
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options
 TM_ALL = ["Overlap", "Distance", "Measurements", "LAP", "Follow Neighbors"]
 
 try:
-    from centrosome.neighmovetrack import (
+    from centriole.neighmovetrack import (
         NeighbourMovementTracking,
         NeighbourMovementTrackingParameters,
     )
@@ -1503,11 +1503,11 @@ Enter a name to give the color-coded image of tracked labels.""",
         kalman_states = self.get_kalman_states(workspace)
         if kalman_states is None:
             if self.static_model:
-                kalman_states = [centrosome.filter.static_kalman_model()]
+                kalman_states = [centriole.filter.static_kalman_model()]
             else:
                 kalman_states = []
             if self.velocity_model:
-                kalman_states.append(centrosome.filter.velocity_kalman_model())
+                kalman_states.append(centriole.filter.velocity_kalman_model())
         areas = fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 np.ones(objects.segmented.shape),
@@ -1545,7 +1545,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             # The index of the Kalman filter used: -1 means not used
             kalman_used = -np.ones((n_old, n_new), int)
             for nkalman, kalman_state in enumerate(kalman_states):
-                assert isinstance(kalman_state, centrosome.filter.KalmanState)
+                assert isinstance(kalman_state, centriole.filter.KalmanState)
                 obs = kalman_state.predicted_obs_vec
                 dk = np.sqrt((obs[i, 0] - new_i[j]) ** 2 + (obs[i, 1] - new_j[j]) ** 2)
                 noise_sd = np.sqrt(np.sum(kalman_state.noise_var[:, 0:2], 1))
@@ -1655,7 +1655,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                     matching_idx = old_idx[new_idx]
                     i, j = np.mgrid[0 : len(matching_idx), 0:state_len]
                     q[new_idx[i], j, j] = kalman_state.noise_var[matching_idx[i], j]
-                new_kalman_state = centrosome.filter.kalman_filter(
+                new_kalman_state = centriole.filter.kalman_filter(
                     kalman_state, old_idx, np.column_stack((new_i, new_j)), q, r
                 )
                 new_kalman_states.append(new_kalman_state)
@@ -1677,7 +1677,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             r = np.zeros((count, 2, 2))
             for kalman_state in kalman_states:
                 q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
-                new_kalman_state = centrosome.filter.kalman_filter(
+                new_kalman_state = centriole.filter.kalman_filter(
                     kalman_state, -np.ones(count), np.column_stack((i, j)), q, r
                 )
                 new_kalman_states.append(new_kalman_state)
@@ -1718,7 +1718,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         for (model, elements), kalman_state in zip(
             self.get_kalman_models(), self.get_kalman_states(workspace)
         ):
-            assert isinstance(kalman_state, centrosome.filter.KalmanState)
+            assert isinstance(kalman_state, centriole.filter.KalmanState)
             nobjs = len(kalman_state.state_vec)
             if nobjs > 0:
                 #
@@ -3402,13 +3402,13 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         models = self.get_kalman_models()
         kalman_models = [
-            centrosome.filter.static_kalman_model()
+            centriole.filter.static_kalman_model()
             if model == F_STATIC_MODEL
-            else centrosome.filter.velocity_kalman_model()
+            else centriole.filter.velocity_kalman_model()
             for model, elements in models
         ]
         kalman_states = [
-            centrosome.filter.KalmanState(
+            centriole.filter.KalmanState(
                 kalman_model.observation_matrix, kalman_model.translation_matrix
             )
             for kalman_model in kalman_models
@@ -3436,7 +3436,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             ).reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
                 new_kalman_states.append(
-                    centrosome.filter.kalman_filter(
+                    centriole.filter.kalman_filter(
                         kalman_state,
                         -np.ones(n_objects, int),
                         np.column_stack((ii, jj)),
@@ -3482,7 +3482,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             errors = link_distance[next_slice]
             model_used = movement_model[next_slice]
             for (model, elements), kalman_state in zip(models, kalman_states):
-                assert isinstance(kalman_state, centrosome.filter.KalmanState)
+                assert isinstance(kalman_state, centriole.filter.KalmanState)
                 n_elements = len(elements)
                 q = np.zeros((n_objects, n_elements, n_elements))
                 if np.any(has_child):
@@ -3499,7 +3499,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
                     for j in range(n_elements):
                         q[has_child, j, j] = kalman_state.noise_var[kid_idx, j]
-                updated_state = centrosome.filter.kalman_filter(
+                updated_state = centriole.filter.kalman_filter(
                     kalman_state,
                     child_object_number - 1,
                     np.column_stack((ii, jj)),

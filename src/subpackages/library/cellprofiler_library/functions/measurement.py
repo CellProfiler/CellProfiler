@@ -7,17 +7,17 @@ import skimage
 import mahotas.features
 import skimage.exposure
 import skimage.measure
-import centrosome
-import centrosome.filter
-import centrosome.propagate
-import centrosome.fastemd
-import centrosome.index
-import centrosome.cpmorphology
-import centrosome.threshold
-import centrosome.haralick
-import centrosome.radial_power_spectrum
-import centrosome.zernike
-from centrosome.outline import outline
+import centriole
+import centriole.filter
+import centriole.propagate
+import centriole.fastemd
+import centriole.index
+import centriole.cpmorphology
+import centriole.threshold
+import centriole.haralick
+import centriole.radial_power_spectrum
+import centriole.zernike
+from centriole.outline import outline
 from functools import reduce
 from sklearn.cluster import KMeans
 from typing import Tuple, Optional, Dict, Callable, List, Union, Any, Sequence
@@ -344,13 +344,13 @@ def get_skeleton_points(
     total_skel = numpy.zeros(shape, bool)
 
     for labels, indexes in labelset:
-        colors = centrosome.cpmorphology.color_labels(labels)
+        colors = centriole.cpmorphology.color_labels(labels)
         for color in range(1, numpy.max(colors) + 1):
             labels_mask = colors == color
-            skel = centrosome.cpmorphology.skeletonize(
+            skel = centriole.cpmorphology.skeletonize(
                 labels_mask,
                 ordering=scipy.ndimage.distance_transform_edt(labels_mask)
-                * centrosome.filter.poisson_equation(labels_mask),
+                * centriole.filter.poisson_equation(labels_mask),
             )
             total_skel = total_skel | skel
 
@@ -367,16 +367,16 @@ def get_skeleton_points(
         # skeleton and propagating from those.
         #
         markers = numpy.zeros(total_skel.shape, numpy.int32)
-        branchpoints = centrosome.cpmorphology.branchpoints(
+        branchpoints = centriole.cpmorphology.branchpoints(
             total_skel
-        ) | centrosome.cpmorphology.endpoints(total_skel)
+        ) | centriole.cpmorphology.endpoints(total_skel)
         markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
         #
         # We compute the propagation distance to that point, then impose
         # a slightly arbitrary order to get an unambiguous ordering
         # which should number the pixels in a skeleton branch monotonically
         #
-        ts_labels, distances = centrosome.propagate.propagate(
+        ts_labels, distances = centriole.propagate.propagate(
             numpy.zeros(markers.shape), markers, total_skel, 1
         )
         order = numpy.lexsort((j, i, distances[i, j], ts_labels[i, j]))
@@ -499,13 +499,13 @@ def get_object_radius_features(
         # Pad image to assist distance transform
         mini_image = numpy.pad(mini_image, 1)
         distances = scipy.ndimage.distance_transform_edt(mini_image)
-        max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        max_radius[index] = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.maximum(distances, mini_image)
         )
-        mean_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        mean_radius[index] = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.mean(distances, mini_image)
         )
-        median_radius[index] = centrosome.cpmorphology.median_of_labels(
+        median_radius[index] = centriole.cpmorphology.median_of_labels(
             distances, mini_image.astype("int"), [1]
         )
     
@@ -528,7 +528,7 @@ def get_object_zernike_features(
         Dictionary mapping (N, M) tuples to arrays of Zernike coefficients
     """
     zf = {}
-    zf_l = centrosome.zernike.zernike(zernike_numbers, labels, label_indices)
+    zf_l = centriole.zernike.zernike(zernike_numbers, labels, label_indices)
     for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
         zf[(n, m)] = z
     return zf
@@ -550,10 +550,10 @@ def get_object_feret_features(
     if len(label_indices) == 0:
         return numpy.zeros(0), numpy.zeros(0)
     
-    chulls, chull_counts = centrosome.cpmorphology.convex_hull(
+    chulls, chull_counts = centriole.cpmorphology.convex_hull(
         labels, label_indices
     )
-    min_feret_diameter, max_feret_diameter = centrosome.cpmorphology.feret_diameter(
+    min_feret_diameter, max_feret_diameter = centriole.cpmorphology.feret_diameter(
         chulls, chull_counts, label_indices
     )
     return min_feret_diameter, max_feret_diameter
@@ -685,7 +685,7 @@ def get_threshold_values_for_objects(
         NDArray[numpy.float64]: Returns an array of threshold values for each object. Same length as `lrange`.
     """
     lrange = lrange if lrange is not None else numpy.arange(labels.max(), dtype=numpy.int32) + 1
-    object_threshold_values = (image_threshold_percentage / 100) * centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    object_threshold_values = (image_threshold_percentage / 100) * centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.maximum(pixels, labels, lrange)
     )
     return object_threshold_values
@@ -814,20 +814,20 @@ def measure_correlation_and_slope_from_objects(
     #                         ((n-1) * std(x) *std(y)))
     #
 
-    mean1 = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(im1_pixels, labels, lrange))
-    mean2 = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(im2_pixels, labels, lrange))
+    mean1 = centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(im1_pixels, labels, lrange))
+    mean2 = centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(im2_pixels, labels, lrange))
     #
     # Calculate the standard deviation times the population.
     #
     std1 = numpy.sqrt(
-        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 (im1_pixels - mean1[labels - 1]) ** 2, labels, lrange
             )
         )
     )
     std2 = numpy.sqrt(
-        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 (im2_pixels - mean2[labels - 1]) ** 2, labels, lrange
             )
@@ -835,7 +835,7 @@ def measure_correlation_and_slope_from_objects(
     )
     x = im1_pixels - mean1[labels - 1]  # x - mean(x)
     y = im2_pixels - mean2[labels - 1]  # y - mean(y)
-    corr = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    corr = centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.sum(
             x * y / (std1[labels - 1] * std2[labels - 1]), labels, lrange
         )
@@ -1030,9 +1030,9 @@ def measure_overlap_coefficient_from_objects(
         image_pixels_product = im1_pixels[thr_mask_intersection] * im2_pixels[thr_mask_intersection]
         sum_of_intenseties_per_object = get_sum_per_object(image_pixels_product, thr_mask_intersection, labels, lrange)
         
-        overlap = centrosome.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / pdt)
-        K1 = centrosome.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / numpy.array(fpsq))
-        K2 = centrosome.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / numpy.array(spsq))
+        overlap = centriole.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / pdt)
+        K1 = centriole.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / numpy.array(fpsq))
+        K2 = centriole.cpmorphology.fixup_scipy_ndimage_result(sum_of_intenseties_per_object / numpy.array(spsq))
 
     else:
         overlap = K1 = K2 = numpy.zeros(len(lrange))
@@ -1355,7 +1355,7 @@ class ObjectRecord(object):
             self.range = numpy.arange(1, numpy.max(self.labels) + 1)
             self.labels = self.labels.copy()
             self.labels[~im_mask] = 0
-            self.current_mean = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            self.current_mean = centriole.cpmorphology.fixup_scipy_ndimage_result(
                 scipy.ndimage.mean(im_pixel_data, self.labels, self.range)
             )
             self.start_mean = numpy.maximum(
@@ -1418,7 +1418,7 @@ def get_granularity_measurements(
         for object_record in object_records:
             assert isinstance(object_record, ObjectRecord)
             if object_record.nobjects > 0:
-                new_mean = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                new_mean = centriole.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.mean(
                         rec, object_record.labels, object_record.range
                     )
@@ -1609,10 +1609,10 @@ def measure_image_intensities(
 
 
 def measure_object_area_occupied(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.int_]:
-    return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes))
+    return centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes))
 
 def measure_integrated_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
-    return centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(limg, llabels, lindexes))
+    return centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(limg, llabels, lindexes))
 
 def measure_mean_intensity(integrated_intensity: NDArray[numpy.float_], lcount: NDArray[numpy.int_]) -> NDArray[numpy.float_]:   
     return integrated_intensity / lcount
@@ -1628,7 +1628,7 @@ def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], l
     # mean_intensity[llabels - 1] replaces label numbers with mean intensity creating a 1D array of intensities
     mean_intensity_pixels = mean_intensity_per_label[llabels - 1]
     return numpy.sqrt(
-        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.mean(
                 (limg - mean_intensity_pixels) ** 2,
                 llabels,
@@ -1637,19 +1637,19 @@ def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], l
         )
     )
 def measure_min_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
-    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    return centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.minimum(limg, llabels, lindexes)
     )
 
 def measure_max_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
-    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    return centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.maximum(limg, llabels, lindexes)
     )
 
 def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
     # Compute the position of the intensity maximum
     max_position = numpy.array(
-        centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.maximum_position(limg, llabels, lindexes)
         ),
         dtype=int,
@@ -1660,13 +1660,13 @@ def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], li
     return max_position
 
 def measure_center_of_mass_binary(coordinates: NDArray[numpy.int_], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
-    cm = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    cm = centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.mean(coordinates, llabels, lindexes)
         )
     return cm
 
 def measure_center_of_mass_intensity(coordinates_mesh: NDArray[numpy.int_], limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], integrated_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
-    coordinate_scaled_pixels = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    coordinate_scaled_pixels = centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.sum(coordinates_mesh * limg, llabels, lindexes)
     )
     center_of_mass_intensity = coordinate_scaled_pixels / integrated_intensity
@@ -1718,7 +1718,7 @@ def measure_mad_intensity(
         Array of MAD values, one per entry in ``lindexes``.
     """
     madimg = numpy.abs(limg - median_intensity[llabels - 1])
-    return centrosome.cpmorphology.fixup_scipy_ndimage_result(
+    return centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.median(madimg, llabels, lindexes)
     )
 
@@ -1929,7 +1929,7 @@ def get_intersect_matrix(
         # Count # at each i, j
         count = first[1:] - first[:-1]
         # First indexer - mapping from i,j to index in all_ijv
-        all_ijv_map = centrosome.index.Indexes([count])
+        all_ijv_map = centriole.index.Indexes([count])
         # Bincount to get the # of ID pixels per i,j
         id_count = numpy.bincount(all_ijv_map.rev_idx, all_ijv[:, -1]).astype(int)
         gt_count = count - id_count
@@ -1938,7 +1938,7 @@ def get_intersect_matrix(
         # the number of ID pixels. We can then use the indexer to pull
         # out the label values for each to populate a sparse array.
         #
-        cross_map = centrosome.index.Indexes([id_count, gt_count])
+        cross_map = centriole.index.Indexes([id_count, gt_count])
         off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
         off_id = (
             all_ijv_map.fwd_idx[cross_map.rev_idx]
@@ -2040,7 +2040,7 @@ def compute_rand_index_ijv(
         ]
     )
     first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
-    indexes = centrosome.index.Indexes([first_coord_counts])
+    indexes = centriole.index.Indexes([first_coord_counts])
     #
     # Count the number of labels at each point for both gt and test
     #
@@ -2202,7 +2202,7 @@ def compute_earth_movers_distance_objects(
     c[c > max_distance] = max_distance
     extra_mass_penalty = max_distance if penalize_missing else 0
 
-    emd = centrosome.fastemd.emd_hat_int32(
+    emd = centriole.fastemd.emd_hat_int32(
         src_weights.astype(numpy.int32),
         dest_weights.astype(numpy.int32),
         c,
@@ -2270,7 +2270,7 @@ def get_focus_score_for_scale_group(
         #
         # Do the math per label
         #
-        local_means = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        local_means = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.mean(pixel_data, grid, grid_range)
         )
         local_squared_normalized_image = (
@@ -2290,12 +2290,12 @@ def get_focus_score_for_scale_group(
             0
         ]  # assume the worst - that we can't calculate it
         if len(nz_grid_range):
-            sums = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            sums = centriole.cpmorphology.fixup_scipy_ndimage_result(
                 scipy.ndimage.sum(
                     local_squared_normalized_image, grid, nz_grid_range
                 )
             )
-            pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+            pixel_counts = centriole.cpmorphology.fixup_scipy_ndimage_result(
                 scipy.ndimage.sum(numpy.ones(shape), grid, nz_grid_range)
             )
             local_norm_var = sums / (pixel_counts * local_means[grid_mask])
@@ -2326,7 +2326,7 @@ def get_correlation_for_scale(
         scale: int
     ) -> float:
     # Compute Haralick's correlation texture for the given scale
-    value = centrosome.haralick.Haralick(pixel_data, image_labels, 0, scale).H3()
+    value = centriole.haralick.Haralick(pixel_data, image_labels, 0, scale).H3()
 
     if len(value) != 1 or not numpy.isfinite(value[0]):
         value = 0.0
@@ -2414,7 +2414,7 @@ def get_power_spectrum_measurement_values(
         else:
             pixel_data[~image_mask] = 0
 
-    radii, magnitude, power = centrosome.radial_power_spectrum.rps(pixel_data)
+    radii, magnitude, power = centriole.radial_power_spectrum.rps(pixel_data)
     if sum(magnitude) > 0 and len(numpy.unique(pixel_data)) > 1:
         valid = magnitude > 0
         radii = radii[valid].reshape((-1, 1))
@@ -2440,16 +2440,16 @@ def get_power_spectrum_measurement_values(
 def calculate_threshold_for_threshold_group(
         image_pixel_data: ImageGrayscale = numpy.ones((100, 100)),
         mask: Optional[ImageGrayscaleMask] = None,
-        algorithm: str = centrosome.threshold.TM_OTSU,
+        algorithm: str = centriole.threshold.TM_OTSU,
         object_fraction: float = 0.1,
         two_class_otsu: bool = True,
         use_weighted_variance: bool = True,
         assign_middle_to_foreground: bool = True,
 ) -> float:
     if mask is not None:
-        _, global_threshold = centrosome.threshold.get_threshold(
+        _, global_threshold = centriole.threshold.get_threshold(
             algorithm,
-            centrosome.threshold.TM_GLOBAL,
+            centriole.threshold.TM_GLOBAL,
             image_pixel_data,
             mask = mask,
             object_fraction=object_fraction,
@@ -2458,9 +2458,9 @@ def calculate_threshold_for_threshold_group(
             assign_middle_to_foreground=assign_middle_to_foreground,
         )
     else:
-        _, global_threshold = centrosome.threshold.get_threshold(
+        _, global_threshold = centriole.threshold.get_threshold(
             algorithm,
-            centrosome.threshold.TM_GLOBAL,
+            centriole.threshold.TM_GLOBAL,
             image_pixel_data,
             object_fraction=object_fraction,
             two_class_otsu=two_class_otsu,
@@ -2549,7 +2549,7 @@ def get_ring_with_trunks(
     #
     # Dilate the objects, then subtract them to make a ring
     #
-    my_disk = centrosome.cpmorphology.strel_disk(1.5).astype(int)
+    my_disk = centriole.cpmorphology.strel_disk(1.5).astype(int)
     dilated_labels = grey_dilation(labels, footprint=my_disk)
     seed_mask = dilated_labels > 0
     combined_skel = skeleton | seed_mask
@@ -2593,13 +2593,13 @@ def calculate_object_skeleton(
         def size_fn(area, is_object):
             return (~is_object) and (area <= max_hole_size)
 
-        combined_skel = centrosome.cpmorphology.fill_labeled_holes(
+        combined_skel = centriole.cpmorphology.fill_labeled_holes(
             combined_skel, ~seed_center, size_fn
         )
     #
     # Reskeletonize to make true branchpoints at the ring boundaries
     #
-    combined_skel = centrosome.cpmorphology.skeletonize(combined_skel)
+    combined_skel = centriole.cpmorphology.skeletonize(combined_skel)
     #
     # The skeleton outside of the labels
     #
@@ -2607,7 +2607,7 @@ def calculate_object_skeleton(
     #
     # Associate all skeleton points with seed objects
     #
-    dlabels, distance_map = centrosome.propagate.propagate(
+    dlabels, distance_map = centriole.propagate.propagate(
         numpy.zeros(cropped_labels.shape), dilated_labels, combined_skel, 1
     )
     #
@@ -2617,7 +2617,7 @@ def calculate_object_skeleton(
     #
     # Find the branchpoints
     #
-    branch_points = centrosome.cpmorphology.branchpoints(combined_skel)
+    branch_points = centriole.cpmorphology.branchpoints(combined_skel)
 
     #
     # Odd case: when four branches meet like this, branchpoints are not
@@ -2640,19 +2640,19 @@ def calculate_object_skeleton(
     # Find the branching counts for the trunks (# of extra branches
     # emanating from a point other than the line it might be on).
     #
-    branching_counts = centrosome.cpmorphology.branchings(combined_skel)
+    branching_counts = centriole.cpmorphology.branchings(combined_skel)
     branching_counts = numpy.array([0, 0, 0, 1, 2])[branching_counts]
     #
     # Only take branches within 1 of the outside skeleton
     #
     dilated_skel = scipy.ndimage.binary_dilation(
-        outside_skel, centrosome.cpmorphology.eight_connect
+        outside_skel, centriole.cpmorphology.eight_connect
     )
     branching_counts[~dilated_skel] = 0
     #
     # Find the endpoints
     #
-    end_points = centrosome.cpmorphology.endpoints(combined_skel)
+    end_points = centriole.cpmorphology.endpoints(combined_skel)
     #
     # We use two ranges for classification here:
     # * anything within one pixel of the dilated image is a trunk
@@ -2669,7 +2669,7 @@ def calculate_object_skeleton(
     #
     label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
     if labels_count > 0:
-        trunk_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        trunk_counts = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(branching_counts, nearby_labels, label_range)
         ).astype(int)
     else:
@@ -2678,7 +2678,7 @@ def calculate_object_skeleton(
     # The branches are the branchpoints that lie outside the seed objects
     #
     if labels_count > 0:
-        branch_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        branch_counts = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(branch_points, outside_labels, label_range)
         )
     else:
@@ -2687,13 +2687,13 @@ def calculate_object_skeleton(
     # Save the endpoints
     #
     if labels_count > 0:
-        end_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(end_points, outside_labels, label_range))
+        end_counts = centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(end_points, outside_labels, label_range))
     else:
         end_counts = numpy.zeros((0,), int)
     #
     # Calculate the distances
     #
-    total_distance = centrosome.cpmorphology.skeleton_length(
+    total_distance = centriole.cpmorphology.skeleton_length(
         dlabels * outside_skel, label_range
     ).astype(numpy.float64)
     edge_graph = None
@@ -2802,7 +2802,7 @@ def make_objskeleton_graph(
     #
     # Label the broken skeleton: this labels each edge differently
     #
-    edge_labels, nlabels = centrosome.cpmorphology.label_skeleton(skeleton)
+    edge_labels, nlabels = centriole.cpmorphology.label_skeleton(skeleton)
     #
     # Reindex after removing the points of interest
     #
@@ -2816,12 +2816,12 @@ def make_objskeleton_graph(
         #
         # find magnitudes and lengths for all edges
         #
-        magnitudes = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        magnitudes = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 image, edge_labels, numpy.arange(1, nlabels + 1, dtype=numpy.int32)
             )
         )
-        lengths = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        lengths = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 numpy.ones(edge_labels.shape),
                 edge_labels,
@@ -2886,7 +2886,7 @@ def make_objskeleton_graph(
     # take the minimum distance connecting each pair to throw out
     # the edge.
     #
-    edge, p1_edge, p2_edge = centrosome.cpmorphology.pairwise_permutations(
+    edge, p1_edge, p2_edge = centriole.cpmorphology.pairwise_permutations(
         edge, p1_edge
     )
     indexer = edge - number_of_points - 1
@@ -3002,7 +3002,7 @@ def get_structuring_elements(
     ]:
     # Make the structuring element for dilation
     if dimensions == 2:
-        strel = centrosome.cpmorphology.strel_disk(distance)
+        strel = centriole.cpmorphology.strel_disk(distance)
     else:
         strel = skimage.morphology.ball(distance)
     #
@@ -3010,7 +3010,7 @@ def get_structuring_elements(
     # that mimics the one used to create the outline
     #
     if dimensions == 2:
-        strel_touching = centrosome.cpmorphology.strel_disk(distance + 0.5)
+        strel_touching = centriole.cpmorphology.strel_disk(distance + 0.5)
     else:
         strel_touching = skimage.morphology.ball(distance + 0.5)
 
@@ -3027,8 +3027,8 @@ def get_mins_and_maxs(
         NDArray[numpy.int_]
     ]:
     minimums_i, maximums_i, _, _ = scipy.ndimage.extrema(idx, labels, object_indexes)
-    minimums_i = numpy.maximum(centrosome.cpmorphology.fixup_scipy_ndimage_result(minimums_i) - distance, 0).astype(int)
-    maximums_i = numpy.minimum(centrosome.cpmorphology.fixup_scipy_ndimage_result(maximums_i) + distance + 1, max_limit).astype(int)
+    minimums_i = numpy.maximum(centriole.cpmorphology.fixup_scipy_ndimage_result(minimums_i) - distance, 0).astype(int)
+    maximums_i = numpy.minimum(centriole.cpmorphology.fixup_scipy_ndimage_result(maximums_i) + distance + 1, max_limit).astype(int)
     return minimums_i, maximums_i
 
 def get_extents(
@@ -3358,12 +3358,12 @@ def measure_object_neighbors(
         # and the angles between self and the first and second
         # nearest neighbors
         #
-        ocenters = centrosome.cpmorphology.centers_of_labels(objects_small_removed_segmented).transpose()
-        ncenters = centrosome.cpmorphology.centers_of_labels(neighbor_small_removed_segmented).transpose()
+        ocenters = centriole.cpmorphology.centers_of_labels(objects_small_removed_segmented).transpose()
+        ncenters = centriole.cpmorphology.centers_of_labels(neighbor_small_removed_segmented).transpose()
         first_closest_distance, second_closest_distance, angle = get_first_and_second_x_y_vectors_and_angle(nobjects.astype(int), nneighbors.astype(int), neighbors_are_objects, ocenters, ncenters, object_numbers - 1)
 
         perimeter_outlines: ObjectSegmentation = outline(labels)
-        perimeters = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(labels.shape), perimeter_outlines, object_indexes))
+        perimeters = centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(labels.shape), perimeter_outlines, object_indexes))
 
         strel, strel_touching = get_structuring_elements(distance, dimensions)
         
@@ -3507,7 +3507,7 @@ def compute_center_distances(
     """
     # Distance from every labeled pixel to the nearest object edge. Combined
     # with the distance-from-center below, this defines the normalized radius.
-    distance_to_edge = centrosome.cpmorphology.distance_to_edge(labels)
+    distance_to_edge = centriole.cpmorphology.distance_to_edge(labels)
 
     if center_objects_segmented is not None:
         #
@@ -3522,7 +3522,7 @@ def compute_center_distances(
 
         # Count the pixels belonging to each centering object so we can ignore
         # any centering object that ended up empty after resizing.
-        center_pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+        center_pixel_counts = centriole.cpmorphology.fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 numpy.ones(center_labels.shape),
                 center_labels,
@@ -3537,7 +3537,7 @@ def compute_center_distances(
         # Integer (row, col) centroid of each centering object. The +0.5 rounds
         # to the nearest pixel before truncation to int.
         center_i, center_j = (
-            centrosome.cpmorphology.centers_of_labels(center_labels) + 0.5
+            centriole.cpmorphology.centers_of_labels(center_labels) + 0.5
         ).astype(int)
 
         # Keep only the centroids (and labels) of the non-empty centering objects.
@@ -3559,7 +3559,7 @@ def compute_center_distances(
         # Propagate the centering-object labels outward across the objects,
         # recording per pixel the assigned center label and the geodesic
         # distance from that center.
-        assigned_center_label, distance_from_center = centrosome.propagate.propagate(
+        assigned_center_label, distance_from_center = centriole.propagate.propagate(
             numpy.zeros(center_labels.shape), center_labels, labels != 0, 1
         )
 
@@ -3576,7 +3576,7 @@ def compute_center_distances(
         missing_labels = numpy.unique(labels[missing_center_mask])
 
         if len(missing_labels):
-            all_centers = centrosome.cpmorphology.centers_of_labels(labels)
+            all_centers = centriole.cpmorphology.centers_of_labels(labels)
 
             missing_i_centers, missing_j_centers = all_centers[
                 :, missing_labels - 1
@@ -3631,7 +3631,7 @@ def compute_center_distances(
         # * The center tends to be an interesting point, like the center of
         #   the nucleus or the center of one or the other of two touching cells.
         #
-        center_i, center_j = centrosome.cpmorphology.maximum_position_of_labels(
+        center_i, center_j = centriole.cpmorphology.maximum_position_of_labels(
             distance_to_edge, labels, objects_indices
         )
 
@@ -3644,7 +3644,7 @@ def compute_center_distances(
         # operations: objects sharing a color never touch, so propagation
         # within one color cannot bleed across object boundaries.
         #
-        colors = centrosome.cpmorphology.color_labels(labels)
+        colors = centriole.cpmorphology.color_labels(labels)
 
         n_colors = numpy.max(colors)
 
@@ -3655,7 +3655,7 @@ def compute_center_distances(
         for color in range(1, n_colors + 1):
             color_mask = colors == color
 
-            propagated_labels, propagated_distance = centrosome.propagate.propagate(
+            propagated_labels, propagated_distance = centriole.propagate.propagate(
                 numpy.zeros(center_labels.shape), center_labels, color_mask, 1
             )
 
@@ -3819,7 +3819,7 @@ def compute_minimum_enclosing_circles(
     r = numpy.zeros(n_objects + 1)
 
     for labels, indexes in label_indexes_pairs:
-        ij_, r_ = centrosome.cpmorphology.minimum_enclosing_circle(
+        ij_, r_ = centriole.cpmorphology.minimum_enclosing_circle(
             labels, indexes
         )
 
@@ -3858,9 +3858,9 @@ def prepare_object_zernike_polynomials(
 
     yx = (ijv[:, :2] - ij[label_vec, :]) / r[label_vec, numpy.newaxis]
 
-    zernike_indexes = centrosome.zernike.get_zernike_indexes(zernike_degree + 1)
+    zernike_indexes = centriole.zernike.get_zernike_indexes(zernike_degree + 1)
 
-    zernike_polynomials = centrosome.zernike.construct_zernike_polynomials(
+    zernike_polynomials = centriole.zernike.construct_zernike_polynomials(
         yx[:, 1], yx[:, 0], zernike_indexes
     )
 

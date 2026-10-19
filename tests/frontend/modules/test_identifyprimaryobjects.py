@@ -1,7 +1,7 @@
 import io
 import os
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 import pytest
 import scipy.ndimage
@@ -254,7 +254,7 @@ def test_test_one_object():
     x.exclude_size.value = False
     x.watershed_method.value = WatershedMethod.NONE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = one_cell_image()
     image = cellprofiler_core.image.Image(img)
@@ -321,7 +321,7 @@ def test_test_two_objects():
     x.exclude_size.value = False
     x.watershed_method.value = WatershedMethod.NONE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = two_cell_image()
     image = cellprofiler_core.image.Image(img)
@@ -445,7 +445,7 @@ def test_fill_holes():
     x.fill_holes.value = FillHolesMethod.THRESHOLDING.value
     x.watershed_method.value = WatershedMethod.NONE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
     draw_circle(img, (10, 10), 7, 0.5)
@@ -519,7 +519,7 @@ def test_01_fill_holes_within_holes():
     x.fill_holes.value = FillHolesMethod.DECLUMP.value
     x.watershed_method.value = WatershedMethod.NONE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
     draw_circle(img, (20, 20), 10, 0.5)
@@ -563,7 +563,7 @@ def test_test_watershed_shape_shape():
     x.unclump_method.value = UnclumpMethod.SHAPE.value
     x.watershed_method.value = WatershedMethod.SHAPE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -626,7 +626,7 @@ def test_test_watershed_shape_intensity():
     x.unclump_method.value = UnclumpMethod.SHAPE.value
     x.watershed_method.value = WatershedMethod.INTENSITY.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -690,7 +690,7 @@ def test_test_watershed_intensity_distance_single():
     x.unclump_method.value = UnclumpMethod.INTENSITY.value
     x.watershed_method.value = WatershedMethod.SHAPE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -758,7 +758,7 @@ def test_test_watershed_intensity_distance_triple():
     x.unclump_method.value = UnclumpMethod.INTENSITY.value
     x.watershed_method.value = WatershedMethod.SHAPE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -823,7 +823,7 @@ def test_test_watershed_intensity_distance_filter():
     x.unclump_method.value = UnclumpMethod.INTENSITY.value
     x.watershed_method.value = WatershedMethod.SHAPE.value
     x.threshold.threshold_scope.value = TS_GLOBAL
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
         [
@@ -1171,7 +1171,7 @@ def test_load_v10():
             module.threshold.threshold_scope
             == TS_ADAPTIVE
     )
-    assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
+    assert module.threshold.local_operation.value == centriole.threshold.TM_OTSU
     assert module.threshold.threshold_smoothing_scale == 1.3488
     assert round(abs(module.threshold.threshold_correction_factor.value - 0.80), 7) == 0
     assert round(abs(module.threshold.threshold_range.min - 0.01), 7) == 0
@@ -1542,8 +1542,8 @@ def test_regression_adaptive_mask():
     x.x_name.value = "my_image"
     x.use_advanced.value = True
     x.exclude_size.value = False
-    x.threshold.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-    x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    x.threshold.threshold_scope.value = centriole.threshold.TM_ADAPTIVE
+    x.threshold.global_operation.value = centriole.threshold.TM_OTSU
     numpy.random.seed(62)
     img = numpy.random.uniform(size=(100, 100))
     mask = numpy.zeros(img.shape, bool)
@@ -1841,7 +1841,7 @@ def test_regression_holes():
     x.maxima_suppression_size.value = 3
     x.automatic_suppression.value = False
     x.watershed_method.value = WatershedMethod.NONE.value
-    x.threshold.local_operation.value = centrosome.threshold.TM_MANUAL
+    x.threshold.local_operation.value = centriole.threshold.TM_MANUAL
     x.threshold.manual_threshold.value = 0.1
     x.threshold.threshold_correction_factor.value = 1
     x.set_module_num(1)
@@ -2157,14 +2157,14 @@ def draw_circle(img, center, radius, value):
 
 
 def test_01_masked_wv():
-    output = centrosome.threshold.weighted_variance(
+    output = centriole.threshold.weighted_variance(
         numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
     )
     assert output == 0
 
 
 def test_02_zero_wv():
-    output = centrosome.threshold.weighted_variance(
+    output = centriole.threshold.weighted_variance(
         numpy.zeros((3, 3)), numpy.ones((3, 3), bool), numpy.ones((3, 3), bool)
     )
     assert output == 0
@@ -2175,7 +2175,7 @@ def test_03_fg_0_bg_0():
     img = numpy.zeros((4, 4))
     img[:, 2:4] = 1
     binary_image = img > 0.5
-    output = centrosome.threshold.weighted_variance(
+    output = centriole.threshold.weighted_variance(
         img, numpy.ones(img.shape, bool), binary_image
     )
     assert output == 0
@@ -2188,7 +2188,7 @@ def test_04_values():
     # the variance should be (.25 *2 + .25 *2)/4 = .25
     img = numpy.array([[1.0 / 16.0, 1.0 / 8.0], [1.0 / 4.0, 1.0 / 2.0]])
     binary_image = numpy.array([[False, False], [True, True]])
-    output = centrosome.threshold.weighted_variance(
+    output = centriole.threshold.weighted_variance(
         img, numpy.ones((2, 2), bool), binary_image
     )
     assert round(abs(output - 0.25), 7) == 0
@@ -2204,12 +2204,12 @@ def test_05_mask():
     )
     mask = numpy.array([[False, True, True], [False, True, True]])
     binary_image = numpy.array([[False, False, False], [True, True, True]])
-    output = centrosome.threshold.weighted_variance(img, mask, binary_image)
+    output = centriole.threshold.weighted_variance(img, mask, binary_image)
     assert round(abs(output - 0.25), 7) == 0
 
 
 def test_01_all_masked():
-    output = centrosome.threshold.sum_of_entropies(
+    output = centriole.threshold.sum_of_entropies(
         numpy.zeros((3, 3)), numpy.zeros((3, 3), bool), 1
     )
     assert output == 0
@@ -2217,7 +2217,7 @@ def test_01_all_masked():
 
 def test_020_all_zero():
     """Can't take the log of zero, so all zero matrix = 0"""
-    output = centrosome.threshold.sum_of_entropies(
+    output = centriole.threshold.sum_of_entropies(
         numpy.zeros((4, 2)), numpy.ones((4, 2), bool), numpy.ones((4, 2), bool)
     )
     assert round(abs(output - 0), 7) == 0

@@ -1,5 +1,5 @@
 from enum import Enum
-from centrosome.threshold import (
+from centriole.threshold import (
     TM_OTSU,
     TM_MOG,
     TM_METHODS,

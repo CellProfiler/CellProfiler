@@ -7,7 +7,7 @@
   # test deps
   pytest,
   # runtime deps
-  centrosome,
+  centriole,
   matplotlib,
   numpy,
   mahotas,
@@ -50,7 +50,7 @@ buildPythonPackage rec {
     scikit-image
     scipy
     mahotas
-    centrosome
+    centriole
     matplotlib
     packaging
   ];

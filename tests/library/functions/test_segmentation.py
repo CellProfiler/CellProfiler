@@ -1,5 +1,5 @@
 import numpy as np
-import centrosome.outline
+import centriole.outline
 
 import cellprofiler_library.functions.segmentation as lib_seg
 from cellprofiler_library.functions.segmentation import SPARSE_FIELD
@@ -895,7 +895,7 @@ class TestSegmentation:
         outlines = np.zeros((10, 20, 3), np.float32)
         alpha = np.zeros((10, 20))
         for i, (color, mask) in enumerate(zip(colors, masks)):
-            my_outline = centrosome.outline.outline(mask)
+            my_outline = centriole.outline.outline(mask)
             outlines[my_outline] += color
             alpha[my_outline] += 1
         alpha[alpha == 0] = 1

@@ -1,6 +1,6 @@
 import io
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_FLOAT, COLTYPE_INTEGER, R_FIRST_IMAGE_NUMBER, \
     R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER
@@ -327,7 +327,7 @@ def test_one_object_watershed_gradient():
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
     )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    module.threshold.global_operation.value = centriole.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
@@ -456,7 +456,7 @@ def test_one_object_watershed_image():
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
     )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    module.threshold.global_operation.value = centriole.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
     module.run(workspace)
@@ -957,7 +957,7 @@ def test_filter_edge():
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
     )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    module.threshold.global_operation.value = centriole.threshold.TM_OTSU
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     assert numpy.all(object_out.segmented == 0)
@@ -1039,7 +1039,7 @@ def test_filter_unedited():
     module.threshold.threshold_scope.value = (
         TS_GLOBAL
     )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
+    module.threshold.global_operation.value = centriole.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)

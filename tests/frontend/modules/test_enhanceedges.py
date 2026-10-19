@@ -1,6 +1,6 @@
-import centrosome.filter
-import centrosome.kirsch
-import centrosome.otsu
+import centriole.filter
+import centriole.kirsch
+import centriole.otsu
 import numpy
 
 import cellprofiler_core.image
@@ -52,7 +52,7 @@ def test_sobel_horizontal():
     module.direction.value = EdgeDirection.HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.hsobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.hsobel(image))
 
 
 def test_sobel_vertical():
@@ -64,7 +64,7 @@ def test_sobel_vertical():
     module.direction.value = EdgeDirection.VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.vsobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.vsobel(image))
 
 
 def test_sobel_all():
@@ -76,7 +76,7 @@ def test_sobel_all():
     module.direction.value = EdgeDirection.ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.sobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.sobel(image))
 
 
 def test_prewitt_horizontal():
@@ -88,7 +88,7 @@ def test_prewitt_horizontal():
     module.direction.value = EdgeDirection.HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.hprewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.hprewitt(image))
 
 
 def test_prewitt_vertical():
@@ -100,7 +100,7 @@ def test_prewitt_vertical():
     module.direction.value = EdgeDirection.VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.vprewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.vprewitt(image))
 
 
 def test_prewitt_all():
@@ -112,7 +112,7 @@ def test_prewitt_all():
     module.direction.value = EdgeDirection.ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.prewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.prewitt(image))
 
 
 def test_roberts():
@@ -123,7 +123,7 @@ def test_roberts():
     module.method.value = EdgeFindingMethod.ROBERTS
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.roberts(image))
+    assert numpy.all(output.pixel_data == centriole.filter.roberts(image))
 
 
 def test_log_automatic():
@@ -137,7 +137,7 @@ def test_log_automatic():
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     sigma = 2.0
-    expected = centrosome.filter.laplacian_of_gaussian(
+    expected = centriole.filter.laplacian_of_gaussian(
         image, numpy.ones(image.shape, bool), int(sigma * 4) + 1, sigma
     ).astype(numpy.float32)
 
@@ -155,7 +155,7 @@ def test_log_manual():
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     sigma = 4.0
-    expected = centrosome.filter.laplacian_of_gaussian(
+    expected = centriole.filter.laplacian_of_gaussian(
         image, numpy.ones(image.shape, bool), int(sigma * 4) + 1, sigma
     ).astype(numpy.float32)
 
@@ -176,8 +176,8 @@ def test_canny():
     module.wants_automatic_sigma.value = True
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    t1, t2 = centrosome.otsu.otsu3(centrosome.filter.sobel(image))
-    result = centrosome.filter.canny(image, numpy.ones(image.shape, bool), 1.0, t1, t2)
+    t1, t2 = centriole.otsu.otsu3(centriole.filter.sobel(image))
+    result = centriole.filter.canny(image, numpy.ones(image.shape, bool), 1.0, t1, t2)
     assert numpy.all(output.pixel_data == result)
 
 
@@ -190,5 +190,5 @@ def test_kirsch():
     module.method.value = EdgeFindingMethod.KIRSCH
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    result = centrosome.kirsch.kirsch(image)
+    result = centriole.kirsch.kirsch(image)
     numpy.testing.assert_almost_equal(output.pixel_data, result, decimal=4)

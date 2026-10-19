@@ -1,7 +1,7 @@
 import warnings
 
 import numpy
-import centrosome
+import centriole
 from pydantic import Field, validate_call, ConfigDict
 from typing import Annotated, Optional
 from ..functions.image_processing import (
@@ -84,9 +84,9 @@ def enhanceedges(
             threshold_adjustment_factor=threshold_adjustment_factor,
         )
     elif method == EdgeFindingMethod.ROBERTS:
-        output_pixels = centrosome.filter.roberts(image, mask)
+        output_pixels = centriole.filter.roberts(image, mask)
     elif method == EdgeFindingMethod.KIRSCH:
-        output_pixels = centrosome.kirsch.kirsch(image)
+        output_pixels = centriole.kirsch.kirsch(image)
     else:
         raise NotImplementedError(f"{method} edge detection method is not implemented.")
 

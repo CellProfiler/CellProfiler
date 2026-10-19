@@ -1,4 +1,4 @@
-import centrosome.filter
+import centriole.filter
 import numpy
 import six.moves
 
@@ -665,7 +665,7 @@ def test_cross_numbered_objects():
 
     i, j = numpy.mgrid[0:10, 0:20]
     labels = (i > 5) + (j > 10) * 2
-    pp = numpy.array(list(centrosome.filter.permutations([1, 2, 3, 4])))
+    pp = numpy.array(list(centriole.filter.permutations([1, 2, 3, 4])))
 
     def fn(module, workspace, idx):
         if idx == 0:

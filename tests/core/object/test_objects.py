@@ -2,7 +2,7 @@ import base64
 import bz2
 import io
 
-import centrosome.outline
+import centriole.outline
 import numpy
 import numpy.testing
 import numpy.testing
@@ -747,7 +747,7 @@ class TestObjects:
         outlines = numpy.zeros((10, 20, 3), numpy.float32)
         alpha = numpy.zeros((10, 20))
         for i, (color, mask) in enumerate(zip(colors, masks)):
-            my_outline = centrosome.outline.outline(mask)
+            my_outline = centriole.outline.outline(mask)
             outlines[my_outline] += color
             alpha[my_outline] += 1
         alpha[alpha == 0] = 1

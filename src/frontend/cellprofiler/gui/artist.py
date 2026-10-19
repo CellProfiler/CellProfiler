@@ -2,8 +2,8 @@
 """artist.py - Specialized matplotlib artists for CellProfiler
 """
 
-import centrosome.cpmorphology
-import centrosome.outline
+import centriole.cpmorphology
+import centriole.outline
 import matplotlib
 import matplotlib.artist
 import matplotlib.cm
@@ -259,9 +259,9 @@ class OutlinesMixin(ColorMixin):
         if self._outlines is None:
             for i, labels in enumerate(self.labels):
                 if i == 0:
-                    self._outlines = centrosome.outline.outline(labels) != 0
+                    self._outlines = centriole.outline.outline(labels) != 0
                 else:
-                    self._outlines |= centrosome.outline.outline(labels) != 0
+                    self._outlines |= centriole.outline.outline(labels) != 0
             if self.line_width is not None and self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = scipy.ndimage.distance_transform_edt(~self._outlines)
@@ -1296,7 +1296,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
             else:
                 my_range = numpy.arange(1, len(unique))
             idx.shape = l.shape
-            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
+            pts, offs, counts = centriole.cpmorphology.get_outline_pts(idx, my_range)
             pts = pts + 0.5  # Target the centers of the pixels.
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):

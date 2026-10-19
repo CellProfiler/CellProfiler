@@ -1,7 +1,7 @@
 import io
 
-import centrosome.cpmorphology
-import centrosome.filter
+import centriole.cpmorphology
+import centriole.filter
 import numpy
 import pytest
 import scipy.ndimage
@@ -119,7 +119,7 @@ def binary_tteesstt(
     if scale is None:
         expected = function(input)
     else:
-        footprint = centrosome.cpmorphology.strel_disk(float(scale) / 2.0)
+        footprint = centriole.cpmorphology.strel_disk(float(scale) / 2.0)
         expected = function(input, footprint=footprint)
     if not gray_out:
         expected = expected > 0
@@ -129,59 +129,59 @@ def binary_tteesstt(
 
 
 def test_binary_branchpoints():
-    binary_tteesstt(MorphFunction.BRANCHPOINTS.value, centrosome.cpmorphology.branchpoints)
+    binary_tteesstt(MorphFunction.BRANCHPOINTS.value, centriole.cpmorphology.branchpoints)
 
 
 def test_binary_bridge():
-    binary_tteesstt(MorphFunction.BRIDGE.value, centrosome.cpmorphology.bridge)
+    binary_tteesstt(MorphFunction.BRIDGE.value, centriole.cpmorphology.bridge)
 
 
 def test_binary_clean():
-    binary_tteesstt(MorphFunction.CLEAN.value, centrosome.cpmorphology.clean)
+    binary_tteesstt(MorphFunction.CLEAN.value, centriole.cpmorphology.clean)
 
 
 def test_binary_diag():
-    binary_tteesstt(MorphFunction.DIAG.value, centrosome.cpmorphology.diag)
+    binary_tteesstt(MorphFunction.DIAG.value, centriole.cpmorphology.diag)
 
 
 def test_binary_endpoints():
-    binary_tteesstt(MorphFunction.ENDPOINTS.value, centrosome.cpmorphology.endpoints)
+    binary_tteesstt(MorphFunction.ENDPOINTS.value, centriole.cpmorphology.endpoints)
 
 
 def test_binary_fill():
-    binary_tteesstt(MorphFunction.FILL.value, centrosome.cpmorphology.fill)
+    binary_tteesstt(MorphFunction.FILL.value, centriole.cpmorphology.fill)
 
 
 def test_binary_hbreak():
-    binary_tteesstt(MorphFunction.HBREAK.value, centrosome.cpmorphology.hbreak)
+    binary_tteesstt(MorphFunction.HBREAK.value, centriole.cpmorphology.hbreak)
 
 
 def test_binary_majority():
-    binary_tteesstt(MorphFunction.MAJORITY.value, centrosome.cpmorphology.majority)
+    binary_tteesstt(MorphFunction.MAJORITY.value, centriole.cpmorphology.majority)
 
 
 def test_binary_remove():
-    binary_tteesstt(MorphFunction.REMOVE.value, centrosome.cpmorphology.remove)
+    binary_tteesstt(MorphFunction.REMOVE.value, centriole.cpmorphology.remove)
 
 
 def test_binary_shrink():
-    binary_tteesstt(MorphFunction.SHRINK.value, lambda x: centrosome.cpmorphology.binary_shrink(x, 1))
+    binary_tteesstt(MorphFunction.SHRINK.value, lambda x: centriole.cpmorphology.binary_shrink(x, 1))
 
 
 def test_binary_spur():
-    binary_tteesstt(MorphFunction.SPUR.value, centrosome.cpmorphology.spur)
+    binary_tteesstt(MorphFunction.SPUR.value, centriole.cpmorphology.spur)
 
 
 def test_binary_thicken():
-    binary_tteesstt(MorphFunction.THICKEN.value, centrosome.cpmorphology.thicken)
+    binary_tteesstt(MorphFunction.THICKEN.value, centriole.cpmorphology.thicken)
 
 
 def test_binary_thin():
-    binary_tteesstt(MorphFunction.THIN.value, centrosome.cpmorphology.thin)
+    binary_tteesstt(MorphFunction.THIN.value, centriole.cpmorphology.thin)
 
 
 def test_binary_vbreak():
-    binary_tteesstt(MorphFunction.VBREAK.value, centrosome.cpmorphology.vbreak)
+    binary_tteesstt(MorphFunction.VBREAK.value, centriole.cpmorphology.vbreak)
 
 
 def test_binary_distance():
@@ -213,7 +213,7 @@ def test_binary_convex_hull():
 def test_binary_skelpe():
     def fn(x):
         d = scipy.ndimage.distance_transform_edt(x)
-        pe = centrosome.filter.poisson_equation(x)
-        return centrosome.cpmorphology.skeletonize(x, ordering=pe * d)
+        pe = centriole.filter.poisson_equation(x)
+        return centriole.cpmorphology.skeletonize(x, ordering=pe * d)
 
     binary_tteesstt("skelpe", fn)

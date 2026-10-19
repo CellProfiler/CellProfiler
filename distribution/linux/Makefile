@@ -68,6 +68,7 @@ CellProfiler:
 
 #.PHONY: dependencies
 #dependencies: CellProfiler
+#	pip3 install --editable "$(CP_DIR)/src/subpackages/centriole" --upgrade
 #	pip3 install --editable "$(CP_DIR)/src/subpackages/library" --upgrade
 #	pip3 install --editable "$(CP_DIR)/src/subpackages/core" --upgrade
 #	pip3 install --editable "$(CP_DIR)/src/frontend[build]" --upgrade

@@ -2,57 +2,68 @@
   lib,
   # build deps
   buildPythonPackage,
-  fetchFromGitHub,
+  fetchPypi,
+  setuptools-scm,
+  cython,
   # test deps
   pytest,
-  cython,
   # runtime deps
   deprecation,
   contourpy,
+  pillow,
   pywavelets,
   numpy,
   scipy,
   scikit-image,
+  cp_version,
   python3Packages,
 }:
 let
   helper = import ./version_patch.nix { inherit lib python3Packages; };
 in
-buildPythonPackage {
+buildPythonPackage rec {
   pname = "centriole";
-  version = "1.3.0";
+  version = cp_version;
 
-  src = fetchFromGitHub {
-    owner = "CellProfiler";
-    repo = "centrosome";
-    rev = "570b3f8c9568b3ffe1743f3a9fe3b223cc43fcb4";
-    sha256 = "sha256-w0rrMFovPzsg02J8oMZKaSYk7l/kqsNeSY44q1dQ8KI=";
-  };
+  src = ../src/subpackages/centriole;
+  pyproject = true;
 
   # Relax deps constraints
   postPatch = ''
-    substituteInPlace setup.py \
-      ${(helper.patchPackageVersions ../src/subpackages/library/pyproject.toml).subStr}
+    substituteInPlace pyproject.toml \
+      ${(helper.patchPackageVersions ../src/subpackages/centriole/pyproject.toml).subStr}
+    echo 'fallback_version = "${version}"' >> pyproject.toml
   '';
 
   buildInputs = [
     pytest
     cython
+    numpy
+    (setuptools-scm.overrideAttrs rec {
+      version = "8.1.0";
+      src = fetchPypi {
+        pname = "setuptools_scm";
+        inherit version;
+        hash = "sha256-Qt6htldxy6k7elFdZaZdgkblYHaKZrkQalksjn8myKc=";
+      };
+    })
   ];
 
   propagatedBuildInputs = [
     deprecation
     contourpy
+    pillow
     pywavelets
     numpy
     scipy
     scikit-image
   ];
-  pythonImportsCheck = [ ];
+
+  pythonImportsCheck = [ "centriole" ];
 
   meta = {
     description = "Centriole";
-    homepage = "https://cellprofiler.org";
+    homepage = "https://github.com/CellProfiler/CellProfiler";
     license = lib.licenses.bsd3;
   };
 }

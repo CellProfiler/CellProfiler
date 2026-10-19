@@ -91,6 +91,7 @@ include = ["centriole*"]
 namespaces = false
 
 [tool.setuptools_scm]
+git_describe_command = "git describe --dirty --tags --long --first-parent --match v[0-9]*"
 root = "../../.."
 # run pip install -e to get latest
 version_file = "centriole/_version.py"

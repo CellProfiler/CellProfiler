@@ -1,6 +1,9 @@
 name: Deploy Production Packages to PyPI
 jobs:
+  centriole-wheels:
+    uses: ./.github/workflows/publish-centriole.yml
   deploy-production:
+    needs: centriole-wheels
     runs-on: ubuntu-latest
     env:
       TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -8,6 +11,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup Python
       uses: actions/setup-python@v6
       with:
@@ -16,6 +21,16 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install build twine
+    - name: Download Centriole wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: centriole-release-wheels
+        path: src/subpackages/centriole/dist
+    - name: Upload Centriole
+      working-directory: ${{ github.workspace }}/src/subpackages/centriole/
+      run: |
+        python -m build --sdist
+        twine upload dist/*
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |

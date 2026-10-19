@@ -1,6 +1,11 @@
 name: Deploy Nightly Packages to PyPI
 jobs:
+  centriole-wheels:
+    uses: ./.github/workflows/publish-centriole.yml
+    with:
+      nightly: true
   deploy-nightly:
+    needs: centriole-wheels
     runs-on: ubuntu-latest
     env:
       TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -22,6 +27,16 @@ jobs:
     - name: Prepare nightly config
       run: |
         python ${{ github.workspace }}/scripts/nightly_build.py
+    - name: Download Centriole wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: centriole-nightly-wheels
+        path: src/subpackages/centriole/dist
+    - name: Upload Centriole
+      working-directory: ${{ github.workspace }}/src/subpackages/centriole/
+      run: |
+        python -m build --sdist
+        twine upload dist/*
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |

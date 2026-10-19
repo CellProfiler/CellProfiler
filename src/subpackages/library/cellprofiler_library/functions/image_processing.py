@@ -33,7 +33,7 @@ from cellprofiler_library.types import (
     ImageAny, ImageAnyMask, 
     ObjectSegmentation, 
     Image2D, Image2DMask, 
-    StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, Image2DBinary, ObjectLabel, ImageBinary, Pixel, PixelAny
+    StructuringElement, ObjectLabelSet, ImageColor, ImageBinaryMask, ImageBinary, Pixel, PixelAny
 )
 from cellprofiler_library.opts import threshold as Threshold
 from cellprofiler_library.opts.enhanceorsuppressfeatures import SpeckleAccuracy, NeuriteMethod

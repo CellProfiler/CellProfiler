@@ -1,0 +1,12 @@
+# run: conda env create
+name: centriole-dev
+channels:
+  - conda-forge
+dependencies:
+  - cython
+  - numpy
+  - pillow
+  - scikit-image
+  - scipy
+  - pip:
+    - deprecation

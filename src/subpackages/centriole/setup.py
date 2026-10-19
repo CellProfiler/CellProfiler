@@ -1,13 +1,14 @@
-from __future__ import absolute_import
+"""Extension module declarations for centriole.
+
+All package metadata lives in pyproject.toml. This file exists only because
+setuptools still needs a setup.py to declare C/Cython extension modules.
+"""
 
 import glob
 import os.path
-import sys
 
-import setuptools
-import setuptools.command.build_ext
-import setuptools.command.test
 import numpy
+import setuptools
 
 try:
     import Cython.Build
@@ -15,29 +16,6 @@ try:
     __cython = True
 except ImportError:
     __cython = False
-
-
-class Test(setuptools.command.test.test):
-    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        setuptools.command.test.test.initialize_options(self)
-
-        self.pytest_args = []
-
-    def finalize_options(self):
-        setuptools.command.test.test.finalize_options(self)
-
-        self.test_args = []
-
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-
-        errno = pytest.main(self.pytest_args)
-
-        sys.exit(errno)
 
 
 if __cython:
@@ -79,50 +57,8 @@ for pyxfile in glob.glob(os.path.join("centriole", "*.pyx")):
     ]
 
 if __suffix == "pyx":
-    __extensions = Cython.Build.cythonize(__extensions, compiler_directives={'language_level': "3"})
+    __extensions = Cython.Build.cythonize(
+        __extensions, compiler_directives={"language_level": "3"}
+    )
 
-setuptools.setup(
-    author="Nodar Gogoberidze",
-    author_email="ngogober@broadinstitute.org",
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Programming Language :: C",
-        "Programming Language :: C++",
-        "Programming Language :: Cython",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Scientific/Engineering :: Bio-Informatics",
-        "Topic :: Scientific/Engineering",
-    ],
-    cmdclass={"test": Test},
-    description="An open source image processing library",
-    ext_modules=__extensions,
-    extras_require={
-        "test": ["pytest"],
-    },
-    install_requires=[
-        "deprecation",
-        "numpy>=1.18.2",
-        "pillow>=7.1.0,<12",
-        "scikit-image>=0.17.2,<1",
-        "scipy>=1.4.1,!=1.11.0,<2",
-    ],
-    tests_require=[
-        "pytest",
-    ],
-    keywords="",
-    license="BSD",
-    long_description="",
-    name="centriole",
-    packages=["centriole"],
-    setup_requires=["cython", "numpy", "pytest", ],
-    url="https://github.com/CellProfiler/centrosome",
-    version="1.3.4",
-)
+setuptools.setup(ext_modules=__extensions)

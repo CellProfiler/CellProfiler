@@ -1,3 +1,101 @@
+# build: sdist and wheel: python -m build
+# test: pytest
+# install: pip install [-e] .
+# upload: twine upload dist/*
+# check: twine check dist/*
+
 [build-system]
-requires = ["setuptools", "numpy"]
+# setuptools>=61 supports PEPs 517, 518, 621, 660
+# https://setuptools.pypa.io/en/latest/history.html#v61-0-0
+# setuptools-scm asks for setuptools>=64
+# https://setuptools-scm.readthedocs.io/en/latest/
+# cython and numpy are needed to build the extension modules declared in setup.py
+requires = ["setuptools>=64.0.0", "setuptools-scm>=8.0", "cython", "numpy"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "centriole"
+authors = [
+    {name = "Anne Carpenter"},
+    {name = "Thouis (Ray) Jones"},
+    {name = "Lee Kamentsky"},
+    {name = "Vebjorn Ljosa"},
+    {name = "David Logan"},
+    {name = "Mark Bray"},
+    {name = "Madison Swain-Bowden"},
+    {name = "Allen Goodman"},
+    {name = "Claire McQuinn"},
+    {name = "Beth Cimini", email = "bcimini@broadinstitute.org"},
+    {name = "David Stirling", email = "dstirling@glencoesoftware.com"},
+    {name = "Alice Lucas"},
+    {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
+    {name = "Callum Tromans-Coia"},
+]
+maintainers = [
+    {name = "Beth Cimini", email = "bcimini@broadinstitute.org"},
+    {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
+]
+description = "An open source image processing library"
+readme = "README.md"
+# we don't place upper bound pin for python:
+# https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
+requires-python = ">=3.9"
+# TODO: should be dynamic, top level, shared across all
+license = {file = "LICENSE"}
+keywords = ["computer vision", "image analysis", "biology", "cell", "cellprofiler"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C",
+    "Programming Language :: C++",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "deprecation",
+    "numpy>=1.18.2",
+    "pillow>=7.1.0,<12",
+    "scikit-image>=0.17.2,<1",
+    "scipy>=1.4.1,!=1.11.0,<2",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+build = ["build", "cython", "numpy", "twine"]
+# TODO: should be handled by nox or tox
+test = ["pytest~=7.4.1"]
+
+[project.urls]
+Homepage = "https://cellprofiler.org/"
+Documentation = "https://cellprofiler.org/manuals"
+Wiki = "https://github.com/CellProfiler/CellProfiler/wiki"
+Repository = "https://github.com/CellProfiler/CellProfiler"
+Issues = "https://github.com/CellProfiler/CellProfiler/issues"
+Changelog = "https://github.com/CellProfiler/CellProfiler/releases"
+
+[tool.setuptools]
+# needed so MANIFEST.in picks up the .pyx/.pxd/.pxi/.hpp sources
+# true by default
+include-package-data = true
+
+# default exclusions for automatic discovery on flat-layout:
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#flat-layout
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["centriole*"]
+namespaces = false
+
+[tool.setuptools_scm]
+root = "../../.."
+# run pip install -e to get latest
+version_file = "centriole/_version.py"
+# local scheme complies with PEP 440
+# https://peps.python.org/pep-0440/#local-version-identifiers%3E
+# but not accepted by TestPyPI and PyPi
+# https://setuptools-scm.readthedocs.io/en/stable/usage/#default-versioning-scheme
+local_scheme = "no-local-version"

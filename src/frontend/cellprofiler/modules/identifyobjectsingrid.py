@@ -65,7 +65,7 @@ See also **DefineGrid**.
 )
 
 import numpy
-from centrosome.cpmorphology import centers_of_labels
+from centriole.cpmorphology import centers_of_labels
 
 from cellprofiler_core.utilities.grid import Grid
 from cellprofiler_core.module import Module

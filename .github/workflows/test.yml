@@ -61,6 +61,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           python -m pip install --upgrade pip
+          pip install -e src/subpackages/centriole
           pip install -e src/subpackages/library
           pip install -e src/subpackages/core
           pip install -e src/frontend[test]
@@ -127,6 +128,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           python -m pip install --upgrade pip
+          pip install -e src/subpackages/centriole
           pip install -e src/subpackages/library
           pip install -e src/subpackages/core[test]
       - name: Run Tests
@@ -170,10 +172,32 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           python -m pip install --upgrade pip
+          pip install -e src/subpackages/centriole
           pip install -e src/subpackages/library[test]
       - name: Run Tests
         run: |
           pytest ${{ github.workspace }}/tests/library
+
+  test-centriole:
+    name: Install and test Centriole
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-2022, macos-14, macos-15-intel]
+        python-version: ['3.9']
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Centriole
+        run: python -m pip install -e "src/subpackages/centriole[test]"
+      - name: Run tests
+        run: python -m pytest tests/centriole
 
 on:
   pull_request:

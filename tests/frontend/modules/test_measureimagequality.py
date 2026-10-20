@@ -1,6 +1,6 @@
 import io
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 
 import cellprofiler_core.image
@@ -449,8 +449,8 @@ def test_threshold():
     q = workspace.module
 
     for tm, idx in zip(
-        centrosome.threshold.TM_GLOBAL_METHODS,
-        list(range(len(centrosome.threshold.TM_GLOBAL_METHODS))),
+        centriole.threshold.TM_GLOBAL_METHODS,
+        list(range(len(centriole.threshold.TM_GLOBAL_METHODS))),
     ):
         if idx != 0:
             q.add_image_group()
@@ -483,12 +483,12 @@ def test_threshold():
             "Image", feature_name
         )
     for tm, idx in zip(
-        centrosome.threshold.TM_GLOBAL_METHODS,
-        list(range(len(centrosome.threshold.TM_GLOBAL_METHODS))),
+        centriole.threshold.TM_GLOBAL_METHODS,
+        list(range(len(centriole.threshold.TM_GLOBAL_METHODS))),
     ):
-        if tm == centrosome.threshold.TM_OTSU_GLOBAL:
+        if tm == centriole.threshold.TM_OTSU_GLOBAL:
             feature_name = "ImageQuality_ThresholdOtsu_my_image_3FW"
-        elif tm == centrosome.threshold.TM_MOG_GLOBAL:
+        elif tm == centriole.threshold.TM_MOG_GLOBAL:
             feature_name = "ImageQuality_ThresholdMoG_my_image_20"
         else:
             feature_name = "ImageQuality_Threshold%s_my_image" % tm.split(" ")[0]
@@ -657,7 +657,7 @@ def test_load_v3():
     assert group.scale_groups[0].scale == 25
     assert group.check_saturation
     assert group.calculate_threshold
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert round(abs(thr.object_fraction.value - 0.2), 7) == 0
     assert thr.two_class_otsu == O_THREE_CLASS
     assert (
@@ -676,7 +676,7 @@ def test_load_v3():
     assert group.scale_groups[0].scale == 15
     assert not group.check_saturation
     assert not group.calculate_threshold
-    assert thr.threshold_method == centrosome.threshold.TM_MOG
+    assert thr.threshold_method == centriole.threshold.TM_MOG
     assert round(abs(thr.object_fraction.value - 0.3), 7) == 0
     assert thr.two_class_otsu == O_TWO_CLASS
     assert thr.use_weighted_variance == O_ENTROPY
@@ -738,7 +738,7 @@ def test_load_v4():
     assert group.check_intensity
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE
@@ -754,14 +754,14 @@ def test_load_v4():
     assert group.image_names.value_text == "Zeta"
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE
     )
     assert thr.two_class_otsu == O_TWO_CLASS
     thr = group.threshold_groups[1]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE

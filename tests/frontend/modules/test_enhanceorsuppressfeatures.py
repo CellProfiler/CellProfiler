@@ -1,7 +1,7 @@
 import io
 import os.path
 
-import centrosome.filter
+import centriole.filter
 import numpy
 import pytest
 import scipy.ndimage
@@ -463,7 +463,7 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = centrosome.filter.hessian(
+    expected = centriole.filter.hessian(
         scipy.ndimage.gaussian_filter(data, 1.0),
         return_hessian=False,
         return_eigenvectors=False,
@@ -499,7 +499,7 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = centrosome.filter.hessian(
+    expected = centriole.filter.hessian(
         scipy.ndimage.gaussian_filter(data, 1.0),
         return_hessian=False,
         return_eigenvectors=False,
@@ -542,7 +542,7 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
     expected = numpy.zeros_like(smoothed)
 
     for index, plane in enumerate(smoothed):
-        hessian = centrosome.filter.hessian(
+        hessian = centriole.filter.hessian(
             plane, return_hessian=False, return_eigenvectors=False
         )
 
@@ -583,7 +583,7 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
     expected = numpy.zeros_like(smoothed)
 
     for index, plane in enumerate(smoothed):
-        hessian = centrosome.filter.hessian(
+        hessian = centriole.filter.hessian(
             plane, return_hessian=False, return_eigenvectors=False
         )
 

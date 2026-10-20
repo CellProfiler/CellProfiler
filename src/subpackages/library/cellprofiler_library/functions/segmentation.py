@@ -2,7 +2,7 @@ from enum import Enum
 import numpy as np
 from numpy.random.mtrand import RandomState
 import scipy.sparse
-import centrosome.index
+import centriole.index
 from typing import Tuple
 from numpy.typing import NDArray
 from ..types import ObjectLabel, ObjectSegmentation
@@ -492,7 +492,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # There are n * n-1 pairs for each coordinate (n = # labels)
     # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
     #
-    pairs = centrosome.index.all_pairs(np.max(counts))
+    pairs = centriole.index.all_pairs(np.max(counts))
     pair_counts = counts * (counts - 1)
     #
     # Create an indexer for the inputs (indexes) and for the outputs
@@ -501,7 +501,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # Remember idx points into sort_order which points into labels
     # to get the nth label, grouped into consecutive positions.
     #
-    output_indexer = centrosome.index.Indexes(pair_counts)
+    output_indexer = centriole.index.Indexes(pair_counts)
     #
     # The start of the run of overlaps and the offsets
     #
@@ -617,7 +617,7 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
     # don't overlap.
     #
     label_outline_set = [
-        (centrosome.outline.outline(label), indexes)
+        (centriole.outline.outline(label), indexes)
         for label, indexes in label_set
     ]
     rgb_image = np.zeros(list(label_outline_set[0][0].shape) + [3], np.float32)

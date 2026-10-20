@@ -4,7 +4,7 @@ import scipy.ndimage
 import skimage.morphology
 import matplotlib.cm
 import mahotas
-import centrosome.cpmorphology
+import centriole.cpmorphology
 from typing import Optional, Literal, Tuple, Union, List, Dict, Any
 from cellprofiler_library.types import ImageAnyMask, ObjectLabel, ImageColor, ImageGrayscale, Image2DGrayscale, Image2DGrayscaleMask, ImageBinary, ImageAny, Image2DBinary
 from cellprofiler_library.functions.image_processing import crop_image_similarly, ObjectSegmentation, StructuringElement
@@ -19,8 +19,8 @@ def shrink_to_point(labels, fill):
     """
 
     if fill:
-        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
-    return centrosome.cpmorphology.binary_shrink(labels)
+        labels = centriole.cpmorphology.fill_labeled_holes(labels)
+    return centriole.cpmorphology.binary_shrink(labels)
 
 
 def shrink_defined_pixels(labels, fill, iterations):
@@ -32,8 +32,8 @@ def shrink_defined_pixels(labels, fill, iterations):
     """
 
     if fill:
-        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
-    return centrosome.cpmorphology.binary_shrink(labels, iterations=iterations)
+        labels = centriole.cpmorphology.fill_labeled_holes(labels)
+    return centriole.cpmorphology.binary_shrink(labels, iterations=iterations)
 
 
 def add_dividing_lines(labels):
@@ -43,9 +43,9 @@ def add_dividing_lines(labels):
     Euler number
     """
 
-    adjacent_mask = centrosome.cpmorphology.adjacent(labels)
+    adjacent_mask = centriole.cpmorphology.adjacent(labels)
 
-    thinnable_mask = centrosome.cpmorphology.binary_shrink(labels, 1) != 0
+    thinnable_mask = centriole.cpmorphology.binary_shrink(labels, 1) != 0
 
     out_labels = labels.copy()
 
@@ -58,7 +58,7 @@ def skeletonize(labels):
     """
     Erode each object to its skeleton.
     """
-    return centrosome.cpmorphology.skeletonize_labels(labels)
+    return centriole.cpmorphology.skeletonize_labels(labels)
 
 
 def despur(labels, iterations):
@@ -66,7 +66,7 @@ def despur(labels, iterations):
     Remove or reduce the length of spurs in a skeletonized
     image. The algorithm reduces spur size by `iterations` pixels.
     """
-    return centrosome.cpmorphology.spur(labels, iterations=iterations)
+    return centriole.cpmorphology.spur(labels, iterations=iterations)
 
 
 def expand(labels, distance):
@@ -501,7 +501,7 @@ def get_maxima(
     # find local maxima
     #
     if footprint is not None:
-        binary_maxima_image = centrosome.cpmorphology.is_local_maximum(
+        binary_maxima_image = centriole.cpmorphology.is_local_maximum(
             resized_image, resized_labels, footprint
         )
         binary_maxima_image[resized_image <= 0] = 0
@@ -522,7 +522,7 @@ def get_maxima(
         assert binary_maxima_image.shape[1] == image.shape[1]
 
     # Erode blobs of touching maxima to a single point
-    shrunk_image = centrosome.cpmorphology.binary_shrink(binary_maxima_image)
+    shrunk_image = centriole.cpmorphology.binary_shrink(binary_maxima_image)
     return shrunk_image
 
 
@@ -725,7 +725,7 @@ def separate_neighboring_objects(
         if automatic_suppression:
             maxima_suppression_size = min_size / 1.5
 
-    footprint = centrosome.cpmorphology.strel_disk(
+    footprint = centriole.cpmorphology.strel_disk(
         max(1, maxima_suppression_size - 0.5)
     )
 
@@ -741,7 +741,7 @@ def separate_neighboring_objects(
             # For shape, even if the user doesn't want to fill holes,
             # a point far away from the edge might be near a hole.
             # So we fill just for this part.
-            foreground = centrosome.cpmorphology.fill_labeled_holes(labeled_image) > 0
+            foreground = centriole.cpmorphology.fill_labeled_holes(labeled_image) > 0
         else:
             foreground = labeled_image > 0
         distance_transformed_image = scipy.ndimage.distance_transform_edt(foreground)
@@ -787,7 +787,7 @@ def separate_neighboring_objects(
         maxima_image, numpy.ones((3, 3), bool)
     )
     if watershed_method == WatershedMethod.PROPAGATE:
-        watershed_boundaries, distance = centrosome.propagate.propagate(
+        watershed_boundaries, distance = centriole.propagate.propagate(
             numpy.zeros(labeled_maxima.shape),
             labeled_maxima,
             labeled_image != 0,
@@ -1044,11 +1044,11 @@ def image_mode_color(
     if labels.ndim == 3:
         for index, plane in enumerate(mask):
             pixel_data[index, plane, :] = mapper.to_rgba(
-                centrosome.cpmorphology.distance_color_labels(labels[index])
+                centriole.cpmorphology.distance_color_labels(labels[index])
             )[plane, :3]
     else:
         pixel_data[mask, :] += mapper.to_rgba(
-            centrosome.cpmorphology.distance_color_labels(labels)
+            centriole.cpmorphology.distance_color_labels(labels)
         )[mask, :3]
 
     alpha[mask] += 1
@@ -1651,7 +1651,7 @@ def filter_using_image(
         #
         object_intensity = image[i, j] * minimum_intensity_fraction
         confluent_labels[object_intensity > image] = 0
-    count, index, c_j = centrosome.cpmorphology.find_neighbors(confluent_labels)
+    count, index, c_j = centriole.cpmorphology.find_neighbors(confluent_labels)
     if len(c_j) == 0:
         # Nobody touches - return the labels matrix
         return labels
@@ -1676,8 +1676,8 @@ def filter_using_image(
         #
         # Only connect points > minimum intensity fraction
         #
-        center_i, center_j = centrosome.cpmorphology.centers_of_labels(labels)
-        indexes, counts, i, j = centrosome.cpmorphology.get_line_pts(
+        center_i, center_j = centriole.cpmorphology.centers_of_labels(labels)
+        indexes, counts, i, j = centriole.cpmorphology.get_line_pts(
             center_i[c_i - 1],
             center_j[c_i - 1],
             center_i[c_j - 1],
@@ -1704,7 +1704,7 @@ def filter_using_image(
         minima = scipy.ndimage.minimum(
             image[i, j], pt_labels, numpy.arange(len(indexes))
         )
-        minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(minima)
+        minima = centriole.cpmorphology.fixup_scipy_ndimage_result(minima)
         #
         # Filter the connections using the image
         #
@@ -1726,7 +1726,7 @@ def filter_using_image(
     # Run "all_connected_components" to get a component # for
     # objects identified as same.
     #
-    new_indexes = centrosome.cpmorphology.all_connected_components(i, j)
+    new_indexes = centriole.cpmorphology.all_connected_components(i, j)
     new_labels = numpy.zeros(labels.shape, int)
     new_labels[labels != 0] = new_indexes[labels[labels != 0]]
     return new_labels
@@ -1774,8 +1774,8 @@ def merge_unify_parent(
     output_labels = labels.copy().astype(numpy.uint32)
     output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
     if merging_method == MergingMethod.CONVEX_HULL:
-        ch_pts, n_pts = centrosome.cpmorphology.convex_hull(output_labels)
-        ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
+        ch_pts, n_pts = centriole.cpmorphology.convex_hull(output_labels)
+        ijv = centriole.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
         output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
     #Renumber to be consecutive

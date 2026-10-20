@@ -6,8 +6,8 @@
 import logging
 import sys
 
-import centrosome.cpmorphology
-import centrosome.index
+import centriole.cpmorphology
+import centriole.index
 import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
@@ -577,7 +577,7 @@ class EditObjectsDialog(wx.Dialog):
         self.lj = numpy.zeros(0, int)
         self.ll = numpy.zeros(0, int)
         for label_and_touching in self.labels:
-            colored_labels = centrosome.cpmorphology.color_labels(label_and_touching)
+            colored_labels = centriole.cpmorphology.color_labels(label_and_touching)
             for color in range(1, numpy.max(colored_labels) + 1):
                 label = numpy.zeros(label_and_touching.shape, label_and_touching.dtype)
                 label[colored_labels == color] = label_and_touching[
@@ -595,7 +595,7 @@ class EditObjectsDialog(wx.Dialog):
                 l, ct = scipy.ndimage.label(
                     label != 0, structure=numpy.ones((3, 3), bool)
                 )
-                coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(
+                coords, offsets, counts = centriole.cpmorphology.get_outline_pts(
                     l, numpy.arange(1, ct + 1)
                 )
                 oi, oj = coords.transpose()
@@ -614,7 +614,7 @@ class EditObjectsDialog(wx.Dialog):
                 if len(ledge) > 0:
                     l[l == ledge[0]] = 0
 
-                coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(
+                coords, offsets, counts = centriole.cpmorphology.get_outline_pts(
                     l, numpy.arange(1, ct + 1)
                 )
                 if coords.shape[0] > 0:
@@ -810,7 +810,7 @@ class EditObjectsDialog(wx.Dialog):
                         lmap = numpy.zeros(len(k), int)
                         lmap[k] = numpy.arange(numpy.sum(k))
                         counts = numpy.bincount(lmap[self.ol[mask]])
-                        indexer = centrosome.index.Indexes((counts,))
+                        indexer = centriole.index.Indexes((counts,))
                         e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
                         dash_mask = (indexer.idx[0] & (2 ** e - 1)) >= 2 ** (e - 1)
                         color[self.oi[mask], self.oj[mask]] = (
@@ -1243,7 +1243,7 @@ class EditObjectsDialog(wx.Dialog):
             l0 = xydata[:-1, :]
             l1 = xydata[1:, :]
             neww_pt = numpy.ones(l0.shape) * new_pt[numpy.newaxis, :]
-            d = centrosome.cpmorphology.distance2_to_line(neww_pt, l0, l1)
+            d = centriole.cpmorphology.distance2_to_line(neww_pt, l0, l1)
             different_sign = numpy.sign(neww_pt - l0) != numpy.sign(neww_pt - l1)
             on_segment = (d < eps) & different_sign[:, 0] & different_sign[:, 1]
 
@@ -1368,7 +1368,7 @@ class EditObjectsDialog(wx.Dialog):
         for n in all_labels:
             self.remove_label(n)
 
-        mask = centrosome.cpmorphology.convex_hull_image(mask)
+        mask = centriole.cpmorphology.convex_hull_image(mask)
         self.replace_label(mask, object_number)
         self.init_labels()
         self.make_control_points(object_number)
@@ -1400,7 +1400,7 @@ class EditObjectsDialog(wx.Dialog):
             # In either case, don't add.
             #
             proj = numpy.sum(v * (pt - l0), 1)
-            d2 = centrosome.cpmorphology.distance2_to_line(pt, l0, l1)
+            d2 = centriole.cpmorphology.distance2_to_line(pt, l0, l1)
             d2[proj <= 0] = numpy.inf
             d2[proj >= llen] = numpy.inf
             best = numpy.argmin(d2)
@@ -1666,7 +1666,7 @@ class EditObjectsDialog(wx.Dialog):
                         and attrs[self.K_LABEL] == old_object_number
                     ):
                         hx, hy = artist.get_data()
-                        hmask = hmask | centrosome.cpmorphology.polygon_lines_to_mask(
+                        hmask = hmask | centriole.cpmorphology.polygon_lines_to_mask(
                             hy[:-1], hx[:-1], hy[1:], hx[1:], self.shape
                         )
                 temp = numpy.ones(self.to_keep.shape[0] + 1, bool)
@@ -1847,7 +1847,7 @@ class EditObjectsDialog(wx.Dialog):
             xydata = numpy.vstack((xydata, numpy.array([[event.xdata, event.ydata]])))
         xydata = numpy.vstack((xydata, numpy.array([[xydata[0, 0], xydata[0, 1]]])))
 
-        mask = centrosome.cpmorphology.polygon_lines_to_mask(
+        mask = centriole.cpmorphology.polygon_lines_to_mask(
             xydata[:-1, 1], xydata[:-1, 0], xydata[1:, 1], xydata[1:, 0], self.shape
         )
         if not self.allow_overlap:
@@ -2084,7 +2084,7 @@ class EditObjectsDialog(wx.Dialog):
             sub_object_numbers = [
                 n for n in range(1, count + 1) if polarity or n != border_object
             ]
-            coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(
+            coords, offsets, counts = centriole.cpmorphology.get_outline_pts(
                 labels, sub_object_numbers
             )
             coords -= 1  # account for mask padding
@@ -2109,7 +2109,7 @@ class EditObjectsDialog(wx.Dialog):
                         idx0 = idx1 - 1
                         ca = chain[accepted]
                         aidx = numpy.argwhere(accepted).flatten()
-                        a = centrosome.cpmorphology.triangle_areas(
+                        a = centriole.cpmorphology.triangle_areas(
                             ca[idx0], ca[idx1], chain[:-1]
                         )
                         idxmax = numpy.argmax(a)
@@ -2156,7 +2156,7 @@ class EditObjectsDialog(wx.Dialog):
             mask = numpy.zeros(self.shape, bool)
             for artist in my_artists:
                 j, i = artist.get_data()
-                m1 = centrosome.cpmorphology.polygon_lines_to_mask(
+                m1 = centriole.cpmorphology.polygon_lines_to_mask(
                     i[:-1], j[:-1], i[1:], j[1:], self.shape
                 )
                 mask[m1] = ~mask[m1]

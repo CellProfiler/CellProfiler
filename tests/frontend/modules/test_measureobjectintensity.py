@@ -1,6 +1,6 @@
 import math
 
-import centrosome.outline
+import centriole.outline
 import numpy
 import numpy.testing
 import pytest
@@ -1018,7 +1018,7 @@ def test_masked_edge(image, module, objects, workspace):
     #
     # Mask the edge of the object
     #
-    mask = ~centrosome.outline.outline(labels).astype(bool)
+    mask = ~centriole.outline.outline(labels).astype(bool)
 
     image.pixel_data = pixel_data
 

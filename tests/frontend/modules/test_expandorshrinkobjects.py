@@ -1,5 +1,5 @@
-import centrosome.cpmorphology
-import centrosome.outline
+import centriole.cpmorphology
+import centriole.outline
 import numpy
 
 import cellprofiler_core.image
@@ -155,7 +155,7 @@ def test_shrink():
     """Shrink once"""
     labels = numpy.zeros((10, 10), int)
     labels[1:9, 1:9] = 1
-    expected = centrosome.cpmorphology.thin(labels, iterations=1)
+    expected = centriole.cpmorphology.thin(labels, iterations=1)
     workspace, module = make_workspace(
         labels, cellprofiler.modules.expandorshrinkobjects.O_SHRINK, 1
     )
@@ -207,7 +207,7 @@ def test_shrink_from_measurement():
     labels = numpy.zeros((10, 10), int)
     labels[1:9, 1:9] = 1
     measurement = [4]
-    expected = centrosome.cpmorphology.binary_shrink(
+    expected = centriole.cpmorphology.binary_shrink(
                     labels, 
                     iterations=measurement[0]
                 )

@@ -6,7 +6,7 @@
 }: let
   callPackage = lib.callPackageWith (pkgs // packages // python3Packages);
   packages = {
-    centrosome = callPackage ./centrosome.nix {};
+    centriole = callPackage ./centriole.nix {inherit cp_version;};
     jgo = callPackage ./jgo.nix {};
     scyjava = callPackage ./scyjava.nix {};
     cellprofiler-library = callPackage ./cellprofiler_library.nix {inherit cp_version;};

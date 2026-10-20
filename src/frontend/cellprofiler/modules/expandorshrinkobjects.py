@@ -58,7 +58,7 @@ Measurements made by this module
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import centrosome.cpmorphology
+import centriole.cpmorphology
 import numpy
 import scipy.ndimage
 

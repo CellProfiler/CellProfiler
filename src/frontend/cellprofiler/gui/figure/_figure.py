@@ -5,8 +5,8 @@ import sys
 import textwrap
 import uuid
 
-import centrosome.cpmorphology
-import centrosome.outline
+import centriole.cpmorphology
+import centriole.outline
 import matplotlib
 import matplotlib.axes
 import matplotlib.backend_bases
@@ -2142,7 +2142,7 @@ class Figure(wx.Frame):
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
                     oc = numpy.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3] / 255
-                    lm = centrosome.outline.outline(labels) != 0
+                    lm = centriole.outline.outline(labels) != 0
                     lo = lm.astype(float)
                     lw = float(cplabel[CPLD_LINE_WIDTH])
                     if lw > 1:

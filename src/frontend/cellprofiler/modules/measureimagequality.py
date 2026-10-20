@@ -1364,7 +1364,7 @@ to the foreground pixels or the background pixels.
         if variable_revision_number == 4:
             global_threshold_methods = [" ".join((x, "Global")) for x in THRESHOLD_METHODS]
             # Thresholding method name change: Strip off "Global" since
-            # centrosome.theshold.TM_GLOBAL_METHODS no longer used
+            # centriole.theshold.TM_GLOBAL_METHODS no longer used
             thresh_dict = dict(zip(global_threshold_methods, THRESHOLD_METHODS))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [

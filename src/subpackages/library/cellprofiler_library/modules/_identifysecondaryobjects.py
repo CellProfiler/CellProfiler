@@ -1,8 +1,8 @@
 import numpy
 import skimage
 import scipy
-import centrosome
-import centrosome.propagate
+import centriole
+import centriole.propagate
 from typing import Annotated, Optional, Union, Tuple
 from pydantic import validate_call, ConfigDict, Field
 from cellprofiler_library.types import Image2DGrayscale, Image2DGrayscaleMask, ObjectSegmentation, ImageGrayscale, ImageGrayscaleMask
@@ -136,14 +136,14 @@ def identifysecondaryobjects(
             dilate_mask = distances <= distance_to_dilate
             labels_out[dilate_mask] = labels_in[i[dilate_mask], j[dilate_mask]] 
         else:
-            labels_out, distances = centrosome.propagate.propagate(
+            labels_out, distances = centriole.propagate.propagate(
                 image, labels_in, binary_image, 1.0
             )
             labels_out[distances > distance_to_dilate] = 0
             labels_out[labels_in > 0] = labels_in[labels_in > 0]
         if fill_holes:
             label_mask = labels_out == 0
-            small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+            small_removed_segmented_out = centriole.cpmorphology.fill_labeled_holes(
                 labels_out, mask=label_mask
             )
         else:
@@ -157,12 +157,12 @@ def identifysecondaryobjects(
             small_removed_segmented_out, objects, mask=mask, discard_edge=discard_edge
         )
     elif secondary_object_method == SecondaryObjectMethod.PROPAGATION:
-        labels_out, distance = centrosome.propagate.propagate(
+        labels_out, distance = centriole.propagate.propagate(
             image, labels_in, binary_image, regularization_factor
         )
         if fill_holes:
             label_mask = labels_out == 0
-            small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+            small_removed_segmented_out = centriole.cpmorphology.fill_labeled_holes(
                 labels_out, mask=label_mask
             )
         else:
@@ -193,7 +193,7 @@ def identifysecondaryobjects(
         )
         if fill_holes:
             label_mask = labels_out == 0
-            small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+            small_removed_segmented_out = centriole.cpmorphology.fill_labeled_holes(
                 labels_out, mask=label_mask
             )
         else:
@@ -223,7 +223,7 @@ def identifysecondaryobjects(
         )
         if fill_holes:
             label_mask = labels_out == 0
-            small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+            small_removed_segmented_out = centriole.cpmorphology.fill_labeled_holes(
                 labels_out, mask=label_mask
             )
         else:
@@ -240,7 +240,7 @@ def identifysecondaryobjects(
             objects,
             list(range(numpy.max(objects) + 1)),
         )
-        lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
+        lookup = centriole.cpmorphology.fixup_scipy_ndimage_result(lookup)
         lookup[0] = 0
         lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
         segmented_labels = lookup[objects]

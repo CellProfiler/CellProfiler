@@ -79,12 +79,14 @@ openjdk = "11.*"
 maven = ">=3.9.9,<4"
 
 [feature.mod.pypi-dependencies]
+centriole = { path = "./src/subpackages/centriole", extras = ["test"], editable = true }
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 appose = { git = "https://github.com/apposed/appose-python.git" }
 
 [feature.build.pypi-dependencies]
+centriole = { path = "./src/subpackages/centriole", extras = ["build"], editable = true }
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["build"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["build"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable = true }
@@ -100,6 +102,8 @@ setuptools-scm = "*"
 mysqlclient = ">=2.2.3"
 
 [feature.publish.pypi-dependencies]
+cython = "*"
+centriole = { path = "./src/subpackages/centriole", editable = false }
 cellprofiler-library = { path = "./src/subpackages/library", editable = false }
 cellprofiler-core = { path = "./src/subpackages/core", editable = false }
 cellprofiler = { path = "./src/frontend", editable = false }

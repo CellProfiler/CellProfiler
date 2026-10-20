@@ -4,8 +4,8 @@
 #
 #################################
 
-import centrosome.cpmorphology
-import centrosome.zernike
+import centriole.cpmorphology
+import centriole.zernike
 import numpy
 import scipy.ndimage
 
@@ -347,7 +347,7 @@ radial degree you enter here.
         # in those indexes. MEC returns the i and j coordinate of the center
         # and the radius of the circle and that defines the circle entirely.
         #
-        centers, radius = centrosome.cpmorphology.minimum_enclosing_circle(
+        centers, radius = centriole.cpmorphology.minimum_enclosing_circle(
             labels, indexes
         )
         #
@@ -401,7 +401,7 @@ radial degree you enter here.
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
         """
-        zi = centrosome.zernike.get_zernike_indexes(self.radial_degree.value + 1)
+        zi = centriole.zernike.get_zernike_indexes(self.radial_degree.value + 1)
 
         if wants_negative:
             #
@@ -496,12 +496,12 @@ radial degree you enter here.
         # We use a mask of all of the non-zero labels so the calculation
         # runs a little faster.
         #
-        zernike_polynomial = centrosome.zernike.construct_zernike_polynomials(
+        zernike_polynomial = centriole.zernike.construct_zernike_polynomials(
             x, y, numpy.array([[n, m]]), labels > 0
         )
 
         #
-        # For historical reasons, centrosome didn't multiply by the per/zernike
+        # For historical reasons, centriole didn't multiply by the per/zernike
         # normalizing factor: 2*n + 2 / E / pi where E is 2 if m is zero and 1
         # if m is one. We do it here to aid with the reconstruction
         #
@@ -659,7 +659,7 @@ radial degree you enter here.
         zernike_indexes = numpy.array(list(feature_dictionary.keys()))
         zernike_features = numpy.array(list(feature_dictionary.values()))
 
-        z = centrosome.zernike.construct_zernike_polynomials(
+        z = centriole.zernike.construct_zernike_polynomials(
             j, i, numpy.abs(zernike_indexes), mask=mask
         )
         zn = (

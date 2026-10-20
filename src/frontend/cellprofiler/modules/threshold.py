@@ -16,7 +16,7 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 from cellprofiler_core.constants.measurement import (
     FF_WEIGHTED_VARIANCE,
@@ -951,13 +951,13 @@ staining.
 
         mask = image.mask
 
-        wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
+        wv = centriole.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
             "Image", FF_WEIGHTED_VARIANCE % objname, numpy.array([wv], dtype=float),
         )
 
-        entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
+        entropies = centriole.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
             "Image",
@@ -1035,18 +1035,18 @@ staining.
                 setting_values[2] = ThresholdOpts.Scope.GLOBAL
 
             if setting_values[2] == ThresholdOpts.Scope.ADAPTIVE and setting_values[3] in [
-                centrosome.threshold.TM_MCT,
-                centrosome.threshold.TM_ROBUST_BACKGROUND,
+                centriole.threshold.TM_MCT,
+                centriole.threshold.TM_ROBUST_BACKGROUND,
             ]:
                 setting_values[2] = ThresholdOpts.Scope.GLOBAL
 
-            if setting_values[3] == centrosome.threshold.TM_MCT:
+            if setting_values[3] == centriole.threshold.TM_MCT:
                 setting_values[3] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY
 
             if setting_values[2] == ThresholdOpts.Scope.ADAPTIVE:
                 setting_values += [setting_values[3]]
             else:
-                setting_values += [centrosome.threshold.TM_OTSU]
+                setting_values += [centriole.threshold.TM_OTSU]
             variable_revision_number = 10
         used_log_otsu = False
         if variable_revision_number == 10:
@@ -1092,23 +1092,23 @@ staining.
 
             if setting_values[1] == "Automatic":
                 setting_values[1] = ThresholdOpts.Scope.GLOBAL
-                setting_values[2] = centrosome.threshold.TM_MCT
+                setting_values[2] = centriole.threshold.TM_MCT
                 setting_values[3] = "Manual"
                 setting_values[4] = "1.3488"
                 setting_values[5] = "1"
                 setting_values[6] = "(0.0, 1.0)"
 
             removed_threshold_methods = [
-                centrosome.threshold.TM_KAPUR,
-                centrosome.threshold.TM_MOG,
-                centrosome.threshold.TM_RIDLER_CALVARD,
+                centriole.threshold.TM_KAPUR,
+                centriole.threshold.TM_MOG,
+                centriole.threshold.TM_RIDLER_CALVARD,
             ]
 
             if setting_values[2] in removed_threshold_methods:
                 setting_values[2] = "None"
 
-            if setting_values[2] == centrosome.threshold.TM_BACKGROUND:
-                setting_values[2] = centrosome.threshold.TM_ROBUST_BACKGROUND
+            if setting_values[2] == centriole.threshold.TM_BACKGROUND:
+                setting_values[2] = centriole.threshold.TM_ROBUST_BACKGROUND
                 setting_values[17] = "Custom"
                 setting_values[18] = "0.02"
                 setting_values[19] = "0.02"

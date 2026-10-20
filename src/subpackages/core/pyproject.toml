@@ -58,7 +58,7 @@ classifiers = [
 dependencies = [
     "cellprofiler-library>=5.dev",
     "boto3>=1.12.28",
-    "centrosome>=1.3.0",
+    "centriole>=5.dev",
     "docutils>=0.15.2",
     "future>=0.18.2",
     "fsspec>=2021.11.0",
@@ -112,6 +112,7 @@ include = ["cellprofiler_core*"]
 namespaces = false
 
 [tool.setuptools_scm]
+git_describe_command = "git describe --dirty --tags --long --first-parent --match v[0-9]*"
 root = "../../.."
 # run pip install -e to get latest
 version_file = "cellprofiler_core/_version.py"

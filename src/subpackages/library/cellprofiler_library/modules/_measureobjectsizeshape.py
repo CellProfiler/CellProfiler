@@ -1,7 +1,7 @@
 from typing import Tuple, Optional, Annotated, Dict, Any, Union, List
 import numpy
-import centrosome
-import centrosome.cpmorphology
+import centriole
+import centriole.cpmorphology
 from pydantic import validate_call, ConfigDict, Field, BaseModel
 from cellprofiler_library.types import ObjectLabelsDense
 from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
@@ -95,7 +95,7 @@ def measureobjectsizeshape(
     statistics: ObjectSizeShapeStatistics = []
 
     def add_object_measurement(object_name: str, feature_name: str, val: Any):
-        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(val)
+        data = centriole.cpmorphology.fixup_scipy_ndimage_result(val)
         measurements.add_measurement(
             object_name,
             feature_name,

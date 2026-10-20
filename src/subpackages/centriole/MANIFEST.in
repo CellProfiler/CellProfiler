@@ -1,0 +1,6 @@
+global-include *.hpp
+global-include *.pxd
+global-include *.pxi
+global-include *.pyx
+
+include LICENSE

@@ -9,19 +9,19 @@ import skimage.transform
 import skimage
 import skimage.restoration
 import skimage.exposure
-import centrosome
-import centrosome.threshold
-import centrosome.filter
-import centrosome.cpmorphology
-import centrosome.bg_compensate
-import centrosome.smooth
+import centriole
+import centriole.threshold
+import centriole.filter
+import centriole.cpmorphology
+import centriole.bg_compensate
+import centriole.smooth
 import scipy
 import scipy.interpolate
 import scipy.sparse
 import matplotlib
 import math
 from numpy.typing import NDArray
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centriole.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from skimage.restoration import denoise_bilateral
 from skimage.feature import peak_local_max
@@ -82,11 +82,11 @@ def enhance_edges_sobel(
         direction: EdgeDirection=EdgeDirection.ALL
         ):
     if direction == EdgeDirection.ALL:
-        output_pixels = centrosome.filter.sobel(image, mask)
+        output_pixels = centriole.filter.sobel(image, mask)
     elif direction == EdgeDirection.HORIZONTAL:
-        output_pixels = centrosome.filter.hsobel(image, mask)
+        output_pixels = centriole.filter.hsobel(image, mask)
     elif direction == EdgeDirection.VERTICAL:
-        output_pixels = centrosome.filter.vsobel(image, mask)
+        output_pixels = centriole.filter.vsobel(image, mask)
     else:
         raise NotImplementedError(f"Unimplemented direction for Sobel: {direction}")
     return output_pixels
@@ -98,7 +98,7 @@ def enhance_edges_log(
         sigma: float=2.0
         ) -> Image2DGrayscale:
     size = int(sigma * 4) + 1
-    output_pixels = centrosome.filter.laplacian_of_gaussian(image, mask, size, sigma)
+    output_pixels = centriole.filter.laplacian_of_gaussian(image, mask, size, sigma)
     return output_pixels
 
 
@@ -108,11 +108,11 @@ def enhance_edges_prewitt(
         direction: EdgeDirection=EdgeDirection.ALL
         ) -> Image2DGrayscale:
     if direction == EdgeDirection.ALL:
-        output_pixels = centrosome.filter.prewitt(image, mask)
+        output_pixels = centriole.filter.prewitt(image, mask)
     elif direction == EdgeDirection.HORIZONTAL:
-        output_pixels = centrosome.filter.hprewitt(image, mask)
+        output_pixels = centriole.filter.hprewitt(image, mask)
     elif direction == EdgeDirection.VERTICAL:
-        output_pixels = centrosome.filter.vprewitt(image, mask)
+        output_pixels = centriole.filter.vprewitt(image, mask)
     else:
         raise NotImplementedError(f"Unimplemented direction for Prewitt: {direction}")
     return output_pixels
@@ -130,8 +130,8 @@ def enhance_edges_canny(
     ) -> Image2DGrayscale:
 
     if auto_threshold or auto_low_threshold:
-        sobel_image = centrosome.filter.sobel(image)
-        low, high = centrosome.otsu.otsu3(sobel_image[mask])
+        sobel_image = centriole.filter.sobel(image)
+        low, high = centriole.otsu.otsu3(sobel_image[mask])
         if auto_threshold:
             high_th = high * threshold_adjustment_factor
         if auto_low_threshold:
@@ -140,7 +140,7 @@ def enhance_edges_canny(
         low_th = low_threshold
         high_th = manual_threshold
 
-    output_pixels = centrosome.filter.canny(image, mask, sigma, low_th, high_th)
+    output_pixels = centriole.filter.canny(image, mask, sigma, low_th, high_th)
     return output_pixels
 
 def stretched_rgb_from_components(
@@ -154,12 +154,12 @@ def stretched_rgb_from_components(
         assert r.shape == b.shape
 
     color_image = numpy.zeros((r.shape[0], r.shape[1], 3))
-    color_image[:, :, 0] = centrosome.filter.stretch(r)
+    color_image[:, :, 0] = centriole.filter.stretch(r)
     
     if g:
-        color_image[:, :, 1] = centrosome.filter.stretch(g)
+        color_image[:, :, 1] = centriole.filter.stretch(g)
     if b:
-        color_image[:, :, 2] = centrosome.filter.stretch(b)
+        color_image[:, :, 2] = centriole.filter.stretch(b)
 
     return color_image
 
@@ -478,11 +478,11 @@ def get_threshold_robust_background(
     averaging_method_map = {
         Threshold.AveragingMethod.MEAN: numpy.mean,
         Threshold.AveragingMethod.MEDIAN: numpy.median,
-        Threshold.AveragingMethod.MODE: centrosome.threshold.binned_mode,
+        Threshold.AveragingMethod.MODE: centriole.threshold.binned_mode,
     }
     variance_method_map = {
         Threshold.VarianceMethod.STANDARD_DEVIATION: numpy.std,
-        Threshold.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION: centrosome.threshold.mad,
+        Threshold.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION: centriole.threshold.mad,
     }
     # Check if the averaging method is valid
     if averaging_method not in averaging_method_map:
@@ -646,7 +646,7 @@ def get_adaptive_threshold(
         return thresh_out
     conversion_dict = None
     if log_transform:
-        image, conversion_dict = centrosome.threshold.log_transform(image)
+        image, conversion_dict = centriole.threshold.log_transform(image)
     bin_wanted = 0 if assign_middle_to_foreground == Threshold.Assignment.FOREGROUND else 1
 
     thresh_out = None
@@ -712,10 +712,10 @@ def get_adaptive_threshold(
 
     if log_transform:
         # Revert the log transformation
-        thresh_out = centrosome.threshold.inverse_log_transform(
+        thresh_out = centriole.threshold.inverse_log_transform(
             thresh_out, conversion_dict
         )
-        global_threshold = centrosome.threshold.inverse_log_transform(
+        global_threshold = centriole.threshold.inverse_log_transform(
             global_threshold, conversion_dict
         )
 
@@ -743,7 +743,7 @@ def get_global_threshold(
 ) -> float:
     conversion_dict = None
     if log_transform:
-        image, conversion_dict = centrosome.threshold.log_transform(image)
+        image, conversion_dict = centriole.threshold.log_transform(image)
 
     if mask is not None:
         # Apply mask and discard masked pixels
@@ -774,7 +774,7 @@ def get_global_threshold(
         raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
 
     if log_transform:
-        threshold = centrosome.threshold.inverse_log_transform(
+        threshold = centriole.threshold.inverse_log_transform(
             threshold, conversion_dict
         )
 
@@ -802,7 +802,7 @@ def apply_threshold(
         # and 1/2 is contributed from outside.
         sigma = smoothing / 0.6744 / 2.0
 
-    blurred_image = centrosome.smooth.smooth_with_function_and_mask(
+    blurred_image = centriole.smooth.smooth_with_function_and_mask(
         image,
         lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
         mask,
@@ -1240,10 +1240,10 @@ def enhance_neurites(
         if im_volumetric:
             result = numpy.zeros_like(smoothed)
             for index, plane in enumerate(smoothed):
-                hessian = centrosome.filter.hessian(plane, return_hessian=False, return_eigenvectors=False)
+                hessian = centriole.filter.hessian(plane, return_hessian=False, return_eigenvectors=False)
                 result[index] = (-hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2))
         else:
-            hessian = centrosome.filter.hessian(smoothed, return_hessian=False, return_eigenvectors=False)
+            hessian = centriole.filter.hessian(smoothed, return_hessian=False, return_eigenvectors=False)
             #
             # The positive values are darker pixels with lighter
             # neighbors. The original ImageJ code scales the result
@@ -1336,13 +1336,13 @@ def enhance_dic(
     if im_volumetric:
         result = numpy.zeros_like(pixel_data).astype(numpy.float64)
         for index, plane in enumerate(pixel_data):
-            result[index] = centrosome.filter.line_integration(plane, angle, decay, smoothing)
+            result[index] = centriole.filter.line_integration(plane, angle, decay, smoothing)
         return result
 
     if smoothing == 0:
         smoothing = float(numpy.finfo(float).eps)
 
-    return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
+    return centriole.filter.line_integration(pixel_data, angle, decay, smoothing)
 
 
 def suppress(
@@ -1371,7 +1371,7 @@ def apply_branchpoints(
     Removes all pixels except those that are the branchpoints of a skeleton.
     This operation should be applied to an image after skeletonizing.
     """
-    return centrosome.cpmorphology.branchpoints(pixel_data, mask)
+    return centriole.cpmorphology.branchpoints(pixel_data, mask)
 
 def apply_bridge(
         pixel_data: MorphImageT,
@@ -1383,7 +1383,7 @@ def apply_bridge(
     Sets a pixel to 1 if it has two non-zero neighbors that are on
     opposite sides of this pixel.
     """
-    return centrosome.cpmorphology.bridge(pixel_data, mask, count)
+    return centriole.cpmorphology.bridge(pixel_data, mask, count)
 
 def apply_clean(
         pixel_data: MorphImageT,
@@ -1394,7 +1394,7 @@ def apply_clean(
     
     Removes isolated pixels.
     """
-    return centrosome.cpmorphology.clean(pixel_data, mask, count)
+    return centriole.cpmorphology.clean(pixel_data, mask, count)
 
 def apply_convex_hull(
         pixel_data: MorphImageT,
@@ -1405,9 +1405,9 @@ def apply_convex_hull(
     Finds the convex hull of a binary image.
     """
     if mask is None:
-        return centrosome.cpmorphology.convex_hull_image(pixel_data)
+        return centriole.cpmorphology.convex_hull_image(pixel_data)
     else:
-        return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
+        return centriole.cpmorphology.convex_hull_image(pixel_data & mask)
 
 def apply_diag(
         pixel_data: MorphImageT,
@@ -1419,7 +1419,7 @@ def apply_diag(
     Fills in pixels whose neighbors are diagonally connected to 4-connect
     pixels that are 8-connected.
     """
-    return centrosome.cpmorphology.diag(pixel_data, mask, count)
+    return centriole.cpmorphology.diag(pixel_data, mask, count)
 
 def apply_distance(
         pixel_data: MorphImageT,
@@ -1442,7 +1442,7 @@ def apply_endpoints(
     
     Removes all pixels except the ones that are at the end of a skeleton.
     """
-    return centrosome.cpmorphology.endpoints(pixel_data, mask)
+    return centriole.cpmorphology.endpoints(pixel_data, mask)
 
 def apply_fill(
         pixel_data: MorphImageT,
@@ -1453,7 +1453,7 @@ def apply_fill(
     
     Sets a pixel to 1 if all of its neighbors are 1.
     """
-    return centrosome.cpmorphology.fill(pixel_data, mask, count)
+    return centriole.cpmorphology.fill(pixel_data, mask, count)
 
 def apply_hbreak(
         pixel_data: MorphImageT,
@@ -1464,7 +1464,7 @@ def apply_hbreak(
     
     Removes pixels that form vertical bridges between horizontal lines.
     """
-    return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
+    return centriole.cpmorphology.hbreak(pixel_data, mask, count)
 
 def apply_majority(
         pixel_data: MorphImageT,
@@ -1475,7 +1475,7 @@ def apply_majority(
     
     Each pixel takes on the value of the majority that surround it.
     """
-    return centrosome.cpmorphology.majority(pixel_data, mask, count)
+    return centriole.cpmorphology.majority(pixel_data, mask, count)
 
 def apply_openlines(
         pixel_data: MorphImageT,
@@ -1487,7 +1487,7 @@ def apply_openlines(
     Performs an erosion followed by a dilation using rotating linear structural
     elements.
     """
-    return centrosome.cpmorphology.openlines(pixel_data, linelength=linelength, mask=mask)
+    return centriole.cpmorphology.openlines(pixel_data, linelength=linelength, mask=mask)
 
 def apply_remove(
         pixel_data: MorphImageT,
@@ -1498,7 +1498,7 @@ def apply_remove(
     
     Removes pixels that are otherwise surrounded by others (4 connected).
     """
-    return centrosome.cpmorphology.remove(pixel_data, mask, count)
+    return centriole.cpmorphology.remove(pixel_data, mask, count)
 
 def apply_shrink(
         pixel_data: MorphImageT,
@@ -1509,7 +1509,7 @@ def apply_shrink(
     Performs a thinning operation that erodes unless that operation would change
     the image's Euler number.
     """
-    return centrosome.cpmorphology.binary_shrink(pixel_data, count)
+    return centriole.cpmorphology.binary_shrink(pixel_data, count)
 
 def apply_skelpe(
         pixel_data: MorphImageT,
@@ -1520,11 +1520,11 @@ def apply_skelpe(
     Performs a skeletonizing operation using the metric, PE * D to control the
     erosion order.
     """
-    return centrosome.cpmorphology.skeletonize(
+    return centriole.cpmorphology.skeletonize(
         pixel_data,
         mask,
         scipy.ndimage.distance_transform_edt(pixel_data)
-        * centrosome.filter.poisson_equation(pixel_data),
+        * centriole.filter.poisson_equation(pixel_data),
     )
 
 def apply_spur(
@@ -1536,7 +1536,7 @@ def apply_spur(
     
     Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor.
     """
-    return centrosome.cpmorphology.spur(pixel_data, mask, count)
+    return centriole.cpmorphology.spur(pixel_data, mask, count)
 
 def apply_thicken(
         pixel_data: MorphImageT,
@@ -1548,7 +1548,7 @@ def apply_thicken(
     Dilates the exteriors of objects where that dilation does not 8-connect the
     object with another.
     """
-    return centrosome.cpmorphology.thicken(pixel_data, mask, count)
+    return centriole.cpmorphology.thicken(pixel_data, mask, count)
 
 def apply_thin(
         pixel_data: MorphImageT,
@@ -1559,7 +1559,7 @@ def apply_thin(
     
     Thin lines preserving the Euler number using the thinning algorithm.
     """
-    return centrosome.cpmorphology.thin(pixel_data, mask, count)
+    return centriole.cpmorphology.thin(pixel_data, mask, count)
 
 def apply_vbreak(
         pixel_data: MorphImageT,
@@ -1569,7 +1569,7 @@ def apply_vbreak(
     
     Removes pixels that form horizontal bridges between vertical lines.
     """
-    return centrosome.cpmorphology.vbreak(pixel_data, mask)
+    return centriole.cpmorphology.vbreak(pixel_data, mask)
 
 
 ################################################################################
@@ -2104,11 +2104,11 @@ def smoothing_gaussian(pixel_data: Image2D, mask: Optional[Image2DMask], sigma: 
             return scipy.ndimage.gaussian_filter(
                 image, sigma, mode="constant", cval=0
             )
-    return centrosome.smooth.smooth_with_function_and_mask(pixel_data, fn, mask)
+    return centriole.smooth.smooth_with_function_and_mask(pixel_data, fn, mask)
      
 
 def smoothing_median(pixel_data: Image2D, mask: Optional[Image2DMask], obj_size: float) -> Image2D:
-    return centrosome.filter.median_filter(pixel_data, mask, obj_size / 2 + 1)
+    return centriole.filter.median_filter(pixel_data, mask, obj_size / 2 + 1)
 
 
 def smoothing_keeping_edges(pixel_data: Image2D, multichannel: bool, sigma_range: float, sigma: float) -> Image2D:
@@ -2122,11 +2122,11 @@ def smoothing_keeping_edges(pixel_data: Image2D, multichannel: bool, sigma_range
 
 
 def smoothing_fit_polynomial(pixel_data: Image2D, mask: Optional[Image2DMask], clip: bool) -> Image2D:
-    return centrosome.smooth.fit_polynomial(pixel_data, mask, clip)
+    return centriole.smooth.fit_polynomial(pixel_data, mask, clip)
 
 
 def smoothing_circular_average(pixel_data: Image2D, mask: Optional[Image2DMask], obj_size: float) -> Image2D:
-    return centrosome.filter.circular_average_filter(pixel_data, obj_size / 2 + 1, mask)
+    return centriole.filter.circular_average_filter(pixel_data, obj_size / 2 + 1, mask)
 
 def smoothing_smooth_to_average(pixel_data: Image2D, mask: Optional[Image2DMask]) -> Image2D:
     if mask is not None:
@@ -2598,8 +2598,8 @@ def entropy2(x: NDArray[Pixel], y: NDArray[Pixel]) -> float:
     #
     # Bin each image into 256 gray levels
     #
-    x = (centrosome.filter.stretch(x) * 255).astype(int)
-    y = (centrosome.filter.stretch(y) * 255).astype(int)
+    x = (centriole.filter.stretch(x) * 255).astype(int)
+    y = (centriole.filter.stretch(y) * 255).astype(int)
     #
     # create an image where each pixel with the same X & Y gets
     # the same value
@@ -2959,7 +2959,7 @@ def smooth_with_polynomial(
         pixel_data: Image2D, 
         mask: Image2DMask
     ) -> Image2D:
-    return centrosome.smooth.fit_polynomial(pixel_data, mask)
+    return centriole.smooth.fit_polynomial(pixel_data, mask)
 
 def smooth_with_gaussian(
         pixel_data: Image2D,
@@ -2976,7 +2976,7 @@ def smooth_with_gaussian(
             image, sigma, mode="constant", cval=0
         )
 
-    output_pixels = centrosome.smooth.smooth_with_function_and_mask(
+    output_pixels = centriole.smooth.smooth_with_function_and_mask(
         pixel_data, fn, mask
     )
     return output_pixels
@@ -2987,7 +2987,7 @@ def smooth_with_median(
         sigma: float
     ) -> Image2D:
     filter_sigma = max(1, int(sigma + 0.5))
-    strel = centrosome.cpmorphology.strel_disk(filter_sigma)
+    strel = centriole.cpmorphology.strel_disk(filter_sigma)
     rescaled_pixel_data = pixel_data * 65535
     rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
     rescaled_pixel_data *= mask
@@ -3014,9 +3014,9 @@ def smooth_with_convex_hull(
     # Apply an erosion, then the transform, then a dilation, heuristically
     # to ignore little spikey noisy things.
     #
-    image = centrosome.cpmorphology.grey_erosion(pixel_data, 2, mask)
-    image = centrosome.filter.convex_hull_transform(image, mask=mask)
-    image = centrosome.cpmorphology.grey_dilation(image, 2, mask)
+    image = centriole.cpmorphology.grey_erosion(pixel_data, 2, mask)
+    image = centriole.filter.convex_hull_transform(image, mask=mask)
+    image = centriole.cpmorphology.grey_dilation(image, 2, mask)
     return image
 
 
@@ -3039,7 +3039,7 @@ def smooth_with_splines(
             scale = 1
         else:
             scale = float(shortest_side) / 200
-        result = centrosome.bg_compensate.backgr(pixel_data, mask, scale=scale) # type: ignore # scale can be a float
+        result = centriole.bg_compensate.backgr(pixel_data, mask, scale=scale) # type: ignore # scale can be a float
     else:
         assert spline_bg_mode is not None, "spline_bg_mode must be provided for spline smoothing"
         assert spline_points is not None, "spline_points must be provided for spline smoothing"
@@ -3053,7 +3053,7 @@ def smooth_with_splines(
         convergence = spline_convergence
         iterations = spline_maximum_iterations
         rescale = spline_rescale
-        result = centrosome.bg_compensate.backgr(
+        result = centriole.bg_compensate.backgr(
             pixel_data,
             mask,
             mode=mode,

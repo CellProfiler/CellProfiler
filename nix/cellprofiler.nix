@@ -11,7 +11,7 @@
   # runtime deps
   cellprofiler-library,
   cellprofiler-core,
-  centrosome,
+  centriole,
   imageio,
   inflect,
   jinja2,
@@ -85,7 +85,7 @@ buildPythonPackage rec {
   propagatedBuildInputs = [
     cellprofiler-library
     cellprofiler-core
-    centrosome
+    centriole
     boto3
     docutils
     imageio

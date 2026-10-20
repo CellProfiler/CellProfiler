@@ -26,6 +26,12 @@ _version.py
 result
 scratch/
 
+# centriole cython/c++ build artifacts, generated next to their .pyx sources
+src/subpackages/centriole/centriole/*.cpp
+src/subpackages/centriole/centriole/*.so
+src/subpackages/centriole/centriole/*.pyd
+src/subpackages/centriole/centriole/_propagate.c
+
 # pixi environments
 .pixi
 

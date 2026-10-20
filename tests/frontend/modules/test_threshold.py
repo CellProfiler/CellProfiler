@@ -1,8 +1,8 @@
 import io
 
-import centrosome.filter
-import centrosome.otsu
-import centrosome.threshold
+import centriole.filter
+import centriole.otsu
+import centriole.threshold
 import numpy
 import numpy.testing
 import skimage.filters
@@ -349,7 +349,7 @@ def test_otsu3_low():
         )
     ).astype(numpy.float32)
     image.shape = (30, 30)
-    image = centrosome.filter.stretch(image)
+    image = centriole.filter.stretch(image)
     t1, threshold = skimage.filters.threshold_multiotsu(image, nbins=128)
     workspace, module = make_workspace(image)
     module.threshold_scope.value = ThresholdOpts.Scope.GLOBAL
@@ -377,7 +377,7 @@ def test_otsu3_high():
         )
     )
     image.shape = (30, 30)
-    image = centrosome.filter.stretch(image)
+    image = centriole.filter.stretch(image)
     threshold, t2 = skimage.filters.threshold_multiotsu(image, nbins=128)
     workspace, module = make_workspace(image)
     module.threshold_scope.value = ThresholdOpts.Scope.GLOBAL
@@ -412,7 +412,7 @@ def test_adaptive_otsu_small():
             rsin = (numpy.sin(r) + 1) / 2
             image[i0:i1, j0:j1] = dmin + rsin * dmult
     workspace, x = make_workspace(image)
-    x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
+    x.threshold_scope.value = centriole.threshold.TM_ADAPTIVE
     x.global_operation.value = ThresholdOpts.Method.OTSU
     threshold, global_threshold, _, _, _ = x.get_threshold(
         cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)),
@@ -693,11 +693,11 @@ def test_threshold_li_image_log():
 
     t_global = module.orig_threshold
 
-    transformed_data, d = centrosome.threshold.log_transform(data)
+    transformed_data, d = centriole.threshold.log_transform(data)
 
     t_expected = skimage.filters.threshold_li(transformed_data[mask])
 
-    t_expected = centrosome.threshold.inverse_log_transform(t_expected, d)
+    t_expected = centriole.threshold.inverse_log_transform(t_expected, d)
 
     numpy.testing.assert_almost_equal(t_global, t_expected, decimal=5)
 
@@ -1338,11 +1338,11 @@ def test_threshold_otsu3_volume_log():
 
     t_guide = module.guide_threshold
 
-    transformed_data, d = centrosome.threshold.log_transform(data)
+    transformed_data, d = centriole.threshold.log_transform(data)
 
     t_guide_expected = skimage.filters.threshold_multiotsu(transformed_data[mask], nbins=128)[0]
     
-    t_guide_expected = centrosome.threshold.inverse_log_transform(t_guide_expected, d)
+    t_guide_expected = centriole.threshold.inverse_log_transform(t_guide_expected, d)
 
     t_local_expected = cellprofiler_library.functions.image_processing.get_adaptive_threshold(
         data,

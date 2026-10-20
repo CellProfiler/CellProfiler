@@ -1,7 +1,7 @@
 import io
 
-import centrosome.filter
-import centrosome.smooth
+import centriole.filter
+import centriole.smooth
 import numpy
 import scipy.ndimage
 import skimage.restoration
@@ -73,7 +73,7 @@ def test_fit_polynomial():
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     for clip in (False, True):
-        expected = centrosome.smooth.fit_polynomial(image, mask, clip)
+        expected = centriole.smooth.fit_polynomial(image, mask, clip)
         assert numpy.all((expected >= 0) & (expected <= 1)) == clip
         workspace, module = make_workspace(image, mask)
         module.smoothing_method.value = SmoothingMethod.FIT_POLYNOMIAL
@@ -92,7 +92,7 @@ def test_gaussian_auto_small():
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
-    expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
+    expected = centriole.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.run(workspace)
@@ -108,7 +108,7 @@ def test_gaussian_auto_large():
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
-    expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
+    expected = centriole.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.run(workspace)
@@ -125,7 +125,7 @@ def test_gaussian_manual():
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     fn = lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0.0)
-    expected = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
+    expected = centriole.smooth.smooth_with_function_and_mask(image, fn, mask)
     workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = SmoothingMethod.GAUSSIAN_FILTER
     module.wants_automatic_object_size.value = False
@@ -143,7 +143,7 @@ def test_median():
     image = numpy.random.uniform(size=(100, 100)).astype(numpy.float32)
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
-    expected = centrosome.filter.median_filter(image, mask, object_size / 2 + 1)
+    expected = centriole.filter.median_filter(image, mask, object_size / 2 + 1)
     workspace, module = make_workspace(image, mask)
     module.smoothing_method.value = SmoothingMethod.MEDIAN_FILTER
     module.run(workspace)

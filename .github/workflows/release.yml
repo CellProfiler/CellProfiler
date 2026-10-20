@@ -90,6 +90,7 @@ jobs:
           pip install "cython" 
           pip install mysqlclient==2.0.3 #tbh, I suspect this is outside the pip install below because it's crashy and takes a long time, not for real reasons
           echo "Installing ${{ env.CP_VERSION }}..."
+          pip install --editable "${{ github.workspace }}/src/subpackages/centriole" --upgrade
           pip install --editable "${{ github.workspace }}/src/subpackages/library" --upgrade
           pip install --editable "${{ github.workspace }}/src/subpackages/core" --upgrade
           pip install --editable "${{ github.workspace }}/src/frontend[build]" --upgrade

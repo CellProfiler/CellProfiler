@@ -43,7 +43,7 @@ and the Human Frontier Science Program.
 
 CellProfiler bundles a number of libraries that are compatibly licensed.
 
-Name: centrosome 
+Name: centriole 
 License: `BSD 3-Clause “New” or “Revised” license`_
 
 Name: docutils 

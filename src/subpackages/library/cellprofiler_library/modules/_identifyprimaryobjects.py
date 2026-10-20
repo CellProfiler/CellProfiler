@@ -1,4 +1,4 @@
-from centrosome import cpmorphology
+from centriole import cpmorphology
 import numpy
 import scipy
 from typing import Annotated, Optional, Union, Tuple

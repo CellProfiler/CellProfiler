@@ -23,5 +23,5 @@ dependencies:
   - mysqlclient
 
 #  - pip:
-#    - --no-deps centrosome
+#    - --no-deps centriole
 #    - --no-deps cellprofiler-core

@@ -19,7 +19,7 @@ def split_package(package):
 def conv_deps_nightly(toml_data: dict) -> dict:
     split_deps = list(map(split_package, toml_data["project"]["dependencies"]))
     # converted deps, with -nightly attached to relevant ones
-    conv_deps = list(map(lambda sd: sd[0] + "-nightly" + sd[1] if sd[0].lower().startswith('cellprofiler') else sd[0] + sd[1], split_deps))
+    conv_deps = list(map(lambda sd: sd[0] + "-nightly" + sd[1] if (sd[0].lower().startswith('cellprofiler') or sd[0].lower() == 'centriole') else sd[0] + sd[1], split_deps))
     toml_data["project"]["dependencies"] = conv_deps
     return toml_data
 
@@ -37,7 +37,7 @@ def toml_save(path: str, data: dict) -> None:
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    filenames = ["../src/subpackages/library/pyproject.toml", "../src/subpackages/core/pyproject.toml", "../src/frontend/pyproject.toml"]
+    filenames = ["../src/subpackages/centriole/pyproject.toml", "../src/subpackages/library/pyproject.toml", "../src/subpackages/core/pyproject.toml", "../src/frontend/pyproject.toml"]
     for filename in filenames:
         toml_data = toml_load(filename)
         toml_data = conv_name_nightly(toml_data)

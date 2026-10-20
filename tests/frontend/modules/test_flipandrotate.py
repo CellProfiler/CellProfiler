@@ -1,4 +1,4 @@
-import centrosome.cpmorphology
+import centriole.cpmorphology
 import numpy
 
 import cellprofiler_core.image
@@ -222,7 +222,7 @@ def test_rotate_coordinates():
     img = numpy.zeros((20, 20))
     pt0 = (2, 2)
     pt1 = (6, 18)
-    centrosome.cpmorphology.draw_line(img, pt0, pt1, 1)
+    centriole.cpmorphology.draw_line(img, pt0, pt1, 1)
     i, j = numpy.mgrid[0:20, 0:20]
     for option in (
         RotationCoordinateAlignmnet.HORIZONTALLY,

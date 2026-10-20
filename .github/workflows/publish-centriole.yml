@@ -17,10 +17,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2022, macos-14, macos-15-intel]
+        os: [ubuntu-24.04, windows-2022, macos-14, macos-15-intel]
         python_version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             platform_id: manylinux_x86_64
             manylinux_image: manylinux2014
           - os: windows-2022
@@ -44,10 +44,13 @@ jobs:
           - python_version: '3.13'
             python: 313
             cibuildwheel: 'cibuildwheel<4'
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
+            python_version: '3.11'
+            manylinux_image: manylinux_2_28
+          - os: ubuntu-24.04
             python_version: '3.12'
             manylinux_image: manylinux_2_28
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             python_version: '3.13'
             manylinux_image: manylinux_2_28
     runs-on: ${{ matrix.os }}

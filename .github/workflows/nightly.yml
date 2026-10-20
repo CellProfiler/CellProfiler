@@ -6,7 +6,7 @@ jobs:
       nightly: true
   deploy-nightly:
     needs: centriole-wheels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
       TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

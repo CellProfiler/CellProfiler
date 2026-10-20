@@ -183,7 +183,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2022, macos-14, macos-15-intel]
+        os: [ubuntu-24.04, windows-2022, macos-14, macos-15-intel]
         python-version: ['3.9']
     runs-on: ${{ matrix.os }}
     if: github.event.pull_request.draft == false

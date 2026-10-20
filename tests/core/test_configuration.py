@@ -38,6 +38,42 @@ builtins.__import__ = without_wx
 import pytest
 raise SystemExit(pytest.main([sys.argv[1], '-q', '--confcutdir=tests']))
 """
+    run_pytest(tmp_path, test_path, script)
+
+
+@pytest.mark.parametrize(
+    "subpackage,package", [("library", "cellprofiler_library"), ("centriole", "centriole")]
+)
+def test_test_startup_without_core(tmp_path, subpackage, package):
+    tests = tmp_path / "tests"
+    suite = tests / subpackage
+    suite.mkdir(parents=True)
+    shutil.copyfile(Path(__file__).parents[1] / "conftest.py", tests / "conftest.py")
+    (suite / "test_package.py").write_text(
+        f"import {package}\n"
+        "def test_package_is_importable():\n"
+        f"    assert {package} is not None\n"
+    )
+    script = """
+import builtins
+import sys
+
+sys.modules['cellprofiler_core'] = None
+original_import = builtins.__import__
+
+def without_core(name, *args, **kwargs):
+    if name == 'cellprofiler_core' or name.startswith('cellprofiler_core.'):
+        raise AssertionError('Isolated package tests must not import Core')
+    return original_import(name, *args, **kwargs)
+
+builtins.__import__ = without_core
+import pytest
+raise SystemExit(pytest.main([sys.argv[1], '-q', '--confcutdir=tests']))
+"""
+    run_pytest(tmp_path, f"tests/{subpackage}", script)
+
+
+def run_pytest(tmp_path, test_path, script):
     env = os.environ.copy()
     env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     result = subprocess.run(

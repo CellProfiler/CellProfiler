@@ -90,6 +90,8 @@ centriole = { path = "./src/subpackages/centriole", extras = ["build"], editable
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["build"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["build"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable = true }
+setuptools = "*"
+setuptools-scm = "*"
 
 # get conda package rather than pypi for publishing on linux
 # as it's the only pypi source file, which pixi-pack doesn't support

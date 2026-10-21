@@ -59,5 +59,5 @@ def dump(pipeline, fp, save_image_plane_details, sanitize=False):
         fp.write("\n")
 
         cellprofiler_core.utilities.core.pipeline.write_file_list(
-            fp, pipeline.file_list
+            fp, [image_file.url for image_file in pipeline.file_list]
         )

@@ -341,8 +341,8 @@ depending on the method chosen.
         centers_i, centers_j = centers_of_labels(labels)
         nmissing = numpy.max(gridding.spot_table) - len(centers_i)
         if nmissing > 0:
-            centers_i = numpy.hstack((centers_i, [numpy.NaN] * nmissing))
-            centers_j = numpy.hstack((centers_j, [numpy.NaN] * nmissing))
+            centers_i = numpy.hstack((centers_i, [numpy.nan] * nmissing))
+            centers_j = numpy.hstack((centers_j, [numpy.nan] * nmissing))
         #
         # Broadcast these using the spot table
         #

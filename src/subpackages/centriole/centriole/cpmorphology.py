@@ -2024,6 +2024,18 @@ def faster_minimum_distance2(hull_a, center_a, hull_b, center_b):
     return d2_min
 
 
+def _cross_2d(a, b):
+    a = np.asarray(a)
+    b = np.asarray(b)
+    dtype = np.promote_types(a.dtype, b.dtype)
+    a = a.astype(dtype)
+    b = b.astype(dtype)
+    result = np.empty(np.broadcast(a[..., 0], b[..., 0]).shape, dtype)
+    np.multiply(a[..., 0], b[..., 1], out=result)
+    result -= a[..., 1] * b[..., 0]
+    return result
+
+
 def lines_intersect(pt1_p, pt2_p, pt1_q, pt2_q):
     """Return true if two line segments intersect
     pt1_p, pt2_p - endpoints of first line segment
@@ -2042,10 +2054,10 @@ def lines_intersect(pt1_p, pt2_p, pt1_q, pt2_q):
         (pt1_q, pt2_q, pt1_p, pt2_p),
     ):
         v_a = pt2_a - pt1_a
-        cross_a_1b = np.cross(v_a, pt1_b - pt2_a)
+        cross_a_1b = _cross_2d(v_a, pt1_b - pt2_a)
         if cross_a_1b == 0 and colinear_intersection_test(pt1_a, pt2_a, pt1_b):
             return True
-        cross_a_2b = np.cross(v_a, pt2_b - pt2_a)
+        cross_a_2b = _cross_2d(v_a, pt2_b - pt2_a)
         if cross_a_2b == 0 and colinear_intersection_test(pt1_a, pt2_a, pt2_b):
             return True
         if (cross_a_1b < 0) == (cross_a_2b < 0):
@@ -2101,7 +2113,7 @@ def find_visible(hull, observer, background):
     while True:
         i_next = (i + 1) % hull.shape[0]
         pt_next = hull[i_next, :]
-        d = -np.cross(vector, pt_next - pt_background)
+        d = -_cross_2d(vector, pt_next - pt_background)
         if d < dmax or i_next == background:
             i_min = i
             break
@@ -2112,7 +2124,7 @@ def find_visible(hull, observer, background):
     while True:
         i_next = (i + hull.shape[0] - 1) % hull.shape[0]
         pt_next = hull[i_next, :]
-        d = np.cross(vector, pt_next - pt_background)
+        d = _cross_2d(vector, pt_next - pt_background)
         if d < dmax or i_next == background:
             i_max = i
             break
@@ -2147,7 +2159,7 @@ def within_hull(point, hull):
     """Return true if the point is within the convex hull"""
     h_prev_pt = hull[-1, :]
     for h_pt in hull:
-        if np.cross(h_pt - h_prev_pt, point - h_pt) >= 0:
+        if _cross_2d(h_pt - h_prev_pt, point - h_pt) >= 0:
             return False
         h_prev_pt = h_pt
     return True

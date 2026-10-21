@@ -488,7 +488,7 @@ is applied before other operations.""",
                 value = measurements.get_current_image_measurement(
                     self.images[i].measurement.value
                 )
-                value = numpy.NaN if value is None else float(value)
+                value = numpy.nan if value is None else float(value)
                 operands.insert(i, value)
                 masks.insert(i, True)
                 

@@ -10,6 +10,16 @@ import centriole.threshold as T
 
 
 class TestThreshold(unittest.TestCase):
+    def test_float32_background_threshold_precision(self):
+        data = np.random.RandomState(0).rand(17, 19).astype(np.float32)
+        for function, expected in (
+            (T.get_background_threshold, 1.9247724557587618),
+            (T.get_robust_background_threshold, 1.0227743685245514),
+        ):
+            threshold = function(data.copy())
+            self.assertIsInstance(threshold, np.float64)
+            self.assertEqual(threshold, expected)
+
     def test_01_00_nothing(self):
         result = T.get_otsu_threshold(-np.ones((10, 10)))
 

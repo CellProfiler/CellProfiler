@@ -357,7 +357,7 @@ def convert_dense_to_sparse(dense, validate=True):
 
     dtype = [(axis, coords_dtype) for axis in axes]
     dtype.append((SPARSE_FIELD.label.value, labels_dtype))
-    sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+    sparse = np.rec.fromarrays(list(coords) + [labels], dtype=dtype)
 
     return sparse
 
@@ -365,7 +365,7 @@ def convert_ijv_to_sparse(ijv, validate=True):
     if validate:
         _validate_ijv(ijv)
 
-    return np.core.records.fromarrays(
+    return np.rec.fromarrays(
         (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
         [
             (SPARSE_FIELD.y.value, ijv.dtype),
@@ -727,22 +727,22 @@ def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
     child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
 
     if parent_count == 0 or child_count == 0:
-        return np.zeros((parent_count + 1, child_count + 1), int)
+        return np.zeros((parent_count + np.int64(1), child_count + np.int64(1)), int)
 
-    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
-    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
-    parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
+    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + np.int64(1)
+    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + np.int64(1)
+    parent_linear_ij = parent_ijv[:, 0] + dim_i.item() * parent_ijv[:, 1].astype(
         np.uint64
     )
-    child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
+    child_linear_ij = child_ijv[:, 0] + dim_i.item() * child_ijv[:, 1].astype(np.uint64)
 
     parent_matrix = scipy.sparse.coo_matrix(
         (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
-        shape=(parent_count + 1, dim_i * dim_j),
+        shape=(parent_count + np.int64(1), dim_i * dim_j),
     )
     child_matrix = scipy.sparse.coo_matrix(
         (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
-        shape=(dim_i * dim_j, child_count + 1),
+        shape=(dim_i * dim_j, child_count + np.int64(1)),
     )
     # I surely do not understand the sparse code.  Converting both
     # arrays to csc gives the best peformance... Why not p.csr and

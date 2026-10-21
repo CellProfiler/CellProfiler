@@ -392,7 +392,7 @@ def test_last_is_nan():
     # if showing the figure and last object has a measurement of NaN
     #
     for leave_last_out in (False, True):
-        m = numpy.array((0.5, 0, 1, numpy.NaN))
+        m = numpy.array((0.5, 0, 1, numpy.nan))
         if leave_last_out:
             m = m[:-1]
         labels = numpy.zeros((20, 10), int)
@@ -625,8 +625,8 @@ def test_nans():
     labels[6:8, 6:8] = 5
     labels[3:5, 10:12] = 2
 
-    m1 = numpy.array((1, 2, numpy.NaN, 1, numpy.NaN))
-    m2 = numpy.array((1, 2, 1, numpy.NaN, numpy.NaN))
+    m1 = numpy.array((1, 2, numpy.nan, 1, numpy.nan))
+    m2 = numpy.array((1, 2, 1, numpy.nan, numpy.nan))
     for leave_last_out in (False, True):
         end = numpy.max(labels) - 1 if leave_last_out else numpy.max(labels)
         workspace, module = make_workspace(
@@ -677,7 +677,7 @@ def test_nan_offset_by_1():
     labels[3:5, 3:5] = 1
     labels[6:8, 3:5] = 2
 
-    m1 = numpy.array((4, numpy.NaN))
+    m1 = numpy.array((4, numpy.nan))
     m2 = numpy.array((4, 4))
     workspace, module = make_workspace(
         labels, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS, m1, m2

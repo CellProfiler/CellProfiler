@@ -1170,7 +1170,7 @@ desired.
                             if self.nan_representation == NANS_AS_NULLS:
                                 row.append("")
                             else:
-                                row.append(str(numpy.NaN))
+                                row.append(str(numpy.nan))
                         else:
                             row.append(str(value))
                 writer.writerow(row)
@@ -1421,7 +1421,7 @@ desired.
                     if feature_name == IMAGE_NUMBER
                     else numpy.arange(1, object_count + 1)
                     if feature_name == OBJECT_NUMBER
-                    else numpy.repeat(numpy.NAN, object_count)
+                    else numpy.repeat(numpy.nan, object_count)
                     if not m.has_feature(object_name, feature_name)
                     else numpy.repeat(
                         m.get_measurement(IMAGE, feature_name, img_number), object_count
@@ -1434,7 +1434,7 @@ desired.
                     row = [
                         column[obj_index]
                         if (column is not None and obj_index < column.shape[0])
-                        else numpy.NAN
+                        else numpy.nan
                         for column in columns
                     ]
                     if self.nan_representation == NANS_AS_NULLS:

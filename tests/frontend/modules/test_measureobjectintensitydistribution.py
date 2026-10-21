@@ -810,7 +810,7 @@ def test_circle():
             + Feature.FRAC_AT_D.value
         ).pixel_data
         data = data.astype(heatmap.dtype)
-        assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
+        assert scipy.stats.mode(heatmap[bins == bin], keepdims=True)[0][0] == data[0]
         data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
         assert len(data) == 1
         assert round(abs(data[0] - 1), 2) == 0
@@ -819,7 +819,7 @@ def test_circle():
             + Feature.MEAN_FRAC.value
         ).pixel_data
         data = data.astype(heatmap.dtype)
-        assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
+        assert scipy.stats.mode(heatmap[bins == bin], keepdims=True)[0][0] == data[0]
         data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
         assert len(data) == 1
         assert round(abs(data[0] - 0), 2) == 0
@@ -828,7 +828,7 @@ def test_circle():
             + Feature.RADIAL_CV.value
         ).pixel_data
         data = data.astype(heatmap.dtype)
-        assert scipy.stats.mode(heatmap[bins == bin])[0][0] == data[0]
+        assert scipy.stats.mode(heatmap[bins == bin], keepdims=True)[0][0] == data[0]
     module = workspace.module
     assert isinstance(
         module,
@@ -1081,7 +1081,7 @@ def test_two_circles():
         data = data.astype(heatmap.dtype)
         for label in 1, 2:
             mask = (bins == bin) & (labels == label)
-            assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
+            assert scipy.stats.mode(heatmap[mask], keepdims=True)[0][0] == data[label - 1]
         data = m.get_current_measurement(OBJECT_NAME, feature_mean_frac(bin, 4))
         assert len(data) == 2
         assert round(abs(data[0] - 1), 2) == 0
@@ -1092,7 +1092,7 @@ def test_two_circles():
         data = data.astype(heatmap.dtype)
         for label in 1, 2:
             mask = (bins == bin) & (labels == label)
-            assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
+            assert scipy.stats.mode(heatmap[mask], keepdims=True)[0][0] == data[label - 1]
         data = m.get_current_measurement(OBJECT_NAME, feature_radial_cv(bin, 4))
         assert len(data) == 2
         assert round(abs(data[0] - 0), 2) == 0
@@ -1103,7 +1103,7 @@ def test_two_circles():
         data = data.astype(heatmap.dtype)
         for label in 1, 2:
             mask = (bins == bin) & (labels == label)
-            assert scipy.stats.mode(heatmap[mask])[0][0] == data[label - 1]
+            assert scipy.stats.mode(heatmap[mask], keepdims=True)[0][0] == data[label - 1]
 
 
 def test_img_607():

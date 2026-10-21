@@ -20,13 +20,13 @@ ImageQualityMesVal = Union[
     # image scaling, blur powerslope, saturation percent_minimal|percent_maximal, threshold global_threshold
     float, 
     # blur focus_score
-    NDArray[numpy.float_],
+    NDArray[numpy.float64],
     # intensity pixel_count
     numpy.int_,
     # blur local_focus_score
     # intensity
     #  pixel_sum|pixel_mean|pixel_std|pixel_mad|pixel_median|pixel_min|pixel_max
-    numpy.float_,
+    numpy.float64,
     # converted stat vals
     str
 ]

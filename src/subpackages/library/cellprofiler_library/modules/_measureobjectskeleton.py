@@ -17,8 +17,8 @@ class ObjectSkeletonDisplayData(BaseModel):
     )
 
     statistics: ObjectSkeletonStatistics
-    edge_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
-    vertex_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
+    edge_graph: Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]]
+    vertex_graph: Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]]
     branchpoint_image: Optional[Image2DColor]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))

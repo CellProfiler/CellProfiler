@@ -14,5 +14,5 @@ else:
     # NumPy 1.x aliases
     np_product = np.prod
     np_cumproduct = np.cumprod
-    np_NaN = np.NaN
-    np_Inf = np.Inf 
+    np_NaN = np.nan
+    np_Inf = np.inf

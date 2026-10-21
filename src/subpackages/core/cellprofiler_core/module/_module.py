@@ -357,9 +357,9 @@ class Module:
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[BATCH_STATE][0, module_idx] = numpy.fromstring(
+        setting[BATCH_STATE][0, module_idx] = numpy.frombuffer(
             self.batch_state.tobytes(), numpy.uint8
-        )
+        ).copy()
 
     @staticmethod
     def in_batch_mode():

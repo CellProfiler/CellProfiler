@@ -42,7 +42,8 @@ env = { JAVA_HOME = "$CONDA_PREFIX/lib/jvm" }
 
 [dependencies]
 python = "3.9.*"
-h5py = "<3.11"
+h5py = ">=3.11"
+numpy = ">=2"
 
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"
@@ -83,7 +84,7 @@ centriole = { path = "./src/subpackages/centriole", extras = ["test"], editable 
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
-appose = { git = "https://github.com/apposed/appose-python.git" }
+appose = { git = "https://github.com/apposed/appose-python.git", rev = "f3b28336e9ca96e794e654f2ca916a59919b64c6" }
 
 [feature.build.pypi-dependencies]
 centriole = { path = "./src/subpackages/centriole", extras = ["build"], editable = true }

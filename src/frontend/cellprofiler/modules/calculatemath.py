@@ -578,14 +578,14 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             if numpy.isscalar(denominator):
                 if denominator == 0:
                     if numpy.isscalar(numerator):
-                        result = numpy.NaN
+                        result = numpy.nan
                     else:
-                        result = numpy.array([numpy.NaN] * len(numerator))
+                        result = numpy.array([numpy.nan] * len(numerator))
                 else:
                     result = numerator / denominator
             else:
                 result = numerator / denominator
-                result[denominator == 0] = numpy.NaN
+                result[denominator == 0] = numpy.nan
         else:
             raise NotImplementedError(
                 "Unsupported operation: %s" % self.operation.value

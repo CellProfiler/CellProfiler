@@ -391,7 +391,7 @@ class PreferencesView:
         self.__progress_msg_ctrl.SetLabel(message)
         if remaining_time is not None:
             self.__progress_bar.SetValue(
-                (100 * elapsed_time) / (elapsed_time + remaining_time + 0.00001)
+                int((100 * elapsed_time) / (elapsed_time + remaining_time + 0.00001))
             )
             timestr = "Time %s/%s" % (
                 secs_to_timestr(elapsed_time),

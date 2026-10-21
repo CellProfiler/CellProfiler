@@ -3094,7 +3094,7 @@ class PipelineController(object):
         if isinstance(evt, Started):
             wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, Progress):
-            LOGGER.info("Progress", evt.counts)
+            LOGGER.info("Progress %s", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(
                 map(

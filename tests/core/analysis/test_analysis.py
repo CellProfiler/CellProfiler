@@ -240,6 +240,7 @@ class TestAnalysis(unittest.TestCase):
         self.wants_analysis_finished = False
         self.wants_pipeline_events = False
         self.measurements_to_close = None
+        self.progress_counts = []
         self.cpinstalled = find_spec("cellprofiler") != None
 
     def tearDown(self):
@@ -259,6 +260,7 @@ class TestAnalysis(unittest.TestCase):
 
     def analysis_event_handler(self, event):
         if isinstance(event, cellprofiler_core.analysis.event.Progress):
+            self.progress_counts.append(event.counts)
             return
         if isinstance(event, cellprofiler_core.analysis.event.Finished):
             self.measurements_to_close = event.measurements
@@ -1063,6 +1065,8 @@ class TestAnalysis(unittest.TestCase):
             LOGGER.debug("test_06_02: event queue result is Finished event")
             self.assertFalse(result.cancelled)
             LOGGER.debug("test_06_02: result is not cancelled")
+            # The final progress report should count every image set as done
+            self.assertEqual(self.progress_counts[-1], {Runner.STATUS_DONE: 3})
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()), [1, 2, 3])
             for i in range(1, 4):

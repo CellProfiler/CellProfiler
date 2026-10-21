@@ -142,7 +142,7 @@ def is_matlab_file(filename):
 
 
 def loadmat(path):
-    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
+    imgdata = scipy.io.loadmat(path, struct_as_record=True)
     img = imgdata["Image"]
 
     return img

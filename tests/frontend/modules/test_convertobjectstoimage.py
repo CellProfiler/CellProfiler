@@ -1,6 +1,6 @@
 import numpy
 import pytest
-import scipy.sparse.coo
+import scipy.sparse
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -255,7 +255,7 @@ def test_gray_ijv():
     module.run(workspace)
     pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
 
-    counts = scipy.sparse.coo.coo_matrix(
+    counts = scipy.sparse.coo_matrix(
         (numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))
     ).toarray()
     assert numpy.all(pixel_data[counts == 0] == 0)
@@ -286,7 +286,7 @@ def test_color_ijv():
     #
     vbit = 2 ** (ijv[:, 2] - 1)
     vbit_color = numpy.zeros((numpy.max(vbit) * 2, 3))
-    bits = scipy.sparse.coo.coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
+    bits = scipy.sparse.coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
     #
     # Get some color for every represented bit combo
     #

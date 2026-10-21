@@ -2421,7 +2421,7 @@ def get_power_spectrum_measurement_values(
         power = power[valid].reshape((-1, 1))
         if radii.shape[0] > 1:
             idx = numpy.isfinite(numpy.log(power))
-            powerslope = scipy.linalg.basic.lstsq(
+            powerslope = scipy.linalg.lstsq(
                 numpy.hstack(
                     (
                         numpy.log(radii)[idx][:, numpy.newaxis],

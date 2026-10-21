@@ -518,7 +518,7 @@ class PlateViewer(object):
             self.image_dict_generation += 1
 
         def fn():
-            from scipy.io.matlab.mio import loadmat
+            from scipy.io import loadmat
             from cellprofiler_core.utilities.pathname import url2pathname
 
             with self.image_dict_lock:

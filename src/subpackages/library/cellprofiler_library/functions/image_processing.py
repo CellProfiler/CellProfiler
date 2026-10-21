@@ -1206,8 +1206,8 @@ def enhance_speckles(
         #              = img - dilate(erode)
         #              = img - maximum_filter(minimum_filter)
         #
-        minimum = scipy.ndimage.filters.minimum_filter(data, footprint=footprint)
-        maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=footprint)
+        minimum = scipy.ndimage.minimum_filter(data, footprint=footprint)
+        maximum = scipy.ndimage.maximum_filter(minimum, footprint=footprint)
         result = data - maximum
         
     return __unmask(result, im_pixel_data, im_mask)

@@ -336,8 +336,8 @@ class Figure(wx.Frame):
             elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
                 x += (width - best_width) / 2
             width = best_width
-        ctrl.SetPosition(wx.Point(x, y))
-        ctrl.SetSize(wx.Size(width, height))
+        ctrl.SetPosition(wx.Point(int(x), int(y)))
+        ctrl.SetSize(wx.Size(int(width), int(height)))
 
     def on_size(self, event):
         """Handle resizing of canvas, bars and secret panel

@@ -128,7 +128,7 @@ class EditObjectsDialog(wx.Dialog):
         # Display a UI for choosing objects
         #
         frame_size = wx.GetDisplaySize()
-        frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
+        frame_size = [int(max(frame_size[0], frame_size[1]) / 2)] * 2
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
         wx.Dialog.__init__(self, None, -1, "", size=frame_size, style=style)
         self.allow_overlap = allow_overlap
@@ -2035,7 +2035,7 @@ class EditObjectsDialog(wx.Dialog):
         else:
             self.help_sash.Show(True)
             w, h = self.GetClientSize()
-            self.help_sash.SetDefaultSize((w, h / 3))
+            self.help_sash.SetDefaultSize((w, int(h / 3)))
         self.layout_sash()
 
     def on_help_sash_drag(self, event):

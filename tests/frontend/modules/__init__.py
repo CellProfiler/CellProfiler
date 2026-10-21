@@ -8,7 +8,7 @@ import os
 import unittest
 import tempfile
 import functools
-import scipy.io.matlab.mio
+import scipy.io
 import numpy
 import skimage.io
 from urllib.request import URLopener
@@ -128,7 +128,7 @@ def load_pipeline(test_case, encoded_data):
         matfh.write(data)
         matfh.flush()
         pipeline = cellprofiler_core.pipeline.Pipeline()
-        handles = scipy.io.matlab.mio.loadmat(matpath, struct_as_record=True)
+        handles = scipy.io.loadmat(matpath, struct_as_record=True)
     finally:
         matfh.close()
 
@@ -284,11 +284,11 @@ def maybe_download_sbs():
     #
     # Create the matlab files
     #
-    import scipy.io.matlab.mio
+    import scipy.io
 
     for filename in ["Channel1ILLUM.mat", "Channel2ILLUM.mat"]:
         pixels = np.ones((20, 30))
-        scipy.io.matlab.mio.savemat(
+        scipy.io.savemat(
             os.path.join(path, filename), {"Image": pixels}, format="5"
         )
     return path

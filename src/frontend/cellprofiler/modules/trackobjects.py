@@ -2299,7 +2299,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         #      LAP Processing # 1
         #
         x, y = lapjv(i, j, c)
-        score_matrix = scipy.sparse.coo.coo_matrix((c, (i, j))).tocsr()
+        score_matrix = scipy.sparse.coo_matrix((c, (i, j))).tocsr()
 
         # ---------------------------
         #

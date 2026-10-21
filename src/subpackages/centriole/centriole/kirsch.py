@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import numpy
-import scipy.ndimage.filters
+import scipy.ndimage
 
 
 def kirsch(image):
@@ -13,7 +13,7 @@ def kirsch(image):
     for _ in range(len(convolution_mask)):
         kernel[kindex >= 0] = numpy.array(convolution_mask)[kindex[kindex >= 0]]
         derivatives = numpy.maximum(
-            derivatives, scipy.ndimage.filters.convolve(image, kernel)
+            derivatives, scipy.ndimage.convolve(image, kernel)
         )
 
         convolution_mask = convolution_mask[-1:] + convolution_mask[:-1]

@@ -18,21 +18,21 @@ the *ExportDatabase* data tool (accessed from CellProfiler's main menu)
 after processing is complete; its functionality is the same.
 
 The database is set up with two primary
-tables. These tables are the *Per\_Image* table and the *Per\_Object*
+tables. These tables are the *Per\\_Image* table and the *Per\\_Object*
 table (which may have a prefix if you specify):
 
--  The Per\_Image table consists of all the per-image measurements made
+-  The Per\\_Image table consists of all the per-image measurements made
    during the pipeline, plus per-image population statistics (such as
    mean, median, and standard deviation) of the object measurements.
-   There is one per\_image row for every “cycle” that CellProfiler
+   There is one per\\_image row for every “cycle” that CellProfiler
    processes (a cycle is usually a single field of view, and a single
    cycle usually contains several image files, each representing a
    different channel of the same field of view).
--  The Per\_Object table contains all the measurements for individual
+-  The Per\\_Object table contains all the measurements for individual
    objects. There is one row of object measurements per object
    identified. The two tables are connected with the primary key column
    *ImageNumber*, which indicates the image to which each object
-   belongs. The Per\_Object table has another primary key called
+   belongs. The Per\\_Object table has another primary key called
    *ObjectNumber*, which is unique to each image.
 
 Typically, if multiple types of objects are identified and measured in a
@@ -48,10 +48,10 @@ correspondence (for example, export only *Nucleus* and *Cytoplasm*, but
 omit *Speckles*). If you have extracted “Plate” and “Well” metadata from
 image filenames or loaded “Plate” and “Well” metadata via the
 **Metadata** or **LoadData** modules, you can ask CellProfiler to create
-a “Per\_Well” table, which aggregates object measurements across wells.
+a “Per\\_Well” table, which aggregates object measurements across wells.
 This option will output a SQL file (regardless of whether you choose to
-write directly to the database) that can be used to create the Per\_Well
-table. **Note** that the “Per\_Well” mean/median/stdev values are only usable
+write directly to the database) that can be used to create the Per\\_Well
+table. **Note** that the “Per\\_Well” mean/median/stdev values are only usable
 for database type MySQL, not SQLite.
 
 At the secure shell where you normally log in to MySQL, type the
@@ -60,7 +60,7 @@ files, to import these CellProfiler measurements to your database:
 
 ``mysql -h hostname -u username -p databasename < pathtoimages/perwellsetupfile.SQL``
 
-The commands written by CellProfiler to create the Per\_Well table will
+The commands written by CellProfiler to create the Per\\_Well table will
 be executed. Oracle is not fully supported at present; you can create
 your own Oracle DB using the .csv output option and writing a simple
 script to upload to the database.
@@ -380,7 +380,7 @@ def unpack_hostname(host):
     elif len(host_port) > 2:
 
         # with port specified
-        match = re.match('\[([0-9a-fA-F\:]+)\]:(\d+)', host)
+        match = re.match('\\[([0-9a-fA-F\\:]+)\\]:(\\d+)', host)
         if match:
             host, port = match.groups()
 
@@ -531,7 +531,7 @@ queries.""",
             True,
             doc="""\
 Select whether you want to add a prefix to your table names. The default
-table names are *Per\_Image* for the per-image table and *Per\_Object*
+table names are *Per\\_Image* for the per-image table and *Per\\_Object*
 for the per-object table. Adding a prefix can be useful for bookkeeping
 purposes.
 
@@ -624,7 +624,7 @@ properties file so that CellProfiler Analyst centers cells/objects using that
 object’s center.
 
 You can manually change this choice in the properties file by editing
-the *cell\_x\_loc* and *cell\_y\_loc* properties.
+the *cell\\_x\\_loc* and *cell\\_y\\_loc* properties.
 
 Note that if there are no objects defined in the pipeline (e.g., if only
 using MeasureImageQuality and/or Illumination Correction modules), a
@@ -735,8 +735,8 @@ images. This option will do the following:
 
 -  All images loaded using the **Input** modules or saved in
    **SaveImages** will be included.
--  The CellProfiler image name will be used for the *image\_name* field.
--  A channel color listed in the *image\_channel\_colors* field will be
+-  The CellProfiler image name will be used for the *image\\_name* field.
+-  A channel color listed in the *image\\_channel\\_colors* field will be
    assigned to the image by default order. Multichannel images will be 
    added as separate R, G and B channels.
 
@@ -775,7 +775,7 @@ The format for a group in CellProfiler Analyst is:
 ``group_SQL_<XXX> = <MySQL SELECT statement that returns image-key columns followed by group-key columns>``
 
 For example, if you wanted to be able to group your data by unique
-plate names, you could define a group called *SQL\_Plate* as follows:
+plate names, you could define a group called *SQL\\_Plate* as follows:
 
 ``group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image``
 
@@ -849,7 +849,7 @@ here. Note that the actual class table will be named by prepending the
 table prefix (if any) to what you enter here.
 
 You can manually change this choice in the properties file by editing
-the *class\_table* field. Leave this field blank if you are not using
+the *class\\_table* field. Leave this field blank if you are not using
 Classifier or do not need the table written to the database.""",
         )
 
@@ -861,16 +861,16 @@ Classifier or do not need the table written to the database.""",
 
 Choose the type of classification this properties file will be used
 for. This setting will create and set a field called
-*classification\_type*. Note that if you will not be using the Classifier
+*classification\\_type*. Note that if you will not be using the Classifier
 tool in CellProfiler Analyst, this setting will be ignored.
 
 -  *{CT_OBJECT}:* Object-based classification, i.e., set
-   *classification\_type* to “object” (or leave it blank).
+   *classification\\_type* to “object” (or leave it blank).
 -  *{CT_IMAGE}:* Image-based classification, e.g., set
-   *classification\_type* to “image”.
+   *classification\\_type* to “image”.
 
 You can manually change this choice in the properties file by editing
-the *classification\_type* field.
+the *classification\\_type* field.
 """.format(
                 **{"CT_OBJECT": CT_OBJECT, "CT_IMAGE": CT_IMAGE}
             ),
@@ -884,16 +884,16 @@ the *classification\_type* field.
 
 Choose the type of classification this properties file will be used
 for. This setting will create and set a field called
-*classification\_type*. Note that if you are not using the classifier
+*classification\\_type*. Note that if you are not using the classifier
 tool, this setting will be ignored.
 
 -  *{CT_OBJECT}:* Object-based classification, i.e., set
-   *classification\_type* to “object” (or leave it blank).
+   *classification\\_type* to “object” (or leave it blank).
 -  *{CT_IMAGE}:* Image-based classification, e.g., set
-   *classification\_type* to “image”.
+   *classification\\_type* to “image”.
 
 You can manually change this choice in the properties file by editing
-the *classification\_type* field.
+the *classification\\_type* field.
 """.format(
                 **{"CT_OBJECT": CT_OBJECT, "CT_IMAGE": CT_IMAGE}
             ),
@@ -961,15 +961,15 @@ Select "*{YES}*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
-create a column in the Per\_Image table called
-“Mean\_Nuclei\_AreaShape\_Area”.
+create a column in the Per\\_Image table called
+“Mean\\_Nuclei\\_AreaShape\\_Area”.
 
 You may not want to use **ExportToDatabase** to calculate these
 population statistics if your pipeline generates a large number of
 per-object measurements; doing so might exceed database column limits.
 These columns can be created manually for selected measurements directly
 in MySQL. For instance, the following SQL command creates the
-Mean\_Nuclei\_AreaShape\_Area column:
+Mean\\_Nuclei\\_AreaShape\\_Area column:
 
 ``ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area); UPDATE Per_Image SET
 Mean_Nuclei_AreaShape_Area = (SELECT AVG(Nuclei_AreaShape_Area) FROM Per_Object
@@ -987,8 +987,8 @@ Select "*{YES}*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
-create a column in the Per\_Image table called
-“Median\_Nuclei\_AreaShape\_Area”.
+create a column in the Per\\_Image table called
+“Median\\_Nuclei\\_AreaShape\\_Area”.
 
 You may not want to use **ExportToDatabase** to calculate these
 population statistics if your pipeline generates a large number of
@@ -1008,15 +1008,15 @@ Select "*{YES}*" for **ExportToDatabase** to calculate population
 statistics over all the objects in each image and store the results in
 the database. For instance, if you are measuring the area of the Nuclei
 objects and you check the box for this option, **ExportToDatabase** will
-create a column in the Per\_Image table called
-“StDev\_Nuclei\_AreaShape\_Area”.
+create a column in the Per\\_Image table called
+“StDev\\_Nuclei\\_AreaShape\\_Area”.
 
 You may not want to use **ExportToDatabase** to calculate these
 population statistics if your pipeline generates a large number of
 per-object measurements; doing so might exceed database column limits.
 These columns can be created manually for selected measurements directly
 in MySQL. For instance, the following SQL command creates the
-StDev\_Nuclei\_AreaShape\_Area column:
+StDev\\_Nuclei\\_AreaShape\\_Area column:
 
 ``ALTER TABLE Per_Image ADD (StDev_Nuclei_AreaShape_Area); UPDATE Per_Image SET
 StDev_Nuclei_AreaShape_Area = (SELECT STDDEV(Nuclei_AreaShape_Area) FROM Per_Object
@@ -1037,7 +1037,7 @@ all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate mean box in this
 module, **ExportToDatabase** will create a table in the database called
-“Per\_Well\_avg”, with a column called “Mean\_Nuclei\_AreaShape\_Area”.
+“Per\\_Well\\_avg”, with a column called “Mean\\_Nuclei\\_AreaShape\\_Area”.
 Selecting all three aggregate measurements will create three per-well
 tables, one for each of the measurements.
 
@@ -1048,7 +1048,7 @@ the desired per-well table.
 Note that this option is only available if you have extracted plate and
 well metadata from the filename using the **Metadata** or **LoadData**
 modules. It will write out a .sql file with the statements necessary to
-create the Per\_Well table, regardless of the option chosen above.
+create the Per\\_Well table, regardless of the option chosen above.
 {USING_METADATA_HELP_REF}
 """.format(
                 **{
@@ -1070,8 +1070,8 @@ all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate median box in
 this module, **ExportToDatabase** will create a table in the database
-called “Per\_Well\_median”, with a column called
-“Median\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
+called “Per\\_Well\\_median”, with a column called
+“Median\\_Nuclei\\_AreaShape\\_Area”. Selecting all three aggregate
 measurements will create three per-well tables, one for each of the
 measurements.
 
@@ -1082,7 +1082,7 @@ the desired per-well table.
 Note that this option is only available if you have extracted plate and
 well metadata from the filename using the **Metadata** or **LoadData**
 modules. It will write out a .sql file with the statements necessary to
-create the Per\_Well table, regardless of the option chosen above.
+create the Per\\_Well table, regardless of the option chosen above.
 {USING_METADATA_HELP_REF}
 """.format(
                 **{
@@ -1104,8 +1104,8 @@ all the objects in each well and store the results as columns in a
 “per-well” table in the database. For instance, if you are measuring the
 area of the Nuclei objects and you check the aggregate standard
 deviation box in this module, **ExportToDatabase** will create a table
-in the database called “Per\_Well\_std”, with a column called
-“StDev\_Nuclei\_AreaShape\_Area”. Selecting all three aggregate
+in the database called “Per\\_Well\\_std”, with a column called
+“StDev\\_Nuclei\\_AreaShape\\_Area”. Selecting all three aggregate
 measurements will create three per-well tables, one for each of the
 measurements.
 
@@ -1116,7 +1116,7 @@ the desired per-well table.
 Note that this option is only available if you have extracted plate and
 well metadata from the filename using the **Metadata** or **LoadData**
 modules. It will write out a .sql file with the statements necessary to
-create the Per\_Well table, regardless of the option chosen above.
+create the Per\\_Well table, regardless of the option chosen above.
 {USING_METADATA_HELP_REF}
 """.format(
                 **{
@@ -1132,11 +1132,11 @@ create the Per\_Well table, regardless of the option chosen above.
             [O_ALL, O_NONE, O_SELECT],
             doc="""\
 This option lets you choose the objects whose measurements will be saved
-in the Per\_Object and Per\_Well(s) database tables.
+in the Per\\_Object and Per\\_Well(s) database tables.
 
 -  *{O_ALL}:* Export measurements from all objects.
--  *{O_NONE}:* Do not export data to a Per\_Object table. Save only
-   Per\_Image or Per\_Well measurements (which nonetheless include
+-  *{O_NONE}:* Do not export data to a Per\\_Object table. Save only
+   Per\\_Image or Per\\_Well measurements (which nonetheless include
    population statistics from objects).
 -  *{O_SELECT}:* Select the objects you want to export from a list.
 """.format(
@@ -1152,7 +1152,7 @@ in the Per\_Object and Per\_Well(s) database tables.
 Choose one or more objects from this list (click using shift or command
 keys to select multiple objects). The list includes the objects that
 were created by prior modules. If you choose an object, its measurements
-will be written out to the Per\_Object and/or Per\_Well(s) tables,
+will be written out to the Per\\_Object and/or Per\\_Well(s) tables,
 otherwise, the object’s measurements will be skipped.""",
         )
 
@@ -1220,9 +1220,9 @@ object exported or a single object table.
 -  *{OT_PER_OBJECT}* creates one table for each object type you
    export. The table name will reflect the name of your objects. The
    table will have one row for each of your objects. You can write SQL
-   queries that join tables using the “Number\_ObjectNumber” columns of
+   queries that join tables using the “Number\\_ObjectNumber” columns of
    parent objects (such as those created by **IdentifyPrimaryObjects**)
-   with the corresponding “Parent\_… column” of the child objects.
+   with the corresponding “Parent\\_… column” of the child objects.
    Choose *{OT_PER_OBJECT}* if parent objects can have more than one
    child object, if you want a relational representation of your objects
    in the database, or if you need to split columns among different
@@ -1454,7 +1454,7 @@ columns, each separated by commas.
 
 In CellProfiler, the image key column is always given the name
 *ImageNumber*; group keys are typically metadata columns which are
-always prefixed with *Image\_Metadata\_*. For example, if you wanted
+always prefixed with *Image\\_Metadata\\_*. For example, if you wanted
 to be able to group your data by unique plate and well metadata tags,
 you could define a group with the following MySQL statement:
 
@@ -2184,13 +2184,13 @@ available:
         """Warn user re: bad characters in object used for center, filter/group names and class_table name"""
         if self.save_cpa_properties:
             warning_string = "CellProfiler Analyst will not recognize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
-            if not re.match("^[\w]*$", self.location_object.value):
+            if not re.match("^[\\w]*$", self.location_object.value):
                 raise ValidationError(warning_string % "object", self.location_object)
 
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
                     if (
-                        not re.match("^[\w]*$", group.group_name.value)
+                        not re.match("^[\\w]*$", group.group_name.value)
                         or group.group_name.value == ""
                     ):
                         raise ValidationError(
@@ -2200,14 +2200,14 @@ available:
             if self.properties_wants_filters:
                 for group in self.filter_field_groups:
                     if (
-                        not re.match("^[\w]*$", group.filter_name.value)
+                        not re.match("^[\\w]*$", group.filter_name.value)
                         or group.filter_name.value == ""
                     ):
                         raise ValidationError(
                             warning_string % "filter name", group.filter_name
                         )
                     if (
-                        not re.match("^[\w\s\"'=]*$", group.filter_statement.value)
+                        not re.match("^[\\w\\s\"'=]*$", group.filter_statement.value)
                         or group.filter_statement.value == ""
                     ):
                         raise ValidationError(
@@ -2215,7 +2215,7 @@ available:
                         )
 
             if self.properties_class_table_name:
-                if not re.match("^[\w]*$", self.properties_class_table_name.value):
+                if not re.match("^[\\w]*$", self.properties_class_table_name.value):
                     raise ValidationError(
                         warning_string % "class table name",
                         self.properties_class_table_name,

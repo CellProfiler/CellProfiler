@@ -51,7 +51,7 @@ Measurements made by this module
 
 **Object measurements:**
 
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified objects.
 -  *Number:* The numeric label assigned to each identified object
    according to the arrangement order you specified.

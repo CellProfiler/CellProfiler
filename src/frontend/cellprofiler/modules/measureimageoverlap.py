@@ -69,7 +69,7 @@ Measurements made by this module
 
 -  *Recall:* Number of true positive pixels/ (number of true positive pixels + number of false negative pixels).
 
--  *F-factor:* 2 × (precision × recall)/(precision + recall). Also known as F\ :sub:`1` score, F-score or F-measure.
+-  *F-factor:* 2 × (precision × recall)/(precision + recall). Also known as F\\ :sub:`1` score, F-score or F-measure.
 
 -  *Earth mover’s distance:* The minimum distance required to move each foreground pixel in the test image to
    some corresponding foreground pixel in the reference image.
@@ -200,8 +200,8 @@ worms or neurites.
 
 This setting sets an upper bound to the distance penalty assessed during
 the movement calculation. As an example, the score for moving 10 pixels
-from one location to a location that is 100 pixels away is 10\*100, but
-if the maximum distance were set to 50, the score would be 10\*50
+from one location to a location that is 100 pixels away is 10\\*100, but
+if the maximum distance were set to 50, the score would be 10\\*50
 instead.
 
 The maximum distance should be set to the largest reasonable distance

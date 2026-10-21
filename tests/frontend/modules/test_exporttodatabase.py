@@ -53,9 +53,9 @@ LONG_OBJ_FEATURE = (
     "obj_measurement_with_a_column_name_that_exceeds_64_characters_in_width"
 )
 WIERD_IMG_FEATURE = (
-    'image_measurement_with_"!@%*\n~!\t\ra\+=' "and other &*^% in it.........."
+    'image_measurement_with_"!@%*\n~!\t\ra\\+=' "and other &*^% in it.........."
 )
-WIERD_OBJ_FEATURE = 'measurement w"!@%*\n~!\t\ra\+=' "and other &*^% in it"
+WIERD_OBJ_FEATURE = 'measurement w"!@%*\n~!\t\ra\\+=' "and other &*^% in it"
 GROUP_IMG_FEATURE = "group_imagemeasurement"
 GROUP_OBJ_FEATURE = "group_objmeasurement"
 MISSING_FROM_MEASUREMENTS = "Missing from measurements"

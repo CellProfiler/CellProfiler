@@ -51,7 +51,7 @@ References
 
 See also **ColorToGray**.
 
-.. _Colour\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
+.. _Colour\\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
 """
 
 import math

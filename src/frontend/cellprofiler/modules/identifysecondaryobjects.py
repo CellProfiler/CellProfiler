@@ -160,7 +160,7 @@ Measurements made by this module
 
 -  *Parent:* The identity of the primary object associated with each
    secondary object.
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified secondary objects.
 
 """.format(
@@ -233,8 +233,8 @@ secondary objects that touch each other:
    by the shortest path to an adjacent primary object from the starting
    (“seeding”) primary object. The seed-to-pixel distances are calculated
    as the sum of absolute differences in a 3x3 (8-connected) image
-   neighborhood, combined with λ via sqrt(differences\ :sup:`2` +
-   λ\ :sup:`2`).
+   neighborhood, combined with λ via sqrt(differences\\ :sup:`2` +
+   λ\\ :sup:`2`).
 -  *{M_WATERSHED_G:s}:* This method uses the watershed algorithm
    (*Vincent and Soille, 1991*) to assign pixels to the primary objects
    which act as seeds for the watershed. In this variant, the watershed

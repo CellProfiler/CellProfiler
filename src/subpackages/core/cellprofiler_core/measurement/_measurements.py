@@ -976,8 +976,8 @@ class Measurements:
 
         pattern - a regexp-like pattern that specifies how to insert
                   metadata into a string. Each token has the form:
-                  "\(?<METADATA_TAG>\)" (matlab-style) or
-                  "\g<METADATA_TAG>" (Python-style)
+                  "\\(?<METADATA_TAG>\\)" (matlab-style) or
+                  "\\g<METADATA_TAG>" (Python-style)
         image_name - name of image associated with the metadata (or None
                      if metadata is not associated with an image)
         image_set_number - # of image set to use to retrieve data.

@@ -160,7 +160,7 @@ Measurements made by this module
 
 **Object measurements:**
 
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the
    primary object centroids. The centroid is calculated as the center of
    mass of the binary representation of the object.
 

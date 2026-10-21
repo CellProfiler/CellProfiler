@@ -71,9 +71,9 @@ Measurements made by this module
 -  **Object measurements:**
 
    -  Single measurement: Classification (true/false) of the
-      N\ :sup:`th` bin for the M\ :sup:`th` measurement.
-   -  Two measurement: Classification (true/false) of the 1\ :sup:`st`
-      measurement versus the 2\ :sup:`nd` measurement binned into bins
+      N\\ :sup:`th` bin for the M\\ :sup:`th` measurement.
+   -  Two measurement: Classification (true/false) of the 1\\ :sup:`st`
+      measurement versus the 2\\ :sup:`nd` measurement binned into bins
       above (“high”) and below (“low”) the cutoff.
       
 **Model Mode:**

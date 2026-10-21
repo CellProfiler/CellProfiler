@@ -440,7 +440,7 @@ class FileImage(AbstractImage):
             if not os.path.isfile(path):
                 # No file here - hash the image
                 image = self.provide_image(measurements)
-                hasher.update(image.pixel_data.tostring())
+                hasher.update(image.pixel_data.tobytes())
             else:
                 with open(self.get_full_name(), "rb") as fd:
                     while True:

@@ -16,7 +16,7 @@ __choice_ids = []
 def get_choice_id(index):
     global __choice_ids
     while len(__choice_ids) <= index:
-        __choice_ids.append(wx.NewId())
+        __choice_ids.append(wx.NewIdRef())
     return __choice_ids[index]
 
 

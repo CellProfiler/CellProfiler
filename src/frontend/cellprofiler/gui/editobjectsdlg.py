@@ -51,8 +51,8 @@ class EditObjectsDialog(wx.Dialog):
     if the return code is wx.OK.
     """
 
-    resume_id = wx.NewId()
-    cancel_id = wx.NewId()
+    resume_id = wx.NewIdRef()
+    cancel_id = wx.NewIdRef()
     epsilon = 5  # maximum pixel distance to a vertex for hit test
     FREEHAND_DRAW_MODE = "freehanddrawmode"
     SPLIT_PICK_FIRST_MODE = "split1"
@@ -84,30 +84,30 @@ class EditObjectsDialog(wx.Dialog):
     D_SHOW_IMAGE = "Show image"
     D_HIDE_IMAGE = "Hide image"
 
-    ID_CONTRAST_RAW = wx.NewId()
-    ID_CONTRAST_NORMALIZED = wx.NewId()
-    ID_CONTRAST_LOG_NORMALIZED = wx.NewId()
+    ID_CONTRAST_RAW = wx.NewIdRef()
+    ID_CONTRAST_NORMALIZED = wx.NewIdRef()
+    ID_CONTRAST_LOG_NORMALIZED = wx.NewIdRef()
 
-    ID_INTERPOLATION_NEAREST = wx.NewId()
-    ID_INTERPOLATION_BILINEAR = wx.NewId()
-    ID_INTERPOLATION_BICUBIC = wx.NewId()
+    ID_INTERPOLATION_NEAREST = wx.NewIdRef()
+    ID_INTERPOLATION_BILINEAR = wx.NewIdRef()
+    ID_INTERPOLATION_BICUBIC = wx.NewIdRef()
 
-    ID_LABELS_OUTLINES = wx.NewId()
-    ID_LABELS_FILL = wx.NewId()
+    ID_LABELS_OUTLINES = wx.NewIdRef()
+    ID_LABELS_FILL = wx.NewIdRef()
 
-    ID_DISPLAY_IMAGE = wx.NewId()
+    ID_DISPLAY_IMAGE = wx.NewIdRef()
 
-    ID_MODE_FREEHAND = wx.NewId()
-    ID_MODE_SPLIT = wx.NewId()
-    ID_MODE_DELETE = wx.NewId()
+    ID_MODE_FREEHAND = wx.NewIdRef()
+    ID_MODE_SPLIT = wx.NewIdRef()
+    ID_MODE_DELETE = wx.NewIdRef()
 
-    ID_ACTION_KEEP = wx.NewId()
-    ID_ACTION_REMOVE = wx.NewId()
-    ID_ACTION_TOGGLE = wx.NewId()
-    ID_ACTION_RESET = wx.NewId()
-    ID_ACTION_JOIN = wx.NewId()
-    ID_ACTION_CONVEX_HULL = wx.NewId()
-    ID_ACTION_DELETE = wx.NewId()
+    ID_ACTION_KEEP = wx.NewIdRef()
+    ID_ACTION_REMOVE = wx.NewIdRef()
+    ID_ACTION_TOGGLE = wx.NewIdRef()
+    ID_ACTION_RESET = wx.NewIdRef()
+    ID_ACTION_JOIN = wx.NewIdRef()
+    ID_ACTION_CONVEX_HULL = wx.NewIdRef()
+    ID_ACTION_DELETE = wx.NewIdRef()
 
     def __init__(self, guide_image, orig_labels, allow_overlap, title=None):
         """Initializer

@@ -99,7 +99,7 @@ def allow_sharexy(fn):
 
 def get_menu_id(d, idx):
     if idx not in d:
-        d[idx] = wx.NewId()
+        d[idx] = wx.NewIdRef()
     return d[idx]
 
 

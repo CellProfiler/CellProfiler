@@ -702,7 +702,7 @@ class PathListCtrl(wx.TreeCtrl):
         item_list = fn_context_menu(arg)
         if len(self.context_menu_ids) < len(item_list):
             self.context_menu_ids += [
-                wx.NewId() for _ in range(len(self.context_menu_ids), len(item_list))
+                wx.NewIdRef() for _ in range(len(self.context_menu_ids), len(item_list))
             ]
         menu = wx.Menu()
         for idx, (key, display_name) in enumerate(item_list):

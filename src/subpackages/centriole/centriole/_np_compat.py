@@ -13,6 +13,6 @@ if NP_MAJOR_VERSION >= 2:
 else:
     # NumPy 1.x aliases
     np_product = np.prod
-    np_cumproduct = np.cumproduct
+    np_cumproduct = np.cumprod
     np_NaN = np.NaN
     np_Inf = np.Inf 

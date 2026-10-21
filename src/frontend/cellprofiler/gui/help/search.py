@@ -93,8 +93,8 @@ class Search(wx.Frame):
         super(Search, self).__init__(
             parent,
             size=(
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2,
+                int(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2),
+                int(wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2),
             ),
             style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
             title="Search CellProfiler help",

@@ -1524,7 +1524,7 @@ def measure_objects_total_area(
     if mask is not None:
         total_area = numpy.sum(mask)
     else:
-        total_area = numpy.product(label_image.shape)
+        total_area = numpy.prod(label_image.shape)
     return total_area
 
 
@@ -1549,7 +1549,7 @@ def measure_image_intensities(
         pixels: NDArray[numpy.float32], 
         percentiles: List[int]=[]
     ) -> Tuple[List[float], Dict[int, float]]:
-    pixel_count = numpy.product(pixels.shape)
+    pixel_count = numpy.prod(pixels.shape)
     percentile_measures = {}
     if pixel_count == 0:
         pixel_sum = 0
@@ -1570,7 +1570,7 @@ def measure_image_intensities(
         pixels = pixels[
             numpy.nonzero(numpy.isfinite(pixels))[0]
         ]  # Ignore NaNs, Infs
-        pixel_count = numpy.product(pixels.shape)
+        pixel_count = numpy.prod(pixels.shape)
 
         pixel_sum = numpy.sum(pixels)
         pixel_mean = pixel_sum / float(pixel_count)
@@ -2239,7 +2239,7 @@ def get_focus_score_for_scale_group(
             squared_normalized_image = (masked_pixel_data - mean_image_value) ** 2
             if mean_image_value > 0:
                 focus_score = numpy.sum(squared_normalized_image) / (
-                    numpy.product(masked_pixel_data.shape) * mean_image_value
+                    numpy.prod(masked_pixel_data.shape) * mean_image_value
                 )
         #
         # Create a labels matrix that grids the image to the dimensions
@@ -2344,7 +2344,7 @@ def get_saturation_value(
     ]:
     if image_mask is not None:
         pixel_data = pixel_data[image_mask]
-    pixel_count = numpy.product(pixel_data.shape)
+    pixel_count = numpy.prod(pixel_data.shape)
     if pixel_count == 0:
         percent_maximal = 0
         percent_minimal = 0
@@ -2376,7 +2376,7 @@ def get_intensity_measurement_values(
     if image_mask is not None:
         pixels = pixels[image_mask]
     
-    pixel_count = numpy.product(pixels.shape)
+    pixel_count = numpy.prod(pixels.shape)
     if pixel_count == 0:
         pixel_sum = 0
         pixel_mean = 0
@@ -2408,7 +2408,7 @@ def get_power_spectrum_measurement_values(
     if image_mask is not None:
         pixel_data = numpy.array(pixel_data)  # make a copy
         masked_pixels = pixel_data[image_mask]
-        pixel_count = numpy.product(masked_pixels.shape)
+        pixel_count = numpy.prod(masked_pixels.shape)
         if pixel_count > 0:
             pixel_data[~image_mask] = numpy.mean(masked_pixels)
         else:

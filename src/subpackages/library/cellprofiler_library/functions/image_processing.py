@@ -2436,8 +2436,8 @@ def align_cross_correlation(
     # the mean^2 by the # of elements being summed-over
     # to account for the mean being summed that many times.
     #
-    p1sd = numpy.sum(pixels1 ** 2) - p1_mean ** 2 * numpy.product(s)
-    p2sd = numpy.sum(pixels2 ** 2) - p2_mean ** 2 * numpy.product(s)
+    p1sd = numpy.sum(pixels1 ** 2) - p1_mean ** 2 * numpy.prod(s)
+    p2sd = numpy.sum(pixels2 ** 2) - p2_mean ** 2 * numpy.prod(s)
     #
     # There's always chance of roundoff error for a zero value
     # resulting in a negative sd, so limit the sds here
@@ -2449,7 +2449,7 @@ def align_cross_correlation(
     # deviation is less than 1/100 of the maximum. We exclude these
     # from consideration.
     #
-    corrnorm[(unit < numpy.product(s) / 2) & (sd < numpy.mean(sd) / 100)] = 0
+    corrnorm[(unit < numpy.prod(s) / 2) & (sd < numpy.mean(sd) / 100)] = 0
     i, j = numpy.unravel_index(numpy.argmax(corrnorm), fshape)
     #
     # Reflect values that fall into the second half

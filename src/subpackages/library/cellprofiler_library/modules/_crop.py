@@ -35,7 +35,7 @@ def measure_area_retained_after_cropping(cropping: Image2DMask) -> int:
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def measure_original_image_area(orig_image_pixels: Image2D) -> int:
-    return numpy.product(orig_image_pixels.shape)
+    return numpy.prod(orig_image_pixels.shape)
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
 def get_measurements(cropping: Image2DMask, orig_image_pixels:Image2D, cropped_image_name: str = "CroppedImage") -> List[Tuple[str, str, int]]:

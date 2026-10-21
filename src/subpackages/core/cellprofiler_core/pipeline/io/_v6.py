@@ -35,7 +35,7 @@ def dump(pipeline, fp, save_image_plane_details):
     }
 
     if save_image_plane_details:
-        urls = [url for url in pipeline.file_list]
+        urls = [image_file.url for image_file in pipeline.file_list]
         file_list = {
             "version": '"%s":"%d","%s":"%d"'
             % (
@@ -68,3 +68,7 @@ def load(pipeline, fd):
         new_module.from_dict(settings, module["attributes"])
         pipeline_modules.append(new_module)
 
+    if pipeline_dict.get("has_image_plane_details") and "file_list" in pipeline_dict:
+        # As when loading a text pipeline, replace the file list with the saved one
+        pipeline.clear_urls(add_undo=False)
+        pipeline.add_urls(pipeline_dict["file_list"]["urls"], add_undo=False)

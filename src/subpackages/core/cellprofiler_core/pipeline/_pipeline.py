@@ -616,9 +616,9 @@ class Pipeline:
             raise ValueError("Invalid format for attributes: %s" % attribute_string)
         # Fix for array dtypes which contain split separator
         attribute_string = attribute_string.replace("dtype='|S", "dtype='S")
-        if len(re.split("(?P<note>\|notes:\[.*?\]\|)",attribute_string)) ==3:
+        if len(re.split("(?P<note>\\|notes:\\[.*?\\]\\|)",attribute_string)) ==3:
             # 4674- sometimes notes have pipes
-            prenote,note,postnote = re.split("(?P<note>\|notes:\[.*?\]\|)",attribute_string)
+            prenote,note,postnote = re.split("(?P<note>\\|notes:\\[.*?\\]\\|)",attribute_string)
             attribute_strings = prenote[1:].split("|")
             attribute_strings += [note[1:-1]]
             attribute_strings += postnote[:-1].split("|") 
@@ -1748,8 +1748,8 @@ class Pipeline:
 
         pattern - a regexp-like pattern that specifies how to insert
                   metadata into a string. Each token has the form:
-                  "\(?<METADATA_TAG>\)" (matlab-style) or
-                  "\g<METADATA_TAG>" (Python-style)
+                  "\\(?<METADATA_TAG>\\)" (matlab-style) or
+                  "\\g<METADATA_TAG>" (Python-style)
         """
         columns = self.get_measurement_columns()
         current_metadata = []

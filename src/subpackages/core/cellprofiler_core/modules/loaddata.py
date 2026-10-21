@@ -101,22 +101,22 @@ There are many reasons why you might want to prepare a CSV file and load
 it via **LoadData**. Below, we describe how the column nomenclature
 allows for special functionality for some downstream modules:
 
--  *Columns whose name begins with Image\_FileName or Image\_PathName:*
-   A column whose name begins with “Image\_FileName” or
-   “Image\_PathName” can be used to supply the file name and path name
+-  *Columns whose name begins with Image\\_FileName or Image\\_PathName:*
+   A column whose name begins with “Image\\_FileName” or
+   “Image\\_PathName” can be used to supply the file name and path name
    (relative to the base folder) of an image that you want to load, which
    will override the settings in the Input modules (**Images**,
    **Metadata**, **NamesAndTypes** and **Groups**). For instance,
-   “Image\_FileName\_CY3” would supply the file name for the CY3-stained
+   “Image\\_FileName\\_CY3” would supply the file name for the CY3-stained
    image, and choosing the *Load images based on this data?* option
    allows the CY3 images to be selected later in the pipeline.
-   “Image\_PathName\_CY3” would supply the path names for the
+   “Image\\_PathName\\_CY3” would supply the path names for the
    CY3-stained images. The path name column is optional; if all image
    files are in the base folder, this column is not needed.
 
--  *Columns whose name begins with Image\_ObjectsFileName or
-   Image\_ObjectsPathName:* The behavior of these columns is identical
-   to that of “Image\_FileName” or “Image\_PathName” except that it is
+-  *Columns whose name begins with Image\\_ObjectsFileName or
+   Image\\_ObjectsPathName:* The behavior of these columns is identical
+   to that of “Image\\_FileName” or “Image\\_PathName” except that it is
    used to specify an image that you want to load as objects.
 
 -  *Columns whose name begins with Metadata:* A column whose name begins
@@ -130,14 +130,14 @@ allows for special functionality for some downstream modules:
    specifying the illumination correction functions.
 
    In this case, if the illumination correction images are loaded with
-   the **LoadData** module, the file should have a “Metadata\_Date”
+   the **LoadData** module, the file should have a “Metadata\\_Date”
    column which contains the date metadata tags. Similarly, if the
    individual images are loaded using the **LoadImages** module,
    **LoadImages** should be set to extract the metadata tag from the
    file names (see **LoadImages** for more details on how to do so). The
    pipeline will then match the individual image with their
    corresponding illumination correction functions based on matching
-   “Metadata\_Date” tags. This is useful if the same data is associated
+   “Metadata\\_Date” tags. This is useful if the same data is associated
    with several images (for example, multiple images obtained from a
    single well).
 
@@ -145,9 +145,9 @@ allows for special functionality for some downstream modules:
    name begins with “Series” or “Frame” refers to
    information about image stacks or movies. The name of the image
    within CellProfiler appears after an underscore character. For
-   example, “Frame\_DNA” would supply the frame number for the
-   movie/image stack file specified by the “Image\_FileName\_DNA” and
-   “Image\_PathName\_DNA” columns.
+   example, “Frame\\_DNA” would supply the frame number for the
+   movie/image stack file specified by the “Image\\_FileName\\_DNA” and
+   “Image\\_PathName\\_DNA” columns.
 
    Using a CSV for loading frames and/or series from an movie/image
    stack allows you more flexibility in assembling image sets for
@@ -194,23 +194,23 @@ See also the **Input** modules (i.e., **Images**, **Metadata**,
 Example CSV file
 ^^^^^^^^^^^^^^^^
 
-+-------------------------+-------------------------+-------------------+-----------------------+
-| Image\_FileName\_FITC   | Image\_PathName\_FITC   | Metadata\_Plate   | Titration\_NaCl\_uM   |
-+-------------------------+-------------------------+-------------------+-----------------------+
-| “04923\_d1.tif”         | “2009-07-08”            | “P-12345”         | 750                   |
-+-------------------------+-------------------------+-------------------+-----------------------+
-| “51265\_d1.tif”         | “2009-07-09”            | “P-12345”         | 2750                  |
-+-------------------------+-------------------------+-------------------+-----------------------+
++---------------------------+---------------------------+--------------------+-------------------------+
+| Image\\_FileName\\_FITC   | Image\\_PathName\\_FITC   | Metadata\\_Plate   | Titration\\_NaCl\\_uM   |
++---------------------------+---------------------------+--------------------+-------------------------+
+| “04923\\_d1.tif”          | “2009-07-08”              | “P-12345”          | 750                     |
++---------------------------+---------------------------+--------------------+-------------------------+
+| “51265\\_d1.tif”          | “2009-07-09”              | “P-12345”          | 2750                    |
++---------------------------+---------------------------+--------------------+-------------------------+
 
 After the first row of header information (the column names), the first
-image-specific row specifies the file, “2009-07-08/04923\_d1.tif” for
+image-specific row specifies the file, “2009-07-08/04923\\_d1.tif” for
 the FITC image (2009-07-08 is the name of the subfolder that contains
 the image, relative to the Default Input Folder). The plate metadata is
 “P-12345” and the NaCl titration used in the well is 750 uM. The second
-image-specific row has the values “2009-07-09/51265\_d1.tif”, “P-12345”
+image-specific row has the values “2009-07-09/51265\\_d1.tif”, “P-12345”
 and 2750 uM. The NaCl titration for the image is available for modules
 that use numeric metadata, such as **CalculateStatistics**; “Titration”
-will be the category and “NaCl\_uM” will be the measurement.
+will be the category and “NaCl\\_uM” will be the measurement.
 
 Using metadata in LoadData
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -244,7 +244,7 @@ To produce a CSV file containing image location and metadata from a
    updated periodically via queries to a laboratory information
    management system (LIMS) database.
 -  The complete image location and metadata is written to a CSV file
-   where the headers can easily be formatted to match **LoadData**\ ’s
+   where the headers can easily be formatted to match **LoadData**\\ ’s
    input requirements (see column descriptions above). Single plates
    split across multiple directories (which often occurs in MetaXpress)
    are written to separate files and then merged, thereby removing the
@@ -325,7 +325,7 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             True,
             doc="""\
 Select *{YES}* to have **LoadData** load images based on the
-*Image\_FileName* column and the *Image\_PathName* column (if specified).
+*Image\\_FileName* column and the *Image\\_PathName* column (if specified).
 """.format(
                 **{"YES": "Yes"}
             ),
@@ -368,7 +368,7 @@ the following options:
 
 -  *Default Input Folder:* Use the Default Input Folder.
 -  *Default Output Folder:* Use the Default Output Folder.
--  *None:* You have an *Image\_PathName* field that supplies an absolute
+-  *None:* You have an *Image\\_PathName* field that supplies an absolute
    path.
 -  *Elsewhere…*: Use a particular folder you specify.""",
         )
@@ -396,7 +396,7 @@ separately, and see the **Groups** module for other examples.
 Select the tags by which you want to group the image files. You can
 select multiple tags. For example, if a set of images had metadata for
 “Run”, “Plate”, “Well”, and “Site”, selecting *Run* and *Plate* will
-create groups containing images that share the same [*Run*,\ *Plate*]
+create groups containing images that share the same [*Run*,\\ *Plate*]
 pair of tags.""",
         )
 

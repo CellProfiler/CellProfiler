@@ -249,7 +249,7 @@ skel               MorphologicalSkeleton
 tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 =================  =========================  ===========  =======================
 
-\* Available as a `CellProfiler plugin <http://github.com/CellProfiler/CellProfiler-plugins>`_.
+\\* Available as a `CellProfiler plugin <http://github.com/CellProfiler/CellProfiler-plugins>`_.
 """
 
 import logging

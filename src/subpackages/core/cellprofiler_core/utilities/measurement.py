@@ -108,7 +108,7 @@ def find_metadata_tokens(pattern):
     pattern - a regexp-like pattern that specifies how to find
               metadata in a string. Each token has the form:
               "(?<METADATA_TAG>...match-exp...)" (matlab-style) or
-              "\g<METADATA_TAG>" (Python-style replace)
+              "\\g<METADATA_TAG>" (Python-style replace)
               "(?P<METADATA_TAG>...match-exp..)" (Python-style search)
     """
     result = []
@@ -130,8 +130,8 @@ def extract_metadata(pattern, text):
 
     pattern - a regexp that specifies how to find
               metadata in a string. Each token has the form:
-              "\(?<METADATA_TAG>...match-exp...\)" (matlab-style) or
-              "\(?P<METADATA_TAG>...match-exp...\)" (Python-style)
+              "\\(?<METADATA_TAG>...match-exp...\\)" (matlab-style) or
+              "\\(?P<METADATA_TAG>...match-exp...\\)" (Python-style)
     text - text to be searched
 
     We do a little fixup in here to change Matlab searches to Python ones

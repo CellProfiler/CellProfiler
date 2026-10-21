@@ -52,7 +52,7 @@ Measurements made by this module
 
 **Object measurements:**
 
--  *Location\_X, Location\_Y:* Pixel (*X,Y*) coordinates of the center
+-  *Location\\_X, Location\\_Y:* Pixel (*X,Y*) coordinates of the center
    of mass of the expanded/shrunken objects.
 """.format(
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}

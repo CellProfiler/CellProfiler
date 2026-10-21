@@ -1071,7 +1071,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
         self.assertEqual(self.hdf_file["index"][0, 0], 0)
         self.assertEqual(self.hdf_file["index"][0, 1], 3)
-        self.assertEqual(self.hdf_file["data"][:].tostring().decode("utf-8"), "foo")
+        self.assertEqual(self.hdf_file["data"][:].tobytes().decode("utf-8"), "foo")
 
     def test_02_02_set_none(self):
         a = H5DICT.VStringArray(self.hdf_file)
@@ -1090,7 +1090,7 @@ class TestVStringArray(HDF5DictTessstBase):
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
             ]
-            .tostring()
+            .tobytes()
             .decode("utf-8"),
             "hu",
         )
@@ -1105,7 +1105,7 @@ class TestVStringArray(HDF5DictTessstBase):
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
             ]
-            .tostring()
+            .tobytes()
             .decode("utf-8"),
             "whoops",
         )
@@ -1245,7 +1245,7 @@ class TestVStringArray(HDF5DictTessstBase):
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [
-            chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
+            chars[i:j].tobytes().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
         ]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings)
@@ -1285,7 +1285,7 @@ class TestVStringArray(HDF5DictTessstBase):
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [
-            chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
+            chars[i:j].tobytes().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
         ]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings[:50])

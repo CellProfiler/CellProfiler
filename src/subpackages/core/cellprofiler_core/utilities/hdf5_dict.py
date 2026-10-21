@@ -1958,7 +1958,7 @@ class VStringArray(object):
                 return None
             elif begin == end:
                 return ""
-            retval = self.data[begin:end].tostring()
+            retval = self.data[begin:end].tobytes()
             if retval and isinstance(retval, bytes):
                 retval = retval.decode("utf-8")
             return retval
@@ -1989,7 +1989,7 @@ class VStringArray(object):
                 if begin > end
                 else ""
                 if begin == end
-                else data[begin:end].tostring().decode()
+                else data[begin:end].tobytes().decode()
             )
 
     def set_all(self, strings):
@@ -2374,7 +2374,7 @@ class StringReferencer(object):
         ]
         s = (
             self.data[i, data_off : (data_off + data_len)]
-            .data.obj.tostring()
+            .data.obj.tobytes()
             .decode("utf-8")
         )
         return s

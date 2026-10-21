@@ -75,7 +75,7 @@ setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
 
 
 def infer_hdf5_type(val):
-    if isinstance(val, str) or numpy.sctype2char(numpy.asanyarray(val).dtype) == "S":
+    if isinstance(val, str) or numpy.asanyarray(val).dtype.char == "S":
         return h5py.special_dtype(vlen=str)
     if all(isinstance(v, str) for v in val):
         return h5py.string_dtype()
@@ -2130,7 +2130,7 @@ class VStringArray(object):
                 for idx in idx_not_nulls[i:iend]:
                     sbegin = index[idx, 0] - begin
                     send = index[idx, 1] - begin
-                    scat[sbegin:send] = numpy.fromstring(strings[idx], "S1")
+                    scat[sbegin:send] = numpy.frombuffer(strings[idx].encode("utf-8"), "S1").copy()
                 self.data[begin:end] = scat
 
     def bisect_left(self, s):
@@ -2361,7 +2361,7 @@ class StringReferencer(object):
         strings = [
             self.get_unicode_from_block_and_idx(*self.refs[ref, :]) for ref in refs
         ]
-        return [strings[idx] for idx in reverse_indices]
+        return [strings[idx] for idx in reverse_indices.reshape(-1)]
 
     def get_unicode_from_block_and_idx(self, i, j):
         """Return a unicode string given a block and index within the block
@@ -2443,7 +2443,7 @@ class StringReferencer(object):
         # distribute the indices back onto the original input strings
         #
         indices = numpy.array(indices)
-        return indices[reverse_indices]
+        return indices[reverse_indices.reshape(-1)]
 
     def sr_alloc_block(self):
         """Allocate a new block

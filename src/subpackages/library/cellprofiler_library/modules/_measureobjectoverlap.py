@@ -113,7 +113,7 @@ def measure_object_overlap(
         FP_pixels = numpy.zeros((xGT, yGT))
         TN_pixels = numpy.zeros((xGT, yGT))
 
-        def maskimg(mask: List[Tuple[Any, Any]], img: NDArray[numpy.float_]):
+        def maskimg(mask: List[Tuple[Any, Any]], img: NDArray[numpy.float64]):
             for ea in mask:
                 img[ea] = 1
             return img

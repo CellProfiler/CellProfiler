@@ -3,17 +3,6 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-cdef extern from "Python.h":
-    ctypedef int Py_intptr_t
-
-cdef extern from "numpy/arrayobject.h":
-    ctypedef class numpy.ndarray [object PyArrayObject]:
-        cdef char *data
-        cdef Py_intptr_t *dimensions
-        cdef Py_intptr_t *shape        
-        cdef Py_intptr_t *strides
-    cdef int  PyArray_ITEMSIZE(np.ndarray)
-
 np.import_array()
 
 @cython.boundscheck(False)

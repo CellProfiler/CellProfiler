@@ -1917,12 +1917,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -2134,12 +2134,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -3149,12 +3149,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -3253,12 +3253,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[:] = numpy.NaN
+        om[:] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -3331,7 +3331,7 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )

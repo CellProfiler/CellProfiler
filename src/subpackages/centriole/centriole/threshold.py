@@ -507,8 +507,8 @@ def get_background_threshold(image, mask=None):
         return cropped_image[0]
 
     # Only do the histogram between values a bit removed from saturation
-    robust_min = 0.02 * (img_max - img_min) + img_min
-    robust_max = 0.98 * (img_max - img_min) + img_min
+    robust_min = np.float64(0.02) * (img_max - img_min) + img_min
+    robust_max = np.float64(0.98) * (img_max - img_min) + img_min
     nbins = 256
     cropped_image = cropped_image[
         np.logical_and(cropped_image > robust_min, cropped_image < robust_max)
@@ -526,7 +526,7 @@ def get_background_threshold(image, mask=None):
     # to account for the 0.02 at the top and bottom.
     #
     cutoff = (cutoff + 0.02) / 1.04
-    return img_min + cutoff * 2 * (img_max - img_min)
+    return img_min + np.float64(cutoff * 2) * (img_max - img_min)
 
 
 get_background_threshold.args = inspect.getfullargspec(get_background_threshold).args
@@ -577,7 +577,7 @@ def get_robust_background_threshold(
     im = cropped_image if low_chop == 0 else cropped_image[low_chop:hi_chop]
     mean = average_fn(im)
     sd = variance_fn(im)
-    return mean + sd * deviations_above_average
+    return mean + sd * np.asarray(deviations_above_average)[()]
 
 
 get_robust_background_threshold.args = inspect.getfullargspec(

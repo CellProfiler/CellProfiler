@@ -7,8 +7,10 @@ import csv
 import datetime
 import gc
 import hashlib
+import heapq
 import io
 import logging
+import numbers
 import os
 import random
 import re
@@ -3931,12 +3933,59 @@ class PipelineController(object):
                     del cv[i]
                 del features[i]
 
-        class ListCtrlAndWidthMixin(
-            wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin
-        ):
-            pass
+        class ImageSetListCtrl(wx.ListCtrl):
+            """A virtual list of the image sets: it only formats the rows
+            that are on screen, so it's quick to build for any number of
+            image sets"""
 
-        class ChooseImageSetDialog(wx.Dialog, wx.lib.mixins.listctrl.ColumnSorterMixin):
+            def __init__(self, parent):
+                super().__init__(
+                    parent, style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_SINGLE_SEL
+                )
+                # the image number shown in each row, in display order
+                self.image_numbers = sorted(choices.keys())
+                self.sort_column = None
+                self.sort_ascending = True
+                self.SetItemCount(len(self.image_numbers))
+                self.Bind(wx.EVT_LIST_COL_CLICK, self.on_column_click)
+
+            def OnGetItemText(self, item, column):
+                image_number = self.image_numbers[item]
+                if column == 0:
+                    return str(image_number)
+                return str(choices[image_number][column - 1])
+
+            def on_column_click(self, event):
+                column = event.GetColumn()
+                if column == self.sort_column:
+                    self.sort_ascending = not self.sort_ascending
+                else:
+                    self.sort_column = column
+                    self.sort_ascending = True
+
+                def sort_key(image_number):
+                    if column == 0:
+                        value = image_number
+                    else:
+                        value = choices[image_number][column - 1]
+                    # numbers sort by value, ahead of text, and ties sort by
+                    # image number
+                    if isinstance(value, numbers.Number):
+                        return 0, value, "", image_number
+                    return 1, 0, str(value), image_number
+
+                selection = self.GetFirstSelected()
+                if selection != -1:
+                    selected_image_number = self.image_numbers[selection]
+                    self.Select(selection, False)
+                self.image_numbers.sort(key=sort_key, reverse=not self.sort_ascending)
+                if selection != -1:
+                    selection = self.image_numbers.index(selected_image_number)
+                    self.Select(selection)
+                    self.EnsureVisible(selection)
+                self.Refresh()
+
+        class ChooseImageSetDialog(wx.Dialog):
             def __init__(self, parent):
                 dlg_size = get_choose_image_set_frame_size()
                 if dlg_size is None:
@@ -3956,7 +4005,7 @@ class PipelineController(object):
                     wx.EXPAND | wx.ALL,
                     5,
                 )
-                self.list_ctrl = ListCtrlAndWidthMixin(self, style=wx.LC_REPORT)
+                self.list_ctrl = ImageSetListCtrl(self)
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetFullTextExtent("Image #")[0]
                 for i, f in enumerate(features):
@@ -3969,40 +4018,20 @@ class PipelineController(object):
                     else:
                         name = f[(len(C_PATH_NAME) + 1) :] + " folder"
                     self.list_ctrl.InsertColumn(i + 1, name)
-                    width = 0
-                    for row in list(choices.values()):
-                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(str(row[i]))
-                        if w > width:
-                            width = w
+                    # Measuring every value is slow for many image sets, and
+                    # the widest values are among the longest ones
+                    longest = heapq.nlargest(
+                        20, (str(row[i]) for row in choices.values()), key=len
+                    )
+                    width = max(
+                        [self.list_ctrl.GetFullTextExtent(text)[0] for text in longest],
+                        default=0,
+                    )
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
                     total_width += width + 25
                 total_width += 30
                 self.list_ctrl.SetMinSize(
                     wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight())
-                )
-                self.itemDataMap = dict(
-                    [
-                        (
-                            k,
-                            [
-                                "%06d" % v
-                                if isinstance(v, int)
-                                else "%020.10f" % v
-                                if isinstance(v, float)
-                                else str(v)
-                                for v in [k] + choices[k]
-                            ],
-                        )
-                        for k in choices
-                    ]
-                )
-
-                for image_number in sorted(choices.keys()):
-                    row = [str(image_number)] + [str(x) for x in choices[image_number]]
-                    pos = self.list_ctrl.Append(row)
-                    self.list_ctrl.SetItemData(pos, image_number)
-                wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(
-                    self, self.list_ctrl.GetColumnCount()
                 )
                 super_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
                 super_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 5)
@@ -4026,9 +4055,6 @@ class PipelineController(object):
 
                 event.Skip(True)
 
-            def GetListCtrl(self):
-                return self.list_ctrl
-
         with ChooseImageSetDialog(self.__frame) as dialog:
             if self.__within_group_index < len(choices):
                 dialog.list_ctrl.Select(self.__within_group_index)
@@ -4039,7 +4065,7 @@ class PipelineController(object):
                 selection = dialog.list_ctrl.GetFirstSelected()
                 if selection == -1:
                     return
-                image_number = dialog.list_ctrl.GetItemData(selection)
+                image_number = dialog.list_ctrl.image_numbers[selection]
                 self.__debug_measurements.next_image_set(image_number)
                 self.__pipeline_list_view.reset_debug_module()
                 for i, (grouping, image_numbers) in enumerate(self.__groupings):

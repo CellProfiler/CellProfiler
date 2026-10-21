@@ -78,10 +78,10 @@ def crop_image_pair_and_object_similarly(
     # Code below is used for the Costes' automated thresholding
     #
     # im1_mask = im1_mask
-    im1_pixel_count = np.product(im1_pixel_data.shape)
+    im1_pixel_count = np.prod(im1_pixel_data.shape)
     im2_pixel_data = im2_pixel_data
     # im2_mask = im2_mask
-    im2_pixel_count = np.product(im2_pixel_data.shape)
+    im2_pixel_count = np.prod(im2_pixel_data.shape)
     #
     # Crop the larger image similarly to the smaller one
     #

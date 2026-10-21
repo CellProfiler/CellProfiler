@@ -1170,7 +1170,7 @@ If "*{NO}*" is selected, the following settings are used:
                     ["90th pctile diameter", "%.1f pixels" % high_diameter]
                 )
                 object_area = numpy.sum(areas)
-                total_area = numpy.product(labeled_image.shape[:2])
+                total_area = numpy.prod(labeled_image.shape[:2])
                 statistics.append(
                     [
                         "Area covered by objects",

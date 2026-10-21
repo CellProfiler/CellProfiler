@@ -12,7 +12,7 @@ if NP_MAJOR_VERSION >= 2:
     np_Inf = np.inf
 else:
     # NumPy 1.x aliases
-    np_product = np.product
+    np_product = np.prod
     np_cumproduct = np.cumproduct
     np_NaN = np.NaN
     np_Inf = np.Inf 

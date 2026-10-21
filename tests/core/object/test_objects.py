@@ -408,8 +408,8 @@ class TestObjects:
         y = cellprofiler_core.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 0
-        assert numpy.product(parents_of_children.shape) == 0
+        assert numpy.prod(children_per_parent.shape) == 0
+        assert numpy.prod(parents_of_children.shape) == 0
 
     def test_05_02_relate_zero_parents_one_child(self):
         x = cellprofiler_core.object.Objects()
@@ -419,8 +419,8 @@ class TestObjects:
         labels[3:6, 3:6] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 0
-        assert numpy.product(parents_of_children.shape) == 1
+        assert numpy.prod(children_per_parent.shape) == 0
+        assert numpy.prod(parents_of_children.shape) == 1
         assert parents_of_children[0] == 0
 
     def test_05_03_relate_one_parent_no_children(self):
@@ -431,9 +431,9 @@ class TestObjects:
         y = cellprofiler_core.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 1
+        assert numpy.prod(children_per_parent.shape) == 1
         assert children_per_parent[0] == 0
-        assert numpy.product(parents_of_children.shape) == 0
+        assert numpy.prod(parents_of_children.shape) == 0
 
     def test_05_04_relate_one_parent_one_child(self):
         x = cellprofiler_core.object.Objects()
@@ -443,9 +443,9 @@ class TestObjects:
         y = cellprofiler_core.object.Objects()
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 1
+        assert numpy.prod(children_per_parent.shape) == 1
         assert children_per_parent[0] == 1
-        assert numpy.product(parents_of_children.shape) == 1
+        assert numpy.prod(parents_of_children.shape) == 1
         assert parents_of_children[0] == 1
 
     def test_05_05_relate_two_parents_one_child(self):
@@ -459,10 +459,10 @@ class TestObjects:
         labels[3:6, 5:9] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 2
+        assert numpy.prod(children_per_parent.shape) == 2
         assert children_per_parent[0] == 0
         assert children_per_parent[1] == 1
-        assert numpy.product(parents_of_children.shape) == 1
+        assert numpy.prod(parents_of_children.shape) == 1
         assert parents_of_children[0] == 2
 
     def test_05_06_relate_one_parent_two_children(self):
@@ -476,9 +476,9 @@ class TestObjects:
         labels[3:6, 7:9] = 2
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        assert numpy.product(children_per_parent.shape) == 1
+        assert numpy.prod(children_per_parent.shape) == 1
         assert children_per_parent[0] == 2
-        assert numpy.product(parents_of_children.shape) == 2
+        assert numpy.prod(parents_of_children.shape) == 2
         assert parents_of_children[0] == 1
         assert parents_of_children[1] == 1
 

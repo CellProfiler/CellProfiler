@@ -113,13 +113,13 @@ def test_test_zero_objects():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 0
+    assert numpy.prod(location_center_x.shape) == 0
     assert "Location_Center_Y" in measurements.get_feature_names("my_object")
     location_center_y = measurements.get_current_measurement(
         "my_object", "Location_Center_Y"
     )
     assert isinstance(location_center_y, numpy.ndarray)
-    assert numpy.product(location_center_y.shape) == 0
+    assert numpy.prod(location_center_y.shape) == 0
 
 
 def test_test_zero_objects_wa_in_lo_in():
@@ -294,7 +294,7 @@ def test_test_one_object():
         "my_object", "Location_Center_Y"
     )
     assert isinstance(location_center_y, numpy.ndarray)
-    assert numpy.product(location_center_y.shape) == 1
+    assert numpy.prod(location_center_y.shape) == 1
     assert location_center_y[0] > 8
     assert location_center_y[0] < 12
     assert "Location_Center_X" in measurements.get_feature_names("my_object")
@@ -302,7 +302,7 @@ def test_test_one_object():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 1
+    assert numpy.prod(location_center_x.shape) == 1
     assert location_center_x[0] > 13
     assert location_center_x[0] < 16
     columns = x.get_measurement_columns(pipeline)
@@ -358,7 +358,7 @@ def test_test_two_objects():
         "my_object", "Location_Center_Y"
     )
     assert isinstance(location_center_y, numpy.ndarray)
-    assert numpy.product(location_center_y.shape) == 2
+    assert numpy.prod(location_center_y.shape) == 2
     assert location_center_y[0] > 8
     assert location_center_y[0] < 12
     assert location_center_y[1] > 28
@@ -368,7 +368,7 @@ def test_test_two_objects():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 2
+    assert numpy.prod(location_center_x.shape) == 2
     assert location_center_x[0] > 33
     assert location_center_x[0] < 37
     assert location_center_x[1] > 13
@@ -423,7 +423,7 @@ def test_test_threshold_range():
         "my_object", "Location_Center_Y"
     )
     assert isinstance(location_center_y, numpy.ndarray)
-    assert numpy.product(location_center_y.shape) == 1
+    assert numpy.prod(location_center_y.shape) == 1
     assert location_center_y[0] > 8
     assert location_center_y[0] < 12
     assert "Location_Center_X" in measurements.get_feature_names("my_object")
@@ -431,7 +431,7 @@ def test_test_threshold_range():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 1
+    assert numpy.prod(location_center_x.shape) == 1
     assert location_center_x[0] > 33
     assert location_center_x[0] < 36
 
@@ -1397,7 +1397,7 @@ def test_discard_large():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 1
+    assert numpy.prod(location_center_x.shape) == 1
 
 
 def test_keep_large():
@@ -1442,7 +1442,7 @@ def test_keep_large():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 2
+    assert numpy.prod(location_center_x.shape) == 2
 
 
 def test_discard_small():
@@ -1493,7 +1493,7 @@ def test_discard_small():
         "my_object", "Location_Center_X"
     )
     assert isinstance(location_center_x, numpy.ndarray)
-    assert numpy.product(location_center_x.shape) == 1
+    assert numpy.prod(location_center_x.shape) == 1
 
 
 def test_regression_diagonal():

@@ -473,7 +473,7 @@ is applied before other operations.""",
         masks = [image.mask if image.has_mask else None for image in images]
 
         # Crop all of the images similarly
-        smallest = numpy.argmin([numpy.product(pd.shape) for pd in image_operands])
+        smallest = numpy.argmin([numpy.prod(pd.shape) for pd in image_operands])
         smallest_image = images[smallest]
         for i in [x for x in range(len(images)) if x != smallest]:
             image_operands[i] = smallest_image.crop_image_similarly(image_operands[i])

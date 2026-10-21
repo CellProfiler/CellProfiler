@@ -180,7 +180,7 @@ class Module:
         for i in range(0, setting_count):
             value_cell = settings[VARIABLE_VALUES][idx, i]
             if isinstance(value_cell, numpy.ndarray):
-                if numpy.product(value_cell.shape) == 0:
+                if numpy.prod(value_cell.shape) == 0:
                     setting_values.append("")
                 else:
                     setting_values.append(str(value_cell[0]))

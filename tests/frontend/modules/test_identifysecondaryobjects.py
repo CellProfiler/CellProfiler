@@ -146,7 +146,7 @@ def test_zeros_propagation():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 0
     columns = module.get_measurement_columns(workspace.pipeline)
     for object_name in (
@@ -178,7 +178,7 @@ def test_one_object_propagation():
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 1
     expected = numpy.zeros((10, 10), int)
     expected[2:7, 2:7] = 1
@@ -214,7 +214,7 @@ def test_two_objects_propagation_image():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 2
     objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 10), int)
@@ -261,7 +261,7 @@ def test_two_objects_propagation_distance():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 2
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 20), int)
@@ -298,7 +298,7 @@ def test_zeros_watershed_gradient():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 0
 
 
@@ -336,7 +336,7 @@ def test_one_object_watershed_gradient():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 1
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 10), int)
@@ -344,11 +344,11 @@ def test_one_object_watershed_gradient():
     assert numpy.all(objects_out.segmented == expected)
     assert "Location_Center_X" in m.get_feature_names(OUTPUT_OBJECTS_NAME)
     values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-    assert numpy.product(values.shape) == 1
+    assert numpy.prod(values.shape) == 1
     assert values[0] == 4
     assert "Location_Center_Y" in m.get_feature_names(OUTPUT_OBJECTS_NAME)
     values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-    assert numpy.product(values.shape) == 1
+    assert numpy.prod(values.shape) == 1
     assert values[0] == 4
 
 
@@ -389,7 +389,7 @@ def test_two_objects_watershed_gradient():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 2
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 20), int)
@@ -426,7 +426,7 @@ def test_zeros_watershed_image():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 0
 
 
@@ -464,7 +464,7 @@ def test_one_object_watershed_image():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 1
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 10), int)
@@ -510,7 +510,7 @@ def test_two_objects_watershed_image():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 2
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 20), int)
@@ -547,7 +547,7 @@ def test_zeros_distance_n():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 0
 
 
@@ -581,7 +581,7 @@ def test_one_object_distance_n():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 1
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 10), int)
@@ -623,7 +623,7 @@ def test_two_objects_distance_n():
     assert "Image" in m.get_object_names()
     assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
     counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
+    assert numpy.prod(counts.shape) == 1
     assert counts == 2
     objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
     expected = numpy.zeros((10, 20), int)

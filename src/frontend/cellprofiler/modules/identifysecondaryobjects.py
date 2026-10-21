@@ -705,7 +705,7 @@ segmentation.""",
         if self.show_window:
             object_area = numpy.sum(segmented_out > 0)
             workspace.display_data.object_pct = (
-                100 * object_area / numpy.product(segmented_out.shape)
+                100 * object_area / numpy.prod(segmented_out.shape)
             )
             workspace.display_data.img = img
             workspace.display_data.segmented_out = segmented_out

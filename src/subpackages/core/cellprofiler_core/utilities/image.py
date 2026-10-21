@@ -269,7 +269,7 @@ def generate_presigned_url(url):
         client = boto3.client("s3")
 
         bucket_name, filename = (
-            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
+            re.compile("s3://([\\w\\d\\-.]+)/(.*)").search(url).groups()
         )
 
         url = client.generate_presigned_url(
@@ -344,7 +344,7 @@ def download_to_temp_file(url):
         # Handle Amazon Web Services URLs.
         if scheme == 's3':
             client = boto3.client('s3')
-            bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+            bucket_name, key = re.compile('s3://([\\w\\d\\-\\.]+)/(.*)').search(url).groups()
             # Get pre-signed URL.
             url = client.generate_presigned_url(
                 'get_object',

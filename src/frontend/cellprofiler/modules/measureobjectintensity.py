@@ -66,13 +66,13 @@ Measurements made by this module
 -  *MedianIntensity:* The median intensity value within the object.
 -  *MADIntensity:* The median absolute deviation (MAD) value of the
    intensities within the object. The MAD is defined as the
-   median(\|x\ :sub:`i` - median(x)\|).
+   median(\\|x\\ :sub:`i` - median(x)\\|).
 -  *UpperQuartileIntensity:* The intensity value of the pixel for which
    75% of the pixels in the object have lower values.
--  *Location\_CenterMassIntensity\_X, Location\_CenterMassIntensity\_Y:*
+-  *Location\\_CenterMassIntensity\\_X, Location\\_CenterMassIntensity\\_Y:*
    The (X,Y) coordinates of the intensity weighted centroid (=
    center of mass = first moment) of all pixels within the object.
--  *Location\_MaxIntensity\_X, Location\_MaxIntensity\_Y:* The
+-  *Location\\_MaxIntensity\\_X, Location\\_MaxIntensity\\_Y:* The
    (X,Y) coordinates of the pixel with the maximum intensity within the
    object.
 

@@ -480,11 +480,11 @@ You should choose as **Base image folder** the input folder that has the structu
 to mirror in the output folder. 
 
 Consider an example where your input images are stored in a nested folder structure of 
-"images\/experiment-name\/plate-name" (i.e., your files are in folders for each plate, nested
+"images\\/experiment-name\\/plate-name" (i.e., your files are in folders for each plate, nested
 inside of folders for each experiment, nested in a parent folder called "images"). 
 If you select the base image folder to be **images**, **SaveImages** will go to your "Output file
-location" and save images in subfolders "experiment-name\/plate-name" that corresponds to each 
-input image. If the base image folder chosen is one level deeper at "images\/experiment-name", 
+location" and save images in subfolders "experiment-name\\/plate-name" that corresponds to each 
+input image. If the base image folder chosen is one level deeper at "images\\/experiment-name", 
 **SaveImages** will store images in subfolders for each "plate-name" they belong to.
 
 **Warning**: Do not select the same folder you selected for "Output file location" as this can lead

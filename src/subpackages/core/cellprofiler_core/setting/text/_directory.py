@@ -190,7 +190,7 @@ class Directory(Text):
     def alter_for_create_batch_files(self, fn_alter_path):
         """Call this to alter the setting appropriately for batch execution"""
         custom_path = self.custom_path
-        if custom_path.startswith("\g<") and sys.platform.startswith("win"):
+        if custom_path.startswith("\\g<") and sys.platform.startswith("win"):
             # So ugly, the "\" sets us up for the root directory during
             # os.path.join, so we need r".\\" at start to fake everyone out
             custom_path = r".\\" + custom_path

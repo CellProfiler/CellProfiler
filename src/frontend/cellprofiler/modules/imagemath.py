@@ -121,9 +121,9 @@ last, e.g., for “Divide”, (Image1 / Image2) / Image3
    the darkest color the brightest and vice-versa. Note that if a
    mask has been applied to the image, the mask will also be inverted.
 -  *{O_LOG_TRANSFORM}:* Log transforms each pixel’s intensity. The
-   actual function is log\ :sub:`2`\ (image + 1), transforming values
+   actual function is log\\ :sub:`2`\\ (image + 1), transforming values
    from 0 to 1 into values from 0 to 1.
--  *{O_LOG_TRANSFORM_LEGACY}:* Log\ :sub:`2` transform for backwards
+-  *{O_LOG_TRANSFORM_LEGACY}:* Log\\ :sub:`2` transform for backwards
    compatibility.
 -  *{O_NONE}:* This option is useful if you simply want to select some
    of the later options in the module, such as adding, multiplying, or

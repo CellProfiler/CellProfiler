@@ -192,8 +192,8 @@ row is the header; this names the file’s columns. Each subsequent row
 represents a vertex in the skeleton graph: either a trunk, a
 branchpoint or an endpoint. The file has the following columns:
 
--  *image\_number:* The image number of the associated image.
--  *vertex\_number:* The number of the vertex within the image.
+-  *image\\_number:* The image number of the associated image.
+-  *vertex\\_number:* The number of the vertex within the image.
 -  *i:* The I coordinate of the vertex.
 -  *j:* The J coordinate of the vertex.
 -  *label:* The label of the seed object associated with the vertex.
@@ -220,14 +220,14 @@ loops). Note that vertices include trunks, branchpoints, and endpoints.
 
 The file has the following columns:
 
--  *image\_number:* The image number of the associated image.
+-  *image\\_number:* The image number of the associated image.
 -  *v1:* The zero-based index into the vertex table of the first vertex
    in the edge.
 -  *v2:* The zero-based index into the vertex table of the second vertex
    in the edge.
 -  *length:* The number of pixels in the path connecting the two
    vertices, including both vertex pixels.
--  *total\_intensity:* The sum of the intensities of the pixels in the
+-  *total\\_intensity:* The sum of the intensities of the pixels in the
    edge, including both vertex pixel intensities.
 """,
         )

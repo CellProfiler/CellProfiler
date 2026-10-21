@@ -57,7 +57,7 @@ Measurements made by this module
    values.
 -  *StdIntensity, MADIntensity:* Standard deviation and median absolute
    deviation (MAD) of pixel intensity values. The MAD is defined as the
-   median(\|x\ :sub:`i` - median(x)\|).
+   median(\\|x\\ :sub:`i` - median(x)\\|).
 -  *MinIntensity, MaxIntensity:* Minimum and maximum of pixel intensity
    values.
 -  *LowerQuartileIntensity:* The intensity value of the pixel for which

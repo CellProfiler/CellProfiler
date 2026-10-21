@@ -104,7 +104,7 @@ Measurements made by this module
 -  *Parent:* The identity of the primary object and secondary object
    associated with each tertiary object.
 
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the identified tertiary objects.
 
 """.format(

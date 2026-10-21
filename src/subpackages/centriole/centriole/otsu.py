@@ -67,7 +67,7 @@ def otsu(data, min_threshold=None, max_threshold=None, bins=256):
         index_high = len(thresholds) - 1
     else:
         index_high = index + 1
-    return constrain((thresholds[index_low] + thresholds[index_high]) / 2)
+    return constrain((thresholds[index_low] + thresholds[index_high]) / np.float64(2))
 
 
 def entropy(data, bins=256):
@@ -119,7 +119,7 @@ def entropy(data, bins=256):
         index_high = len(thresholds) - 1
     else:
         index_high = index + 1
-    return (thresholds[index_low] + thresholds[index_high]) / 2
+    return (thresholds[index_low] + thresholds[index_high]) / np.float64(2)
 
 
 def otsu3(data, min_threshold=None, max_threshold=None, bins=128):

@@ -412,7 +412,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
         # 16-bit image
         # deal with the endianness explicitly... I'm not sure
         # why PIL doesn't get this right.
-        imgdata = np.fromstring(img.tostring(), np.uint8)
+        imgdata = np.frombuffer(img.tostring(), np.uint8).copy()
         imgdata.shape = (int(imgdata.shape[0] / 2), 2)
         imgdata = imgdata.astype(np.uint16)
         hi, lo = (0, 1) if img.tag.prefix == "MM" else (1, 0)

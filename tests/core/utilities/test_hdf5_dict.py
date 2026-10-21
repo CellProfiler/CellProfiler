@@ -695,7 +695,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -720,7 +720,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -748,7 +748,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -874,12 +874,12 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         self.assertFalse(
             object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
@@ -899,12 +899,12 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
         expected = r.randint(0, 10, size=(11, 13))
         object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
@@ -955,33 +955,33 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         self.assertFalse(
             object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 20)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
             expected, object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 6)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)

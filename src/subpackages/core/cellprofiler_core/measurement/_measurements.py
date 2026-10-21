@@ -699,7 +699,7 @@ class Measurements:
                 data = [data]
             data = [
                 d
-                if d is None or d is numpy.NaN
+                if d is None or d is numpy.nan
                 else Measurements.wrap_string(d)
                 if numpy.isscalar(d)
                 else Measurements.wrap_string(d[0])
@@ -883,7 +883,7 @@ class Measurements:
                     #
                     result = numpy.array(
                         [
-                            numpy.NaN
+                            numpy.nan
                             if v is None or len(v) == 0
                             else v[0].decode("utf-8")
                             if len(v) == 1 and isinstance(v[0], bytes)
@@ -1218,19 +1218,19 @@ class Measurements:
                     mean_feature_name = get_agg_measurement_name(
                         AGG_MEAN, object_name, feature
                     )
-                    mean = numpy.mean(values) if values is not None else numpy.NaN
+                    mean = numpy.mean(values) if values is not None else numpy.nan
                     d[mean_feature_name] = mean
                 if AGG_MEDIAN in aggs:
                     median_feature_name = get_agg_measurement_name(
                         AGG_MEDIAN, object_name, feature
                     )
-                    median = numpy.median(values) if values is not None else numpy.NaN
+                    median = numpy.median(values) if values is not None else numpy.nan
                     d[median_feature_name] = median
                 if AGG_STD_DEV in aggs:
                     stdev_feature_name = get_agg_measurement_name(
                         AGG_STD_DEV, object_name, feature
                     )
-                    stdev = numpy.std(values) if values is not None else numpy.NaN
+                    stdev = numpy.std(values) if values is not None else numpy.nan
                     d[stdev_feature_name] = stdev
         return d
 
@@ -1353,7 +1353,7 @@ class Measurements:
         for i, image_number in enumerate(image_numbers):
             for j, column in enumerate(columns):
                 field = column[i]
-                if field is numpy.NaN or field is None:
+                if field is numpy.nan or field is None:
                     field = ""
                 if isinstance(field, str):
                     if isinstance(field, str):

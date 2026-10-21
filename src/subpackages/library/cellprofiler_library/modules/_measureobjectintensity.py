@@ -28,7 +28,7 @@ def get_location_measurements(
         limg: NDArray[Pixel],
         llabels: NDArray[ObjectLabel],
         lindexes: NDArray[numpy.int_],
-        integrated_intensity: NDArray[numpy.float_],
+        integrated_intensity: NDArray[numpy.float64],
 ):
     mesh_z, mesh_y, mesh_x = numpy.mgrid[
         0 : masked_image_shape[0],
@@ -66,7 +66,7 @@ def get_location_measurements(
     )
 
 
-def get_intensity_measurements(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> Tuple[NDArray[numpy.float_], ...]:
+def get_intensity_measurements(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> Tuple[NDArray[numpy.float64], ...]:
     lcount = measure_object_area_occupied(limg, llabels, lindexes)
     _integrated_intensity = measure_integrated_intensity(limg, llabels, lindexes)
     _mean_intensity = measure_mean_intensity(_integrated_intensity, lcount)
@@ -248,7 +248,7 @@ def measure_object_intensity(
     measurements = LibraryMeasurements()
     statistics: ObjectIntensityStatistics = []
 
-    def add_measurement(feature_name: str, frmt_template: str, measurement_val: NDArray[numpy.float_]):
+    def add_measurement(feature_name: str, frmt_template: str, measurement_val: NDArray[numpy.float64]):
         measurements.add_measurement(object_name, frmt_template % image_name, measurement_val)
 
         statistics.append((

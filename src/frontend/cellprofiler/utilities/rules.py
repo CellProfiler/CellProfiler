@@ -45,7 +45,7 @@ class Rule(object):
         number of categories as indicated by the weights.
         """
         if values is None:
-            values = numpy.array([numpy.NaN])
+            values = numpy.array([numpy.nan])
         elif numpy.isscalar(values):
             values = numpy.array([values])
         score = numpy.zeros((len(values), self.weights.shape[1]), float)
@@ -195,7 +195,7 @@ characters in a column name" setting. """
             score_len = partial_score.shape[0]
             score[:score_len, :] += partial_score[:score_len, :]
             if score.shape[0] > partial_score.shape[0]:
-                score[score_len:, :] = numpy.NAN
+                score[score_len:, :] = numpy.nan
         return score
 
     def get_classes(self):

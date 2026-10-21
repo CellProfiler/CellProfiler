@@ -207,7 +207,7 @@ class Figure(wx.Frame):
                             if window_id not in menu_ids:
                                 break
                         if window_id is None:
-                            window_id = wx.NewId()
+                            window_id = wx.NewIdRef()
                             WINDOW_IDS.append(window_id)
                         assert isinstance(menu, wx.Menu)
                         menu.Append(window_id, title)

@@ -167,8 +167,8 @@ from .workspace_view import WorkspaceView
 
 LOGGER = logging.getLogger(__name__)
 
-RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
-RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
+RECENT_PIPELINE_FILE_MENU_ID = [wx.NewIdRef() for i in range(RECENT_FILE_COUNT)]
+RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewIdRef() for i in range(RECENT_FILE_COUNT)]
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
@@ -1745,9 +1745,9 @@ class PipelineController(object):
             #
             button_sizer = wx.BoxSizer(wx.HORIZONTAL)
             super_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
-            SAVE_ID = wx.NewId()
-            DONT_SAVE_ID = wx.NewId()
-            RETURN_TO_CP_ID = wx.NewId()
+            SAVE_ID = wx.NewIdRef()
+            DONT_SAVE_ID = wx.NewIdRef()
+            RETURN_TO_CP_ID = wx.NewIdRef()
             answer = [RETURN_TO_CP_ID]
             for button_id, text, set_default in (
                 (SAVE_ID, "Save", True),
@@ -2575,7 +2575,7 @@ class PipelineController(object):
                 if module_name in self.module_name_to_menu_id:
                     menu_id = self.module_name_to_menu_id[module_name]
                 else:
-                    menu_id = wx.NewId()
+                    menu_id = wx.NewIdRef()
                     self.module_name_to_menu_id[module_name] = menu_id
                     self.menu_id_to_module_name[menu_id] = module_name
                     self.__frame.Bind(wx.EVT_MENU, self.on_menu_add_module, id=menu_id)
@@ -2591,12 +2591,12 @@ class PipelineController(object):
         for item in menu.GetMenuItems():
             assert isinstance(item, wx.MenuItem)
             self.__frame.Unbind(wx.EVT_MENU, id=item.GetId())
-            ids.append(item.GetId())
+            ids.append(wx.WindowIDRef(item.GetId()))
         for item_id in ids:
             menu.Delete(item_id)
         modules = self.__pipeline.modules(exclude_disabled=False)
         if len(ids) < len(modules):
-            ids += [wx.NewId() for _ in range(len(ids), len(modules))]
+            ids += [wx.NewIdRef() for _ in range(len(ids), len(modules))]
         for item_id, module in zip(ids, modules):
             item = menu.Append(
                 item_id, "#%02d %s" % (module.module_num, module.module_name)

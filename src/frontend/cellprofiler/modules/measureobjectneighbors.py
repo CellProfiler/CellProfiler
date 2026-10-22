@@ -65,6 +65,7 @@ will be positive, but there may not be a corresponding
 """
 
 import matplotlib.cm
+import matplotlib.pyplot
 import numpy
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
@@ -593,4 +594,4 @@ def get_colormap(name):
     """Get colormap, accounting for possible request for default"""
     if name == "Default":
         name = get_default_colormap()
-    return matplotlib.cm.get_cmap(name)
+    return matplotlib.pyplot.get_cmap(name)

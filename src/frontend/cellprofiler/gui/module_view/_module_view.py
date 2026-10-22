@@ -5,6 +5,7 @@ import stat
 import sys
 
 import matplotlib.cm
+import matplotlib.pyplot
 import numpy
 import wx
 import wx.grid
@@ -1211,7 +1212,7 @@ class ModuleView:
                 cmap_name = get_default_colormap()
             else:
                 cmap_name = v.value
-            cm = matplotlib.cm.get_cmap(cmap_name)
+            cm = matplotlib.pyplot.get_cmap(cmap_name)
             sm = matplotlib.cm.ScalarMappable(cmap=cm)
             i, j = numpy.mgrid[0:12, 0:128]
             if cm.N < 128:

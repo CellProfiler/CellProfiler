@@ -1372,6 +1372,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
     def draw(self, labels, ax, object_numbers):
         import matplotlib.cm
+        import matplotlib.pyplot
         import matplotlib.colors
 
         indexer = np.zeros(len(object_numbers) + 1, int)
@@ -1386,7 +1387,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         bits = (indexer & pow_of_2).astype(bool)
         indexer = np.sum(bits.transpose() * (2 ** np.arange(7, -1, -1)), 1)
         recolored_labels = indexer[labels]
-        cm = matplotlib.cm.get_cmap(get_default_colormap())
+        cm = matplotlib.pyplot.get_cmap(get_default_colormap())
         cm.set_bad((0, 0, 0))
         norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(

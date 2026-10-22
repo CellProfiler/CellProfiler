@@ -19,6 +19,7 @@ import scipy
 import scipy.interpolate
 import scipy.sparse
 import matplotlib
+import matplotlib.pyplot
 import math
 from numpy.typing import NDArray
 from centriole.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -811,7 +812,7 @@ def apply_threshold(
 
 
 def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, colormap="jet"):
-    cmap = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.get_cmap(colormap))
+    cmap = matplotlib.cm.ScalarMappable(cmap=matplotlib.pyplot.get_cmap(colormap))
 
     colors = cmap.to_rgba(
         numpy.arange(labels.max() if max_label is None else max_label)

@@ -1,4 +1,5 @@
 import matplotlib.cm
+import matplotlib.pyplot
 import numpy
 import skimage.color
 
@@ -67,7 +68,7 @@ def overlay_labels(pixel_data, labels, opacity=0.7, max_label=None, seed=None):
 
 def _colors(labels, max_label=None, seed=None):
     mappable = matplotlib.cm.ScalarMappable(
-        cmap=matplotlib.cm.get_cmap(get_default_colormap())
+        cmap=matplotlib.pyplot.get_cmap(get_default_colormap())
     )
 
     colors = mappable.to_rgba(

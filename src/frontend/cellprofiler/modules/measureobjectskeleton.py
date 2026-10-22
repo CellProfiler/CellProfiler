@@ -431,6 +431,7 @@ The file has the following columns:
         from matplotlib.axes import Axes
         from matplotlib.lines import Line2D
         import matplotlib.cm
+        import matplotlib.pyplot
 
         if self.wants_objskeleton_graph:
             figure.set_subplots((2, 1))
@@ -457,7 +458,7 @@ The file has the following columns:
             brightness = (brightness - numpy.min(brightness)) / (
                 numpy.max(brightness) - numpy.min(brightness) + 0.000001
             )
-            cm = matplotlib.cm.get_cmap(get_default_colormap())
+            cm = matplotlib.pyplot.get_cmap(get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)
             for idx in range(len(edge_graph["v1"])):

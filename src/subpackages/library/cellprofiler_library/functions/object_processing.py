@@ -3,6 +3,7 @@ from numpy.typing import NDArray
 import scipy.ndimage
 import skimage.morphology
 import matplotlib.cm
+import matplotlib.pyplot
 import mahotas
 import centriole.cpmorphology
 from typing import Optional, Literal, Tuple, Union, List, Dict, Any
@@ -1037,7 +1038,7 @@ def image_mode_color(
     else:
         cm_name = colormap_value
 
-    cm = matplotlib.cm.get_cmap(cm_name)
+    cm = matplotlib.pyplot.get_cmap(cm_name)
 
     mapper = matplotlib.cm.ScalarMappable(cmap=cm)
 

@@ -1,3 +1,4 @@
+import contextlib
 import bisect
 import datetime
 import gc
@@ -281,79 +282,80 @@ class Pipeline:
         self.__undo_stack = []
         self.__undo_start = None
 
-        filename = None
+        with contextlib.ExitStack() as stack:
+            filename = None
 
-        if hasattr(fd_or_filename, "seek") and hasattr(fd_or_filename, "read"):
-            fd = fd_or_filename
-            needs_close = False
-        elif hasattr(fd_or_filename, "read") and hasattr(fd_or_filename, "url"):
-            # This is a URL file descriptor. Read into a StringIO so that
-            # seek is available.
-            fd = io.StringIO()
-            while True:
-                text = fd_or_filename.read()
-                if len(text) == 0:
-                    break
-                fd.write(text)
-            fd.seek(0)
-            needs_close = False
-        elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename, "r", encoding="utf-8")
-            # Verify that we can read from the file in utf-8 mode
-            try:
-                fd.read()
+            if hasattr(fd_or_filename, "seek") and hasattr(fd_or_filename, "read"):
+                fd = fd_or_filename
+                needs_close = False
+            elif hasattr(fd_or_filename, "read") and hasattr(fd_or_filename, "url"):
+                # This is a URL file descriptor. Read into a StringIO so that
+                # seek is available.
+                fd = io.StringIO()
+                while True:
+                    text = fd_or_filename.read()
+                    if len(text) == 0:
+                        break
+                    fd.write(text)
                 fd.seek(0)
-            except UnicodeDecodeError:
-                # Newer pipelines may need unicode encoding
+                needs_close = False
+            elif os.path.exists(fd_or_filename):
+                fd = stack.enter_context(open(fd_or_filename, "r", encoding="utf-8"))
+                # Verify that we can read from the file in utf-8 mode
+                try:
+                    fd.read()
+                    fd.seek(0)
+                except UnicodeDecodeError:
+                    # Newer pipelines may need unicode encoding
+                    fd.close()
+                    fd = stack.enter_context(open(fd_or_filename, "r", encoding="unicode_escape"))
+                needs_close = True
+                filename = fd_or_filename
+            else:
+                # Assume is string URL
+                parsed_path = urllib.parse.urlparse(fd_or_filename)
+                if len(parsed_path.scheme) < 2:
+                    raise IOError("Could not find file, " + fd_or_filename)
+                fd = stack.enter_context(urllib.request.urlopen(fd_or_filename))
+                return self.load(fd)
+
+            if hasattr(fd, 'name') and fd.name.endswith('.json'):
+                # Load a JSON format pipeline
+                from cellprofiler_core.pipeline.io._v6 import load
+                load(self, fd)
+                # Perform proper pipeline setup after loading.
+                self.__settings = [
+                    self.capture_module_settings(module) for module in
+                    self.modules(False)
+                ]
+                for module in self.modules(False):
+                    module.post_pipeline_load(self)
+                self.notify_listeners(PipelineLoaded())
+                self.__undo_stack = []
+                return
+            if Pipeline.is_pipeline_txt_fd(fd):
+                self.loadtxt(fd)
+                return
+
+            if needs_close:
                 fd.close()
-                fd = open(fd_or_filename, "r", encoding="unicode_escape")
-            needs_close = True
-            filename = fd_or_filename
-        else:
-            # Assume is string URL
-            parsed_path = urllib.parse.urlparse(fd_or_filename)
-            if len(parsed_path.scheme) < 2:
-                raise IOError("Could not find file, " + fd_or_filename)
-            fd = urllib.request.urlopen(fd_or_filename)
-            return self.load(fd)
+            else:
+                fd.seek(0)
 
-        if hasattr(fd, 'name') and fd.name.endswith('.json'):
-            # Load a JSON format pipeline
-            from cellprofiler_core.pipeline.io._v6 import load
-            load(self, fd)
-            # Perform proper pipeline setup after loading.
-            self.__settings = [
-                self.capture_module_settings(module) for module in
-                self.modules(False)
-            ]
-            for module in self.modules(False):
-                module.post_pipeline_load(self)
-            self.notify_listeners(PipelineLoaded())
-            self.__undo_stack = []
-            return
-        if Pipeline.is_pipeline_txt_fd(fd):
-            self.loadtxt(fd)
-            return
-
-        if needs_close:
-            fd.close()
-        else:
-            fd.seek(0)
-
-        if filename is None:
-            fid, filename = tempfile.mkstemp(".h5")
-            fd_out = os.fdopen(fid, "wb")
-            fd_out.write(fd.read())
-            fd_out.close()
-            self.load(filename)
-            os.unlink(filename)
-            return
-        else:
-            m = load_measurements(filename)
-            pipeline_text = m.get_experiment_measurement(M_PIPELINE)
-            pipeline_text = pipeline_text
-            self.load(io.StringIO(pipeline_text))
-            return
+            if filename is None:
+                fid, filename = tempfile.mkstemp(".h5")
+                fd_out = os.fdopen(fid, "wb")
+                fd_out.write(fd.read())
+                fd_out.close()
+                self.load(filename)
+                os.unlink(filename)
+                return
+            else:
+                m = load_measurements(filename)
+                pipeline_text = m.get_experiment_measurement(M_PIPELINE)
+                pipeline_text = pipeline_text
+                self.load(io.StringIO(pipeline_text))
+                return
 
     @staticmethod
     def respond_to_version_mismatch_error(message):

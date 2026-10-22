@@ -1097,7 +1097,7 @@ desired.
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
-                v = m.get_all_measurements(EXPERIMENT, feature_name)
+                v = m.get_measurement(EXPERIMENT, feature_name, m.get_image_numbers())
                 if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 elif isinstance(v, bytes):

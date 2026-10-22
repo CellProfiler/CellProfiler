@@ -431,14 +431,14 @@ def read_graph_file(file_name):
     )
 
     path = os.path.join(temp_dir, file_name)
-    fd = open(path, "r")
-    fields = fd.readline().strip().split(",")
-    dt = numpy.dtype(dict(names=fields, formats=[type_dict[x] for x in fields]))
-    pos = fd.tell()
-    if len(fd.readline()) == 0:
-        return numpy.recarray(0, dt)
-    fd.seek(pos)
-    return numpy.loadtxt(fd, dt, delimiter=",")
+    with open(path, "r") as fd:
+        fields = fd.readline().strip().split(",")
+        dt = numpy.dtype(dict(names=fields, formats=[type_dict[x] for x in fields]))
+        pos = fd.tell()
+        if len(fd.readline()) == 0:
+            return numpy.recarray(0, dt)
+        fd.seek(pos)
+        return numpy.loadtxt(fd, dt, delimiter=",")
 
 
 def test_graph():

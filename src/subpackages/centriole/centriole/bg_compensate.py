@@ -407,28 +407,29 @@ def bg_compensate(img, sigma, splinepoints, scale):
     from PIL import Image
     from centriole.filter import canny
 
-    img = Image.open(img)
-    if img.mode == "I;16":
-        # 16-bit image
-        # deal with the endianness explicitly... I'm not sure
-        # why PIL doesn't get this right.
-        imgdata = np.frombuffer(img.tostring(), np.uint8).copy()
-        imgdata.shape = (int(imgdata.shape[0] / 2), 2)
-        imgdata = imgdata.astype(np.uint16)
-        hi, lo = (0, 1) if img.tag.prefix == "MM" else (1, 0)
-        imgdata = imgdata[:, hi] * 256 + imgdata[:, lo]
-        img_size = list(img.size)
-        img_size.reverse()
-        new_img = imgdata.reshape(img_size)
-        # The magic # for maximum sample value is 281
-        if 281 in img.tag:
-            img = new_img.astype(np.float32) / img.tag[281][0]
-        elif np.max(new_img) < 4096:
-            img = new_img.astype(np.float32) / 4095.0
+    with Image.open(img) as image:
+        img = image
+        if img.mode == "I;16":
+            # 16-bit image
+            # deal with the endianness explicitly... I'm not sure
+            # why PIL doesn't get this right.
+            imgdata = np.frombuffer(img.tobytes(), np.uint8).copy()
+            imgdata.shape = (int(imgdata.shape[0] / 2), 2)
+            imgdata = imgdata.astype(np.uint16)
+            hi, lo = (0, 1) if img.tag.prefix == "MM" else (1, 0)
+            imgdata = imgdata[:, hi] * 256 + imgdata[:, lo]
+            img_size = list(img.size)
+            img_size.reverse()
+            new_img = imgdata.reshape(img_size)
+            # The magic # for maximum sample value is 281
+            if 281 in img.tag:
+                img = new_img.astype(np.float32) / img.tag[281][0]
+            elif np.max(new_img) < 4096:
+                img = new_img.astype(np.float32) / 4095.0
+            else:
+                img = new_img.astype(np.float32) / 65535.0
         else:
-            img = new_img.astype(np.float32) / 65535.0
-    else:
-        img = np.array(img)
+            img = np.array(img)
 
     if len(img.shape) > 2:
         raise ValueError("Image must be grayscale")

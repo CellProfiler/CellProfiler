@@ -2451,23 +2451,23 @@ def test_basic_gct_check():
         assert isinstance(m,cellprofiler_core.measurement.Measurements)
         p, n = os.path.splitext(output_csv_filename)
         output_gct_filename = p + ".gct"
-        fd = open(output_gct_filename, "r")
-        reader = csv.reader(fd, delimiter="\t")
-        row = next(reader)
-        assert len(row) == 1
-        assert row[0] == "#1.2"
-        row = next(reader)
-        assert len(row) == 2
-        assert row[0] == "2"
-        assert row[1] == "2"
-        row = next(reader)
-        assert len(row) == 4
-        assert row[0].lower() == "name"
-        assert row[1].lower() == "description"
-        assert row[2].lower() == "group_length"
-        assert row[3] == metadata_name
-        row = next(reader)
-        assert row[1] == input_dir
+        with open(output_gct_filename, "r") as fd:
+            reader = csv.reader(fd, delimiter="\t")
+            row = next(reader)
+            assert len(row) == 1
+            assert row[0] == "#1.2"
+            row = next(reader)
+            assert len(row) == 2
+            assert row[0] == "2"
+            assert row[1] == "2"
+            row = next(reader)
+            assert len(row) == 4
+            assert row[0].lower() == "name"
+            assert row[1].lower() == "description"
+            assert row[2].lower() == "group_length"
+            assert row[3] == metadata_name
+            row = next(reader)
+            assert row[1] == input_dir
     finally:
         try:
             os.remove(input_filename)

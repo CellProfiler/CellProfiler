@@ -76,6 +76,8 @@ class TestAnalysisWorker(unittest.TestCase):
             self.awthread.stop_heartbeat = True
             self.awthread.join(10000)
             self.assertFalse(self.awthread.is_alive())
+        if self.awthread:
+            self.awthread.up_queue_recv_socket.close()
         self.notify_pub_socket.close()
         self.work_socket.close()
         self.zmq_context.destroy(linger=0)
@@ -155,6 +157,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 aw.exit_thread()
             self.stop_heartbeat = True
             heartbeat_thread.join()
+            up_queue_send_socket.close()
 
         def recv(self, work_socket, timeout=None):
             """Receive a request from the worker
@@ -234,6 +237,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
 
         def do_set_work_socket(aw):
+            aw.work_socket.close()
             aw.work_socket = self.zmq_context.socket(
                 zmq.REQ
             )
@@ -259,6 +263,7 @@ class TestAnalysisWorker(unittest.TestCase):
         temp_socket.setsockopt(zmq.SUBSCRIBE, b"")
         msg = temp_socket.recv()
         assert msg == b"LIVE"
+        temp_socket.close()
 
     @pytest.mark.timeout(10)
     def test_01_02_stop_heartbeat(self):
@@ -272,6 +277,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.cancel()
         msg = temp_socket.recv()
         assert msg == cellprofiler_core.constants.worker.NOTIFY_STOP
+        temp_socket.close()
 
     @pytest.mark.timeout(10)
     def test_02_01_send(self):

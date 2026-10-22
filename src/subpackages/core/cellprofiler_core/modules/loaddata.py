@@ -1,3 +1,4 @@
+import contextlib
 import csv
 import io
 import os
@@ -428,7 +429,7 @@ Enter the row numbers of the first and last row to be processed.""",
             global header_cache
             header_cache = {}
             try:
-                self.open_csv()
+                self.open_csv().close()
             except:
                 pass
 
@@ -474,7 +475,7 @@ safe to press it.""",
                 )
 
         try:
-            self.open_csv()
+            self.open_csv().close()
         except IOError as e:
             import errno
 
@@ -614,14 +615,15 @@ safe to press it.""",
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
-                fd = io.StringIO()
-                while True:
-                    text = url_fd.read()
-                    if isinstance(text, bytes):
-                        text = text.decode()
-                    if len(text) == 0:
-                        break
-                    fd.write(text)
+                with url_fd:
+                    fd = io.StringIO()
+                    while True:
+                        text = url_fd.read()
+                        if isinstance(text, bytes):
+                            text = text.decode()
+                        if len(text) == 0:
+                            break
+                        fd.write(text)
                 fd.seek(0)
                 entry["URLDATA"] = fd.getvalue()
             return fd
@@ -632,28 +634,29 @@ safe to press it.""",
         import wx
         from cellprofiler.gui.utilities.icon import get_cp_icon
 
-        try:
-            fd = self.open_csv()
-        except:
-            wx.MessageBox("Could not read %s" % self.csv_path)
-            return
-        reader = csv.reader(fd)
-        header = next(reader)
-        frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        frame.SetSizer(sizer)
-        list_ctl = wx.ListCtrl(frame, style=wx.LC_REPORT)
-        sizer.Add(list_ctl, 1, wx.EXPAND)
-        for i, field in enumerate(header):
-            list_ctl.InsertColumn(i, field)
-        for line in reader:
-            list_ctl.Append(
-                [s if isinstance(s, str) else s for s in line[: len(header)]]
-            )
-        frame.SetMinSize((640, 480))
-        frame.SetIcon(get_cp_icon())
-        frame.Fit()
-        frame.Show()
+        with contextlib.ExitStack() as stack:
+            try:
+                fd = stack.enter_context(self.open_csv())
+            except:
+                wx.MessageBox("Could not read %s" % self.csv_path)
+                return
+            reader = csv.reader(fd)
+            header = next(reader)
+            frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            frame.SetSizer(sizer)
+            list_ctl = wx.ListCtrl(frame, style=wx.LC_REPORT)
+            sizer.Add(list_ctl, 1, wx.EXPAND)
+            for i, field in enumerate(header):
+                list_ctl.InsertColumn(i, field)
+            for line in reader:
+                list_ctl.Append(
+                    [s if isinstance(s, str) else s for s in line[: len(header)]]
+                )
+            frame.SetMinSize((640, 480))
+            frame.SetIcon(get_cp_icon())
+            frame.Fit()
+            frame.Show()
 
     def get_header(self, do_not_cache=False):
         """Read the header fields from the csv file
@@ -665,10 +668,9 @@ safe to press it.""",
         if "header" in entry:
             return entry["header"]
 
-        fd = self.open_csv(do_not_cache=do_not_cache)
-        reader = csv.reader(fd)
-        header = next(reader)
-        fd.close()
+        with self.open_csv(do_not_cache=do_not_cache) as fd:
+            reader = csv.reader(fd)
+            header = next(reader)
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
 
@@ -728,33 +730,32 @@ safe to press it.""",
         """Load the CSV file at the outset and populate the image set list"""
         if pipeline.in_batch_mode():
             return True
-        fd = self.open_csv()
-        reader = csv.reader(fd)
-        header = [header_to_column(column) for column in next(reader)]
-        if self.wants_rows.value:
-            # skip initial rows
-            rows = []
-            for idx, row in enumerate(reader):
-                if idx + 1 < self.row_range.min:
-                    continue
-                if idx + 1 > self.row_range.max:
-                    break
-                if len(row) == 0:
-                    continue
-                row = [s if isinstance(s, str) else s for s in row]
-                if len(row) != len(header):
-                    raise ValueError(
-                        "Row # %d has the wrong number of elements: %d. Expected %d"
-                        % (idx, len(row), len(header))
-                    )
-                rows.append(row)
-        else:
-            rows = [
-                [s if isinstance(s, str) else s for s in row]
-                for row in reader
-                if len(row) > 0
-            ]
-        fd.close()
+        with self.open_csv() as fd:
+            reader = csv.reader(fd)
+            header = [header_to_column(column) for column in next(reader)]
+            if self.wants_rows.value:
+                # skip initial rows
+                rows = []
+                for idx, row in enumerate(reader):
+                    if idx + 1 < self.row_range.min:
+                        continue
+                    if idx + 1 > self.row_range.max:
+                        break
+                    if len(row) == 0:
+                        continue
+                    row = [s if isinstance(s, str) else s for s in row]
+                    if len(row) != len(header):
+                        raise ValueError(
+                            "Row # %d has the wrong number of elements: %d. Expected %d"
+                            % (idx, len(row), len(header))
+                        )
+                    rows.append(row)
+            else:
+                rows = [
+                    [s if isinstance(s, str) else s for s in row]
+                    for row in reader
+                    if len(row) > 0
+                ]
         #
         # Check for correct # of columns
         #
@@ -1182,160 +1183,161 @@ safe to press it.""",
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements produced by this module"""
-        entry = None
-        try:
-            entry = self.get_cache_info()
-            if "measurement_columns" in entry:
-                return entry["measurement_columns"]
-            fd = self.open_csv()
-            reader = csv.reader(fd)
-            header = [header_to_column(x) for x in next(reader)]
-        except:
-            if entry is not None:
-                entry["measurement_columns"] = []
-            return []
-        previous_columns = pipeline.get_measurement_columns(self)
-        previous_fields = set([x[1] for x in previous_columns if x[0] == "Image"])
-        already_output = [x in previous_fields for x in header]
-        coltypes = [COLTYPE_INTEGER] * len(header)
-        #
-        # Make sure the well_column column type is a string
-        #
-        for i in range(len(header)):
-            if header[i].startswith(C_METADATA + "_") and is_well_column_token(
-                header[i].split("_")[1]
+        with contextlib.ExitStack() as stack:
+            entry = None
+            try:
+                entry = self.get_cache_info()
+                if "measurement_columns" in entry:
+                    return entry["measurement_columns"]
+                fd = stack.enter_context(self.open_csv())
+                reader = csv.reader(fd)
+                header = [header_to_column(x) for x in next(reader)]
+            except:
+                if entry is not None:
+                    entry["measurement_columns"] = []
+                return []
+            previous_columns = pipeline.get_measurement_columns(self)
+            previous_fields = set([x[1] for x in previous_columns if x[0] == "Image"])
+            already_output = [x in previous_fields for x in header]
+            coltypes = [COLTYPE_INTEGER] * len(header)
+            #
+            # Make sure the well_column column type is a string
+            #
+            for i in range(len(header)):
+                if header[i].startswith(C_METADATA + "_") and is_well_column_token(
+                    header[i].split("_")[1]
+                ):
+                    coltypes[i] = COLTYPE_VARCHAR
+                if any(
+                    [
+                        header[i].startswith(x)
+                        for x in (
+                            C_PATH_NAME,
+                            C_FILE_NAME,
+                            C_OBJECTS_FILE_NAME,
+                            C_OBJECTS_PATH_NAME,
+                            C_URL,
+                            C_OBJECTS_URL,
+                        )
+                    ]
+                ):
+                    coltypes[i] = COLTYPE_VARCHAR
+
+            collen = [0] * len(header)
+            key_is_path_or_file_name = [
+                (
+                    key.startswith(C_PATH_NAME)
+                    or key.startswith(C_FILE_NAME)
+                    or key.startswith(C_OBJECTS_FILE_NAME)
+                    or key.startswith(C_OBJECTS_PATH_NAME)
+                )
+                for key in header
+            ]
+            key_is_path_or_url = [
+                (
+                    key.startswith(C_PATH_NAME)
+                    or key.startswith(C_OBJECTS_PATH_NAME)
+                    or key.startswith(C_URL)
+                    or key.startswith(C_OBJECTS_URL)
+                )
+                for key in header
+            ]
+
+            for row in reader:
+                if len(row) > len(header):
+                    row = row[: len(header)]
+                for index, field in enumerate(row):
+                    if already_output[index]:
+                        continue
+                    if (not self.wants_images) and key_is_path_or_file_name[index]:
+                        continue
+                    try:
+                        len_field = len(field)
+                    except TypeError:
+                        field = str(field)
+                        len_field = len(field)
+                    if key_is_path_or_url[index]:
+                        # Account for possible rewrite of the pathname
+                        # in batch data
+                        len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING,)
+                    if coltypes[index] != COLTYPE_VARCHAR:
+                        ldtype = get_loaddata_type(field)
+                        if coltypes[index] == COLTYPE_INTEGER:
+                            coltypes[index] = ldtype
+                        elif coltypes[index] == COLTYPE_FLOAT and ldtype != COLTYPE_INTEGER:
+                            coltypes[index] = ldtype
+
+                    if collen[index] < len(field):
+                        collen[index] = len(field)
+
+            for index in range(len(header)):
+                if coltypes[index] == COLTYPE_VARCHAR:
+                    coltypes[index] = COLTYPE_VARCHAR_FORMAT % collen[index]
+
+            image_names = self.other_providers("imagegroup")
+            result = [
+                ("Image", colname, coltype)
+                for colname, coltype in zip(header, coltypes)
+                if colname not in previous_fields
+            ]
+            if self.wants_images:
+                for feature, coltype in (
+                    (C_URL, COLTYPE_VARCHAR_PATH_NAME,),
+                    (C_PATH_NAME, COLTYPE_VARCHAR_PATH_NAME,),
+                    (C_FILE_NAME, COLTYPE_VARCHAR_FILE_NAME,),
+                    (C_MD5_DIGEST, COLTYPE_VARCHAR_FORMAT % 32,),
+                    (C_SCALING, COLTYPE_FLOAT,),
+                    (C_HEIGHT, COLTYPE_INTEGER,),
+                    (C_WIDTH, COLTYPE_INTEGER,),
+                ):
+                    for image_name in image_names:
+                        measurement = feature + "_" + image_name
+                        if not any([measurement == c[1] for c in result]):
+                            result.append(("Image", measurement, coltype,))
+                #
+                # Add the object features
+                #
+                for object_name in self.get_object_names():
+                    result += get_object_measurement_columns(object_name)
+                    for feature, coltype in (
+                        (C_OBJECTS_URL, COLTYPE_VARCHAR_PATH_NAME,),
+                        (C_OBJECTS_PATH_NAME, COLTYPE_VARCHAR_PATH_NAME,),
+                        (C_OBJECTS_FILE_NAME, COLTYPE_VARCHAR_FILE_NAME,),
+                    ):
+                        mname = C_OBJECTS_URL + "_" + object_name
+                        result.append(("Image", mname, coltype))
+            #
+            # Try to make a well column out of well row and well column
+            #
+            well_column = None
+            well_row_column = None
+            well_col_column = None
+            for column in result:
+                if not column[1].startswith(C_METADATA + "_"):
+                    continue
+                category, feature = column[1].split("_", 1)
+                if is_well_column_token(feature):
+                    well_col_column = column
+                elif is_well_row_token(feature):
+                    well_row_column = column
+                elif feature.lower() == FTR_WELL.lower():
+                    well_column = column
+            if (
+                well_column is None
+                and well_row_column is not None
+                and well_col_column is not None
             ):
-                coltypes[i] = COLTYPE_VARCHAR
-            if any(
-                [
-                    header[i].startswith(x)
-                    for x in (
-                        C_PATH_NAME,
-                        C_FILE_NAME,
-                        C_OBJECTS_FILE_NAME,
-                        C_OBJECTS_PATH_NAME,
-                        C_URL,
-                        C_OBJECTS_URL,
+                length = get_length_from_varchar(well_row_column[2])
+                length += get_length_from_varchar(well_col_column[2])
+                result += [
+                    (
+                        "Image",
+                        "_".join((C_METADATA, FTR_WELL,)),
+                        COLTYPE_VARCHAR_FORMAT % length,
                     )
                 ]
-            ):
-                coltypes[i] = COLTYPE_VARCHAR
-
-        collen = [0] * len(header)
-        key_is_path_or_file_name = [
-            (
-                key.startswith(C_PATH_NAME)
-                or key.startswith(C_FILE_NAME)
-                or key.startswith(C_OBJECTS_FILE_NAME)
-                or key.startswith(C_OBJECTS_PATH_NAME)
-            )
-            for key in header
-        ]
-        key_is_path_or_url = [
-            (
-                key.startswith(C_PATH_NAME)
-                or key.startswith(C_OBJECTS_PATH_NAME)
-                or key.startswith(C_URL)
-                or key.startswith(C_OBJECTS_URL)
-            )
-            for key in header
-        ]
-
-        for row in reader:
-            if len(row) > len(header):
-                row = row[: len(header)]
-            for index, field in enumerate(row):
-                if already_output[index]:
-                    continue
-                if (not self.wants_images) and key_is_path_or_file_name[index]:
-                    continue
-                try:
-                    len_field = len(field)
-                except TypeError:
-                    field = str(field)
-                    len_field = len(field)
-                if key_is_path_or_url[index]:
-                    # Account for possible rewrite of the pathname
-                    # in batch data
-                    len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING,)
-                if coltypes[index] != COLTYPE_VARCHAR:
-                    ldtype = get_loaddata_type(field)
-                    if coltypes[index] == COLTYPE_INTEGER:
-                        coltypes[index] = ldtype
-                    elif coltypes[index] == COLTYPE_FLOAT and ldtype != COLTYPE_INTEGER:
-                        coltypes[index] = ldtype
-
-                if collen[index] < len(field):
-                    collen[index] = len(field)
-
-        for index in range(len(header)):
-            if coltypes[index] == COLTYPE_VARCHAR:
-                coltypes[index] = COLTYPE_VARCHAR_FORMAT % collen[index]
-
-        image_names = self.other_providers("imagegroup")
-        result = [
-            ("Image", colname, coltype)
-            for colname, coltype in zip(header, coltypes)
-            if colname not in previous_fields
-        ]
-        if self.wants_images:
-            for feature, coltype in (
-                (C_URL, COLTYPE_VARCHAR_PATH_NAME,),
-                (C_PATH_NAME, COLTYPE_VARCHAR_PATH_NAME,),
-                (C_FILE_NAME, COLTYPE_VARCHAR_FILE_NAME,),
-                (C_MD5_DIGEST, COLTYPE_VARCHAR_FORMAT % 32,),
-                (C_SCALING, COLTYPE_FLOAT,),
-                (C_HEIGHT, COLTYPE_INTEGER,),
-                (C_WIDTH, COLTYPE_INTEGER,),
-            ):
-                for image_name in image_names:
-                    measurement = feature + "_" + image_name
-                    if not any([measurement == c[1] for c in result]):
-                        result.append(("Image", measurement, coltype,))
-            #
-            # Add the object features
-            #
-            for object_name in self.get_object_names():
-                result += get_object_measurement_columns(object_name)
-                for feature, coltype in (
-                    (C_OBJECTS_URL, COLTYPE_VARCHAR_PATH_NAME,),
-                    (C_OBJECTS_PATH_NAME, COLTYPE_VARCHAR_PATH_NAME,),
-                    (C_OBJECTS_FILE_NAME, COLTYPE_VARCHAR_FILE_NAME,),
-                ):
-                    mname = C_OBJECTS_URL + "_" + object_name
-                    result.append(("Image", mname, coltype))
-        #
-        # Try to make a well column out of well row and well column
-        #
-        well_column = None
-        well_row_column = None
-        well_col_column = None
-        for column in result:
-            if not column[1].startswith(C_METADATA + "_"):
-                continue
-            category, feature = column[1].split("_", 1)
-            if is_well_column_token(feature):
-                well_col_column = column
-            elif is_well_row_token(feature):
-                well_row_column = column
-            elif feature.lower() == FTR_WELL.lower():
-                well_column = column
-        if (
-            well_column is None
-            and well_row_column is not None
-            and well_col_column is not None
-        ):
-            length = get_length_from_varchar(well_row_column[2])
-            length += get_length_from_varchar(well_col_column[2])
-            result += [
-                (
-                    "Image",
-                    "_".join((C_METADATA, FTR_WELL,)),
-                    COLTYPE_VARCHAR_FORMAT % length,
-                )
-            ]
-        entry["measurement_columns"] = result
-        return result
+            entry["measurement_columns"] = result
+            return result
 
     def has_synthetic_well_metadata(self):
         """Determine if we should synthesize a well metadata feature

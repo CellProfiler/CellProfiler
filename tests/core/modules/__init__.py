@@ -244,7 +244,7 @@ def read_example_image(folder, file_name, **kwargs):
 
     **kwargs - any keyword arguments are passed onto load_image
     """
-    import imageio
+    import imageio.v2 as imageio
 
     path = os.path.join(example_images_directory(), folder, file_name)
     maybe_download_example_image([folder], file_name)

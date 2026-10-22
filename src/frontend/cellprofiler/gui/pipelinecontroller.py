@@ -3387,11 +3387,10 @@ class PipelineController(object):
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def sentry_pack_pipeline(self, err_module_name="", err_module_num=0):
-        from sentry_sdk import utils, serializer, push_scope
+        from sentry_sdk import utils, serializer, isolation_scope
         utils.MAX_STRING_LENGTH = 15000
         serializer.MAX_DATABAG_BREADTH = 25
-        # push_scope will attach data to the next event only
-        with push_scope() as scope:
+        with isolation_scope() as scope:
             with io.StringIO() as fp:
                 self.__pipeline.dump(fp, save_image_plane_details=False, sanitize=True)
                 pipeline_parts = fp.getvalue().split("\n\n")

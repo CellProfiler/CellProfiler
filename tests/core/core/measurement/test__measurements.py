@@ -1,3 +1,9 @@
+import numpy
+import pytest
+
+from cellprofiler_core.measurement import Measurements
+
+
 class TestMeasurements:
     def test_close(self):
         pass
@@ -123,7 +129,19 @@ class TestMeasurements:
         pass
 
     def test_get_all_measurements(self):
-        pass
+        measurements = Measurements()
+        try:
+            for number, value in [(7, 1.5), (2, 3.5)]:
+                measurements.add_measurement("Image", "Value", value, image_set_number=number)
+            with pytest.warns(DeprecationWarning, match="get_all_measurements is deprecated"):
+                old = measurements.get_all_measurements("Image", "Value")
+            current = measurements.get_measurement("Image", "Value", measurements.get_image_numbers())
+            assert old.dtype == current.dtype
+            assert old.shape == current.shape
+            assert old.tobytes() == current.tobytes()
+            numpy.testing.assert_array_equal(current, [3.5, 1.5])
+        finally:
+            measurements.close()
 
     def test_add_all_measurements(self):
         pass

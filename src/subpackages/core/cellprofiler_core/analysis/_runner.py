@@ -131,8 +131,8 @@ class Runner:
 
         start_signal = threading.Semaphore(0)
         self.interface_thread = start_daemon_thread(
-            target=self.interface,
-            args=(start_signal,),
+            target=self.boundary.run_in_thread,
+            args=(self.interface, start_signal),
             kwargs=dict(overwrite=overwrite),
             name="AnalysisRunner.interface thread",
         )
@@ -141,8 +141,8 @@ class Runner:
         #
         start_signal.acquire()
         self.jobserver_thread = start_daemon_thread(
-            target=self.jobserver,
-            args=(start_signal, ),
+            target=self.boundary.run_in_thread,
+            args=(self.jobserver, start_signal),
             name="AnalysisRunner.jobserver thread",
         )
         #

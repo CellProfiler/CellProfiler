@@ -128,10 +128,10 @@ class TestMeasurements:
         assert x.get_current_measurement("Image", "Feature") == "Value2"
         assert (x.get_current_measurement("Nuclei", "Feature") == m2).all()
         for a, b in zip(
-            x.get_all_measurements("Image", "Feature"), ["Value1", "Value2"]
+            x.get_measurement("Image", "Feature", x.get_image_numbers()), ["Value1", "Value2"]
         ):
             assert a == b
-        for a, b in zip(x.get_all_measurements("Nuclei", "Feature"), [m1, m2]):
+        for a, b in zip(x.get_measurement("Nuclei", "Feature", x.get_image_numbers()), [m1, m2]):
             assert (a == b).all()
 
     def test_03_03b_MultipleImageSets_arrayinterface(self):
@@ -164,8 +164,8 @@ class TestMeasurements:
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        result = m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature", m.get_image_numbers()
         )
         numpy.testing.assert_equal(result, vals)
 
@@ -200,8 +200,8 @@ class TestMeasurements:
                 six.text_type(vals[image_number - 1]),
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        result = m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature", m.get_image_numbers()
         )
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
@@ -231,8 +231,8 @@ class TestMeasurements:
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        result = m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature", m.get_image_numbers()
         )
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
@@ -262,7 +262,7 @@ class TestMeasurements:
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(OBJECT_NAME, "Feature")
+        result = m.get_measurement(OBJECT_NAME, "Feature", m.get_image_numbers())
         assert all(
             [numpy.all(r == v) and len(r) == len(v) for r, v in zip(result, vals)]
         )

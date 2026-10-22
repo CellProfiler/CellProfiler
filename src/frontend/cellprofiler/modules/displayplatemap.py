@@ -248,22 +248,22 @@ executed.
             m = workspace.get_measurements()
             # Get plates
             plates = list(
-                map(str, m.get_all_measurements(IMAGE, self.plate_name.value),)
+                map(str, m.get_measurement(IMAGE, self.plate_name.value, m.get_image_numbers()),)
             )
             # Get wells
             if self.well_format == WF_NAME:
-                wells = m.get_all_measurements(IMAGE, self.well_name.value)
+                wells = m.get_measurement(IMAGE, self.well_name.value, m.get_image_numbers())
             elif self.well_format == WF_ROWCOL:
                 wells = [
                     "%s%s" % (x, y)
                     for x, y in zip(
-                        m.get_all_measurements(IMAGE, self.well_row.value),
-                        m.get_all_measurements(IMAGE, self.well_col.value),
+                        m.get_measurement(IMAGE, self.well_row.value, m.get_image_numbers()),
+                        m.get_measurement(IMAGE, self.well_col.value, m.get_image_numbers()),
                     )
                 ]
             # Get data to plot
-            data = m.get_all_measurements(
-                self.get_object(), self.plot_measurement.value
+            data = m.get_measurement(
+                self.get_object(), self.plot_measurement.value, m.get_image_numbers()
             )
 
             # Construct a dict mapping plates and wells to lists of measurements

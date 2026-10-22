@@ -188,7 +188,7 @@ class Measurements:
             and isinstance(key[2], slice)
             and key[2] == slice(None, None, None)
         ):
-            return self.get_all_measurements(*key[:2])
+            return self.get_measurement(*key[:2], image_set_number=self.get_image_numbers())
         return self.get_measurement(*key)
 
     def __setitem__(self, key, value):

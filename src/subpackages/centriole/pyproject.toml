@@ -59,16 +59,16 @@ classifiers = [
 dependencies = [
     "deprecation",
     "numpy>=1.18.2",
-    "pillow>=7.1.0,<12",
-    "scikit-image>=0.17.2,<1",
-    "scipy>=1.4.1,!=1.11.0,<2",
+    "pillow>=11.3.0",
+    "scikit-image>=0.24.0",
+    "scipy>=1.13.1",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 build = ["build", "cython", "numpy", "twine"]
 # TODO: should be handled by nox or tox
-test = ["pytest~=7.4.1"]
+test = ["pytest>=8.4.2"]
 
 [project.urls]
 Homepage = "https://cellprofiler.org/"

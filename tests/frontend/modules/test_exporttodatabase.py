@@ -2615,13 +2615,13 @@ class TestExportToDatabase(unittest.TestCase):
         a numpy.float32 to a float.
         """
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        fim = workspace.measurements.get_all_measurements(
-            "Image", FLOAT_IMG_MEASUREMENT
+        fim = workspace.measurements.get_measurement(
+            "Image", FLOAT_IMG_MEASUREMENT, workspace.measurements.get_image_numbers()
         )
         for i in range(len(fim)):
             fim[i] = numpy.float32(fim[i])
-        iim = workspace.measurements.get_all_measurements(
-            "Image", INT_IMG_MEASUREMENT
+        iim = workspace.measurements.get_measurement(
+            "Image", INT_IMG_MEASUREMENT, workspace.measurements.get_image_numbers()
         )
         for i in range(len(iim)):
             iim[i] = numpy.int32(iim[i])

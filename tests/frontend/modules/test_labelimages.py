@@ -81,20 +81,20 @@ def test_label_plate_by_row():
         if i != 0:
             measurements.next_image_set()
         module.run(workspace)
-    sites = measurements.get_all_measurements(
-        "Image", M_SITE
+    sites = measurements.get_measurement(
+        "Image", M_SITE, measurements.get_image_numbers()
     )
-    rows = measurements.get_all_measurements(
-        "Image", M_ROW
+    rows = measurements.get_measurement(
+        "Image", M_ROW, measurements.get_image_numbers()
     )
-    columns = measurements.get_all_measurements(
-        "Image", M_COLUMN
+    columns = measurements.get_measurement(
+        "Image", M_COLUMN, measurements.get_image_numbers()
     )
-    plates = measurements.get_all_measurements(
-        "Image", M_PLATE
+    plates = measurements.get_measurement(
+        "Image", M_PLATE, measurements.get_image_numbers()
     )
-    wells = measurements.get_all_measurements(
-        "Image", M_WELL
+    wells = measurements.get_measurement(
+        "Image", M_WELL, measurements.get_image_numbers()
     )
     for i in range(nimagesets):
         assert sites[i] == (i % 6) + 1
@@ -122,20 +122,20 @@ def test_label_plate_by_column():
         if i != 0:
             measurements.next_image_set()
         module.run(workspace)
-    sites = measurements.get_all_measurements(
-        "Image", M_SITE
+    sites = measurements.get_measurement(
+        "Image", M_SITE, measurements.get_image_numbers()
     )
-    rows = measurements.get_all_measurements(
-        "Image", M_ROW
+    rows = measurements.get_measurement(
+        "Image", M_ROW, measurements.get_image_numbers()
     )
-    columns = measurements.get_all_measurements(
-        "Image", M_COLUMN
+    columns = measurements.get_measurement(
+        "Image", M_COLUMN, measurements.get_image_numbers()
     )
-    plates = measurements.get_all_measurements(
-        "Image", M_PLATE
+    plates = measurements.get_measurement(
+        "Image", M_PLATE, measurements.get_image_numbers()
     )
-    wells = measurements.get_all_measurements(
-        "Image", M_WELL
+    wells = measurements.get_measurement(
+        "Image", M_WELL, measurements.get_image_numbers()
     )
     for i in range(nimagesets):
         assert sites[i] == (i % 6) + 1
@@ -163,20 +163,20 @@ def test_label_many_plates():
         if i != 0:
             measurements.next_image_set()
         module.run(workspace)
-    sites = measurements.get_all_measurements(
-        "Image", M_SITE
+    sites = measurements.get_measurement(
+        "Image", M_SITE, measurements.get_image_numbers()
     )
-    rows = measurements.get_all_measurements(
-        "Image", M_ROW
+    rows = measurements.get_measurement(
+        "Image", M_ROW, measurements.get_image_numbers()
     )
-    columns = measurements.get_all_measurements(
-        "Image", M_COLUMN
+    columns = measurements.get_measurement(
+        "Image", M_COLUMN, measurements.get_image_numbers()
     )
-    plates = measurements.get_all_measurements(
-        "Image", M_PLATE
+    plates = measurements.get_measurement(
+        "Image", M_PLATE, measurements.get_image_numbers()
     )
-    wells = measurements.get_all_measurements(
-        "Image", M_WELL
+    wells = measurements.get_measurement(
+        "Image", M_WELL, measurements.get_image_numbers()
     )
     for i in range(nimagesets):
         assert sites[i] == 1
@@ -202,20 +202,20 @@ def test_multichar_row_names():
         if i != 0:
             measurements.next_image_set()
         module.run(workspace)
-    sites = measurements.get_all_measurements(
-        "Image", M_SITE
+    sites = measurements.get_measurement(
+        "Image", M_SITE, measurements.get_image_numbers()
     )
-    rows = measurements.get_all_measurements(
-        "Image", M_ROW
+    rows = measurements.get_measurement(
+        "Image", M_ROW, measurements.get_image_numbers()
     )
-    columns = measurements.get_all_measurements(
-        "Image", M_COLUMN
+    columns = measurements.get_measurement(
+        "Image", M_COLUMN, measurements.get_image_numbers()
     )
-    plates = measurements.get_all_measurements(
-        "Image", M_PLATE
+    plates = measurements.get_measurement(
+        "Image", M_PLATE, measurements.get_image_numbers()
     )
-    wells = measurements.get_all_measurements(
-        "Image", M_WELL
+    wells = measurements.get_measurement(
+        "Image", M_WELL, measurements.get_image_numbers()
     )
     abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     for i in range(nimagesets):

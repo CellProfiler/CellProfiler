@@ -467,7 +467,7 @@ def test_some_rows():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements("Image", "Test_Measurement")
+    data = m.get_measurement("Image", "Test_Measurement", m.get_image_numbers())
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -492,7 +492,7 @@ def test_img_717():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements("Image", "Test_Measurement")
+    data = m.get_measurement("Image", "Test_Measurement", m.get_image_numbers())
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -512,7 +512,7 @@ def test_alternate_image_start():
 """
     pipeline, module, filename = make_pipeline(csv_text)
     m = pipeline.run(image_set_start=2)
-    data = m.get_all_measurements("Image", "Metadata_Measurement")
+    data = m.get_measurement("Image", "Metadata_Measurement", m.get_image_numbers())
     assert all([data[i - 2] == i for i in range(2, 11)])
     os.remove(filename)
 
@@ -1119,3 +1119,21 @@ class C0(cellprofiler_core.module.Module):
 
     def run(self, workspace):
         self.callback(workspace)
+
+
+@pytest.mark.parametrize("csv_text", ["Image_Value\n1\n2\n", ""])
+def test_column_inference_closes_csv(csv_text, tmp_path, monkeypatch):
+    path = tmp_path / "measurements.csv"
+    pipeline, module, name = make_pipeline(csv_text, str(path))
+    handles = []
+    original_open = module.open_csv
+
+    def open_csv(*args, **kwargs):
+        handle = original_open(*args, **kwargs)
+        handles.append(handle)
+        return handle
+
+    monkeypatch.setattr(module, "open_csv", open_csv)
+    columns = module.get_measurement_columns(pipeline)
+    assert bool(columns) == bool(csv_text)
+    assert handles and all(handle.closed for handle in handles)

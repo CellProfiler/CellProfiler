@@ -1,3 +1,4 @@
+import atexit
 import logging
 import os
 import re
@@ -43,6 +44,7 @@ It'll automatically delete on exit, and we create it early here so that it's
 one of the last objects to get deleted - any opened files must close first.
 """
 CP_TEMP_DIR = tempfile.TemporaryDirectory(prefix='cellprofiler_',)
+atexit.register(CP_TEMP_DIR.cleanup)
 
 
 def convert_image_to_objects(image):

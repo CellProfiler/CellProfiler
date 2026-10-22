@@ -23,7 +23,7 @@ YES          NO           NO
 .. _normalized cross-correlation: http://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
-import imageio
+import imageio.v2 as imageio
 import skimage.feature
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module

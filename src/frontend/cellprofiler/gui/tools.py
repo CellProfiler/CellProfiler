@@ -4,7 +4,7 @@
 import io
 
 import centriole.cpmorphology
-import imageio
+import imageio.v2 as imageio
 import matplotlib
 import matplotlib.figure
 import matplotlib.transforms

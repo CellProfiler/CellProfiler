@@ -198,7 +198,12 @@ def morphological_skeleton_2d(image):
 
 
 def morphological_skeleton_3d(image):
-    return skimage.morphology.skeletonize_3d(image)
+    if image.ndim < 2 or image.ndim > 3:
+        raise ValueError(
+            "skeletonize_3d can only handle 2D or 3D images; "
+            f"got image.ndim = {image.ndim} instead."
+        )
+    return skimage.morphology.skeletonize(image, method="lee")
 
 
 ################################################################################
@@ -1769,7 +1774,7 @@ def fill_holes(image: ImageAny, diameter: float) -> ImageAny:
 
     size = numpy.pi * factor
 
-    return skimage.morphology.remove_small_holes(image, size)
+    return skimage.morphology.remove_small_holes(image.astype(bool, copy=False), size)
 
 ################################################################################
 # ImageMath

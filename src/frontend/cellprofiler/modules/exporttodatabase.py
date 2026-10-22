@@ -2555,9 +2555,9 @@ available:
                         % (str(pixels.dtype))
                     )
                 if pixels.ndim == 2:
-                    im = Image.fromarray((pixels * factor).astype("uint8"), "L")
+                    im = Image.fromarray((pixels * factor).astype("uint8"))
                 elif pixels.ndim == 3:
-                    im = Image.fromarray((pixels * factor).astype("uint8"), "RGB")
+                    im = Image.fromarray((pixels * factor).astype("uint8"))
                 else:
                     raise Exception(
                         'ExportToDatabase only supports saving thumbnails of grayscale or 3-channel images. "%s" was neither.'
@@ -4926,7 +4926,7 @@ CP version : {ver.major}{ver.minor}{ver.micro}\n"""
             if feature.startswith(C_FILE_NAME):
                 names = [
                     name
-                    for name in m.get_all_measurements("Image", feature)
+                    for name in m.get_measurement("Image", feature, m.get_image_numbers())
                     if name is not None
                 ]
                 if len(names) > 0:
@@ -4934,7 +4934,7 @@ CP version : {ver.major}{ver.minor}{ver.micro}\n"""
             elif feature.startswith(C_PATH_NAME):
                 names = [
                     name
-                    for name in m.get_all_measurements("Image", feature)
+                    for name in m.get_measurement("Image", feature, m.get_image_numbers())
                     if name is not None
                 ]
                 if len(names) > 0:

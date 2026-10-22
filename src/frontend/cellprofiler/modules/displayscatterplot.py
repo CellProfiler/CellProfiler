@@ -206,8 +206,8 @@ executed.
         m = workspace.get_measurements()
         if self.x_source.value == self.y_source.value:
             if self.x_source.value == IMAGE:
-                xvals = m.get_all_measurements(IMAGE, self.x_axis.value)
-                yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
+                xvals = m.get_measurement(IMAGE, self.x_axis.value, m.get_image_numbers())
+                yvals = m.get_measurement(IMAGE, self.y_axis.value, m.get_image_numbers())
                 xvals, yvals = numpy.array(
                     [
                         (
@@ -232,7 +232,7 @@ executed.
                 )
         else:
             if self.x_source.value == IMAGE:
-                xvals = m.get_all_measurements(IMAGE, self.x_axis.value)
+                xvals = m.get_measurement(IMAGE, self.x_axis.value, m.get_image_numbers())
                 yvals = m.get_current_measurement(
                     self.get_y_object(), self.y_axis.value
                 )
@@ -241,7 +241,7 @@ executed.
                 xvals = m.get_current_measurement(
                     self.get_x_object(), self.x_axis.value
                 )
-                yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
+                yvals = m.get_measurement(IMAGE, self.y_axis.value, m.get_image_numbers())
                 yvals = numpy.array([yvals[0]] * len(xvals))
             xvals, yvals = numpy.array(
                 [

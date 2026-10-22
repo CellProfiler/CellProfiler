@@ -114,7 +114,7 @@ def test_run_distance_declump_intensity(
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
     # Create an intensity image that is similar to the input
-    intensity_image = skimage.filters.rank.median(image.pixel_data)
+    intensity_image = skimage.filters.rank.median(skimage.util.img_as_ubyte(image.pixel_data))
 
     image_set.add(
         "intensity",
@@ -452,7 +452,7 @@ def test_run_markers_declump_intensity(
     )
 
     # Create an intensity image that is similar to the input
-    intensity_image = skimage.filters.rank.median(image.pixel_data)
+    intensity_image = skimage.filters.rank.median(skimage.util.img_as_ubyte(image.pixel_data))
 
     image_set.add(
         "intensity",
@@ -636,7 +636,7 @@ def test_run_intensity_declump_shape(
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
     # Create an intensity image that is similar to the input
-    intensity_image = skimage.filters.rank.median(image.pixel_data)
+    intensity_image = skimage.filters.rank.median(skimage.util.img_as_ubyte(image.pixel_data))
 
     image_set.add(
         "intensity",

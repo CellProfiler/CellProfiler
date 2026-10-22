@@ -1119,8 +1119,8 @@ to the foreground pixels or the background pixels.
         if image_group.calculate_threshold.value:
             for image_name in self.images_to_process(image_group, workspace):
                 for threshold_group in all_threshold_groups:
-                    values = m.get_all_measurements(
-                        "Image", threshold_group.threshold_feature_name(image_name),
+                    values = m.get_measurement(
+                        "Image", threshold_group.threshold_feature_name(image_name), m.get_image_numbers(),
                     )
 
                     values = values[numpy.isfinite(values)]

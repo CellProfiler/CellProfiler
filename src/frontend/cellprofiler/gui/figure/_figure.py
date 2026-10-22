@@ -1905,7 +1905,7 @@ class Figure(wx.Frame):
         if nindexes is not None:
             nindexes = max(nindexes, 255)
         # Get the colormap from the user preferences
-        colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,)
+        colormap = matplotlib.pyplot.get_cmap(get_default_colormap(), lut=nindexes,)
         # Initialize the colormap so we have access to the LUT
         colormap._init()
         # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
@@ -1959,7 +1959,7 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(get_default_colormap())
+            cm = matplotlib.pyplot.get_cmap(get_default_colormap())
 
             max_label = numpy.max(ijv[:, 2])
 
@@ -2466,7 +2466,7 @@ class Figure(wx.Frame):
             xscale=xscale,
             yscale=yscale,
             bins=bins,
-            cmap=matplotlib.cm.get_cmap(cmap),
+            cmap=matplotlib.pyplot.get_cmap(cmap),
         )
         cb = self.figure.colorbar(plot)
         if bins == "log":
@@ -2555,7 +2555,7 @@ class Figure(wx.Frame):
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x
             self.plate_choice.y = y
-            self.plate_choice.cmap = matplotlib.cm.get_cmap(cmap)
+            self.plate_choice.cmap = matplotlib.pyplot.get_cmap(cmap)
             self.plate_choice.axis_title = title
             self.plate_choice.colorbar = colorbar
         else:

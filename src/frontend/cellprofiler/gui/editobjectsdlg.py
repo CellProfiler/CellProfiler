@@ -9,6 +9,7 @@ import sys
 import centriole.cpmorphology
 import centriole.index
 import matplotlib
+import matplotlib.pyplot
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
@@ -634,7 +635,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.li = numpy.hstack((self.li, li))
                 self.lj = numpy.hstack((self.lj, lj))
                 self.ll = numpy.hstack((self.ll, ll))
-        cm = matplotlib.cm.get_cmap(get_default_colormap())
+        cm = matplotlib.pyplot.get_cmap(get_default_colormap())
         cm.set_bad((0, 0, 0))
 
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)

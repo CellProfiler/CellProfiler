@@ -176,7 +176,7 @@ these changes. A lower number will preserve weaker edges. A higher
 number will preserve only stronger edges. Values should be between zero
 and one. {pixel_help}
 """.format(
-                smooth_help=SmoothingMethod.SMOOTH_KEEPING_EDGES, pixel_help=HELP_ON_PIXEL_INTENSITIES
+                smooth_help=SmoothingMethod.SMOOTH_KEEPING_EDGES.value, pixel_help=HELP_ON_PIXEL_INTENSITIES
             ),
         )
 
@@ -197,7 +197,7 @@ and all pixels greater than one to one.
 Select *No* to allow values less than zero and greater than one in
 the output image.
 """.format(
-                fit=SmoothingMethod.FIT_POLYNOMIAL
+                fit=SmoothingMethod.FIT_POLYNOMIAL.value
             ),
         )
 

@@ -94,7 +94,7 @@ def measure_object_overlap(
             max_points=max_points,
             penalize_missing=penalize_missing,
         )
-        add_measurement(Feature.EARTH_MOVERS_DISTANCE, float(emd))
+        add_measurement(Feature.EARTH_MOVERS_DISTANCE.value, float(emd))
     
     if return_visualization_data:
         def subscripts(condition1: int, condition2: int):

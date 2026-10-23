@@ -415,7 +415,7 @@ def _apply_scaling(
             idx = int(sorted_pixel_data.shape[0] / 2)
             robust_minimum = sorted_pixel_data[idx]
         else: 
-            raise ValueError(f"Unknown rescale option: {rescale_option}")
+            raise ValueError(f"Unknown rescale option: {rescale_option.value if isinstance(rescale_option, RescaleIlluminationFunction) else rescale_option}")
         if robust_minimum == 0:
             return pixel_data
         return pixel_data / robust_minimum

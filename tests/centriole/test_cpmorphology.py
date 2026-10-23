@@ -4,7 +4,6 @@ import base64
 import unittest
 import numpy as np
 import scipy.ndimage as scind
-import scipy.misc
 import scipy.io.matlab
 
 import centriole.cpmorphology as morph

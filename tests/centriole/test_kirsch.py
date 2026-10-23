@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import centriole.kirsch
-import scipy.misc
 import numpy as np
 import numpy.testing
 import unittest

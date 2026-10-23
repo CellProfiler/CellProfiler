@@ -20,6 +20,9 @@ def princomp(x):
     y = x - Mean
     cov = numpy.dot(y.transpose(), y) / (M - 1)
     (V, PC) = numpy.linalg.eig(cov)
+    if not numpy.iscomplexobj(cov) and numpy.all(V.imag == 0):
+        V = V.real
+        PC = PC.real
     order = (-V).argsort()
     coeff = PC[:, order]
     return coeff

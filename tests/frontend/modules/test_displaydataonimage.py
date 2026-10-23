@@ -2,6 +2,7 @@ import centriole.cpmorphology
 import numpy
 import pytest
 import six.moves
+import warnings
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -18,6 +19,47 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 OBJECTS_NAME = "objects"
 MEASUREMENT_NAME = "measurement"
+
+
+@pytest.mark.parametrize("measurement", [123.45, "First Second Third"])
+def test_default_font_renders_annotation(monkeypatch, measurement):
+    monkeypatch.setattr(
+        cellprofiler.modules.displaydataonimage,
+        "font_list",
+        ["STIXSizeOneSym", "DejaVu Sans"],
+    )
+    workspace, module = make_workspace(measurement)
+    try:
+        module.saved_image_contents.value = cellprofiler.modules.displaydataonimage.E_IMAGE
+        module.text_color.value = "red"
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            module.run(workspace)
+        assert not [
+            warning for warning in caught
+            if "Glyph" in str(warning.message) and "missing" in str(warning.message)
+        ]
+        pixels = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        assert pixels.shape == (50, 120, 3)
+        assert numpy.any(pixels[:, :, 0] > 0)
+        assert module.font_choice.choices == ["STIXSizeOneSym", "DejaVu Sans"]
+    finally:
+        workspace.measurements.close()
+
+
+@pytest.mark.parametrize("font", ["STIXGeneral", "DejaVu Serif"])
+def test_pipeline_preserves_selected_font(font):
+    module = cellprofiler.modules.displaydataonimage.DisplayDataOnImage()
+    module.font_choice.value = font
+    module.set_module_num(1)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline.add_module(module)
+    stream = six.moves.StringIO()
+    pipeline.dump(stream)
+    stream.seek(0)
+    restored = cellprofiler_core.pipeline.Pipeline()
+    restored.load(stream)
+    assert restored.modules()[0].font_choice.value == font
 
 
 def test_load_v4():

@@ -88,6 +88,6 @@ def enhanceedges(
     elif method == EdgeFindingMethod.KIRSCH:
         output_pixels = centriole.kirsch.kirsch(image)
     else:
-        raise NotImplementedError(f"{method} edge detection method is not implemented.")
+        raise NotImplementedError(f"{method.value if isinstance(method, EdgeFindingMethod) else method} edge detection method is not implemented.")
 
     return output_pixels

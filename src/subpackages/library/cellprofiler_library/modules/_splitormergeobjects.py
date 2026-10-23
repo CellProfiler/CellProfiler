@@ -70,7 +70,7 @@ def split_or_merge_objects(
                 merging_method,
             )
         else:
-            raise NotImplementedError(f"Unimplemented merging method: {merging_method}")
+            raise NotImplementedError(f"Unimplemented merging method: {merging_method.value if isinstance(merging_method, MergingMethod) else merging_method}")
 
     if objects_small_removed_segmented is not None:
         output_small_removed_segmented = copy_labels(

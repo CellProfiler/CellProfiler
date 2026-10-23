@@ -86,7 +86,7 @@ def test_grid_automatic():
     assert np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
     assert np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
     spot_table = np.arange(rows * columns) + 1
-    spot_table.shape = (rows, columns)
+    spot_table = spot_table.reshape(rows, columns)
     assert np.all(gridding.spot_table == spot_table)
 
     m = workspace.measurements
@@ -161,7 +161,7 @@ def test_coordinates_plus_savedimagesize():
     assert np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x)
     assert np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y)
     spot_table = np.arange(rows * columns) + 1
-    spot_table.shape = (rows, columns)
+    spot_table = spot_table.reshape(rows, columns)
     assert np.all(gridding.spot_table == spot_table)
 
     m = workspace.measurements

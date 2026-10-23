@@ -117,22 +117,22 @@ class BioformatsReader(Reader):
             if len(image) / height / width in (3,4):
                 n_channels = int(len(image) / height / width)
                 if self._reader.isInterleaved():
-                    image.shape = (height, width, n_channels)
+                    image = image.reshape(height, width, n_channels)
                 else:
-                    image.shape = (n_channels, height, width)
+                    image = image.reshape(n_channels, height, width)
                     image = image.transpose(1, 2, 0)
             else:
-                image.shape = (height, width)
+                image = image.reshape(height, width)
         elif self._reader.isRGB() and self._reader.isInterleaved():
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index), dtype)
-            image.shape = (height, width, self._reader.getSizeC())
+            image = image.reshape(height, width, self._reader.getSizeC())
             if image.shape[2] > 3:
                 image = image[:, :, :3]
         elif c is not None and self._reader.getRGBChannelCount() == 1:
             index = self._reader.getIndex(z,c,t)
             image = np.frombuffer(openBytes_func(index), dtype)
-            image.shape = (height, width)
+            image = image.reshape(height, width)
         elif self._reader.getRGBChannelCount() > 1:
             n_planes = self._reader.getRGBChannelCount()
             rdr = ChannelSeparator(self._reader)
@@ -150,13 +150,13 @@ class BioformatsReader(Reader):
                 # see issue #775
                 planes.append(np.zeros(planes[0].shape, planes[0].dtype))
             image = np.dstack(planes)
-            image.shape=(height, width, 3)
+            image = image.reshape(height, width, 3)
         elif self._reader.getSizeC() > 1:
             images = [
                 np.frombuffer(openBytes_func(self._reader.getIndex(z,i,t)), dtype)
                       for i in range(self._reader.getSizeC())]
             image = np.dstack(images)
-            image.shape = (height, width, self._reader.getSizeC())
+            image = image.reshape(height, width, self._reader.getSizeC())
             if not channel_names is None:
                 metadata = self._reader.getMetadataStore()
                 for i in range(self._reader.getSizeC()):
@@ -176,7 +176,7 @@ class BioformatsReader(Reader):
             # match them. See issue #5151.
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index),dtype)
-            image.shape = (height,width)
+            image = image.reshape(height, width)
 
         if wants_metadata_rescale == True:
             # tiff-specific

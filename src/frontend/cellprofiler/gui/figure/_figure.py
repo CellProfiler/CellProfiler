@@ -159,7 +159,7 @@ class Figure(wx.Frame):
         self.many_plots = False
         self.remove_menu = []
         self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
-        self.figure.set_constrained_layout_pads(
+        self.figure.get_layout_engine().set(
             w_pad=0.1, h_pad=0.05, wspace=0, hspace=0
         )
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
@@ -1919,7 +1919,7 @@ class Figure(wx.Frame):
         # Set the LUT
         colormap._lut[:n] = lut
         # Make sure the background is black
-        colormap.set_bad(color="black")
+        colormap = colormap.with_extremes(bad="black")
         return colormap
 
     @allow_sharexy
@@ -2341,9 +2341,8 @@ class Figure(wx.Frame):
         plot = axes.scatter(
             xvals,
             yvals,
-            facecolor=(0.0, 0.62, 1.0),
             edgecolor="none",
-            c=color,
+            c=[(0.0, 0.62, 1.0)] if color is None else color,
             cmap=cmap,
             alpha=0.75,
         )
@@ -2597,7 +2596,8 @@ class Figure(wx.Frame):
 
         # Draw NaNs as gray
         # XXX: What if colormap with gray in it?
-        cmap.set_bad("gray", 1.0)
+        cmap = cmap.with_extremes(bad="gray")
+        self.plate_choice.cmap = cmap
         clean_data = numpy.ma.array(data, mask=numpy.isnan(data))
         plot = axes.imshow(
             clean_data, cmap=cmap, interpolation="nearest", shape=data.shape

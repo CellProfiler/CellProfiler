@@ -407,12 +407,12 @@ previously discarded objects.""".format(
         neighbor_count_image = workspace.display_data.neighbor_count_image
         neighbor_count_image[~object_mask] = -1
         neighbor_cm = get_colormap(workspace.display_data.neighbor_cm_name)
-        neighbor_cm.set_under((0, 0, 0))
+        neighbor_cm = neighbor_cm.with_extremes(under=(0, 0, 0))
         neighbor_cm = matplotlib.cm.ScalarMappable(cmap=neighbor_cm)
         percent_touching_cm = get_colormap(
             workspace.display_data.percent_touching_cm_name
         )
-        percent_touching_cm.set_under((0, 0, 0))
+        percent_touching_cm = percent_touching_cm.with_extremes(under=(0, 0, 0))
         percent_touching_image = workspace.display_data.percent_touching_image
         percent_touching_image[~object_mask] = -1
         percent_touching_cm = matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)

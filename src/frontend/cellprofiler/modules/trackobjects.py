@@ -1388,7 +1388,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         indexer = np.sum(bits.transpose() * (2 ** np.arange(7, -1, -1)), 1)
         recolored_labels = indexer[labels]
         cm = matplotlib.pyplot.get_cmap(get_default_colormap())
-        cm.set_bad((0, 0, 0))
+        cm = cm.with_extremes(bad=(0, 0, 0))
         norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(
             numpy.ma.array(recolored_labels, mask=(labels == 0)), cmap=cm, norm=norm

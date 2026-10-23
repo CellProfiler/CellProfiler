@@ -331,3 +331,33 @@ class TestPreferences_02(unittest.TestCase):
     def test_01_01_default_directory_none(self):
         print((cellprofiler_core.preferences.get_default_image_directory()))
         assert True
+
+
+def test_report_progress_from_another_thread_only_reaches_its_callbacks():
+    import threading
+
+    reports = []
+
+    def callback(operation_id, progress, message):
+        reports.append((threading.current_thread().name, message))
+
+    cellprofiler_core.preferences.add_progress_callback(callback)
+    try:
+        errors = []
+
+        def report_from_thread():
+            try:
+                # no callbacks are registered on this thread
+                cellprofiler_core.preferences.report_progress("op", None, "thread")
+            except Exception as e:
+                errors.append(e)
+
+        thread = threading.Thread(target=report_from_thread, name="reporter")
+        thread.start()
+        thread.join()
+        cellprofiler_core.preferences.report_progress("op", None, "main")
+    finally:
+        cellprofiler_core.preferences.remove_progress_callback(callback)
+
+    assert errors == []
+    assert reports == [(threading.current_thread().name, "main")]

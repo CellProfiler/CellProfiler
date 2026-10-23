@@ -80,7 +80,7 @@ def measure_object_neighbors(
     elif distance_method == NeighborsDistanceMethod.ADJACENT:
         scale = NeighborsMeasurementScale.ADJACENT.value
     else:
-        raise ValueError(f"Unknown distance method: {distance_method}")
+        raise ValueError(f"Unknown distance method: {distance_method.value if isinstance(distance_method, NeighborsDistanceMethod) else distance_method}")
 
     # Helper to format feature name
     def get_feature_name(feature: str) -> str:

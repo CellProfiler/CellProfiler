@@ -65,7 +65,7 @@ def measure_object_skeleton(
 
     for feature_name, values in feature_map.items():
         # Feature name format: ObjectSkeleton_Feature_Image
-        full_feature_name = f"{C_OBJSKELETON}_{feature_name}_{image_name}"
+        full_feature_name = f"{C_OBJSKELETON}_{feature_name.value}_{image_name}"
         measurements.add_measurement(object_name, full_feature_name, values)
         
         # Calculate summary statistics

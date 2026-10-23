@@ -758,7 +758,7 @@ def separate_neighboring_objects(
             image_resize_factor,
         )
     else:
-        raise ValueError(f"Unsupported unclump method: {unclump_method}")
+        raise ValueError(f"Unsupported unclump method: {unclump_method.value if isinstance(unclump_method, UnclumpMethod) else unclump_method}")
 
     # Create the image for watershed
     if watershed_method == WatershedMethod.INTENSITY:
@@ -775,7 +775,7 @@ def separate_neighboring_objects(
         # No image used
         pass
     else:
-        raise ValueError(f"Unsupported watershed method: {watershed_method}")
+        raise ValueError(f"Unsupported watershed method: {watershed_method.value if isinstance(watershed_method, WatershedMethod) else watershed_method}")
     #
     # Create a marker array where the unlabeled image has a label of
     # -(nobjects+1)
@@ -1716,7 +1716,7 @@ def filter_using_image(
         i = c_i
         j = c_j
     else:
-        raise ValueError(f"Unknown algorithm specified in where_algorithm parameter: {where_algorithm}")
+        raise ValueError(f"Unknown algorithm specified in where_algorithm parameter: {where_algorithm.value if isinstance(where_algorithm, ObjectIntensityMethod) else where_algorithm}")
     #
     # Add in connections from self to self
     #

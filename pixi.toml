@@ -41,7 +41,7 @@ env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAG
 env = { JAVA_HOME = "$CONDA_PREFIX/lib/jvm" }
 
 [dependencies]
-python = "3.10.*"
+python = "3.11.*"
 h5py = ">=3.11"
 numpy = ">=2"
 
@@ -52,7 +52,7 @@ numpy = ">=2"
 # disable to build wheel from scratch
 # url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/
 [target.linux-64.pypi-dependencies]
-wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.4-cp310-cp310-linux_x86_64.whl" }
+wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.4-cp311-cp311-linux_x86_64.whl" }
 
 [target.linux-64.dependencies]
 sdl2 = ">=2.0.0"

@@ -141,10 +141,10 @@ periphery.
 -  *{D_BOTH}:* Calculate both the *{D_MINIMUM}* and *{D_CENTROID}*
    distances.""".format(
                 **{
-                    "D_NONE": DistanceMethod.NONE,
-                    "D_MINIMUM": DistanceMethod.MINIMUM,
-                    "D_CENTROID": DistanceMethod.CENTROID,
-                    "D_BOTH": DistanceMethod.BOTH,
+                    "D_NONE": DistanceMethod.NONE.value,
+                    "D_MINIMUM": DistanceMethod.MINIMUM.value,
+                    "D_CENTROID": DistanceMethod.CENTROID.value,
+                    "D_BOTH": DistanceMethod.BOTH.value,
                 }
             ),
         )

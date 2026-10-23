@@ -5,6 +5,7 @@ import stat
 import sys
 
 import matplotlib.cm
+import matplotlib.pyplot
 import numpy
 import wx
 import wx.grid
@@ -1211,13 +1212,13 @@ class ModuleView:
                 cmap_name = get_default_colormap()
             else:
                 cmap_name = v.value
-            cm = matplotlib.cm.get_cmap(cmap_name)
+            cm = matplotlib.pyplot.get_cmap(cmap_name)
             sm = matplotlib.cm.ScalarMappable(cmap=cm)
             i, j = numpy.mgrid[0:12, 0:128]
             if cm.N < 128:
                 j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
-            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
+            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tobytes())
         except:
             LOGGER.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None

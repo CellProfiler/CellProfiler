@@ -163,8 +163,8 @@ This is done using user-defined rules in a similar manner to that of the
 have multiple channels, you then assign the relationship between
 channels. For example, in the case mentioned above, the DAPI and GFP
 images are named in such a way that it is apparent to the researcher
-which is which, e.g., “\_w2” is contained in the file for the DAPI
-images, and “\_w1” in the file name for the GFP images.
+which is which, e.g., “\\_w2” is contained in the file for the DAPI
+images, and “\\_w1” in the file name for the GFP images.
 
 You can also use **NamesAndTypes** to define the relationships between
 images. For example, if you have acquired multiple wavelengths for your
@@ -397,13 +397,13 @@ You can match corresponding channels to each other in one of two ways:
    +----------------------------+------------+------------+------------------+
    | **File name**              | **Well**   | **Site**   | **Wavelength**   |
    +============================+============+============+==================+
-   | P-12345\_A01\_s1\_w1.tif   | A01        | s1         | w1               |
+   | P-12345\\_A01\\_s1\\_w1.tif   | A01        | s1         | w1               |
    +----------------------------+------------+------------+------------------+
-   | P-12345\_A01\_s1\_w2.tif   | A01        | s1         | w2               |
+   | P-12345\\_A01\\_s1\\_w2.tif   | A01        | s1         | w2               |
    +----------------------------+------------+------------+------------------+
-   | P-12345\_A01\_s2\_w1.tif   | A01        | s2         | w1               |
+   | P-12345\\_A01\\_s2\\_w1.tif   | A01        | s2         | w1               |
    +----------------------------+------------+------------+------------------+
-   | P-12345\_A01\_s2\_w2.tif   | A01        | s2         | w2               |
+   | P-12345\\_A01\\_s2\\_w2.tif   | A01        | s2         | w2               |
    +----------------------------+------------+------------+------------------+
 
    We want to match the channels so that each field of view in uniquely
@@ -431,9 +431,9 @@ You can match corresponding channels to each other in one of two ways:
    +======================+================+============================+============================+
    | **Well**             | **Site**       | **OrigBlue (w1)**          | **OrigGreen (w2)**         |
    +----------------------+----------------+----------------------------+----------------------------+
-   | A01                  | s1             | P-12345\_A01\_s1\_w1.tif   | P-12345\_A01\_s1\_w2.tif   |
+   | A01                  | s1             | P-12345\\_A01\\_s1\\_w1.tif   | P-12345\\_A01\\_s1\\_w2.tif   |
    +----------------------+----------------+----------------------------+----------------------------+
-   | A01                  | s2             | P-12345\_A01\_s2\_w1.tif   | P-12345\_A01\_s2\_w2.tif   |
+   | A01                  | s2             | P-12345\\_A01\\_s2\\_w1.tif   | P-12345\\_A01\\_s2\\_w2.tif   |
    +----------------------+----------------+----------------------------+----------------------------+
 
    Image sets for which a given metadata value combination (e.g., well,

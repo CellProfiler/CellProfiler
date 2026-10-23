@@ -60,17 +60,17 @@ do this by specifying metadata tags for the folder name and file name:
 
 | Here’s an example table of the files that would be generated:
 
-+--------------+--------------+---------------------------+
-| Treatment1   | Treatment2   | Path                      |
-+==============+==============+===========================+
-| 1M\_NaCl     | 20uM\_DMSO   | 1M\_NaCl/20uM\_DMSO.csv   |
-+--------------+--------------+---------------------------+
-| 1M\_NaCl     | 40uM\_DMSO   | 1M\_NaCl/40uM\_DMSO.csv   |
-+--------------+--------------+---------------------------+
-| 2M\_NaCl     | 20uM\_DMSO   | 2M\_NaCl/20uM\_DMSO.csv   |
-+--------------+--------------+---------------------------+
-| 2M\_NaCl     | 40uM\_DMSO   | 2M\_NaCl/40uM\_DMSO.csv   |
-+--------------+--------------+---------------------------+
++---------------+---------------+-----------------------------+
+| Treatment1    | Treatment2    | Path                        |
++===============+===============+=============================+
+| 1M\\_NaCl     | 20uM\\_DMSO   | 1M\\_NaCl/20uM\\_DMSO.csv   |
++---------------+---------------+-----------------------------+
+| 1M\\_NaCl     | 40uM\\_DMSO   | 1M\\_NaCl/40uM\\_DMSO.csv   |
++---------------+---------------+-----------------------------+
+| 2M\\_NaCl     | 20uM\\_DMSO   | 2M\\_NaCl/20uM\\_DMSO.csv   |
++---------------+---------------+-----------------------------+
+| 2M\\_NaCl     | 40uM\\_DMSO   | 2M\\_NaCl/40uM\\_DMSO.csv   |
++---------------+---------------+-----------------------------+
 
 Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -243,7 +243,7 @@ This setting lets you choose whether or not to add a prefix to each of
 the .CSV filenames produced by **ExportToSpreadsheet**. A prefix may be
 useful if you use the same directory for the results of more than one
 pipeline; you can specify a different prefix in each pipeline. Select
-*"Yes"* to add a prefix to each file name (e.g., “MyExpt\_Images.csv”).
+*"Yes"* to add a prefix to each file name (e.g., “MyExpt\\_Images.csv”).
 Select *"No"* to use filenames without prefixes (e.g., “Images.csv”).
             """
             % globals(),
@@ -277,7 +277,7 @@ GUI and to fail when running headless."""
             "Add image metadata columns to your object data file?",
             False,
             doc="""\
-“Image\_Metadata\_” columns are normally exported in the Image data
+“Image\\_Metadata\\_” columns are normally exported in the Image data
 file, but if you select *"Yes"*, they will also be exported with the
 Object data file(s)."""
             % globals(),
@@ -287,7 +287,7 @@ Object data file(s)."""
             "Add image file and folder names to your object data file?",
             False,
             doc="""\
-“Image\_PathName\_” and “Image\_FileName\_” columns are normally
+“Image\\_PathName\\_” and “Image\\_FileName\\_” columns are normally
 exported in the Image data file, but if you select *"Yes"*, they will also
 be exported with the Object data file(s)."""
             % globals(),
@@ -343,7 +343,7 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Mean\_Nuclei\_AreaShape\_Area”. Note that this setting can
+called “Mean\\_Nuclei\\_AreaShape\\_Area”. Note that this setting can
 generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
@@ -361,7 +361,7 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “Median\_Nuclei\_AreaShape\_Area”. Note that this setting can
+called “Median\\_Nuclei\\_AreaShape\\_Area”. Note that this setting can
 generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
@@ -379,7 +379,7 @@ statistics over all the objects in each image and save that value as an
 aggregate measurement in the Image file. For instance, if you are
 measuring the area of the Nuclei objects and you check the box for this
 option, **ExportToSpreadsheet** will create a column in the Image file
-called “StDev\_Nuclei\_AreaShape\_Area”. Note that this setting can
+called “StDev\\_Nuclei\\_AreaShape\\_Area”. Note that this setting can
 generate a very large number of columns of data.
 
 However, if you chose to select the specific measurements to
@@ -1097,7 +1097,7 @@ desired.
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
-                v = m.get_all_measurements(EXPERIMENT, feature_name)
+                v = m.get_measurement(EXPERIMENT, feature_name, m.get_image_numbers())
                 if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 elif isinstance(v, bytes):
@@ -1170,7 +1170,7 @@ desired.
                             if self.nan_representation == NANS_AS_NULLS:
                                 row.append("")
                             else:
-                                row.append(str(numpy.NaN))
+                                row.append(str(numpy.nan))
                         else:
                             row.append(str(value))
                 writer.writerow(row)
@@ -1421,7 +1421,7 @@ desired.
                     if feature_name == IMAGE_NUMBER
                     else numpy.arange(1, object_count + 1)
                     if feature_name == OBJECT_NUMBER
-                    else numpy.repeat(numpy.NAN, object_count)
+                    else numpy.repeat(numpy.nan, object_count)
                     if not m.has_feature(object_name, feature_name)
                     else numpy.repeat(
                         m.get_measurement(IMAGE, feature_name, img_number), object_count
@@ -1434,7 +1434,7 @@ desired.
                     row = [
                         column[obj_index]
                         if (column is not None and obj_index < column.shape[0])
-                        else numpy.NAN
+                        else numpy.nan
                         for column in columns
                     ]
                     if self.nan_representation == NANS_AS_NULLS:

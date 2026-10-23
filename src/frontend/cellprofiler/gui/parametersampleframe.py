@@ -52,8 +52,8 @@ FLOAT_UPPER_BOUND = 10000.0
 FLOAT_DIGITS_TO_ROUND_TO = 2
 DEFAULT_NUMBER_SAMPLES = 10
 
-ID_PARAM_SELECT_CHECK_LIST_BOX = wx.NewId()
-ID_SAMPLE_BUTTON = wx.NewId()
+ID_PARAM_SELECT_CHECK_LIST_BOX = wx.NewIdRef()
+ID_SAMPLE_BUTTON = wx.NewIdRef()
 
 
 # TODO: we have decided to tear out parameter sampling
@@ -252,13 +252,13 @@ class ParameterSampleFrame(wx.Frame):
                 if self.is_parameter_int(setting):
                     # Integer
                     lower_spin_ctrl = wx.SpinCtrl(
-                        self.__settings_scrolled_window, wx.NewId()
+                        self.__settings_scrolled_window, wx.ID_ANY
                     )
                     lower_spin_ctrl.SetRange(INT_LOWER_BOUND, INT_UPPER_BOUND)
                     lower_spin_ctrl.Bind(wx.EVT_SPINCTRL, self.on_lower_spin_ctrl)
 
                     upper_spin_ctrl = wx.SpinCtrl(
-                        self.__settings_scrolled_window, wx.NewId()
+                        self.__settings_scrolled_window, wx.ID_ANY
                     )
                     upper_spin_ctrl.SetRange(INT_LOWER_BOUND, INT_UPPER_BOUND)
                     upper_spin_ctrl.Bind(wx.EVT_SPINCTRL, self.on_upper_spin_ctrl)
@@ -269,7 +269,7 @@ class ParameterSampleFrame(wx.Frame):
                 elif self.is_parameter_float(setting):
                     # Float
                     lower_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
-                        self.__settings_scrolled_window, wx.NewId(), size=wx.DefaultSize
+                        self.__settings_scrolled_window, wx.ID_ANY, size=wx.DefaultSize
                     )  # NB: if not set, spin buttons are hidden
                     lower_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     lower_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
@@ -279,7 +279,7 @@ class ParameterSampleFrame(wx.Frame):
                     )
 
                     upper_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
-                        self.__settings_scrolled_window, wx.NewId(), size=wx.DefaultSize
+                        self.__settings_scrolled_window, wx.ID_ANY, size=wx.DefaultSize
                     )  # NB: if not set, spin buttons are hidden
                     upper_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     upper_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
@@ -314,7 +314,7 @@ class ParameterSampleFrame(wx.Frame):
                 self.__upper_bound_spin_ctrl_list.append(upper_spin_ctrl)
 
                 # Number samples
-                num_spin_ctrl = wx.SpinCtrl(self.__settings_scrolled_window, wx.NewId())
+                num_spin_ctrl = wx.SpinCtrl(self.__settings_scrolled_window, wx.ID_ANY)
                 num_spin_ctrl.Enable(False)
                 num_spin_ctrl.SetRange(1, 100)
                 num_spin_ctrl.SetValue(10)

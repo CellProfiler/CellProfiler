@@ -695,7 +695,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -720,7 +720,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -748,7 +748,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         def fn_metadata(url):
             r = np.random.RandomState()
-            r.seed(np.fromstring(url, np.uint8))
+            r.seed(np.frombuffer(url.encode("utf-8"), np.uint8).copy())
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
@@ -874,12 +874,12 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         self.assertFalse(
             object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
@@ -899,12 +899,12 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
         expected = r.randint(0, 10, size=(11, 13))
         object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
@@ -955,33 +955,33 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
         self.assertFalse(
             object_set.has_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 9)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 20)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
         np.testing.assert_array_equal(
             expected, object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME)
         )
-        expected = np.core.records.fromarrays(
+        expected = np.rec.fromarrays(
             r.randint(0, 10, (3, 6)),
             [
-                (object_set.AXIS_Y, np.uint32, 1),
-                (object_set.AXIS_X, np.uint32, 1),
-                (object_set.AXIS_LABELS, np.uint32, 1),
+                (object_set.AXIS_Y, np.uint32),
+                (object_set.AXIS_X, np.uint32),
+                (object_set.AXIS_LABELS, np.uint32),
             ],
         )
         object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, expected)
@@ -1071,7 +1071,7 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(self.hdf_file["index"].shape[0], 1)
         self.assertEqual(self.hdf_file["index"][0, 0], 0)
         self.assertEqual(self.hdf_file["index"][0, 1], 3)
-        self.assertEqual(self.hdf_file["data"][:].tostring().decode("utf-8"), "foo")
+        self.assertEqual(self.hdf_file["data"][:].tobytes().decode("utf-8"), "foo")
 
     def test_02_02_set_none(self):
         a = H5DICT.VStringArray(self.hdf_file)
@@ -1090,7 +1090,7 @@ class TestVStringArray(HDF5DictTessstBase):
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
             ]
-            .tostring()
+            .tobytes()
             .decode("utf-8"),
             "hu",
         )
@@ -1105,7 +1105,7 @@ class TestVStringArray(HDF5DictTessstBase):
             self.hdf_file["data"][
                 self.hdf_file["index"][0, 0] : self.hdf_file["index"][0, 1]
             ]
-            .tostring()
+            .tobytes()
             .decode("utf-8"),
             "whoops",
         )
@@ -1245,7 +1245,7 @@ class TestVStringArray(HDF5DictTessstBase):
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [
-            chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
+            chars[i:j].tobytes().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
         ]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings)
@@ -1285,7 +1285,7 @@ class TestVStringArray(HDF5DictTessstBase):
         idx = np.hstack([[0], np.cumsum(lengths)])
         chars = r.randint(ord("A"), ord("F") + 1, idx[-1]).astype(np.uint8)
         strings = [
-            chars[i:j].tostring().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
+            chars[i:j].tobytes().decode("utf-8") for i, j in zip(idx[:-1], idx[1:])
         ]
         a = H5DICT.VStringArray(self.hdf_file)
         a.set_all(strings[:50])

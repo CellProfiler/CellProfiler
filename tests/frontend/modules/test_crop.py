@@ -109,7 +109,7 @@ def test_zeros_and_remove_all():
     module.remove_rows_and_columns.value = RemovalMethod.ALL
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
-    assert numpy.product(output_image.pixel_data.shape) == 0
+    assert numpy.prod(output_image.pixel_data.shape) == 0
 
 
 def test_crop_edges_with_image():

@@ -49,7 +49,7 @@ class TestAnalysis(unittest.TestCase):
 
         def __init__(self, name="Client thread"):
             threading.Thread.__init__(self, name=name)
-            self.setDaemon(True)
+            self.daemon = True
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
             self.request_queue = queue.Queue()
@@ -63,7 +63,6 @@ class TestAnalysis(unittest.TestCase):
             self.work_socket = None
             self.recv_notify_socket = None
             self.keepalive_socket = None
-            self.sockets = (self.notify_socket, self.work_socket, self.recv_notify_socket, self.keepalive_socket)
             self.start()
             self.start_signal.acquire()
 
@@ -80,8 +79,9 @@ class TestAnalysis(unittest.TestCase):
         def __exit__(self, type, value, traceback):
             LOGGER.debug("FakeWorker::__exit__ - Stopping the worker")
             self.stop()
+            self.join()
             LOGGER.debug("FakeWorker::__exit__ - Closing sockets (notify, work, recv_notify, and keepalive)")
-            for i, socket in enumerate(self.sockets):
+            for i, socket in enumerate((self.notify_socket,)):
                 if socket is not None:
                     LOGGER.debug(f"  FakeWorker::__exit__ - Closing socket {i}")
                     socket.close(linger=0)
@@ -136,6 +136,9 @@ class TestAnalysis(unittest.TestCase):
                 LOGGER.warning("FakeWorker::run - thread caught exception", exc_info=True)
                 self.start_signal.release()
             finally:
+                for socket in (self.work_socket, self.recv_notify_socket, self.keepalive_socket):
+                    if socket is not None:
+                        socket.close(linger=0)
                 LOGGER.debug("FakeWorker::run - thread exiting")
 
         def stop(self):
@@ -167,7 +170,9 @@ class TestAnalysis(unittest.TestCase):
             self.poller.register(self.work_socket, zmq.POLLIN)
             try:
                 while True:
-                    socks = dict(self.poller.poll())
+                    if not self.keep_going:
+                        raise RuntimeError("Cancelled")
+                    socks = dict(self.poller.poll(1000))
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
                         msg = self.recv_notify_socket.recv()
                         if not self.keep_going:
@@ -202,6 +207,8 @@ class TestAnalysis(unittest.TestCase):
             self.poller.register(self.keepalive_socket, zmq.POLLIN)
             try:
                 while True:
+                    if not self.keep_going:
+                        raise RuntimeError("Cancelled")
                     socks = dict(self.poller.poll(5000))
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
                         msg = self.recv_notify_socket.recv()
@@ -398,6 +405,7 @@ class TestAnalysis(unittest.TestCase):
                         container.append(sock.recv())
                     else:
                         break
+                sock.close()
 
             messages = []
 

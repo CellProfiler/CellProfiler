@@ -439,3 +439,56 @@ class TestKnimeBridge(unittest.TestCase):
     #                     data[offset:next_offset], numpy.int32)
     #             offset = next_offset
     #     return ddata
+
+
+@pytest.mark.parametrize(
+    "axes,shape,strides,grouping",
+    [
+        ([('Y', 3, 5), ('X', 5, 1)], (3, 5), (5, 1), False),
+        ([('X', 5, 1), ('Y', 3, 5)], (3, 5), (5, 1), False),
+        ([('Y', 3, 10), ('X', 5, 2), ('Channel', 2, 1)], (3, 5, 2), (10, 2, 1), False),
+        ([('Y', 3, 5), ('X', 5, 1), ('Channel', 2, 15)], (3, 5, 2), (5, 1, 15), False),
+        ([('T', 4, 30), ('Y', 3, 10), ('X', 5, 2), ('Channel', 2, 1)], (4, 3, 5, 2), (30, 10, 2, 1), True),
+        ([('Y', 3, 5), ('X', 5, 1), ('T', 4, 15)], (4, 3, 5), (15, 5, 1), True),
+    ],
+)
+@pytest.mark.parametrize("mutable", [False, True])
+def test_decode_image_preserves_layout_and_buffer(axes, shape, strides, grouping, mutable):
+    import numpy as np
+
+    raw = np.arange(np.prod(shape), dtype='<f8')
+    buffer = bytearray(raw.tobytes()) if mutable else raw.tobytes()
+    image = cellprofiler.knime_bridge.KnimeBridgeServer.decode_image(
+        None, axes, buffer, grouping_allowed=grouping
+    )
+    expected = np.empty(shape)
+    for index in np.ndindex(shape):
+        expected[index] = raw[sum(i * stride for i, stride in zip(index, strides))]
+    np.testing.assert_array_equal(image, expected)
+    assert image.dtype == np.dtype('<f8')
+    assert image.strides == tuple(stride * 8 for stride in strides)
+    assert image.flags.writeable == mutable
+    assert np.shares_memory(image, np.frombuffer(buffer, '<f8'))
+    if mutable:
+        image[(0,) * len(shape)] = 42
+        assert np.frombuffer(buffer, '<f8')[0] == 42
+    else:
+        with pytest.raises(ValueError):
+            image[(0,) * len(shape)] = 42
+
+
+@pytest.mark.parametrize(
+    "axes,size,error",
+    [
+        ([('Y', 3, 5), ('X', 5, 1)], 14, ValueError),
+        ([('Y', 3, 5), ('X', 5, 100)], 15, ValueError),
+        ([('Y', 3, 5), ('Y', 5, 1)], 15, RuntimeError),
+        ([('Y', 3, 5), ('X', 5, 1), ('T', 2, 15)], 30, RuntimeError),
+    ],
+)
+def test_decode_image_preserves_invalid_layout_errors(axes, size, error):
+    import numpy as np
+
+    buffer = np.arange(size, dtype='<f8').tobytes()
+    with pytest.raises(error):
+        cellprofiler.knime_bridge.KnimeBridgeServer.decode_image(None, axes, buffer)

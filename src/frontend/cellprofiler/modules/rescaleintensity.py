@@ -61,7 +61,7 @@ There are a number of options for rescaling the input image:
    available to handle values outside of the original range.
    To convert 12-bit images saved in 16-bit format to the correct range,
    use the range 0 to 0.0625. The value 0.0625 is equivalent to
-   2\ :sup:`12` divided by 2\ :sup:`16`, so it will convert a 16 bit
+   2\\ :sup:`12` divided by 2\\ :sup:`16`, so it will convert a 16 bit
    image containing only 12 bits of data to the proper range.
 -  *{M_MANUAL_IO_RANGE}:* Pixels are scaled from their original
    range to the new target range. Options are available to handle values

@@ -57,9 +57,9 @@ class BinaryMatrixController:
         h, w = self.setting.get_size()
         hh, ww = [(x - 1) / 2 for x in (h, w)]
         if self.height_ctrl.GetValue() != hh:
-            self.height_ctrl.SetValue(hh)
+            self.height_ctrl.SetValue(int(hh))
         if self.width_ctrl.GetValue() != ww:
-            self.width_ctrl.SetValue(ww)
+            self.width_ctrl.SetValue(int(ww))
         r = self.get_matrix_element_rect(h - 1, w - 1)
         b = wx.SystemSettings.GetMetric(wx.SYS_EDGE_X)
         self.matrix_ctrl.SetMinSize(wx.Size(r.GetRight() + b, r.GetBottom() + b))

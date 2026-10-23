@@ -510,11 +510,11 @@ class TestSegmentation:
             jj.append(j[mask])
             vv.append(np.ones(np.sum(mask), np.uint32) * (idx + 1))
 
-        sparse = np.core.records.fromarrays(
+        sparse = np.rec.fromarrays(
             [np.hstack(x) for x in (ii, jj, vv)],
-            [(SPARSE_FIELD.y.value, np.uint32, 1),
-             (SPARSE_FIELD.x.value, np.uint32, 1),
-             (SPARSE_FIELD.label.value, np.uint32, 1)]
+            [(SPARSE_FIELD.y.value, np.uint32),
+             (SPARSE_FIELD.x.value, np.uint32),
+             (SPARSE_FIELD.label.value, np.uint32)]
         )
 
         dense_shape = (1, 1, 1, 50, 50)

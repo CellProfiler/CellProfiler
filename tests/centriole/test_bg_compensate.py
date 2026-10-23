@@ -60,3 +60,35 @@ class TestBackgroundCompensation(unittest.TestCase):
         bg = backgr(img, mask=mask, mode=MODE_AUTO, thresh=2, splinepoints=5, scale=1)
         self.assertEqual(bg.shape, img.shape)
         self.assertTrue(np.all(np.isfinite(bg)))
+
+def test_file_background_uses_pillow_bytes_and_closes_image(tmp_path, monkeypatch):
+    import importlib
+    import tifffile
+    from PIL import Image
+
+    module = importlib.import_module("centriole.bg_compensate")
+    pixels = np.arange(256, dtype=np.uint16).reshape(16, 16)
+    path = tmp_path / "background.tiff"
+    tifffile.imwrite(path, pixels, byteorder="<")
+    opened = []
+    original_open = Image.open
+
+    def open_image(*args, **kwargs):
+        image = original_open(*args, **kwargs)
+        opened.append(image)
+        return image
+
+    captured = []
+
+    def background(image, *args, **kwargs):
+        captured.append(image.copy())
+        return np.zeros_like(image)
+
+    monkeypatch.setattr(Image, "open", open_image)
+    monkeypatch.setattr(module, "backgr", background)
+    module.bg_compensate(str(path), 1, 4, 1)
+    expected = pixels.astype(np.float32) / 4095.0
+    assert captured[0].dtype == expected.dtype
+    assert captured[0].shape == expected.shape
+    assert captured[0].tobytes() == expected.tobytes()
+    assert opened[0].fp is None

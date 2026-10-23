@@ -36,6 +36,7 @@ class ReadersDialog(wx.Dialog):
     ):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style, name)
         self.changed_settings = {}
+        self._setting_ids = []
         self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         main_sizer.SetMinSize((800, 600))
@@ -180,7 +181,8 @@ class ReadersDialog(wx.Dialog):
             settings_head.SetFont(self.header_font)
             self.control_sizer.Add(settings_head)
             for key, name, desc, setting_type, default in settings:
-                ident = wx.NewId()
+                ident = wx.NewIdRef()
+                self._setting_ids.append(ident)
                 self.control_sizer.AddSpacer(5)
                 setting_sizer = wx.BoxSizer(orient=wx.HORIZONTAL)
                 self.control_sizer.Add(setting_sizer, flag=wx.EXPAND, border=5)

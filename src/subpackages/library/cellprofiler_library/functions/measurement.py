@@ -53,7 +53,7 @@ def measure_image_overlap_statistics(
     ground_truth_image: ImageBinary,
     test_image: ImageBinary,
     mask: Optional[ImageBinaryMask]=None,
-) -> Dict[str, numpy.float_]:
+) -> Dict[str, numpy.float64]:
     # Check that the inputs are binary
     if not numpy.array_equal(ground_truth_image, ground_truth_image.astype(bool)):
         raise ValueError("ground_truth_image is not a binary image")
@@ -173,7 +173,7 @@ def compute_rand_index(
         test_labels: ObjectSegmentation, 
         ground_truth_labels: ObjectSegmentation, 
         mask: Optional[ImageBinaryMask]=None
-        ) -> Tuple[numpy.float_, numpy.float_]:
+        ) -> Tuple[numpy.float64, numpy.float64]:
     """Calculate the Rand Index
 
     http://en.wikipedia.org/wiki/Rand_index
@@ -282,7 +282,7 @@ def compute_earth_movers_distance(
     max_distance: int = 250,
     max_points: int = 250,
     penalize_missing: bool = False,
-) -> numpy.float_:
+) -> numpy.float64:
     """Compute the earthmovers distance between two sets of objects
 
     src_objects - move pixels from these objects
@@ -507,7 +507,7 @@ def get_object_radius_features(
         )
         median_radius[index] = centriole.cpmorphology.median_of_labels(
             distances, mini_image.astype("int"), [1]
-        )
+        )[0]
     
     return max_radius, mean_radius, median_radius
 
@@ -841,7 +841,7 @@ def measure_correlation_and_slope_from_objects(
         )
     )
     # Explicitly set the correlation to NaN for masked objects
-    corr[scipy.ndimage.sum(1, labels, lrange) == 0] = numpy.NaN
+    corr[scipy.ndimage.sum(1, labels, lrange) == 0] = numpy.nan
     return corr
 
 #
@@ -1463,14 +1463,14 @@ def measure_surface_area(
     )
 
 
-def measure_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> numpy.float_:
+def measure_perimeter(im_pixel_data: ImageBinary, im_volumetric: bool, im_spacing: Optional[Tuple[float, ...]] = None) -> numpy.float64:
     if im_volumetric:
         perimeter = measure_surface_area(im_pixel_data > 0, spacing=im_spacing)
     else:
         perimeter = skimage.measure.perimeter(im_pixel_data > 0)
     return perimeter
 
-def measure_area_occupied(im_pixel_data: ImageBinary) -> numpy.float_:
+def measure_area_occupied(im_pixel_data: ImageBinary) -> numpy.float64:
     return numpy.sum(im_pixel_data > 0)
 
 def measure_total_area(im_pixel_data: ImageBinary) -> numpy.int_:
@@ -1483,7 +1483,7 @@ def measure_object_perimeter(
         regionprops: Optional[List[Any]] = None,
         volumetric: bool = False,
         spacing: Optional[Tuple[float, ...]] = None
-        ) -> numpy.float_:
+        ) -> numpy.float64:
     """ Uses skimage.measure.regionprops to calculate the perimeter for 2D. Uses skimage.measure.mesh_surface_area to calculate the perimeter for 3D"""
     if regionprops is None:
         if mask is not None:
@@ -1506,7 +1506,7 @@ def measure_objects_area_occupied(
     label_image: Optional[ObjectLabelsDense],
     mask: Optional[ImageAny] = None,
     regionprops: Optional[List[Any]] = None,
-    ) -> numpy.float_:
+    ) -> numpy.float64:
     """ Area occupied can either be calculated from the label image (with/without mask) or if regionprops are already computed, they can be passed in"""
     if regionprops is None:
         assert label_image is not None, "Either label_image or region_properties must be provided"
@@ -1524,7 +1524,7 @@ def measure_objects_total_area(
     if mask is not None:
         total_area = numpy.sum(mask)
     else:
-        total_area = numpy.product(label_image.shape)
+        total_area = numpy.prod(label_image.shape)
     return total_area
 
 
@@ -1549,7 +1549,7 @@ def measure_image_intensities(
         pixels: NDArray[numpy.float32], 
         percentiles: List[int]=[]
     ) -> Tuple[List[float], Dict[int, float]]:
-    pixel_count = numpy.product(pixels.shape)
+    pixel_count = numpy.prod(pixels.shape)
     percentile_measures = {}
     if pixel_count == 0:
         pixel_sum = 0
@@ -1570,10 +1570,10 @@ def measure_image_intensities(
         pixels = pixels[
             numpy.nonzero(numpy.isfinite(pixels))[0]
         ]  # Ignore NaNs, Infs
-        pixel_count = numpy.product(pixels.shape)
+        pixel_count = numpy.prod(pixels.shape)
 
         pixel_sum = numpy.sum(pixels)
-        pixel_mean = pixel_sum / float(pixel_count)
+        pixel_mean = pixel_sum / numpy.float64(pixel_count)
         pixel_std = numpy.std(pixels)
         pixel_median = numpy.median(pixels)
         pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
@@ -1611,13 +1611,13 @@ def measure_image_intensities(
 def measure_object_area_occupied(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.int_]:
     return centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(len(limg)), llabels, lindexes))
 
-def measure_integrated_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+def measure_integrated_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     return centriole.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(limg, llabels, lindexes))
 
-def measure_mean_intensity(integrated_intensity: NDArray[numpy.float_], lcount: NDArray[numpy.int_]) -> NDArray[numpy.float_]:   
+def measure_mean_intensity(integrated_intensity: NDArray[numpy.float64], lcount: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     return integrated_intensity / lcount
 
-def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], mean_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
+def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], mean_intensity: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
     #
     # This function takes in mean_intensity as an array where each element is the mean intensity of the corresponding label in lindexes
     # which is then converted into a 1D array of pixels where each pixel is the mean intensity of the corresponding label in llabels
@@ -1636,17 +1636,17 @@ def measure_std_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], l
             )
         )
     )
-def measure_min_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+def measure_min_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     return centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.minimum(limg, llabels, lindexes)
     )
 
-def measure_max_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+def measure_max_intensity(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     return centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.maximum(limg, llabels, lindexes)
     )
 
-def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     # Compute the position of the intensity maximum
     max_position = numpy.array(
         centriole.cpmorphology.fixup_scipy_ndimage_result(
@@ -1659,20 +1659,20 @@ def measure_max_position(limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], li
     )
     return max_position
 
-def measure_center_of_mass_binary(coordinates: NDArray[numpy.int_], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float_]:
+def measure_center_of_mass_binary(coordinates: NDArray[numpy.int_], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_]) -> NDArray[numpy.float64]:
     cm = centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.mean(coordinates, llabels, lindexes)
         )
     return cm
 
-def measure_center_of_mass_intensity(coordinates_mesh: NDArray[numpy.int_], limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], integrated_intensity: NDArray[numpy.float_]) -> NDArray[numpy.float_]:
+def measure_center_of_mass_intensity(coordinates_mesh: NDArray[numpy.int_], limg: NDArray[Pixel], llabels: NDArray[ObjectLabel], lindexes: NDArray[numpy.int_], integrated_intensity: NDArray[numpy.float64]) -> NDArray[numpy.float64]:
     coordinate_scaled_pixels = centriole.cpmorphology.fixup_scipy_ndimage_result(
         scipy.ndimage.sum(coordinates_mesh * limg, llabels, lindexes)
     )
     center_of_mass_intensity = coordinate_scaled_pixels / integrated_intensity
     return center_of_mass_intensity
 
-def measure_mass_displacement(center_of_mass_binary: Tuple[NDArray[numpy.float_], NDArray[numpy.float_], NDArray[numpy.float_]], center_of_mass_intensity: Tuple[NDArray[numpy.float_], NDArray[numpy.float_], NDArray[numpy.float_]]) -> NDArray[numpy.float_]:
+def measure_mass_displacement(center_of_mass_binary: Tuple[NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]], center_of_mass_intensity: Tuple[NDArray[numpy.float64], NDArray[numpy.float64], NDArray[numpy.float64]]) -> NDArray[numpy.float64]:
     diff_x = center_of_mass_binary[0] - center_of_mass_intensity[0]
     diff_y = center_of_mass_binary[1] - center_of_mass_intensity[1]
     diff_z = center_of_mass_binary[2] - center_of_mass_intensity[2]
@@ -1699,7 +1699,7 @@ def measure_mad_intensity(
         limg: NDArray[Pixel],
         llabels: NDArray[ObjectLabel],
         lindexes: NDArray[numpy.int_],
-        median_intensity: NDArray[numpy.float_],
+        median_intensity: NDArray[numpy.float64],
         ) -> NDArray[numpy.float64]:
     """Compute the median absolute deviation (MAD) of intensity per object.
 
@@ -1732,15 +1732,15 @@ def calculate_overlap_measurements(
     objects_GT_shape: Tuple[int, int],
     objects_ID_shape: Tuple[int, int],
     ) -> Tuple[
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
-        Union[numpy.float_, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
+        Union[numpy.float64, float],
         NDArray[numpy.float64],
         NDArray[numpy.float64],
         int,
@@ -1832,8 +1832,8 @@ def calculate_overlap_measurements(
 def object_overlap_confusion_matrix(
         dom_ID: NDArray[numpy.int_],
         id_areas: NDArray[numpy.int_],
-        intersect_matrix: NDArray[Union[numpy.int_, numpy.float_]],
-        FN_area: NDArray[numpy.float_],
+        intersect_matrix: NDArray[Union[numpy.int_, numpy.float64]],
+        FN_area: NDArray[numpy.float64],
         total_pixels: int
         ) -> Tuple[
             int,
@@ -1867,8 +1867,8 @@ def get_dominating_ID_objects(
         lID: NDArray[numpy.int_],
         iID: NDArray[numpy.int_],
         jID: NDArray[numpy.int_],
-        ID_pixels: NDArray[numpy.float_],
-        intersect_matrix: NDArray[Union[numpy.int_, numpy.float_]]
+        ID_pixels: NDArray[numpy.float64],
+        intersect_matrix: NDArray[Union[numpy.int_, numpy.float64]]
         ) -> NDArray[numpy.int_]:
     dom_ID = []
 
@@ -1900,7 +1900,7 @@ def get_intersect_matrix(
         lID: NDArray[numpy.int_],
         ID_obj: int, 
         GT_obj: int
-        ) -> NDArray[Union[numpy.int_, numpy.float_]]:
+        ) -> NDArray[Union[numpy.int_, numpy.float64]]:
     if len(iGT) == 0 and len(iID) == 0:
         intersect_matrix = numpy.zeros((0, 0), int)
     else:
@@ -1956,7 +1956,7 @@ def compute_rand_index_ijv(
         gt_ijv: ObjectSegmentationIJV,
         test_ijv: ObjectSegmentationIJV,
         shape: Union[Tuple[int, int], NDArray[numpy.int_]]
-    ) -> Tuple[numpy.float_, numpy.float_]:
+    ) -> Tuple[numpy.float64, numpy.float64]:
     """Compute the Rand Index for an IJV matrix
 
     This is in part based on the Omega Index:
@@ -2141,7 +2141,7 @@ def compute_earth_movers_distance_objects(
         max_points: int=250,
         max_distance: int=250,
         penalize_missing: bool=False,
-        ) -> numpy.float_:
+        ) -> numpy.float64:
     src_objects_shape = src_objects_label_set[0][0].shape
     dest_objects_shape = dest_objects_label_set[0][0].shape
 
@@ -2221,9 +2221,9 @@ def get_focus_score_for_scale_group(
         dimensions: int,
         image_mask: Optional[ImageGrayscaleMask]=None,
 ) -> Tuple[
-    NDArray[numpy.float_],
+    NDArray[numpy.float64],
     int,
-    Sequence[numpy.float_]
+    Sequence[numpy.float64]
 ]:
     if image_mask is not None:
             masked_pixel_data = pixel_data[image_mask]
@@ -2239,7 +2239,7 @@ def get_focus_score_for_scale_group(
             squared_normalized_image = (masked_pixel_data - mean_image_value) ** 2
             if mean_image_value > 0:
                 focus_score = numpy.sum(squared_normalized_image) / (
-                    numpy.product(masked_pixel_data.shape) * mean_image_value
+                    numpy.prod(masked_pixel_data.shape) * mean_image_value
                 )
         #
         # Create a labels matrix that grids the image to the dimensions
@@ -2310,7 +2310,7 @@ def get_correlation_for_scale_group(
         pixel_data: ImageGrayscale, 
         scale_groups: Sequence[int], 
         image_mask: Optional[ImageGrayscaleMask]=None
-    ) -> Dict[int, numpy.float_]:
+    ) -> Dict[int, numpy.float64]:
     # Compute Haralick's correlation texture for the given scales
     image_labels = numpy.ones(pixel_data.shape, int)
     if image_mask is not None:
@@ -2331,7 +2331,7 @@ def get_correlation_for_scale(
     if len(value) != 1 or not numpy.isfinite(value[0]):
         value = 0.0
     else:
-        value = float(value)
+        value = float(value[0])
     return value
 
 
@@ -2344,7 +2344,7 @@ def get_saturation_value(
     ]:
     if image_mask is not None:
         pixel_data = pixel_data[image_mask]
-    pixel_count = numpy.product(pixel_data.shape)
+    pixel_count = numpy.prod(pixel_data.shape)
     if pixel_count == 0:
         percent_maximal = 0
         percent_minimal = 0
@@ -2365,18 +2365,18 @@ def get_intensity_measurement_values(
         image_mask: Optional[ImageGrayscaleMask]=None
     ) -> Tuple[
         numpy.int_,
-        numpy.float_,
-        numpy.float_,
-        numpy.float_,
-        numpy.float_,
-        numpy.float_,
-        numpy.float_,
-        numpy.float_
+        numpy.float64,
+        numpy.float64,
+        numpy.float64,
+        numpy.float64,
+        numpy.float64,
+        numpy.float64,
+        numpy.float64
     ]:
     if image_mask is not None:
         pixels = pixels[image_mask]
     
-    pixel_count = numpy.product(pixels.shape)
+    pixel_count = numpy.prod(pixels.shape)
     if pixel_count == 0:
         pixel_sum = 0
         pixel_mean = 0
@@ -2387,7 +2387,7 @@ def get_intensity_measurement_values(
         pixel_max = 0
     else:
         pixel_sum = numpy.sum(pixels)
-        pixel_mean = pixel_sum / float(pixel_count)
+        pixel_mean = pixel_sum / numpy.float64(pixel_count)
         pixel_std = numpy.std(pixels)
         pixel_median = numpy.median(pixels)
         pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
@@ -2408,7 +2408,7 @@ def get_power_spectrum_measurement_values(
     if image_mask is not None:
         pixel_data = numpy.array(pixel_data)  # make a copy
         masked_pixels = pixel_data[image_mask]
-        pixel_count = numpy.product(masked_pixels.shape)
+        pixel_count = numpy.prod(masked_pixels.shape)
         if pixel_count > 0:
             pixel_data[~image_mask] = numpy.mean(masked_pixels)
         else:
@@ -2421,7 +2421,7 @@ def get_power_spectrum_measurement_values(
         power = power[valid].reshape((-1, 1))
         if radii.shape[0] > 1:
             idx = numpy.isfinite(numpy.log(power))
-            powerslope = scipy.linalg.basic.lstsq(
+            powerslope = scipy.linalg.lstsq(
                 numpy.hstack(
                     (
                         numpy.log(radii)[idx][:, numpy.newaxis],
@@ -2570,12 +2570,12 @@ def calculate_object_skeleton(
         intensity_image_pixel_data: Optional[Image2DGrayscale],
         wants_branchpoint_image: bool
         ) -> Tuple[
-            NDArray[numpy.float_], # trunk counts
-            NDArray[numpy.float_], # branch counts
-            NDArray[numpy.float_], # end counts
-            NDArray[numpy.float_], # total distance
-            Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
-            Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]],
+            NDArray[numpy.float64], # trunk counts
+            NDArray[numpy.float64], # branch counts
+            NDArray[numpy.float64], # end counts
+            NDArray[numpy.float64], # total distance
+            Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]],
+            Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]],
             Optional[Image2DColor],
         ]:
     #
@@ -2743,8 +2743,8 @@ def make_objskeleton_graph(
     endpoints: Image2DBinary, 
     image: Image2DGrayscale
     ) -> Tuple[
-        Dict[str, NDArray[Union[numpy.float_, numpy.int_]]],
-        Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]
+        Dict[str, NDArray[Union[numpy.float64, numpy.int_]]],
+        Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]
     ]:
     """Make a table that captures the graph relationship of the skeleton
 
@@ -2997,8 +2997,8 @@ def get_structuring_elements(
         distance: int, 
         dimensions: int
     ) -> Tuple[
-        NDArray[numpy.float_],
-        NDArray[numpy.float_]
+        NDArray[numpy.float64],
+        NDArray[numpy.float64]
     ]:
     # Make the structuring element for dilation
     if dimensions == 2:
@@ -3237,9 +3237,9 @@ def get_first_and_second_x_y_vectors_and_angle(
         ncenters: NDArray[numpy.int_], 
         object_indexes: NDArray[numpy.int_]
     ) -> Tuple[
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_]
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64]
     ]:
     angle = numpy.zeros((nobjects,))
     first_x_vector = numpy.zeros((nobjects,))
@@ -3292,7 +3292,7 @@ def get_first_and_second_x_y_vectors_and_angle(
 
 def get_extended_dilated_patch(
         patch_mask: NDArray[numpy.bool_], 
-        strel:  NDArray[numpy.float_], 
+        strel:  NDArray[numpy.float64],
         distance: int
     ):
     if distance <= 5:
@@ -3314,13 +3314,13 @@ def measure_object_neighbors(
         nkept_objects: int,
         wants_excluded_objects: bool=True,
         ) -> Tuple[
-        NDArray[numpy.float_],
+        NDArray[numpy.float64],
         NDArray[numpy.int_],
         NDArray[numpy.int_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
         NDArray[numpy.int_],
         NDArray[numpy.int_],
         Optional[NDArray[numpy.int_]],
@@ -3488,9 +3488,9 @@ def compute_center_distances(
     wants_scaled: bool,
     maximum_radius: int,
 ) -> Tuple[
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
-        NDArray[numpy.float_],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
+        NDArray[numpy.float64],
         NDArray[numpy.bool_]
     ]:
     """Compute per-pixel normalized distances from each object's center.
@@ -3705,7 +3705,7 @@ def compute_per_bin_distributions(
     labels: ObjectSegmentation,
     pixel_data: ImageGrayscale,
     good_mask: ObjectLabelMask,
-    normalized_distance: NDArray[numpy.float_],
+    normalized_distance: NDArray[numpy.float64],
     bin_count: int,
     nobjects: int,
 ) -> Tuple[
@@ -3775,8 +3775,8 @@ def compute_per_bin_distributions(
 
 def compute_radial_indexes(
     labels: ObjectSegmentation,
-    i_center: NDArray[numpy.float_],
-    j_center: NDArray[numpy.float_],
+    i_center: NDArray[numpy.float64],
+    j_center: NDArray[numpy.float64],
     good_mask: ObjectLabelMask,
 ) -> NDArray[numpy.int_]:
     """Assign each good-mask pixel to one of 8 angular wedges around its center.
@@ -4192,7 +4192,7 @@ def measure_centroid_distances(
     ccenters = centers_of_labels(child_labels)
 
     if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
-        dist = numpy.array([numpy.NaN] * len(parents_of))
+        dist = numpy.array([numpy.nan] * len(parents_of))
     else:
         #
         # Make indexing of parents_of be same as pcenters
@@ -4208,7 +4208,7 @@ def measure_centroid_distances(
         # Also need to check if parents_of indices are valid for pcenters array size
         # (Though relate_children should ensure parents_of contains valid parent labels)
 
-        dist = numpy.array([numpy.NaN] * ccenters.shape[0])
+        dist = numpy.array([numpy.nan] * ccenters.shape[0])
 
         if numpy.any(mask):
             # ccenters has shape (n_children, dims). 
@@ -4234,7 +4234,7 @@ def calculate_centroid_distances(
     ccenters = center_of_labels_mass(children, validate=False)
 
     if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
-        dist = numpy.array([numpy.NaN] * len(parents_of))
+        dist = numpy.array([numpy.nan] * len(parents_of))
     else:
         #
         # Make indexing of parents_of be same as pcenters
@@ -4243,7 +4243,7 @@ def calculate_centroid_distances(
 
         mask = (parents_of != -1) | (parents_of > pcenters.shape[0])
 
-        dist = numpy.array([numpy.NaN] * ccenters.shape[0])
+        dist = numpy.array([numpy.nan] * ccenters.shape[0])
 
         dist[mask] = numpy.sqrt(
             numpy.sum((ccenters[mask, :] - pcenters[parents_of[mask], :]) ** 2, 1)
@@ -4260,7 +4260,7 @@ def calculate_minimum_distances(
     if len(parents_of) == 0:
         dist = numpy.zeros((0,))
     elif numpy.all(parents_of == 0):
-        dist = numpy.array([numpy.NaN] * len(parents_of))
+        dist = numpy.array([numpy.nan] * len(parents_of))
     else:
         mask = parents_of > 0
 
@@ -4334,7 +4334,7 @@ def calculate_minimum_distances(
         min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
 
         # Account for unparented children
-        dist = numpy.array([numpy.NaN] * len(mask))
+        dist = numpy.array([numpy.nan] * len(mask))
         dist[mask] = min_dist
     return dist
     

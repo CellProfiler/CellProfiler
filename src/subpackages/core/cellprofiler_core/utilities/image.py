@@ -1,3 +1,4 @@
+import atexit
 import logging
 import os
 import re
@@ -43,6 +44,7 @@ It'll automatically delete on exit, and we create it early here so that it's
 one of the last objects to get deleted - any opened files must close first.
 """
 CP_TEMP_DIR = tempfile.TemporaryDirectory(prefix='cellprofiler_',)
+atexit.register(CP_TEMP_DIR.cleanup)
 
 
 def convert_image_to_objects(image):
@@ -142,7 +144,7 @@ def is_matlab_file(filename):
 
 
 def loadmat(path):
-    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
+    imgdata = scipy.io.loadmat(path, struct_as_record=True)
     img = imgdata["Image"]
 
     return img
@@ -269,7 +271,7 @@ def generate_presigned_url(url):
         client = boto3.client("s3")
 
         bucket_name, filename = (
-            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
+            re.compile("s3://([\\w\\d\\-.]+)/(.*)").search(url).groups()
         )
 
         url = client.generate_presigned_url(
@@ -344,7 +346,7 @@ def download_to_temp_file(url):
         # Handle Amazon Web Services URLs.
         if scheme == 's3':
             client = boto3.client('s3')
-            bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+            bucket_name, key = re.compile('s3://([\\w\\d\\-\\.]+)/(.*)').search(url).groups()
             # Get pre-signed URL.
             url = client.generate_presigned_url(
                 'get_object',

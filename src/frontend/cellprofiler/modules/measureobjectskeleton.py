@@ -192,8 +192,8 @@ row is the header; this names the file’s columns. Each subsequent row
 represents a vertex in the skeleton graph: either a trunk, a
 branchpoint or an endpoint. The file has the following columns:
 
--  *image\_number:* The image number of the associated image.
--  *vertex\_number:* The number of the vertex within the image.
+-  *image\\_number:* The image number of the associated image.
+-  *vertex\\_number:* The number of the vertex within the image.
 -  *i:* The I coordinate of the vertex.
 -  *j:* The J coordinate of the vertex.
 -  *label:* The label of the seed object associated with the vertex.
@@ -220,14 +220,14 @@ loops). Note that vertices include trunks, branchpoints, and endpoints.
 
 The file has the following columns:
 
--  *image\_number:* The image number of the associated image.
+-  *image\\_number:* The image number of the associated image.
 -  *v1:* The zero-based index into the vertex table of the first vertex
    in the edge.
 -  *v2:* The zero-based index into the vertex table of the second vertex
    in the edge.
 -  *length:* The number of pixels in the path connecting the two
    vertices, including both vertex pixels.
--  *total\_intensity:* The sum of the intensities of the pixels in the
+-  *total\\_intensity:* The sum of the intensities of the pixels in the
    edge, including both vertex pixel intensities.
 """,
         )
@@ -431,6 +431,7 @@ The file has the following columns:
         from matplotlib.axes import Axes
         from matplotlib.lines import Line2D
         import matplotlib.cm
+        import matplotlib.pyplot
 
         if self.wants_objskeleton_graph:
             figure.set_subplots((2, 1))
@@ -457,7 +458,7 @@ The file has the following columns:
             brightness = (brightness - numpy.min(brightness)) / (
                 numpy.max(brightness) - numpy.min(brightness) + 0.000001
             )
-            cm = matplotlib.cm.get_cmap(get_default_colormap())
+            cm = matplotlib.pyplot.get_cmap(get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)
             for idx in range(len(edge_graph["v1"])):

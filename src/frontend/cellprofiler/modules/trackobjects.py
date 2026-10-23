@@ -1372,6 +1372,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
     def draw(self, labels, ax, object_numbers):
         import matplotlib.cm
+        import matplotlib.pyplot
         import matplotlib.colors
 
         indexer = np.zeros(len(object_numbers) + 1, int)
@@ -1386,8 +1387,8 @@ Enter a name to give the color-coded image of tracked labels.""",
         bits = (indexer & pow_of_2).astype(bool)
         indexer = np.sum(bits.transpose() * (2 ** np.arange(7, -1, -1)), 1)
         recolored_labels = indexer[labels]
-        cm = matplotlib.cm.get_cmap(get_default_colormap())
-        cm.set_bad((0, 0, 0))
+        cm = matplotlib.pyplot.get_cmap(get_default_colormap())
+        cm = cm.with_extremes(bad=(0, 0, 0))
         norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(
             numpy.ma.array(recolored_labels, mask=(labels == 0)), cmap=cm, norm=norm
@@ -1613,8 +1614,8 @@ Enter a name to give the color-coded image of tracked labels.""",
             #  Kalman filter update
             #
             model_idx = np.zeros(len(old_object_numbers), int)
-            linking_distance = np.ones(len(old_object_numbers)) * np.NaN
-            standard_deviation = np.ones(len(old_object_numbers)) * np.NaN
+            linking_distance = np.ones(len(old_object_numbers)) * np.nan
+            standard_deviation = np.ones(len(old_object_numbers)) * np.nan
             model_type = np.ones(len(old_object_numbers), int) * KM_NONE
             link_type = np.ones(len(old_object_numbers), int) * LT_NONE
             mask = old_object_numbers > 0
@@ -1668,8 +1669,8 @@ Enter a name to give the color-coded image of tracked labels.""",
             count = len(i)
             link_type = np.ones(count, int) * LT_NONE
             model_type = np.ones(count, int) * KM_NONE
-            linking_distance = np.ones(count) * np.NaN
-            standard_deviation = np.ones(count) * np.NaN
+            linking_distance = np.ones(count) * np.nan
+            standard_deviation = np.ones(count) * np.nan
             #
             # Initialize the kalman_state with the new objects
             #
@@ -1749,7 +1750,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 mname = self.measurement_name(kalman_feature(model, F_NOISE, element))
                 values = np.zeros(nobjs)
                 if nobjs > 0:
-                    values[last_idx == -1] = np.NaN
+                    values[last_idx == -1] = np.nan
                     values[last_idx > -1] = kalman_state.state_noise[
                         last_idx[last_idx > -1], i
                     ]
@@ -2299,7 +2300,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         #      LAP Processing # 1
         #
         x, y = lapjv(i, j, c)
-        score_matrix = scipy.sparse.coo.coo_matrix((c, (i, j))).tocsr()
+        score_matrix = scipy.sparse.coo_matrix((c, (i, j))).tocsr()
 
         # ---------------------------
         #
@@ -2782,7 +2783,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 if data_type == np.int32:
                     values = np.zeros(n_objects, data_type)
                 else:
-                    values = np.ones(n_objects, data_type) * np.NaN
+                    values = np.ones(n_objects, data_type) * np.nan
                 if (is_fixups is not None) and (feature in is_fixups):
                     object_numbers, fixup_values = [
                         np.array(_) for _ in is_fixups[feature]
@@ -3108,10 +3109,10 @@ Enter a name to give the color-coded image of tracked labels.""",
             minimum_lifetime = (
                 self.min_lifetime.value
                 if self.wants_minimum_lifetime.value
-                else -np.Inf
+                else -np.inf
             )
             maximum_lifetime = (
-                self.max_lifetime.value if self.wants_maximum_lifetime.value else np.Inf
+                self.max_lifetime.value if self.wants_maximum_lifetime.value else np.inf
             )
 
         for image_number in image_numbers:
@@ -3184,7 +3185,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             if self.wants_lifetime_filtering.value:
                 if len(labels_to_filter) > 0:
                     this_label = label[index].astype(float)
-                    this_label[np.in1d(this_label, np.array(labels_to_filter))] = np.NaN
+                    this_label[np.isin(this_label, np.array(labels_to_filter)).ravel()] = np.nan
                     label[index] = this_label
         m.add_experiment_measurement(F_EXPT_ORIG_NUMTRACKS, nlabels)
         if self.wants_lifetime_filtering.value:
@@ -3286,7 +3287,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             old_age = self.get_saved_ages(workspace)
             age[has_old] = old_age[old_of_new[has_old] - 1] + 1
         self.add_measurement(workspace, F_LIFETIME, age)
-        final_age = np.NaN * np.ones(
+        final_age = np.nan * np.ones(
             new_count, float
         )  # Initialize to NaN; will re-calc later
         self.add_measurement(workspace, F_FINAL_AGE, final_age)

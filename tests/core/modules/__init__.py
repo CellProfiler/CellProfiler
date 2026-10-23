@@ -140,7 +140,7 @@ def make_12_bit_image(folder, filename, shape):
     # Get the IFDs we don't modify
     for idx in range(nentries):
         ifd = data[offset + 2 + idx * 12 : offset + 14 + idx * 12]
-        code = ifd[0] + 256 * ifd[1]
+        code = int(ifd[0]) + 256 * int(ifd[1])
         if code not in (258, 281):
             ifds.append(ifd)
     ifds += [
@@ -244,7 +244,7 @@ def read_example_image(folder, file_name, **kwargs):
 
     **kwargs - any keyword arguments are passed onto load_image
     """
-    import imageio
+    import imageio.v2 as imageio
 
     path = os.path.join(example_images_directory(), folder, file_name)
     maybe_download_example_image([folder], file_name)

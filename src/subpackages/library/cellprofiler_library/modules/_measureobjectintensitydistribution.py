@@ -55,9 +55,9 @@ def record_bin_measurements(
     labels: ObjectSegmentation,
     pixel_data: Image2DGrayscale,
     nobjects: int,
-    normalized_distance: NDArray[numpy.float_],
-    i_center: NDArray[numpy.float_],
-    j_center: NDArray[numpy.float_],
+    normalized_distance: NDArray[numpy.float64],
+    i_center: NDArray[numpy.float64],
+    j_center: NDArray[numpy.float64],
     good_mask: ObjectLabelMask,
     heatmaps: List[TemplateMeasurementFormat],
 ):
@@ -74,8 +74,8 @@ def record_bin_measurements(
     radial_index = compute_radial_indexes(labels, i_center, j_center, good_mask)
 
     statistics: MeasureObjectIntensityDistributionStatistics = []
-    measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
-    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]] = {
+    measurement_pairs: List[Tuple[str, NDArray[numpy.float64]]] = []
+    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float64]] = {
         template: numpy.zeros(labels.shape)
         for template in heatmaps
     }
@@ -219,11 +219,11 @@ def calculate_zernikes_for_image(
 
 CenterDistanceCache = Tuple[
     # normalized_distance
-    NDArray[numpy.float_],
+    NDArray[numpy.float64],
     # i_center
-    NDArray[numpy.float_],
+    NDArray[numpy.float64],
     # j_center
-    NDArray[numpy.float_],
+    NDArray[numpy.float64],
     # good_mask
     NDArray[numpy.bool_],
 ]
@@ -246,7 +246,7 @@ class MeasureObjectIntensityDistributionDisplayData(BaseModel):
     )
 
     statistics: MeasureObjectIntensityDistributionStatistics
-    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float_]]
+    heatmap_arrays: Dict[TemplateMeasurementFormat, NDArray[numpy.float64]]
 
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -345,7 +345,7 @@ def measureobjectintensitydistribution(
     if nobjects == 0:
         stats_row = (image_name, object_name, "no objects", "-", "-", "-", "-")
 
-        measurement_pairs: List[Tuple[str, NDArray[numpy.float_]]] = []
+        measurement_pairs: List[Tuple[str, NDArray[numpy.float64]]] = []
         for bin_index in range(1, bin_count + 1):
             for feature in F_ALL:
                 feature_name = (feature + FF_GENERIC) % (

@@ -9,7 +9,7 @@ from cellprofiler_library.functions.measurement import (
 from cellprofiler_library.types import ImageBinary, ImageBinaryMask
 from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
 
-ImageOverlapStatistics = List[Tuple[str, Union[int, float, numpy.float_, numpy.int_]]]
+ImageOverlapStatistics = List[Tuple[str, Union[int, float, numpy.float64, numpy.int_]]]
 
 class ImageOverlapDisplayData(BaseModel):
     model_config = ConfigDict(

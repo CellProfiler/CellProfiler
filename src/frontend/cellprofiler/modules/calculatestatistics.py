@@ -46,25 +46,25 @@ ways:
 .. _Ilya Ravkin: http://www.ravkin.net
 
 -  As metadata (so that the column header is prefixed with the
-   “Metadata\_” tag). “Metadata” is the category and the name after the
+   “Metadata\\_” tag). “Metadata” is the category and the name after the
    underscore is the measurement.
 -  As some other type of data, in which case the header needs to be of
-   the form *<prefix>\_<measurement>*. Select *<prefix>* as the category
+   the form *<prefix>\\_<measurement>*. Select *<prefix>* as the category
    and *<measurement>* as the measurement.
 
 Here is an example file:
 
-+-------------------------+-------------------------+------------------+--------------+
-| Image\_FileName\_CY3,   | Image\_PathName\_CY3,   | Data\_Control,   | Data\_Dose   |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A01.tif”,      | “/images”,              | -1,              | 0            |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A02.tif”,      | “/images”,              | 1,               | 1E10         |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A03.tif”,      | “/images”,              | 0,               | 3E4          |
-+-------------------------+-------------------------+------------------+--------------+
-| “Plate1\_A04.tif”,      | “/images”,              | 0,               | 5E5          |
-+-------------------------+-------------------------+------------------+--------------+
++---------------------------+---------------------------+-------------------+---------------+
+| Image\\_FileName\\_CY3,   | Image\\_PathName\\_CY3,   | Data\\_Control,   | Data\\_Dose   |
++---------------------------+---------------------------+-------------------+---------------+
+| “Plate1\\_A01.tif”,       | “/images”,                | -1,               | 0             |
++---------------------------+---------------------------+-------------------+---------------+
+| “Plate1\\_A02.tif”,       | “/images”,                | 1,                | 1E10          |
++---------------------------+---------------------------+-------------------+---------------+
+| “Plate1\\_A03.tif”,       | “/images”,                | 0,                | 3E4           |
++---------------------------+---------------------------+-------------------+---------------+
+| “Plate1\\_A04.tif”,       | “/images”,                | 0,                | 5E5           |
++---------------------------+---------------------------+-------------------+---------------+
 
 |
 
@@ -80,15 +80,15 @@ Measurements made by this module
    -  *Zfactor:* The Z’-factor indicates how well separated the positive
       and negative controls are. A Z’-factor > 0 is potentially
       screenable; a Z’-factor > 0.5 is considered an excellent assay.
-      The formula is 1 - 3 × (σ\ :sub:`p` +
-      σ\ :sub:`n`)/\|μ\ :sub:`p` - μ\ :sub:`n`\ \| where σ\ :sub:`p` and
-      σ\ :sub:`n` are the standard deviations of the positive and
-      negative controls, and μ\ :sub:`p` and μ\ :sub:`n` are the means
+      The formula is 1 - 3 × (σ\\ :sub:`p` +
+      σ\\ :sub:`n`)/\\|μ\\ :sub:`p` - μ\\ :sub:`n`\\ \\| where σ\\ :sub:`p` and
+      σ\\ :sub:`n` are the standard deviations of the positive and
+      negative controls, and μ\\ :sub:`p` and μ\\ :sub:`n` are the means
       of the positive and negative controls.
    -  *Vfactor:* The V-factor is a generalization of the Z’-factor, and
-      is calculated as 1 - 6 × mean(σ)/\|μ\ :sub:`p` -
-      μ\ :sub:`n`\ \| where σ are the standard deviations of the data,
-      and μ\ :sub:`p` and μ\ :sub:`n` are defined as above.
+      is calculated as 1 - 6 × mean(σ)/\\|μ\\ :sub:`p` -
+      μ\\ :sub:`n`\\ \\| where σ are the standard deviations of the data,
+      and μ\\ :sub:`p` and μ\\ :sub:`n` are defined as above.
    -  *EC50:* The half maximal effective concentration (EC50) is the
       concentration of a treatment required to induce a response that
       is 50% of the maximal response.
@@ -285,7 +285,7 @@ You will be asked for information on how to save the plots."""
 
 CellProfiler will create a file name by appending the measurement name
 to the prefix you enter here. For instance, if you specify a prefix
-of “Dose\_”, when saving a file related to objects you have chosen (for
+of “Dose\\_”, when saving a file related to objects you have chosen (for
 example, *Cells*) and a particular measurement (for example, *AreaShape_Area*),
 CellProfiler will save the figure as *Dose_Cells_AreaShape_Area.m*.
 Leave this setting blank if you do not want a prefix.

@@ -5,6 +5,43 @@ import scipy.ndimage
 import centriole.smooth as cpms
 
 
+class TestFitPolynomial(unittest.TestCase):
+    def test_known_polynomial(self):
+        x, y = np.mgrid[:13, :17]
+        expected = (
+            0.25 + x / 64 + y / 128 + x * x / 4096
+            - x * y / 8192 + y * y / 8192
+        )
+        for dtype in (np.float32, np.float64):
+            for masked in (False, True):
+                with self.subTest(dtype=dtype, masked=masked):
+                    mask = (x + y) % 3 != 0 if masked else np.ones(x.shape, bool)
+                    result = cpms.fit_polynomial(expected.astype(dtype), mask)
+                    self.assertEqual(result.shape, expected.shape)
+                    self.assertEqual(result.dtype, np.dtype(np.float64))
+                    np.testing.assert_allclose(result, expected, rtol=0, atol=1e-12)
+
+    def test_rank_deficient_fit(self):
+        pixels = np.zeros((7, 9), dtype=np.float32)
+        pixels[0, 0] = 0.5
+        mask = np.zeros(pixels.shape, bool)
+        mask[0, 0] = True
+        result = cpms.fit_polynomial(pixels, mask)
+        self.assertEqual(result.shape, pixels.shape)
+        self.assertEqual(result.dtype, np.dtype(np.float64))
+        np.testing.assert_array_equal(result, np.full(pixels.shape, 0.5))
+
+    def test_extrapolation_and_clipping(self):
+        x, y = np.mgrid[:13, :17]
+        expected = x / 4 - y / 8 + 0.125
+        mask = np.ones(expected.shape, bool)
+        for clip in (False, True):
+            with self.subTest(clip=clip):
+                result = cpms.fit_polynomial(expected, mask, clip=clip)
+                target = np.clip(expected, 0, 1) if clip else expected
+                np.testing.assert_allclose(result, target, rtol=0, atol=1e-12)
+
+
 class TestSmoothWithNoise(unittest.TestCase):
     def test_01_smooth_zero(self):
         """Make sure smooth doesn't crash on all zeros"""

@@ -57,7 +57,7 @@ ellipse with the same second-moments as each object.
    region in the image.
 -  *SurfaceArea:* *(3D only)* The total number of voxels around the boundary of
    each region in the image.
--  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
+-  *FormFactor:* *(2D only)* Calculated as 4\\*π\\*Area/Perimeter\\ :sup:`2`. Equals 1
    for a perfectly circular object.
 -  *Convex Area:* The area of a convex polygon containing the whole object.
    Best imagined as a rubber band stretched around the object. 
@@ -68,12 +68,12 @@ ellipse with the same second-moments as each object.
    by the area/volume of the bounding box.
 -  *EulerNumber:* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
--  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
+-  *Center\\_X, Center\\_Y, Center\\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
    coordinates of the point farthest away from any object edge (the *centroid*).
    Note that this is not the same as the *Location-X* and *-Y* measurements
    produced by the **Identify** or **Watershed**
    modules or the *Location-Z* measurement produced by the **Watershed** module.
--  *BoundingBoxMinimum/Maximum\_X/Y/Z:* The minimum/maximum *x*-, *y*-, and (for 3D objects)
+-  *BoundingBoxMinimum/Maximum\\_X/Y/Z:* The minimum/maximum *x*-, *y*-, and (for 3D objects)
    *z-* coordinates of the object.
 -  *BoundingBoxArea:* *(2D only)* The area of a box containing the object.
 -  *BoundingBoxVolume:* *(3D only)* The volume of a box containing the object.
@@ -98,7 +98,7 @@ ellipse with the same second-moments as each object.
 -  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
--  *Compactness:* *(2D only)* Calculated as Perimeter\ :sup:`2`/4\*π\*Area, related to 
+-  *Compactness:* *(2D only)* Calculated as Perimeter\\ :sup:`2`/4\\*π\\*Area, related to 
    Form Factor. A filled circle will have a compactness of 1, with irregular objects or 
    objects with holes having a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to

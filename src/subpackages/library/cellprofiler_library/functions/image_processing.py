@@ -19,7 +19,10 @@ import scipy
 import scipy.interpolate
 import scipy.sparse
 import matplotlib
+import matplotlib.pyplot
 import math
+from functools import reduce
+from operator import add
 from numpy.typing import NDArray
 from centriole.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
@@ -88,7 +91,7 @@ def enhance_edges_sobel(
     elif direction == EdgeDirection.VERTICAL:
         output_pixels = centriole.filter.vsobel(image, mask)
     else:
-        raise NotImplementedError(f"Unimplemented direction for Sobel: {direction}")
+        raise NotImplementedError(f"Unimplemented direction for Sobel: {direction.value if isinstance(direction, EdgeDirection) else direction}")
     return output_pixels
 
 
@@ -114,7 +117,7 @@ def enhance_edges_prewitt(
     elif direction == EdgeDirection.VERTICAL:
         output_pixels = centriole.filter.vprewitt(image, mask)
     else:
-        raise NotImplementedError(f"Unimplemented direction for Prewitt: {direction}")
+        raise NotImplementedError(f"Unimplemented direction for Prewitt: {direction.value if isinstance(direction, EdgeDirection) else direction}")
     return output_pixels
 
 
@@ -197,7 +200,12 @@ def morphological_skeleton_2d(image):
 
 
 def morphological_skeleton_3d(image):
-    return skimage.morphology.skeletonize_3d(image)
+    if image.ndim < 2 or image.ndim > 3:
+        raise ValueError(
+            "skeletonize_3d can only handle 2D or 3D images; "
+            f"got image.ndim = {image.ndim} instead."
+        )
+    return skimage.morphology.skeletonize(image, method="lee")
 
 
 ################################################################################
@@ -487,12 +495,12 @@ def get_threshold_robust_background(
     # Check if the averaging method is valid
     if averaging_method not in averaging_method_map:
         raise ValueError(
-            f"{averaging_method} not in {', '.join([e.value for e in Threshold.AveragingMethod])}. "
+            f"{averaging_method.value if isinstance(averaging_method, Threshold.AveragingMethod) else averaging_method} not in {', '.join([e.value for e in Threshold.AveragingMethod])}. "
         )
     # Check if the variance method is valid
     if variance_method not in variance_method_map:
         raise ValueError(
-            f"{variance_method} not in {', '.join([e.value for e in Threshold.VarianceMethod])}. "
+            f"{variance_method.value if isinstance(variance_method, Threshold.VarianceMethod) else variance_method} not in {', '.join([e.value for e in Threshold.VarianceMethod])}. "
         )
     
     average_fn = averaging_method_map[averaging_method]
@@ -686,7 +694,7 @@ def get_adaptive_threshold(
         thresh_out = skimage.filters.threshold_sauvola(image, window_size)
         
     else:
-        raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
+        raise NotImplementedError(f"Threshold method {threshold_method.value if isinstance(threshold_method, Threshold.Method) else threshold_method} not supported.")
 
     if thresh_out is None:
         thresh_out = __apply_threshold_function(
@@ -771,7 +779,7 @@ def get_global_threshold(
     elif threshold_method.casefold() == Threshold.Method.MAX_INTENSITY_PERCENTAGE:
         threshold = max_intensity_percentage * numpy.max(image) / 100
     else:
-        raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
+        raise NotImplementedError(f"Threshold method {threshold_method.value if isinstance(threshold_method, Threshold.Method) else threshold_method} not supported.")
 
     if log_transform:
         threshold = centriole.threshold.inverse_log_transform(
@@ -811,7 +819,7 @@ def apply_threshold(
 
 
 def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, colormap="jet"):
-    cmap = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.get_cmap(colormap))
+    cmap = matplotlib.cm.ScalarMappable(cmap=matplotlib.pyplot.get_cmap(colormap))
 
     colors = cmap.to_rgba(
         numpy.arange(labels.max() if max_label is None else max_label)
@@ -880,7 +888,7 @@ def combine_colortogray(
     channels:       List[int],
     contributions:  List[float],
     ) -> Image2DGrayscale:
-    denominator = sum(contributions)
+    denominator = reduce(add, contributions, 0)
     _channels = numpy.array(channels, int)
     _contributions = numpy.array(contributions) / denominator
 
@@ -1063,7 +1071,7 @@ def get_cropped_mask(
         if mask is None:
             mask = crop_image(cropping, cropping, crop_internal)
     else:
-        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method.value if isinstance(removal_method, RemovalMethod) else removal_method}")
     assert mask is not None
     return mask
 
@@ -1101,7 +1109,7 @@ def get_cropped_image_mask(
         else:
             image_mask = mask
     else:
-        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method.value if isinstance(removal_method, RemovalMethod) else removal_method}")
 
     return image_mask
 
@@ -1117,7 +1125,7 @@ def get_cropped_image_pixels(
     elif removal_method in (RemovalMethod.EDGES, RemovalMethod.ALL):
         cropped_pixel_data = apply_crop_remove_rows_and_columns(orig_image_pixels, cropping, mask, removal_method)
     else:
-        raise NotImplementedError(f"Unimplemented removal method: {removal_method}")
+        raise NotImplementedError(f"Unimplemented removal method: {removal_method.value if isinstance(removal_method, RemovalMethod) else removal_method}")
     return cropped_pixel_data
 
 
@@ -1206,8 +1214,8 @@ def enhance_speckles(
         #              = img - dilate(erode)
         #              = img - maximum_filter(minimum_filter)
         #
-        minimum = scipy.ndimage.filters.minimum_filter(data, footprint=footprint)
-        maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=footprint)
+        minimum = scipy.ndimage.minimum_filter(data, footprint=footprint)
+        maximum = scipy.ndimage.maximum_filter(minimum, footprint=footprint)
         result = data - maximum
         
     return __unmask(result, im_pixel_data, im_mask)
@@ -1768,7 +1776,7 @@ def fill_holes(image: ImageAny, diameter: float) -> ImageAny:
 
     size = numpy.pi * factor
 
-    return skimage.morphology.remove_small_holes(image, size)
+    return skimage.morphology.remove_small_holes(image.astype(bool, copy=False), size)
 
 ################################################################################
 # ImageMath
@@ -1843,7 +1851,7 @@ def imagemath_apply_binary_operation(
         Operator.DIVIDE: numpy.divide,
     }
     if opval not in op_fn_dispatch:
-        raise NotImplementedError(f"Unimplemented operation: {opval}")
+        raise NotImplementedError(f"Unimplemented operation: {opval.value if isinstance(opval, Operator) else opval}")
     #
     # Binary operations
     #
@@ -1879,7 +1887,7 @@ def imagemath_apply_binary_operation(
     if opval == Operator.AVERAGE:
         if not use_logical:
             assert image_factors is not None, "image_factors must be provided for average operation"
-            output_pixel_data /= sum(image_factors)
+            output_pixel_data /= reduce(add, image_factors, 0)
     return output_pixel_data, output_mask
 
 
@@ -2436,8 +2444,8 @@ def align_cross_correlation(
     # the mean^2 by the # of elements being summed-over
     # to account for the mean being summed that many times.
     #
-    p1sd = numpy.sum(pixels1 ** 2) - p1_mean ** 2 * numpy.product(s)
-    p2sd = numpy.sum(pixels2 ** 2) - p2_mean ** 2 * numpy.product(s)
+    p1sd = numpy.sum(pixels1 ** 2) - p1_mean ** 2 * numpy.prod(s)
+    p2sd = numpy.sum(pixels2 ** 2) - p2_mean ** 2 * numpy.prod(s)
     #
     # There's always chance of roundoff error for a zero value
     # resulting in a negative sd, so limit the sds here
@@ -2449,7 +2457,7 @@ def align_cross_correlation(
     # deviation is less than 1/100 of the maximum. We exclude these
     # from consideration.
     #
-    corrnorm[(unit < numpy.product(s) / 2) & (sd < numpy.mean(sd) / 100)] = 0
+    corrnorm[(unit < numpy.prod(s) / 2) & (sd < numpy.mean(sd) / 100)] = 0
     i, j = numpy.unravel_index(numpy.argmax(corrnorm), fshape)
     #
     # Reflect values that fall into the second half
@@ -2889,7 +2897,7 @@ def get_smoothing_filter_size(
         assert image_shape is not None, "Image shape must be provided"
         filter_size = min(30, float(numpy.max(image_shape)) / 40.0)
     else:
-        raise ValueError(f"Unknown smoothing filter size: {automatic_object_width}")
+        raise ValueError(f"Unknown smoothing filter size: {automatic_object_width.value if isinstance(automatic_object_width, SmoothingFilterSize) else automatic_object_width}")
     return filter_size
 
 

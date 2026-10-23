@@ -173,14 +173,14 @@ class Module:
         if BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = numpy.array(settings[BATCH_STATE][0, idx].tostring())
+            self.batch_state = numpy.array(settings[BATCH_STATE][0, idx].tobytes())
         setting_count = settings[NUMBERS_OF_VARIABLES][0, idx]
         variable_revision_number = settings[VARIABLE_REVISION_NUMBERS][0, idx]
         module_name = settings[MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
             value_cell = settings[VARIABLE_VALUES][idx, i]
             if isinstance(value_cell, numpy.ndarray):
-                if numpy.product(value_cell.shape) == 0:
+                if numpy.prod(value_cell.shape) == 0:
                     setting_values.append("")
                 else:
                     setting_values.append(str(value_cell[0]))
@@ -357,9 +357,9 @@ class Module:
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[BATCH_STATE][0, module_idx] = numpy.fromstring(
-            self.batch_state.tostring(), numpy.uint8
-        )
+        setting[BATCH_STATE][0, module_idx] = numpy.frombuffer(
+            self.batch_state.tobytes(), numpy.uint8
+        ).copy()
 
     @staticmethod
     def in_batch_mode():

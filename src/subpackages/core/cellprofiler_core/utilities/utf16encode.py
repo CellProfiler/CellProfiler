@@ -1,5 +1,5 @@
 """
-/!\ WARNING - DEPRECATED /!\
+/!\\ WARNING - DEPRECATED /!\
 utf16encode.py - encode unicode strings as escaped utf16
 This is only used for pipeline version < 3 files
 """

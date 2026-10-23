@@ -12,7 +12,15 @@ if NP_MAJOR_VERSION >= 2:
     np_Inf = np.inf
 else:
     # NumPy 1.x aliases
-    np_product = np.product
-    np_cumproduct = np.cumproduct
-    np_NaN = np.NaN
-    np_Inf = np.Inf 
+    np_product = np.prod
+    np_cumproduct = np.cumprod
+    np_NaN = np.nan
+    np_Inf = np.inf
+
+
+def reshape_in_place(array, shape):
+    setter = getattr(array, "_set_shape", None)
+    if type(array) is np.ndarray and setter is not None:
+        setter(shape)
+    else:
+        array.shape = shape

@@ -100,7 +100,7 @@ This module can use one of two color schemes to combine images:
    together. An arbitrary number of channels can be composited into a
    single color image.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB, "SCHEME_CMYK": Scheme.CMYK, "SCHEME_STACK": Scheme.STACK, "SCHEME_COMPOSITE": Scheme.COMPOSITE}
+                **{"SCHEME_RGB": Scheme.RGB.value, "SCHEME_CMYK": Scheme.CMYK.value, "SCHEME_STACK": Scheme.STACK.value, "SCHEME_COMPOSITE": Scheme.COMPOSITE.value}
             )
         )
 
@@ -133,7 +133,7 @@ in clipping.""",
 
 Select the input image to be displayed in red.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
 
@@ -146,7 +146,7 @@ Select the input image to be displayed in red.
 
 Select the input image to be displayed in green.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
 
@@ -159,7 +159,7 @@ Select the input image to be displayed in green.
 
 Select the input image to be displayed in blue.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
 
@@ -181,7 +181,7 @@ equal, all three colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
 
@@ -197,7 +197,7 @@ are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
 
@@ -213,7 +213,7 @@ are equal, all three colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_RGB": Scheme.RGB}
+                **{"SCHEME_RGB": Scheme.RGB.value}
             )
         )
         # # # # # # # # # # # # # #
@@ -230,7 +230,7 @@ weights.
 
 Select the input image to be displayed in cyan.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -243,7 +243,7 @@ Select the input image to be displayed in cyan.
 
 Select the input image to be displayed in magenta.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -256,7 +256,7 @@ Select the input image to be displayed in magenta.
 
 Select the input image to be displayed in yellow.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -269,7 +269,7 @@ Select the input image to be displayed in yellow.
 
 Select the input image that will determine each pixel's brightness.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -285,7 +285,7 @@ are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -301,7 +301,7 @@ are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -317,7 +317,7 @@ are equal, all colors contribute equally in the final image. To weight
 colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -333,7 +333,7 @@ weights are equal, all colors contribute equally in the final image. To
 weight colors relative to each other, increase or decrease the relative
 weights.
 """.format(
-                **{"SCHEME_CMYK": Scheme.CMYK}
+                **{"SCHEME_CMYK": Scheme.CMYK.value}
             )
         )
 
@@ -368,7 +368,7 @@ weights.
 
 Select the input image to add to the stacked image.
 """.format(
-                **{"SCHEME_STACK": Scheme.STACK, "SCHEME_COMPOSITE": Scheme.COMPOSITE}
+                **{"SCHEME_STACK": Scheme.STACK.value, "SCHEME_COMPOSITE": Scheme.COMPOSITE.value}
             )
             ),
         )
@@ -382,7 +382,7 @@ Select the input image to add to the stacked image.
 
 The color to be assigned to the above image.
 """.format(
-                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE}
+                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE.value}
             )
             ),
         )
@@ -398,7 +398,7 @@ The color to be assigned to the above image.
 The weighting of the above image relative to the others. The image’s
 pixel values are multiplied by this weight before assigning the color.
 """.format(
-                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE}
+                **{"SCHEME_COMPOSITE": Scheme.COMPOSITE.value}
             )
             ),
         )

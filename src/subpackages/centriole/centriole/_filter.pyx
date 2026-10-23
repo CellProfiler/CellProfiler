@@ -3,15 +3,6 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-cdef extern from "Python.h":
-    ctypedef int Py_intptr_t
-
-cdef extern from "numpy/arrayobject.h":
-    ctypedef class numpy.ndarray [object PyArrayObject]:
-        cdef char *data
-        cdef Py_intptr_t *strides
-    cdef int  PyArray_ITEMSIZE(np.ndarray)
-
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
     void free(void *ptr)
@@ -807,9 +798,9 @@ def masked_convolution(np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=F
     #
     # stride in number of elements across the i direction
     #
-    istride = data.strides[0] // PyArray_ITEMSIZE(data)
-    mstride = big_mask.strides[0] // PyArray_ITEMSIZE(big_mask)
-    kstride = kernel.strides[0] // PyArray_ITEMSIZE(kernel)
+    istride = data.strides[0] // np.PyArray_ITEMSIZE(data)
+    mstride = big_mask.strides[0] // np.PyArray_ITEMSIZE(big_mask)
+    kstride = kernel.strides[0] // np.PyArray_ITEMSIZE(kernel)
     #
     # pointers to data. pmask is offset to point at the 0,0 element
     # pkernel is offset to point at the middle of the kernel

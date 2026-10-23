@@ -348,7 +348,7 @@ def test_otsu3_low():
             numpy.random.poisson(30, size=300),
         )
     ).astype(numpy.float32)
-    image.shape = (30, 30)
+    image = image.reshape(30, 30)
     image = centriole.filter.stretch(image)
     t1, threshold = skimage.filters.threshold_multiotsu(image, nbins=128)
     workspace, module = make_workspace(image)
@@ -376,7 +376,7 @@ def test_otsu3_high():
             numpy.random.poisson(30, size=300),
         )
     )
-    image.shape = (30, 30)
+    image = image.reshape(30, 30)
     image = centriole.filter.stretch(image)
     threshold, t2 = skimage.filters.threshold_multiotsu(image, nbins=128)
     workspace, module = make_workspace(image)

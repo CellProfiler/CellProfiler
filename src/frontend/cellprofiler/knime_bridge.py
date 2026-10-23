@@ -75,8 +75,8 @@ class KnimeBridgeServer(threading.Thread):
 
     def __init__(self, context, address, notify_address, notify_stop, **kwargs):
         super(KnimeBridgeServer, self).__init__(**kwargs)
-        self.setDaemon(True)
-        self.setName("Knime bridge server")
+        self.daemon = True
+        self.name = "Knime bridge server"
         self.address = address
         self.context = context
         self.notify_addr = notify_address
@@ -688,9 +688,18 @@ class KnimeBridgeServer(threading.Thread):
                 dimensions_out[-1],
                 dimensions_out[:-1],
             )
-        pixel_data.shape = tuple(dimensions_out)
-        pixel_data.strides = tuple(strides_out)
-        return pixel_data
+        pixel_data = pixel_data.reshape(tuple(dimensions_out))
+        try:
+            return numpy.ndarray(
+                pixel_data.shape,
+                dtype=pixel_data.dtype,
+                buffer=pixel_data,
+                strides=tuple(strides_out),
+            )
+        except ValueError:
+            raise ValueError("strides is not compatible with available memory") from None
+        except TypeError:
+            raise TypeError("invalid strides") from None
 
 
 __all__ = ['KnimeBridgeServer']

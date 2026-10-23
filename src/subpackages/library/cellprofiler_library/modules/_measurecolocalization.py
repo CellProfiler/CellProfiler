@@ -78,10 +78,10 @@ def crop_image_pair_and_object_similarly(
     # Code below is used for the Costes' automated thresholding
     #
     # im1_mask = im1_mask
-    im1_pixel_count = np.product(im1_pixel_data.shape)
+    im1_pixel_count = np.prod(im1_pixel_data.shape)
     im2_pixel_data = im2_pixel_data
     # im2_mask = im2_mask
-    im2_pixel_count = np.product(im2_pixel_data.shape)
+    im2_pixel_count = np.prod(im2_pixel_data.shape)
     #
     # Crop the larger image similarly to the smaller one
     #
@@ -137,17 +137,17 @@ def run_image_pair_images(
     measurements = LibraryMeasurements()
     summary: ColocalizationStatistics = []
 
-    corr =      np.float64(np.NaN)
-    slope =     np.float64(np.NaN)
-    C1 =        np.float64(np.NaN)
-    C2 =        np.float64(np.NaN)
-    M1 =        np.float64(np.NaN)
-    M2 =        np.float64(np.NaN)
-    RWC1 =      np.float64(np.NaN)
-    RWC2 =      np.float64(np.NaN)
-    overlap =   np.float64(np.NaN)
-    K1 =        np.float64(np.NaN)
-    K2 =        np.float64(np.NaN)
+    corr =      np.float64(np.nan)
+    slope =     np.float64(np.nan)
+    C1 =        np.float64(np.nan)
+    C2 =        np.float64(np.nan)
+    M1 =        np.float64(np.nan)
+    M2 =        np.float64(np.nan)
+    RWC1 =      np.float64(np.nan)
+    RWC2 =      np.float64(np.nan)
+    overlap =   np.float64(np.nan)
+    K1 =        np.float64(np.nan)
+    K2 =        np.float64(np.nan)
 
     if mask is not None and np.any(mask):
         im1_pixels = im1_pixel_data[mask]
@@ -302,7 +302,7 @@ def run_image_pair_objects(
         C2 = np.zeros((0,))
     elif mask is not None and np.where(mask)[0].__len__() == 0:
         corr = np.zeros((n_objects,))
-        corr[:] = np.NaN
+        corr[:] = np.nan
         overlap = K1 = K2 = M1 = M2 = RWC1 = RWC2 = C1 = C2 = corr
     else:
         lrange = np.arange(n_objects, dtype=np.int32) + 1

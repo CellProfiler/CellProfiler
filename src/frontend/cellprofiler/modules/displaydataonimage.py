@@ -195,6 +195,7 @@ modules (such as **SaveImages**).
         self.font_choice = Choice(
             "Font",
             font_list,
+            value="DejaVu Sans",
             doc="""\
 Set the font of the text to be displayed. 
 

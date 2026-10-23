@@ -75,8 +75,8 @@ class KnimeBridgeServer(threading.Thread):
 
     def __init__(self, context, address, notify_address, notify_stop, **kwargs):
         super(KnimeBridgeServer, self).__init__(**kwargs)
-        self.setDaemon(True)
-        self.setName("Knime bridge server")
+        self.daemon = True
+        self.name = "Knime bridge server"
         self.address = address
         self.context = context
         self.notify_addr = notify_address

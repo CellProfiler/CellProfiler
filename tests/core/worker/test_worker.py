@@ -101,8 +101,8 @@ class TestAnalysisWorker(unittest.TestCase):
             self.stop_heartbeat = False
 
         def start(self):
-            self.setDaemon(True)
-            self.setName("Analysis worker thread")
+            self.daemon = True
+            self.name = "Analysis worker thread"
             self.up_queue = queue.Queue()
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.keepalive_addr = "inproc://heartbeat"

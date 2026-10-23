@@ -49,7 +49,7 @@ class TestAnalysis(unittest.TestCase):
 
         def __init__(self, name="Client thread"):
             threading.Thread.__init__(self, name=name)
-            self.setDaemon(True)
+            self.daemon = True
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
             self.request_queue = queue.Queue()

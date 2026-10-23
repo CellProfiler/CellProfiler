@@ -21,6 +21,8 @@ import scipy.sparse
 import matplotlib
 import matplotlib.pyplot
 import math
+from functools import reduce
+from operator import add
 from numpy.typing import NDArray
 from centriole.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
@@ -886,7 +888,7 @@ def combine_colortogray(
     channels:       List[int],
     contributions:  List[float],
     ) -> Image2DGrayscale:
-    denominator = sum(contributions)
+    denominator = reduce(add, contributions, 0)
     _channels = numpy.array(channels, int)
     _contributions = numpy.array(contributions) / denominator
 
@@ -1885,7 +1887,7 @@ def imagemath_apply_binary_operation(
     if opval == Operator.AVERAGE:
         if not use_logical:
             assert image_factors is not None, "image_factors must be provided for average operation"
-            output_pixel_data /= sum(image_factors)
+            output_pixel_data /= reduce(add, image_factors, 0)
     return output_pixel_data, output_mask
 
 

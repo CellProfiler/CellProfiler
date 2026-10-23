@@ -22,7 +22,7 @@ except:
     pass
 from . import _convex_hull
 
-from centriole._np_compat import np_Inf, np_product, np_NaN
+from centriole._np_compat import np_Inf, np_product, np_NaN, reshape_in_place
 
 logger = logging.getLogger(__name__)
 """A structuring element for eight-connecting a neigborhood"""
@@ -1344,7 +1344,7 @@ def centers_of_labels(labels):
     )
     result = np.array(result)
     if result.ndim == 1:
-        result.shape = (2, 1)
+        result = result.reshape(2, 1)
         return result
     return result.transpose()
 
@@ -1367,7 +1367,7 @@ def maximum_position_of_labels(image, labels, indices):
     result = scind.maximum_position(image, labels, indices)
     result = np.array(result, int)
     if result.ndim == 1:
-        result.shape = (2, 1)
+        result = result.reshape(2, 1)
         return result
     return result.transpose()
 
@@ -1810,11 +1810,11 @@ def associate_by_distance(labels_a, labels_b, distance):
     ij_wins = np.dstack(
         (hull_a[indexer_a[i[ab_easy_wins]], 0], hull_b[indexer_b[j[ab_easy_wins]], 0])
     )
-    ij_wins.shape = ij_wins.shape[1:]
+    ij_wins = ij_wins.reshape(ij_wins.shape[1:])
 
     ab_consider = (ab_distance_minus_radii <= distance) & (~ab_easy_wins)
     ij_consider = np.dstack((i[ab_consider], j[ab_consider]))
-    ij_consider.shape = ij_consider.shape[1:]
+    ij_consider = ij_consider.reshape(ij_consider.shape[1:])
     if np_product(ij_consider.shape) == 0:
         return ij_wins
     if True:
@@ -2145,7 +2145,10 @@ def distance2_to_line(pt, l0, l1):
     l1 = np.atleast_1d(l1)
     reshape = pt.ndim == 1
     if reshape:
-        pt.shape = l0.shape = l1.shape = (1, pt.shape[0])
+        shape = (1, pt.shape[0])
+        reshape_in_place(pt, shape)
+        reshape_in_place(l0, shape)
+        reshape_in_place(l1, shape)
     result = (
         (l0[:, 0] - l1[:, 0]) * (l0[:, 1] - pt[:, 1])
         - (l0[:, 0] - pt[:, 0]) * (l0[:, 1] - l1[:, 1])
@@ -3179,7 +3182,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     # and return the unpadded portion of that result
     #
     values = value_map[values[:image_stride]]
-    values.shape = np.array(image.shape) + 2 * padding
+    values = values.reshape(np.array(image.shape) + 2 * padding)
     return values[tuple(inside_slices)]
 
 
@@ -4212,7 +4215,7 @@ def skeletonize(image, mask=None, ordering=None):
     #
     np.random.seed(0)
     tiebreaker = np.random.permutation(np.arange(np_product(masked_image.shape)))
-    tiebreaker.shape = masked_image.shape
+    tiebreaker = tiebreaker.reshape(masked_image.shape)
     order = np.lexsort((tiebreaker[masked_image], corner_score[masked_image], distance))
     order = np.ascontiguousarray(order, np.int32)
     table = np.ascontiguousarray(table, np.uint8)

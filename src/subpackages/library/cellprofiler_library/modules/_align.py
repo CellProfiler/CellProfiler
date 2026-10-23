@@ -206,7 +206,7 @@ def adjust_offsets(
         #
         shape = np.min(shapes, 0)
         shapes = np.tile(shape, len(shapes))
-        shapes.shape = offsets.shape
+        shapes = shapes.reshape(offsets.shape)
     elif crop_mode == CropMode.PAD.value:
         #
         # modify the offsets so that they are all positive
@@ -222,7 +222,7 @@ def adjust_offsets(
         #
         shape = np.max(shapes, 0)
         shapes = np.tile(shape, len(shapes))
-        shapes.shape = offsets.shape
+        shapes = shapes.reshape(offsets.shape)
     return offsets.tolist(), shapes.tolist()
 
 
@@ -252,7 +252,7 @@ def apply_alignment(
         p1, p2 = offset_slice(plane, output_pixels[:, :, i], off_y, off_x)
         p2[:, :] = p1[:, :]
     if pixel_data.ndim == 2:
-        output_pixels.shape = output_pixels.shape[:2]
+        output_pixels = output_pixels.reshape(output_pixels.shape[:2])
     output_mask = np.zeros(shape, bool)
     p1, p2 = offset_slice(image_mask, output_mask, off_y, off_x)
     p2[:, :] = p1[:, :]

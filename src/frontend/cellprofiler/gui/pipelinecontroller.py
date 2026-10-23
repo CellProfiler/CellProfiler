@@ -3926,7 +3926,13 @@ class PipelineController(object):
             useless_columns = []
             cvalues = list(choices.values())
             for i, f in enumerate(features):
-                if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
+                first = cvalues[0][i]
+                # NaN, such as the frame of a single-plane image, isn't
+                # equal to itself
+                if all(
+                    cv[i] == first or (cv[i] != cv[i] and first != first)
+                    for cv in cvalues[1:]
+                ):
                     useless_columns.insert(0, i)
             for i in useless_columns:
                 for cv in cvalues:

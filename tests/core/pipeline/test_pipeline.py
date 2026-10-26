@@ -597,12 +597,12 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         temp_file = tempfile.NamedTemporaryFile(mode="w+b", suffix=".json", delete=False)
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         print(temp_file.name)
         with open(temp_file.name, "w") as fp:
             dump(pipeline, fp, save_image_plane_details=True)
             fp.seek(0)
-        temp_file.flush()
-        fp.close()
 
         import json
         with open(os.path.realpath(
@@ -632,11 +632,11 @@ HasImagePlaneDetails:False"""
         pipeline.load(pathname)
 
         temp_file = tempfile.NamedTemporaryFile(mode="w+b", suffix=".json", delete=False)
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         with open(temp_file.name, "w") as fp:
             dump(pipeline, fp, save_image_plane_details=True)
             fp.seek(0)
-        temp_file.flush()
-        fp.close()
 
         new_pipeline = get_empty_pipeline()
         with open(temp_file.name, "r") as fp:
@@ -1238,6 +1238,8 @@ HasImagePlaneDetails:False"""
         temp_file = tempfile.NamedTemporaryFile(
             mode="w+b", suffix=".cppipe", delete=False
         )
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         with open(temp_file.name, "w") as fp:
             fp.write(content)
 

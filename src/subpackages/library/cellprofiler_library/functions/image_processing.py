@@ -28,6 +28,7 @@ from centriole.cpmorphology import fixup_scipy_ndimage_result as fix
 from typing import Any, Optional, Tuple, Callable, Union, List, cast, Dict, TypeVar
 from skimage.restoration import denoise_bilateral
 from skimage.feature import peak_local_max
+from cellprofiler_library.functions.morphology import get_footprint, remove_small_holes
 from scipy.fftpack import fft2, ifft2
 from cellprofiler_library.types import (
     ImageGrayscale, ImageGrayscaleMask, 
@@ -213,7 +214,7 @@ def morphological_skeleton_3d(image):
 ################################################################################
 
 def get_structuring_element(shape: Union[StructuringElementShape2D, StructuringElementShape3D], size: int) -> StructuringElement:
-    return getattr(skimage.morphology, shape.value.lower())(size)
+    return get_footprint(shape.value.lower(), size)
 
 ################################################################################
 # ErodeImage
@@ -1776,7 +1777,7 @@ def fill_holes(image: ImageAny, diameter: float) -> ImageAny:
 
     size = numpy.pi * factor
 
-    return skimage.morphology.remove_small_holes(image.astype(bool, copy=False), size)
+    return remove_small_holes(image.astype(bool, copy=False), size)
 
 ################################################################################
 # ImageMath

@@ -171,12 +171,12 @@ def test_run_distance_declump_intensity(
         )
         seeds = numpy.zeros(distance.shape, dtype=bool)
         seeds[tuple(seed_coords.T)] = True
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     elif maxima_method.casefold() == "regional":
         seeds = mahotas.regmax(distance, maxima_footprint)
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     expected = skimage.segmentation.watershed(
@@ -274,12 +274,12 @@ def test_run_distance_declump_shape(
         )
         seeds = numpy.zeros(distance.shape, dtype=bool)
         seeds[tuple(seed_coords.T)] = True
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     elif maxima_method.casefold() == "regional":
         seeds = mahotas.regmax(distance, maxima_footprint)
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     expected = skimage.segmentation.watershed(
@@ -384,7 +384,7 @@ def test_run_markers_declump_shape(
     )
 
     seeds = markers_image
-    seeds = skimage.morphology.binary_dilation(seeds, strel)
+    seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
 
     expected = skimage.segmentation.watershed(
         watershed_input_image,
@@ -501,7 +501,7 @@ def test_run_markers_declump_intensity(
     )
 
     seeds = markers_image
-    seeds = skimage.morphology.binary_dilation(seeds, strel)
+    seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
 
     expected = skimage.segmentation.watershed(
         watershed_input_image,
@@ -587,7 +587,7 @@ def test_non_advanced(
     )
     seeds = numpy.zeros(image.pixel_data.shape, dtype=bool)
     seeds[tuple(seed_coords.T)] = True
-    seeds = skimage.morphology.binary_dilation(seeds, strel)
+    seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
     seeds = scipy.ndimage.label(seeds)[0]
 
     expected = skimage.segmentation.watershed(
@@ -685,12 +685,12 @@ def test_run_intensity_declump_shape(
         )
         seeds = numpy.zeros(intensity_image.shape, dtype=bool)
         seeds[tuple(seed_coords.T)] = True
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     elif maxima_method.casefold() == "regional":
         seeds = mahotas.regmax(intensity_image, maxima_footprint)
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.binary_dilation(seeds, structure=strel)
         seeds = scipy.ndimage.label(seeds)[0]
 
     expected = skimage.segmentation.watershed(

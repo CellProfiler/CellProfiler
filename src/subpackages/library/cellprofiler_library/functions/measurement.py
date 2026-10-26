@@ -3981,7 +3981,7 @@ def measure_haralick_features_objects(
     features = numpy.full((max_label, n_directions, 13), numpy.nan)
 
     for prop in props:
-        label_data = prop["intensity_image"]
+        label_data = prop["image_intensity"]
         try:
             # mahotas.features.haralick returns (n_directions, 13)
             # ignore_zeros=True is important for masked objects

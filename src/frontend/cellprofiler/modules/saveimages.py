@@ -39,6 +39,7 @@ import h5py
 import numpy
 import skimage.io
 import skimage.util
+from cellprofiler_library.functions.file_processing import save_tiff
 import logging
 from cellprofiler_core.constants.measurement import (
     C_FILE_NAME,
@@ -791,6 +792,8 @@ to unexpected behavior like saving in the original input file directory. For saf
 
             if self.file_format.value == FF_H5:
                 save_h5(filename, pixels, volumetric=image.volumetric)
+            elif self.file_format.value == FF_TIFF:
+                save_tiff(filename, pixels, **save_kwargs)
             else:
                 skimage.io.imsave(filename, pixels, **save_kwargs)
 

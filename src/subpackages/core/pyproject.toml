@@ -40,7 +40,7 @@ non-gui functionality"""
 readme = "README.md"
 # we don't place upper bound pin for python:
 # https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 # TODO: should be dynamic, top level, shared across all
 license = {file = "LICENSE"}
 keywords = ["computer vision", "image analysis", "biology", "cell", "cellprofiler"]
@@ -49,7 +49,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering :: Image Processing",

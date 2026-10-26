@@ -2,6 +2,7 @@ import numpy
 from numpy.typing import NDArray
 import scipy.ndimage
 import skimage.morphology
+from cellprofiler_library.functions.morphology import binary_dilation, get_footprint, remove_small_holes
 import matplotlib.cm
 import matplotlib.pyplot
 import mahotas
@@ -283,7 +284,7 @@ def watershed(
             return watershed_image
 
     # Create and check structuring element for seed dilation
-    strel = getattr(skimage.morphology, structuring_element.casefold())(
+    strel = get_footprint(structuring_element.casefold(),
         structuring_element_size
     )
 
@@ -352,7 +353,7 @@ def watershed(
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = binary_dilation(seeds, strel)
     else:
         raise NotImplementedError(
             f"watershed method {watershed_method} is not supported"
@@ -371,12 +372,12 @@ def watershed(
             )
             seeds = numpy.zeros(seed_image.shape, dtype=bool)
             seeds[tuple(seed_coords.T)] = True
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
 
         elif seed_method.casefold() == "regional":
             seeds = mahotas.regmax(seed_image, maxima_footprint)
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
         else:
             raise NotImplementedError(
@@ -434,7 +435,7 @@ def fill_object_holes(labels, diameter, planewise=False):
             for obj in numpy.unique(plane):
                 if obj == 0:
                     continue
-                filled_mask = skimage.morphology.remove_small_holes(
+                filled_mask = remove_small_holes(
                     plane == obj, min_obj_size
                 )
                 plane[filled_mask] = obj
@@ -443,7 +444,7 @@ def fill_object_holes(labels, diameter, planewise=False):
         for obj in numpy.unique(array):
             if obj == 0:
                 continue
-            filled_mask = skimage.morphology.remove_small_holes(
+            filled_mask = remove_small_holes(
                 array == obj, min_obj_size
             )
             array[filled_mask] = obj
@@ -456,7 +457,7 @@ def fill_convex_hulls(labels):
     for prop in data:
         label = prop["label"]
         bbox = prop["bbox"]
-        cmask = prop["convex_image"]
+        cmask = prop["image_convex"]
         if len(bbox) <= 4:
             output[bbox[0] : bbox[2], bbox[1] : bbox[3]][cmask] = label
         else:

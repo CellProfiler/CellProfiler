@@ -5,7 +5,7 @@ import functools
 import hashlib
 import numpy
 import unittest
-from urllib.request import URLopener
+from urllib.request import urlretrieve
 import skimage.io
 
 import cellprofiler_core.utilities.legacy
@@ -225,7 +225,7 @@ def maybe_download_tesst_image(file_name):
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
         try:
-            URLopener().retrieve(url, local_path)
+            urlretrieve(url, local_path)
         except IOError as e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):

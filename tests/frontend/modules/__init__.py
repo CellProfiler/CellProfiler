@@ -11,7 +11,7 @@ import functools
 import scipy.io
 import numpy
 import skimage.io
-from urllib.request import URLopener
+from urllib.request import urlretrieve
 
 import cellprofiler_core.utilities.legacy
 from cellprofiler_core.pipeline import ImageFile
@@ -323,7 +323,7 @@ def maybe_download_tesst_image(file_name):
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
         try:
-            URLopener().retrieve(url, local_path)
+            urlretrieve(url, local_path)
         except IOError as e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):

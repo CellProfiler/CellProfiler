@@ -201,8 +201,7 @@ def augmenting_row_reduction(
                     nfree += 1
             p_x_base[i] = j1
             p_y_base[j1] = i
-    free.resize(nfree)
-    return free
+    return free[:nfree].copy()
 
 def augment(
     int n,

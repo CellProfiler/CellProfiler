@@ -56,7 +56,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
             mask_in.astype(int), intensity_image=image.pixel_data
         )
 
-        mask = properties[0].intensity_image
+        mask = properties[0].image_intensity
 
         filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[
             0
@@ -295,7 +295,7 @@ def test_run_images_add_image_name(image, module, image_set, workspace, object_s
             mask_in.astype(int), intensity_image=image.pixel_data
         )
 
-        mask = properties[0].intensity_image
+        mask = properties[0].image_intensity
 
         filename = glob.glob(os.path.join(directory, "example_exampleObjects_{}.tiff".format(label)))[
             0
@@ -366,7 +366,7 @@ def test_nested_folders(image, module, image_set, workspace, object_set, tmpdir)
             mask_in.astype(int), intensity_image=image.pixel_data
         )
 
-        mask = properties[0].intensity_image
+        mask = properties[0].image_intensity
 
         filename = glob.glob(
             os.path.join(directory, "example", "example_exampleObjects_{}.tiff".format(label))

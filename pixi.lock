@@ -9031,7 +9031,7 @@ packages:
   - sphinx-rtd-theme>=3.1.0 ; extra == 'docs'
   - pytest>=8.4.2 ; extra == 'test'
   - pooch>=1.3.0 ; extra == 'test'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: ./src/subpackages/centriole
   name: centriole
   requires_dist:
@@ -9045,7 +9045,7 @@ packages:
   - numpy ; extra == 'build'
   - twine ; extra == 'build'
   - pytest>=8.4.2 ; extra == 'test'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: ./src/subpackages/core
   name: cellprofiler-core
   requires_dist:
@@ -9076,7 +9076,7 @@ packages:
   - pytest>=8.4.2 ; extra == 'test'
   - pytest-timeout>=2.4.0 ; extra == 'test'
   - wxpython>=4.2.4 ; extra == 'wx'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: ./src/subpackages/library
   name: cellprofiler-library
   requires_dist:
@@ -9094,7 +9094,7 @@ packages:
   - pyinstaller ; extra == 'build'
   - twine ; extra == 'build'
   - pytest>=8.4.2 ; extra == 'test'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: direct+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04/wxpython-4.2.4-cp312-cp312-linux_x86_64.whl
   name: wxpython
   version: 4.2.4

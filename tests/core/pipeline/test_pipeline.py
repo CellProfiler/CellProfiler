@@ -2,6 +2,7 @@
 
 import cProfile
 import io
+import json
 import os
 import pstats
 import sys
@@ -44,6 +45,7 @@ from cellprofiler_core.pipeline import (
     ObjectDependency,
     MeasurementDependency,
     LoadException,
+    URLsAdded,
 )
 from cellprofiler_core.pipeline.io._v6 import dump, load
 from cellprofiler_core.preferences import (
@@ -1200,6 +1202,37 @@ HasImagePlaneDetails:False"""
                 y = y.encode("utf-8")
 
             assert x == y
+
+    def test_file_list_round_trips_through_saved_pipeline(self):
+        urls = ["file:///imaging/plate1/A01.tif", "file:///imaging/plate1/A02.tif"]
+        pipeline = Pipeline()
+        pipeline.add_urls(urls)
+        fd = io.StringIO()
+        pipeline.dump(fd, save_image_plane_details=True)
+        fd.seek(0)
+
+        loaded = Pipeline()
+        events = []
+
+        def callback(caller, event):
+            if isinstance(event, URLsAdded):
+                events.append(event)
+
+        loaded.add_listener(callback)
+        loaded.load(fd)
+
+        assert [image_file.url for image_file in loaded.file_list] == urls
+        # Listeners (e.g. the GUI's file list) get URLs, as from add_urls
+        assert [event.urls for event in events] == [urls]
+
+    def test_dump_v6_file_list_has_urls(self):
+        urls = ["file:///imaging/plate1/A01.tif", "file:///imaging/plate1/A02.tif"]
+        pipeline = Pipeline()
+        pipeline.add_urls(urls)
+        fd = io.StringIO()
+        dump(pipeline, fd, save_image_plane_details=True)
+
+        assert json.loads(fd.getvalue())["file_list"]["urls"] == urls
 
     def test_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]

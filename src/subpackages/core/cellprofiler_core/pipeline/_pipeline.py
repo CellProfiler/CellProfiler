@@ -402,7 +402,9 @@ class Pipeline:
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoaded())
         if details:
-            self.notify_listeners(URLsAdded(self.__file_list))
+            self.notify_listeners(
+                URLsAdded([image_file.url for image_file in self.__file_list])
+            )
         self.__undo_stack = []
         return checksum, version
 

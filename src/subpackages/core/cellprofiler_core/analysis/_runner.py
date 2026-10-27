@@ -395,9 +395,10 @@ class Runner:
                     finished_req.reply(anareply.Ack())
 
                 # check progress and report
+                # (one read for all image sets - reading them one at a time
+                # makes every pass of this loop O(N) HDF5 reads)
                 counts = collections.Counter(
-                    measurements["Image", self.STATUS, image_set_number,]
-                    for image_set_number in image_sets_to_process
+                    measurements["Image", self.STATUS, image_sets_to_process,]
                 )
                 self.post_event(Progress(counts))
 

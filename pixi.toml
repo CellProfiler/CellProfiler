@@ -55,11 +55,11 @@ wxpython = ">=4.2.4"
 
 [feature.mysql.target.osx.dependencies]
 pkg-config = "*"
-mysql = "8.4.*"
+mysql = "*"
 
 [feature.mysql.target.win-64.dependencies]
 pkg-config = "*"
-mysql = "8.4.*"
+mysql = "*"
 
 [feature.mysql.target.linux-64.dependencies]
 mysqlclient = ">=2.2.3"

@@ -1,21 +1,27 @@
+import logging
+import os
+import re
+from urllib.parse import unquote, urlsplit
+from urllib.request import url2pathname
+
+import fsspec
 import numpy
 import zarr
+from fsspec.core import url_to_fs
+from fsspec.implementations.asyn_wrapper import AsyncFileSystemWrapper
+from lxml import etree
+from zarr.storage import FsspecStore, LocalStore
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, MD_SERIES_NAME
 from ..constants.reader import ZARR_FILETYPE
 
 from ..reader import Reader
 
-import os
-
-import re
-import logging
-from lxml import etree
-
 LOGGER = logging.getLogger(__name__)
 
 FORMAT_TESTER = re.compile(r"\.zarr([\\/]|$)", flags=re.IGNORECASE)
 SUPPORTED_SCHEMES = {'file', 's3'}
+
 
 class NGFFReader(Reader):
     """
@@ -23,7 +29,7 @@ class NGFFReader(Reader):
     'HCS' storage modes.
 
     OME-NGFF files below spec version 0.4 which are stored on S3/object storage
-    should have the zarr.convenience.consolidate_metadata() function run on them
+    should have the zarr.consolidate_metadata() function run on them
     to provide optimal performance over a network.
 
     Other non-OME .zarr format images may be readable, but are not strictly supported.
@@ -34,7 +40,6 @@ class NGFFReader(Reader):
     supported_filetypes = {'.zarr', '.ome.zarr'}
     supported_schemes = SUPPORTED_SCHEMES
 
-    # Reader cache maps a path to a tuple of (zarr_root_group, series_map).
     ZARR_READER_CACHE = {}
 
     def __init__(self, image_file):
@@ -44,40 +49,65 @@ class NGFFReader(Reader):
         # List of tuples denoting (array_path, array_name)
         self._series_map = None
         self.root, self.group = ZARR_FILETYPE.split(self.file.url, maxsplit=1)
+        self.group = unquote(self.group).strip("/\\").replace("\\", "/")
+        parsed = urlsplit(self.root)
+        if parsed.scheme.lower() == "file":
+            self._local_path = url2pathname(parsed.path)
+            if parsed.netloc and parsed.netloc != "localhost":
+                self._local_path = f"//{parsed.netloc}{self._local_path}"
+        elif not parsed.scheme or (os.name == "nt" and len(parsed.scheme) == 1):
+            self._local_path = self.root
+        else:
+            self._local_path = None
         self.planes_extracted = False
 
     def __del__(self):
         self.close()
 
     def get_reader(self):
-        if self._reader is not None:
-            return self._reader
-        elif self.root in NGFFReader.ZARR_READER_CACHE:
-            self._reader, self._series_map = NGFFReader.ZARR_READER_CACHE[self.root]
-        else:
-            store = zarr.storage.FSStore(self.root)
-            if self.root.lower().startswith('s3'):
-                LOGGER.info("Zarr is stored on S3, will try to read directly.")
-                if '.zmetadata' in store:
-                    # Zarr has consolidated metadata.
-                    self._reader = zarr.convenience.open_consolidated(store, mode='r')
-                else:
-                    LOGGER.warning(f"Image is on S3 but lacks consolidated metadata. "
-                                    f"This may degrade reading performance. URL: {self.root}")
-                    self._reader = zarr.open(store, mode='r')
-            elif not os.path.isdir(store.path):
-                raise IOError("The file, \"%s\", does not exist." % self.root)
+        cached = self.ZARR_READER_CACHE.get(self.root)
+        if cached is None:
+            if self._local_path is not None:
+                if not os.path.isdir(self._local_path):
+                    raise FileNotFoundError(f'The file, "{self.root}", does not exist.')
+                store = LocalStore(self._local_path, read_only=True)
             else:
-                self._reader = zarr.open(store, mode='r')
-            NGFFReader.ZARR_READER_CACHE[self.root] = self._reader, None
-        if self.group:
-            LOGGER.warning(f"Reader had a group? {self.group}")
-            return self._reader[self.group]
+                filesystem, path = url_to_fs(self.root)
+                store = FsspecStore(
+                    AsyncFileSystemWrapper(
+                        fs=filesystem, asynchronous=True, skip_instance_cache=True
+                    ),
+                    path=path,
+                    read_only=True,
+                )
+            try:
+                root_reader = zarr.open(store=store, mode="r")
+            except Exception:
+                store.close()
+                raise
+            if self.root.lower().startswith("s3"):
+                LOGGER.info("Zarr is stored on S3, will try to read directly.")
+                if (
+                    isinstance(root_reader, zarr.Group)
+                    and root_reader.metadata.consolidated_metadata is None
+                ):
+                    LOGGER.warning(
+                        "Image is on S3 but lacks consolidated metadata. "
+                        "This may degrade reading performance. URL: %s", self.root
+                    )
+            cached = root_reader, {}
+            self.ZARR_READER_CACHE[self.root] = cached
+        root_reader, series_maps = cached
+        if self._reader is None or self._reader.store is not root_reader.store:
+            self._reader = root_reader[self.group] if self.group else root_reader
+            self._series_map = series_maps.get(self.group)
         return self._reader
 
     @classmethod
     def clear_cached_readers(cls):
-        NGFFReader.ZARR_READER_CACHE.clear()
+        for reader, _ in cls.ZARR_READER_CACHE.values():
+            reader.store.close()
+        cls.ZARR_READER_CACHE.clear()
 
     def read(self,
              wants_metadata_rescale=False,
@@ -117,15 +147,17 @@ class NGFFReader(Reader):
         reader = self.get_reader()
         if series is None:
             series = 0
-        if self._series_map is None:
-            arrays = self.find_arrays(reader, multiscales=False, first_only=not self.planes_extracted)
-            self.build_series_map(arrays)
+        if self._series_map is None or (
+            series >= len(self._series_map) and not self.planes_extracted
+        ):
+            first_only = not self.planes_extracted and series == 0
+            arrays = self.find_arrays(reader, multiscales=False, first_only=first_only)
+            self.build_series_map(arrays, complete=not first_only)
         if not self._series_map:
             raise IOError("Zarr appears to contain no valid series. Unable to load data.")
         series_path, series_name = self._series_map[series]
-        series_reader = reader[series_path]
+        series_reader = reader if isinstance(reader, zarr.Array) else reader[series_path]
         num_dimensions = len(series_reader.shape)
-        # Todo: Handle V4 Axis object in .zattrs once it releases
         if num_dimensions == 5:
             image = series_reader[t:t2, c:c2, z:z2, y:y2, x:x2]
         elif num_dimensions == 4:
@@ -145,8 +177,8 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
 
         if wants_metadata_rescale:
-            scale = self.get_max_sample_value(reader)
-            return image, scale
+            scale = self.get_max_sample_value()
+            return image, (0, scale) if scale is not None else None
         return image
 
     def read_volume(self,
@@ -197,16 +229,15 @@ class NGFFReader(Reader):
     def close(self):
         # If your reader opens a file, this needs to release any active lock,
         self._reader = None
+        self._series_map = None
 
-    def build_series_map(self, arrays):
-        if self.root in NGFFReader.ZARR_READER_CACHE:
-            _, series_map = NGFFReader.ZARR_READER_CACHE[self.root]
-            if series_map is not None:
-                self._series_map = series_map
-                return
-        self._series_map = [(array.path, name) for array, name in arrays]
-        if self.planes_extracted:
-            NGFFReader.ZARR_READER_CACHE[self.root] = self._reader, self._series_map
+    def build_series_map(self, arrays, complete=False):
+        prefix = self._reader.path + "/" if self._reader.path else ""
+        self._series_map = [
+            (array.path.removeprefix(prefix), name) for array, name in arrays
+        ]
+        if complete:
+            self.ZARR_READER_CACHE[self.root][1][self.group] = self._series_map
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:
@@ -231,7 +262,7 @@ class NGFFReader(Reader):
         }
         reader = self.get_reader()
         arrays = self.find_arrays(reader, multiscales=False, first_only=False)
-        self.build_series_map(arrays)
+        self.build_series_map(arrays, complete=True)
         series_count = len(arrays)
         meta_dict[MD_SIZE_S] = series_count
         for idx, (array, series_name) in enumerate(arrays):
@@ -244,13 +275,18 @@ class NGFFReader(Reader):
             meta_dict[MD_SERIES_NAME].append(series_name)
         return meta_dict
 
-    @staticmethod
-    def get_max_sample_value(zarr_obj):
-        xml_path = (zarr_obj.store.path + '/OME/METADATA.ome.xml')
-        if not os.path.exists(xml_path):
+    def _read_ome_xml(self):
+        root = self._local_path if self._local_path is not None else self.root
+        try:
+            with fsspec.open(root.rstrip("/\\") + "/OME/METADATA.ome.xml", "rb") as stream:
+                return etree.fromstring(stream.read())
+        except FileNotFoundError:
             return None
 
-        root = etree.parse(xml_path)
+    def get_max_sample_value(self):
+        root = self._read_ome_xml()
+        if root is None:
+            return None
 
         namespaces = {
             "ome": "http://www.openmicroscopy.org/Schemas/OME/2016-06"
@@ -269,45 +305,50 @@ class NGFFReader(Reader):
         if max_sample_value:
             try:
                 max_sample_value = int(max_sample_value[0].text)
-            except:
+            except (TypeError, ValueError):
                 max_sample_value = None
             return max_sample_value
         else:
             return None
 
     @staticmethod
-    def iterate_groups(zarr_obj):
-        if 'plate' in zarr_obj.attrs and 'wells' in zarr_obj.attrs['plate']:
+    def _metadata(zarr_obj):
+        return zarr_obj.attrs.get("ome", zarr_obj.attrs)
+
+    def iterate_groups(self, zarr_obj):
+        metadata = self._metadata(zarr_obj)
+        if 'plate' in metadata and 'wells' in metadata['plate']:
             # This is an HCS zarr with plate metadata. Use that to find the series.
-            num_fields = zarr_obj.attrs['plate']['field_count']
-            column_names = zarr_obj.attrs['plate']['columns']
-            row_names = zarr_obj.attrs['plate']['rows']
-            for attribs in zarr_obj.attrs['plate']['wells']:
-                for field_idx in range(num_fields):
-                    yield [zarr_obj[f"{attribs['path']}/{field_idx}"],
-                           f"r{row_names[attribs['row_index']]['name']}"
-                           f"c{column_names[attribs['column_index']]['name']}"
-                           f"f{field_idx}"]
-        elif 'XXXOME' in zarr_obj:
-            # This is a zarr with OME metadata stored as a group. Grab a series list from this.
-            ome_group = zarr_obj['OME']
-            if 'series' in ome_group.attrs:
-                series_paths = ome_group.attrs['series']
-                for idx, series_path in enumerate(series_paths):
-                    target = zarr_obj[series_path]
-                    yield [target, ""]
-        elif 'multiscales' in zarr_obj.attrs:
+            plate = metadata['plate']
+            column_names = plate['columns']
+            row_names = plate['rows']
+            for attribs in plate['wells']:
+                well = zarr_obj[attribs['path']]
+                well_metadata = self._metadata(well).get("well", {})
+                fields = (
+                    well_metadata.get("images")
+                    if "ome" in zarr_obj.attrs or 'field_count' not in plate
+                    else None
+                )
+                if fields is None:
+                    fields = [{"path": str(index)} for index in range(plate['field_count'])]
+                row_index = attribs.get("rowIndex", attribs.get("row_index"))
+                column_index = attribs.get("columnIndex", attribs.get("column_index"))
+                for field in fields:
+                    yield [well[field['path']],
+                           f"r{row_names[row_index]['name']}"
+                           f"c{column_names[column_index]['name']}"
+                           f"f{field['path']}"]
+        elif 'multiscales' in metadata:
             # User has pointed directly to a zarr series, we can assume no child groups.
             yield [zarr_obj, ""]
         else:
             # This is a simple or older zarr. Look for an ome.xml metadata file and read that.
-            xml_path = (zarr_obj.store.path + '/OME/METADATA.ome.xml')
-            if os.path.exists(xml_path):
+            root = self._read_ome_xml()
+            if root is not None:
                 ns = '{http://www.openmicroscopy.org/Schemas/OME/2016-06}'
-                tree = etree.parse(xml_path)
-                root = tree.getroot()
                 if ns not in root.tag:
-                    raise Exception(f"Expected {ns} in XML file")
+                    raise ValueError(f"Expected {ns} in XML file")
                 for image in root.findall(f"{ns}Image"):
                     series_path = image.attrib["ID"].split(":")[1]
                     series_name = image.attrib.get("Name", series_path)
@@ -317,13 +358,20 @@ class NGFFReader(Reader):
                         LOGGER.warning(f"Series specified in OME-XML "
                                        f"was absent from the "
                                        f"zarr - {series_path}")
+            elif (
+                "ome" in zarr_obj.attrs
+                and "OME" in zarr_obj
+                and "series" in self._metadata(zarr_obj["OME"])
+            ):
+                for series_path in self._metadata(zarr_obj["OME"])["series"]:
+                    yield [zarr_obj[series_path], ""]
             else:
                 # No XML or zattrs = some other software made this zarr.
                 # We can try scanning for groups, but this is slow.
                 # Scans will return nothing if the storage backend is object-based (e.g. S3)
                 LOGGER.error("Unable to find built-in or XML metadata, "
                              "will try a file scan")
-                for key in zarr_obj.group_keys():
+                for key in sorted(zarr_obj.group_keys()):
                     yield [zarr_obj[key], key]
 
     def find_arrays(self, zarr_obj, multiscales=False, first_only=False):
@@ -337,17 +385,21 @@ class NGFFReader(Reader):
         if isinstance(zarr_obj, zarr.Array):
             # We're already pointed directly at an array object. No scan needed.
             return [(zarr_obj, "")]
-        if self._series_map is not None:
-            return [(zarr_obj[path], name) for path, name in self._series_map]
+        if not multiscales and zarr_obj is self._reader:
+            complete_map = self.ZARR_READER_CACHE.get(self.root, (None, {}))[1].get(
+                self.group
+            )
+            if complete_map is not None:
+                return [(zarr_obj[path], name) for path, name in complete_map]
         # Groups should be a list of groups which contain arrays as children.
         result = []
 
         for group_obj, group_name in self.iterate_groups(zarr_obj):
             if isinstance(group_obj, zarr.Array):
                 result.append((group_obj, group_name))
-            elif 'multiscales' in group_obj.attrs:
+            elif 'multiscales' in self._metadata(group_obj):
                 # The main reason we do this - do we want just resolution 0 or all resolutions?
-                scales = group_obj.attrs['multiscales']
+                scales = self._metadata(group_obj)['multiscales']
                 if multiscales:
                     for params in scales[0]['datasets']:
                         key = params['path']

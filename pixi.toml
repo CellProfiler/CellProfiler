@@ -41,7 +41,7 @@ numcodecs = ">=0.16.6"
 zarr = ">=3.1.6"
 
 [pypi-dependencies]
-scikit-learn = ">=1.3.0,<1.9"
+scikit-learn = ">=1.3.0"
 
 [target.linux-64.dependencies]
 sdl2 = ">=2.0.0"

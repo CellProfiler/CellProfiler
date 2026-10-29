@@ -66,8 +66,8 @@ def run_operation(operation, expected, module, workspace):
 
 
 class TestVolumes(object):
-    @staticmethod
     @pytest.fixture(scope="function")
+    @staticmethod
     def image_a():
         k, i, j = numpy.mgrid[-5:6, -5:6, -5:10]
         data_a = numpy.zeros((11, 11, 15))
@@ -79,8 +79,8 @@ class TestVolumes(object):
 
         return image_a
 
-    @staticmethod
     @pytest.fixture(scope="function")
+    @staticmethod
     def image_b():
         k, i, j = numpy.mgrid[-5:6, -5:6, -10:5]
         data_b = numpy.zeros((11, 11, 15))
@@ -184,8 +184,8 @@ class TestVolumes(object):
 
 
 class TestBinaryImages(object):
-    @staticmethod
     @pytest.fixture()
+    @staticmethod
     def image_a():
         data_a = numpy.random.rand(128, 128) > 0.5
 
@@ -195,8 +195,8 @@ class TestBinaryImages(object):
 
         return image_a
 
-    @staticmethod
     @pytest.fixture()
+    @staticmethod
     def image_b():
         data_b = numpy.random.rand(128, 128) > 0.5
 

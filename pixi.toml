@@ -39,6 +39,9 @@ h5py = ">=3.11"
 numpy = ">=2"
 numcodecs = ">=0.16.6"
 
+[pypi-dependencies]
+appose = { git = "https://github.com/apposed/appose-python.git", rev = "f3b28336e9ca96e794e654f2ca916a59919b64c6" }
+
 [target.linux-64.dependencies]
 # Review whether SDL2 is needed during Linux runtime validation.
 sdl2 = ">=2.0.0"
@@ -53,6 +56,7 @@ mysql = "*"
 
 [feature.mysql.target.osx.dependencies]
 pkg-config = "*"
+mysqlclient = ">=2.2.3"
 
 [feature.mysql.target.win-64.dependencies]
 pkg-config = "*"
@@ -69,7 +73,6 @@ centriole = { path = "./src/subpackages/centriole", extras = ["test"], editable 
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
-appose = { git = "https://github.com/apposed/appose-python.git", rev = "f3b28336e9ca96e794e654f2ca916a59919b64c6" }
 
 [feature.build.pypi-dependencies]
 centriole = { path = "./src/subpackages/centriole", extras = ["build"], editable = true }
@@ -85,6 +88,10 @@ setuptools = "*"
 setuptools-scm = "*"
 # don't need all of mysql feature, but do need prebuild mysqlclient
 mysqlclient = ">=2.2.3"
+
+[feature.publish.target.osx.dependencies]
+mysqlclient = ">=2.2.3"
+mysql-client = "*"
 
 [feature.publish.pypi-dependencies]
 cython = "*"

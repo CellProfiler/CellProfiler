@@ -38,32 +38,27 @@ python = "3.14.*"
 h5py = ">=3.11"
 numpy = ">=2"
 numcodecs = ">=0.16.6"
-zarr = ">=3.1.6"
-
-[pypi-dependencies]
-scikit-learn = ">=1.3.0"
 
 [target.linux-64.dependencies]
+# Review whether SDL2 is needed during Linux runtime validation.
 sdl2 = ">=2.0.0"
 wxpython = ">=4.3.2"
 
 [target.linux-64.activation]
+# Review whether LD_LIBRARY_PATH is needed during Linux runtime validation.
 env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
 
-[target.osx-arm64.pypi-dependencies]
-wxpython = ">=4.2.4"
+[feature.mysql.dependencies]
+mysql = "*"
 
 [feature.mysql.target.osx.dependencies]
 pkg-config = "*"
-mysql = "*"
 
 [feature.mysql.target.win-64.dependencies]
 pkg-config = "*"
-mysql = "*"
 
 [feature.mysql.target.linux-64.dependencies]
 mysqlclient = ">=2.2.3"
-mysql = "*"
 
 [feature.java.dependencies]
 openjdk = "11.*"
@@ -84,10 +79,7 @@ cellprofiler = { path = "./src/frontend", extras = ["build", "docs"], editable =
 setuptools = "*"
 setuptools-scm = "*"
 
-# get conda package rather than pypi for publishing on linux
-# as it's the only pypi source file, which pixi-pack doesn't support
 [feature.publish.target.linux-64.dependencies]
-asciitree = ">=0.3.3"
 # below two needed for installing cellprofiler source into final env inside flatpak
 setuptools = "*"
 setuptools-scm = "*"

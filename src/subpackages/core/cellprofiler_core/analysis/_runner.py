@@ -169,7 +169,7 @@ class Runner:
     def cancel(self):
         """cancel the analysis run"""
         LOGGER.debug("Stopping workers")
-        self.stop_workers()
+        context = self.stop_workers(destroy_context=False)
         LOGGER.debug("Canceling run")
         self.cancelled = True
         self.paused = False
@@ -178,6 +178,8 @@ class Runner:
         self.interface_thread.join()
         LOGGER.debug("Waiting on jobserver thread")
         self.jobserver_thread.join()
+        if context is not None:
+            context.destroy(0)
         self.interface_thread = None
         self.jobserver_thread = None
         self.work_queue = queue.Queue()
@@ -740,14 +742,19 @@ class Runner:
 
             self.workers += [worker]
 
-    def stop_workers(self):
+    def stop_workers(self, destroy_context=True):
+        context = None
         if self.boundary is not None:
             LOGGER.debug("joining boundary")
             self.boundary.join()
-            LOGGER.debug("destroying boundary zmq context")
-            self.boundary.zmq_context.destroy(0)
+            context = self.boundary.zmq_context
+            if destroy_context:
+                LOGGER.debug("destroying boundary zmq context")
+                context.destroy(0)
             self.boundary = None
         for worker in self.workers:
             LOGGER.debug("waiting on worker")
             worker.wait()
         self.workers = []
+        if not destroy_context:
+            return context

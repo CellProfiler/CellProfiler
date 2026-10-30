@@ -80,7 +80,8 @@ dependencies = [
     "scyjava>=1.9.1",
     "six>=1.16.0",
     "tifffile>=2022.7.28",
-    "wxPython>=4.2.0",
+    "wxPython>=4.2.5,<=4.3.2; python_version < '3.15'",
+    "wxPython==4.3.2; python_version >= '3.15'",
     "rapidfuzz>=3.0.0",
     "packaging>=20.0",
     # not needed for python > 3.9

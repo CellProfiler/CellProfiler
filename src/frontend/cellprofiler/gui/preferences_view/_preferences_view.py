@@ -19,6 +19,7 @@ from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_recent_files
 from cellprofiler_core.preferences import remove_image_directory_listener
 from cellprofiler_core.preferences import remove_output_directory_listener
+from cellprofiler_core.preferences import remove_progress_callback
 from cellprofiler_core.preferences import set_default_image_directory
 from cellprofiler_core.preferences import set_default_output_directory
 from cellprofiler_core.preferences import set_pixel_size
@@ -36,6 +37,7 @@ class PreferencesView:
     """
 
     def __init__(self, parent_sizer, panel, progress_panel, status_panel):
+        self.__busy_cursor = None
         self.__panel = panel
         self.__parent_sizer = parent_sizer
         panel.AutoLayout = True
@@ -120,8 +122,10 @@ class PreferencesView:
         self.__status_panel.Layout()
 
     def close(self):
+        self.__busy_cursor = None
         remove_image_directory_listener(self.__on_preferences_image_directory_event)
         remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        remove_progress_callback(self.__hold_a_reference_to_progress_callback)
 
     def __make_folder_panel(
         self, panel, value, list_fn, text, help_text, actions, refresh_action=None
@@ -276,7 +280,7 @@ class PreferencesView:
             if self.__progress_dialog is not None:
                 self.__progress_dialog.Destroy()
                 self.__progress_dialog = None
-            wx.SetCursor(wx.NullCursor)
+            self.__busy_cursor = None
             self.set_message_text(WELCOME_MESSAGE)
             wx.SafeYield(None, True)
 
@@ -297,7 +301,8 @@ class PreferencesView:
                 del self.__progress_dictionary[operation_id]
             self.__progress_stack = self.__progress_stack[: (loc + 1)]
         self.__progress_dictionary[operation_id] = (progress, message)
-        wx.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
+        if self.__busy_cursor is None:
+            self.__busy_cursor = wx.BusyCursor()
         message = ", ".join(
             [
                 "%s (%d %%)" % (message, int(progress * 100))
@@ -350,8 +355,7 @@ class PreferencesView:
         return True, "OK"
 
     def __on_destroy(self, event):
-        remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        self.close()
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view

@@ -11,7 +11,7 @@ import numpy
 import wx
 import wx.adv
 import wx.grid
-import wx.lib.mixins.gridlabelrenderer as wxglr
+from cellprofiler.gui._wx_compat import GridWithLabelRenderersMixin
 from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
 from cellprofiler_core.constants.measurement import C_FILE_NAME, C_C, C_Z, C_T, C_SERIES_NAME
@@ -422,7 +422,7 @@ class ImageSetCache:
         self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
 
-class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
+class ImageSetCtrl(wx.grid.Grid, GridWithLabelRenderersMixin):
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
 
@@ -445,7 +445,7 @@ class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
             display_mode = DISPLAY_MODE_ALTERNATE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        wxglr.GridWithLabelRenderersMixin.__init__(self)
+        GridWithLabelRenderersMixin.__init__(self)
         self.SetCornerLabelRenderer(cpglr.CornerLabelRenderer(
             self, self.on_update, tooltip="Update and display the image set", label="Update"))
         self.SetDefaultRowLabelRenderer(cpglr.RowLabelRenderer())

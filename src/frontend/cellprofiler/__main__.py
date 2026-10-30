@@ -63,12 +63,9 @@ LOGGER = logging.getLogger(__name__)
 
 if hasattr(sys, "frozen"):
     if sys.platform == "darwin":
-        # Some versions of Macos like to put CP in a sandbox. If we're frozen Java should be packed in,
-        # so let's just figure out the directory at run time.
-        try:
-            os.environ["CP_JAVA_HOME"] = os.path.abspath(os.path.join(sys.prefix, "..", "Resources/Home"))
-        except:
-            print("Unable to set JAVA directory to inbuilt java environment")
+        os.environ["JAVA_HOME"] = os.environ.get(
+            "CP_JAVA_HOME", os.path.join(sys._MEIPASS, "jre")
+        )
     elif sys.platform.startswith("win"):
         # Clear out deprecation warnings from PyInstaller
         os.system('cls')

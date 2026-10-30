@@ -4,11 +4,6 @@ jobs:
     name: Build CellProfiler
     strategy:
       matrix:
-        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        # https://github.com/actions/runner-images/tree/main
-        # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
-        # macos-14 (and macos-latest) point to arm architecture, which is incompatible with setup-python + pythonv version 3.9
-        # https://github.com/actions/setup-python/issues/808
         os: [macos-15-intel, windows-2022, ubuntu-24.04]
         python-version: ["3.9"]
       fail-fast: false
@@ -38,19 +33,29 @@ jobs:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
+        if: ${{ !startsWith(matrix.os, 'macos') }}
         uses: actions/setup-python@v6
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
+      - name: Setup Pixi - Mac
+        if: startsWith(matrix.os, 'macos')
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.62.2
+          environments: build
       - name: Get CellProfiler Version - Mac & Linux
         if: ${{ !startsWith(matrix.os, 'windows') }}
         id: get-cp-version-unix
         run: |
-          pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
-          # reference with ${{ env.CP_VERSION }}
-          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
-          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_ENV"
-          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_OUTPUT"
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            cp_version="$(pixi run --locked -e build python -m setuptools_scm -c src/frontend/pyproject.toml)"
+          else
+            pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
+            cp_version="$(python -m setuptools_scm -c src/frontend/pyproject.toml)"
+          fi
+          echo "CP_VERSION=$cp_version" >> "$GITHUB_ENV"
+          echo "CP_VERSION=$cp_version" >> "$GITHUB_OUTPUT"
       - name: Get CellProfiler Version - Windows
         if: startsWith(matrix.os, 'windows')
         id: get-cp-version-windows
@@ -59,8 +64,8 @@ jobs:
           # reference with ${{ env.CP_VERSION }}
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> $env:GITHUB_ENV
-      - name: Setup Java - Mac & Windows
-        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      - name: Setup Java - Windows
+        if: startsWith(matrix.os, 'windows')
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
@@ -71,14 +76,12 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         working-directory: ${{ github.workspace }}/distribution/macos
         env:
-          LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
-          JDK_HOME: ${{ env.JAVA_HOME }}
+          CP_CODESIGN_IDENTITY: "Developer ID Application: Beth Cimini (27YQ9U45D9)"
         run: |
-          brew install mysql
-          make CP_VERSION=${{ env.CP_VERSION }} CP_BRANCH="" CP_DIR=${{ github.workspace }}
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
+          make CP_DIR="${{ github.workspace }}"
           chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
       - name: Build - Windows

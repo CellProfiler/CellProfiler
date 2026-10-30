@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>CellProfiler</string>
 	<key>CFBundleExecutable</key>
-	<string>MacOS/cp</string>
+	<string>cp</string>
 	<key>CFBundleIconFile</key>
 	<string>CellProfiler.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -49,11 +49,6 @@
 			<string>Editor</string>
 		</dict>
 	</array>
-	<key>LSEnvironment</key>
-	<dict>
-		<key>JAVA_HOME</key>
-		<string>./Contents</string>
-	</dict>
 <key>NSHighResolutionCapable</key>
     <true/>
 </dict>

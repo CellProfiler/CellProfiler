@@ -13,7 +13,7 @@ import wx.html
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import wx.lib.mixins.gridlabelrenderer as wxglr
+from cellprofiler.gui._wx_compat import GridWithLabelRenderersMixin
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -2213,7 +2213,7 @@ class ModuleView:
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-    class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
+    class CornerButtonGrid(wx.grid.Grid, GridWithLabelRenderersMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -2223,7 +2223,7 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
-            wxglr.GridWithLabelRenderersMixin.__init__(self)
+            GridWithLabelRenderersMixin.__init__(self)
             self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
             self.SetCornerLabelRenderer(self._corner_label_renderer)
             self.SetDefaultRowLabelRenderer(RowLabelRenderer())

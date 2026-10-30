@@ -598,6 +598,7 @@ class PipelineListView(object):
             module = list_ctrl.items[item].module
             w = self.find_module_figure_window(module)
             if w is not None:
+                w.Show()
                 w.Raise()
                 w.SetFocus()
 

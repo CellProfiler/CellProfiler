@@ -45,7 +45,7 @@ appose = { git = "https://github.com/apposed/appose-python.git", rev = "f3b28336
 [target.linux-64.dependencies]
 # Review whether SDL2 is needed during Linux runtime validation.
 sdl2 = ">=2.0.0"
-wxpython = ">=4.3.2"
+wxpython = ">=4.2.5,<=4.3.2"
 
 [target.linux-64.activation]
 # Review whether LD_LIBRARY_PATH is needed during Linux runtime validation.

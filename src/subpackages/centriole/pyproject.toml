@@ -39,7 +39,7 @@ description = "An open source image processing library"
 readme = "README.md"
 # we don't place upper bound pin for python:
 # https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 # TODO: should be dynamic, top level, shared across all
 license = {file = "LICENSE"}
 keywords = ["computer vision", "image analysis", "biology", "cell", "cellprofiler"]
@@ -52,23 +52,23 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Cython",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
     "deprecation",
     "numpy>=1.18.2",
-    "pillow>=7.1.0,<12",
-    "scikit-image>=0.17.2,<1",
-    "scipy>=1.4.1,!=1.11.0,<2",
+    "pillow>=11.3.0",
+    "scikit-image>=0.25",
+    "scipy>=1.13.1",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 build = ["build", "cython", "numpy", "twine"]
 # TODO: should be handled by nox or tox
-test = ["pytest~=7.4.1"]
+test = ["pytest>=8.4.2"]
 
 [project.urls]
 Homepage = "https://cellprofiler.org/"

@@ -51,7 +51,7 @@ References
 
 See also **ColorToGray**.
 
-.. _Colour\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
+.. _Colour\\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
 """
 
 import math
@@ -475,8 +475,11 @@ blue absorbance values from the image.
         """
         idx = self.outputs.index(output)
         absorbance_array = numpy.array([self.get_absorbances(o) for o in self.outputs])
-        absorbance_matrix = numpy.matrix(absorbance_array)
-        return numpy.array(absorbance_matrix.I[:, idx]).flatten()
+        if absorbance_array.shape[0] == absorbance_array.shape[1]:
+            inverse_absorbances = numpy.linalg.inv(absorbance_array)
+        else:
+            inverse_absorbances = numpy.linalg.pinv(absorbance_array)
+        return inverse_absorbances[:, idx].flatten()
 
     def estimate_absorbance(self):
         """Load an image and use it to estimate the absorbance of a stain

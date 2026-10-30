@@ -14,7 +14,7 @@ def rps(img):
     maxwidth = (
         min(img.shape[0], img.shape[1]) / 8.0
     )  # truncate early to avoid edge effects
-    if img.ptp() > 0:
+    if np.ptp(img) > 0:
         img = img / np.median(abs(img - img.mean()))  # intensity invariant
     mag = abs(fft2(img - np.mean(img)))
     power = mag ** 2

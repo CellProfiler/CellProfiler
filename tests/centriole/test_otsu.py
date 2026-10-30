@@ -6,6 +6,13 @@ from centriole._np_compat import np_NaN
 
 
 class TestOtsu(unittest.TestCase):
+    def test_float32_threshold_precision(self):
+        data = np.random.RandomState(0).rand(17, 19).astype(np.float32)
+        for function in (otsu, entropy):
+            threshold = function(data.copy())
+            self.assertIsInstance(threshold, np.float64)
+            self.assertEqual(threshold, 0.48321330547332764)
+
     def test_01_TwoValues(self):
         """Test Otsu of two values is between the two"""
         x = otsu([0.2, 0.8])

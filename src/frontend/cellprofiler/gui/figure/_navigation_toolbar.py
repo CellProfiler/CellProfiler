@@ -20,7 +20,7 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
         self.volumetric = False
         if want_measure:
             self.bmp_error = wx.Bitmap(BMP_MEASURE)
-            self.wx_ids["Measure"] = wx.NewId()
+            self.wx_ids["Measure"] = wx.NewIdRef()
             self.Bind(wx.EVT_TOOL, self.measure, id=self.wx_ids["Measure"])
             self.measure_tool = self.CreateTool(
                 self.wx_ids["Measure"],

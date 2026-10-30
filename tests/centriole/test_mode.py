@@ -36,7 +36,7 @@ class TestMode(unittest.TestCase):
                 "r = np.random.RandomState(55);"
                 "a = r.randint(0, 10, size=(100000));"
             )
-            scipy_time = timeit.timeit("scipy_mode(a)", setup, number=10)
+            scipy_time = timeit.timeit("scipy_mode(a, keepdims=True)", setup, number=10)
             my_time = timeit.timeit("mode(a)", setup, number=10)
             self.assertLess(my_time, scipy_time)
             logger.info("centriole.mode.mode=%f sec" % my_time)

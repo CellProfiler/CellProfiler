@@ -24,7 +24,7 @@ class ProgressWatcher:
 
         self.multiprocessing = multiprocessing
 
-        timer_id = wx.NewId()
+        timer_id = self.timer_id = wx.NewIdRef()
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
         if not multiprocessing:

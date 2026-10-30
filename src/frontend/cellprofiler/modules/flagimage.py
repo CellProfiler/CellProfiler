@@ -774,7 +774,7 @@ image is not flagged.
         elif ms.source_choice == S_AVERAGE_OBJECT:
             data = m.get_current_measurement(ms.object_name.value, ms.measurement.value)
             if len(data) == 0:
-                min_value = max_value = numpy.NaN
+                min_value = max_value = numpy.nan
                 fail = True
                 display_value = "No objects"
             else:
@@ -785,7 +785,7 @@ image is not flagged.
             data = m.get_current_measurement(ms.object_name.value, ms.measurement.value)
             source = ms.object_name.value
             if len(data) == 0:
-                min_value = max_value = numpy.NaN
+                min_value = max_value = numpy.nan
                 fail = True
                 display_value = "No objects"
             else:

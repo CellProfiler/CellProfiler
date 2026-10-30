@@ -446,9 +446,9 @@ def test_NAN():
         },
         INPUT_OBJECTS: {
             TEST_FTR: [
-                numpy.array([1.0, numpy.NaN, 2.3, 3.4, 2.9]),
-                numpy.array([5.3, 2.4, numpy.NaN, 3.2]),
-                numpy.array([numpy.NaN, 3.1, 4.3, 2.2, 1.1, 0.1]),
+                numpy.array([1.0, numpy.nan, 2.3, 3.4, 2.9]),
+                numpy.array([5.3, 2.4, numpy.nan, 3.2]),
+                numpy.array([numpy.nan, 3.1, 4.3, 2.2, 1.1, 0.1]),
             ]
         },
     }

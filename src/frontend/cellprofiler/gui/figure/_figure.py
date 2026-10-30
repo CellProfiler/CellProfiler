@@ -159,7 +159,7 @@ class Figure(wx.Frame):
         self.many_plots = False
         self.remove_menu = []
         self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
-        self.figure.set_constrained_layout_pads(
+        self.figure.get_layout_engine().set(
             w_pad=0.1, h_pad=0.05, wspace=0, hspace=0
         )
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
@@ -207,7 +207,7 @@ class Figure(wx.Frame):
                             if window_id not in menu_ids:
                                 break
                         if window_id is None:
-                            window_id = wx.NewId()
+                            window_id = wx.NewIdRef()
                             WINDOW_IDS.append(window_id)
                         assert isinstance(menu, wx.Menu)
                         menu.Append(window_id, title)
@@ -336,8 +336,8 @@ class Figure(wx.Frame):
             elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
                 x += (width - best_width) / 2
             width = best_width
-        ctrl.SetPosition(wx.Point(x, y))
-        ctrl.SetSize(wx.Size(width, height))
+        ctrl.SetPosition(wx.Point(int(x), int(y)))
+        ctrl.SetSize(wx.Size(int(width), int(height)))
 
     def on_size(self, event):
         """Handle resizing of canvas, bars and secret panel
@@ -1905,7 +1905,7 @@ class Figure(wx.Frame):
         if nindexes is not None:
             nindexes = max(nindexes, 255)
         # Get the colormap from the user preferences
-        colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,)
+        colormap = matplotlib.pyplot.get_cmap(get_default_colormap(), lut=nindexes,)
         # Initialize the colormap so we have access to the LUT
         colormap._init()
         # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
@@ -1919,7 +1919,7 @@ class Figure(wx.Frame):
         # Set the LUT
         colormap._lut[:n] = lut
         # Make sure the background is black
-        colormap.set_bad(color="black")
+        colormap = colormap.with_extremes(bad="black")
         return colormap
 
     @allow_sharexy
@@ -1959,7 +1959,7 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(get_default_colormap())
+            cm = matplotlib.pyplot.get_cmap(get_default_colormap())
 
             max_label = numpy.max(ijv[:, 2])
 
@@ -2341,9 +2341,8 @@ class Figure(wx.Frame):
         plot = axes.scatter(
             xvals,
             yvals,
-            facecolor=(0.0, 0.62, 1.0),
             edgecolor="none",
-            c=color,
+            c=[(0.0, 0.62, 1.0)] if color is None else color,
             cmap=cmap,
             alpha=0.75,
         )
@@ -2466,7 +2465,7 @@ class Figure(wx.Frame):
             xscale=xscale,
             yscale=yscale,
             bins=bins,
-            cmap=matplotlib.cm.get_cmap(cmap),
+            cmap=matplotlib.pyplot.get_cmap(cmap),
         )
         cb = self.figure.colorbar(plot)
         if bins == "log":
@@ -2555,7 +2554,7 @@ class Figure(wx.Frame):
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x
             self.plate_choice.y = y
-            self.plate_choice.cmap = matplotlib.cm.get_cmap(cmap)
+            self.plate_choice.cmap = matplotlib.pyplot.get_cmap(cmap)
             self.plate_choice.axis_title = title
             self.plate_choice.colorbar = colorbar
         else:
@@ -2597,7 +2596,8 @@ class Figure(wx.Frame):
 
         # Draw NaNs as gray
         # XXX: What if colormap with gray in it?
-        cmap.set_bad("gray", 1.0)
+        cmap = cmap.with_extremes(bad="gray")
+        self.plate_choice.cmap = cmap
         clean_data = numpy.ma.array(data, mask=numpy.isnan(data))
         plot = axes.imshow(
             clean_data, cmap=cmap, interpolation="nearest", shape=data.shape

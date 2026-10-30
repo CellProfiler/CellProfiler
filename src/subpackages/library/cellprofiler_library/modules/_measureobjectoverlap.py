@@ -94,7 +94,7 @@ def measure_object_overlap(
             max_points=max_points,
             penalize_missing=penalize_missing,
         )
-        add_measurement(Feature.EARTH_MOVERS_DISTANCE, float(emd))
+        add_measurement(Feature.EARTH_MOVERS_DISTANCE.value, float(emd))
     
     if return_visualization_data:
         def subscripts(condition1: int, condition2: int):
@@ -113,7 +113,7 @@ def measure_object_overlap(
         FP_pixels = numpy.zeros((xGT, yGT))
         TN_pixels = numpy.zeros((xGT, yGT))
 
-        def maskimg(mask: List[Tuple[Any, Any]], img: NDArray[numpy.float_]):
+        def maskimg(mask: List[Tuple[Any, Any]], img: NDArray[numpy.float64]):
             for ea in mask:
                 img[ea] = 1
             return img

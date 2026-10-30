@@ -89,7 +89,7 @@ def fill_modules():
             if not hasattr(cp_module, "do_not_check"):
                 cp_module()
             if check_svn and hasattr(m, "__version__"):
-                match = re.match("^\$Revision: ([0-9]+) \$$", m.__version__)
+                match = re.match("^\\$Revision: ([0-9]+) \\$$", m.__version__)
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
         except Exception as e:

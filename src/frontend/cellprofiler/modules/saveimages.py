@@ -39,6 +39,7 @@ import h5py
 import numpy
 import skimage.io
 import skimage.util
+from cellprofiler_library.functions.file_processing import save_tiff
 import logging
 from cellprofiler_core.constants.measurement import (
     C_FILE_NAME,
@@ -480,11 +481,11 @@ You should choose as **Base image folder** the input folder that has the structu
 to mirror in the output folder. 
 
 Consider an example where your input images are stored in a nested folder structure of 
-"images\/experiment-name\/plate-name" (i.e., your files are in folders for each plate, nested
+"images\\/experiment-name\\/plate-name" (i.e., your files are in folders for each plate, nested
 inside of folders for each experiment, nested in a parent folder called "images"). 
 If you select the base image folder to be **images**, **SaveImages** will go to your "Output file
-location" and save images in subfolders "experiment-name\/plate-name" that corresponds to each 
-input image. If the base image folder chosen is one level deeper at "images\/experiment-name", 
+location" and save images in subfolders "experiment-name\\/plate-name" that corresponds to each 
+input image. If the base image folder chosen is one level deeper at "images\\/experiment-name", 
 **SaveImages** will store images in subfolders for each "plate-name" they belong to.
 
 **Warning**: Do not select the same folder you selected for "Output file location" as this can lead
@@ -787,10 +788,12 @@ to unexpected behavior like saving in the original input file directory. For saf
                 save_kwargs.update({'imagej':True})
 
             if (image.volumetric or self.tiff_compress.value) and self.file_format.value == FF_TIFF:
-                save_kwargs.update({"compression": (8, 6)})
+                save_kwargs.update({"compression": 8, "compressionargs": {"level": 6}})
 
             if self.file_format.value == FF_H5:
                 save_h5(filename, pixels, volumetric=image.volumetric)
+            elif self.file_format.value == FF_TIFF:
+                save_tiff(filename, pixels, **save_kwargs)
             else:
                 skimage.io.imsave(filename, pixels, **save_kwargs)
 

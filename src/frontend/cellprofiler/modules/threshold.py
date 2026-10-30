@@ -112,8 +112,8 @@ The choices for the threshold strategy are:
 """.format(
                 **{
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
-                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE,
-                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL,
+                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value,
+                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL.value,
                 }
             ),
         )
@@ -248,12 +248,12 @@ There are a number of methods for finding thresholds automatically:
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
-                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
-                    "TM_MANUAL": ThresholdOpts.Method.MANUAL,
-                    "TM_MEASUREMENT": ThresholdOpts.Method.MEASUREMENT,
-                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL,
+                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
+                    "TM_MANUAL": ThresholdOpts.Method.MANUAL.value,
+                    "TM_MEASUREMENT": ThresholdOpts.Method.MEASUREMENT.value,
+                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL.value,
                 }
             ),
         )
@@ -378,11 +378,11 @@ threshold value.
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
-                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
-                    "TM_SAUVOLA": ThresholdOpts.Method.SAUVOLA,
-                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
+                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
+                    "TM_SAUVOLA": ThresholdOpts.Method.SAUVOLA.value,
+                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value,
                 }
             ),
         )
@@ -432,7 +432,7 @@ setting.
 """.format(
                 **{
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
                 }
             ),
         )
@@ -529,8 +529,8 @@ objects, three-class thresholding may perform worse than two-class.
 .. |image1| image:: {PROTIP_AVOID_ICON}
 """.format(
                 **{
-                    "O_THREE_CLASS": ThresholdOpts.OtsuMethod.THREE_CLASS,
-                    "O_TWO_CLASS": ThresholdOpts.OtsuMethod.TWO_CLASS,
+                    "O_THREE_CLASS": ThresholdOpts.OtsuMethod.THREE_CLASS.value,
+                    "O_TWO_CLASS": ThresholdOpts.OtsuMethod.TWO_CLASS.value,
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
@@ -559,7 +559,7 @@ be assigned to the foreground class or the background class.
 Discard this fraction of the pixels in the image starting with those of
 the lowest intensity.
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -574,7 +574,7 @@ the lowest intensity.
 Discard this fraction of the pixels in the image starting with those of
 the highest intensity.
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -599,10 +599,10 @@ This setting determines how the intensity midpoint is determined.
    the intensity associated with the bin with the most pixels.
 """.format(
                 **{
-                    "RB_MEAN": ThresholdOpts.AveragingMethod.MEAN,
-                    "RB_MEDIAN": ThresholdOpts.AveragingMethod.MEDIAN,
-                    "RB_MODE": ThresholdOpts.AveragingMethod.MODE,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
+                    "RB_MEAN": ThresholdOpts.AveragingMethod.MEAN.value,
+                    "RB_MEDIAN": ThresholdOpts.AveragingMethod.MEDIAN.value,
+                    "RB_MODE": ThresholdOpts.AveragingMethod.MODE.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
                 }
             ),
         )
@@ -620,9 +620,9 @@ Choose one of *{RB_SD}* or *{RB_MAD}* (the median of the absolute
 difference of the pixel intensities from their median).
 """.format(
                 **{
-                    "RB_MAD": ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION,
-                    "RB_SD": ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
+                    "RB_MAD": ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION.value,
+                    "RB_SD": ThresholdOpts.VarianceMethod.STANDARD_DEVIATION.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
                 }
             ),
         )
@@ -641,7 +641,7 @@ Use a smaller number to be less stringent. It’s even possible to
 use a negative number if you want the threshold to be lower than the average
 (e.g., for images that are densely covered by foreground).
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -654,14 +654,14 @@ use a negative number if you want the threshold to be lower than the average
 Enter the size of the window (in pixels) to be used for the adaptive method.
 Often a good choice is some multiple of the largest expected object size.
 """.format(
-                **{"TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE}
+                **{"TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value}
             ),
         )
         self.log_transform = Binary(
             "Log transform before thresholding?",
             value=False,
             doc=f"""\
-*(Used only with the "{ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY}" and "{ThresholdOpts.Method.OTSU}" methods)*
+*(Used only with the "{ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value}" and "{ThresholdOpts.Method.OTSU.value}" methods)*
 
 Choose whether to log-transform intensity values before thresholding.
 The log transformation is applied before calculating the threshold, and the resulting 

@@ -419,7 +419,7 @@ negative as clockwise.""".format(
                     ),
                 )
             )
-            buff = x.astype(numpy.uint8).tostring()
+            buff = x.astype(numpy.uint8).tobytes()
             bitmap = wx.Bitmap.FromBuffer(x.shape[1], x.shape[0], buff)
             canvas.SetBitmap(bitmap)
 

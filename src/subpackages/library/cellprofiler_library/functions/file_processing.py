@@ -1,7 +1,32 @@
 import os
+from pathlib import Path
+import warnings
 
 import numpy
 import skimage
+import tifffile
+
+
+def save_tiff(filename, pixels, check_contrast=True, **kwargs):
+    if isinstance(filename, Path):
+        filename = str(filename.resolve())
+    if pixels.dtype == bool:
+        warnings.warn(
+            f"{filename} is a boolean image: setting True to 255 and False to 0. "
+            "To silence this warning, please convert the image using img_as_ubyte.",
+            stacklevel=2,
+        )
+        pixels = pixels.astype("uint8") * 255
+    if check_contrast and skimage.exposure.is_low_contrast(pixels):
+        warnings.warn(f"{filename} is a low contrast image", stacklevel=2)
+    if pixels.shape[0] in (3, 4):
+        kwargs.setdefault("planarconfig", "SEPARATE")
+        rgb = True
+    else:
+        rgb = pixels.shape[-1] in (3, 4)
+    if rgb:
+        kwargs.setdefault("photometric", "RGB")
+    return tifffile.imwrite(filename, pixels, **kwargs)
 
 def save_object_image_crops(
     input_image,
@@ -56,7 +81,7 @@ def save_object_image_crops(
         properties = skimage.measure.regionprops(
                 mask_in.astype(int), intensity_image=input_image
             )
-        mask = properties[0].intensity_image
+        mask = properties[0].image_intensity
         
         if file_format.casefold() == "png":
             skimage.io.imsave(
@@ -65,17 +90,19 @@ def save_object_image_crops(
                 check_contrast=False
             )
         elif file_format.casefold() == "tiff8":
-            skimage.io.imsave(
+            save_tiff(
                 label_save_filename,
                 skimage.img_as_ubyte(mask),
-                compression=(8,6),
+                compression=8,
+                compressionargs={"level": 6},
                 check_contrast=False,
             )
         elif file_format.casefold() == "tiff16":
-            skimage.io.imsave(
+            save_tiff(
                 label_save_filename,
                 skimage.img_as_uint(mask),
-                compression=(8,6),
+                compression=8,
+                compressionargs={"level": 6},
                 check_contrast=False,
             )
         else:
@@ -135,17 +162,19 @@ def save_object_masks(
                     check_contrast=False
                 )
         elif file_format.casefold() == "tiff8":
-            skimage.io.imsave(
+            save_tiff(
                 label_save_filename,
                 skimage.img_as_ubyte(mask),
-                compression=(8, 6),
+                compression=8,
+                compressionargs={"level": 6},
                 check_contrast=False,
             )
         elif file_format.casefold() == "tiff16":
-            skimage.io.imsave(
+            save_tiff(
                 label_save_filename,
                 skimage.img_as_uint(mask),
-                compression=(8, 6),
+                compression=8,
+                compressionargs={"level": 6},
                 check_contrast=False,
             )
         else:

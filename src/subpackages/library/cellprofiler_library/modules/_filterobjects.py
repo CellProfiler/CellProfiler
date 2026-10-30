@@ -56,7 +56,7 @@ def filter_objects(
         elif filter_choice == FilterMethod.LIMITS.value:
             indexes = keep_within_limits(limit_groups)
         else:
-            raise ValueError(f"Unknown filter choice: {filter_choice} for mode {mode}")
+            raise ValueError(f"Unknown filter choice: {filter_choice.value if isinstance(filter_choice, FilterMethod) else filter_choice} for mode {mode.value if isinstance(mode, FilterMode) else mode}")
     elif mode == FilterMode.BORDER.value:
         indexes = discard_border_objects(src_labels, parent_image_mask)
     # keep_by_class
@@ -66,9 +66,9 @@ def filter_objects(
         elif hits is not None:
             indexes = keep_by_hits(hits)
         else:
-            raise ValueError(f"mode {mode} requires either 'scores' or 'hits'")
+            raise ValueError(f"mode {mode.value if isinstance(mode, FilterMode) else mode} requires either 'scores' or 'hits'")
     else:
-        raise ValueError(f"Unknown filter mode: {mode}")
+        raise ValueError(f"Unknown filter mode: {mode.value if isinstance(mode, FilterMode) else mode}")
 
     new_object_count = len(indexes)
     label_indexes = numpy.zeros((max_label + 1,), int)

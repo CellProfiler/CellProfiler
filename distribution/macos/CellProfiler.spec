@@ -1,174 +1,89 @@
-# -*- mode: python -*-
+import importlib.metadata
+import importlib.util
+import os
+import plistlib
+import sys
+from pathlib import Path
 
-import os.path
+from packaging.version import Version
+from PyInstaller.utils.hooks import (
+    collect_data_files,
+    collect_submodules,
+    conda_support,
+    copy_metadata,
+)
 
-import importlib.resources
-
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules, get_homebrew_path, copy_metadata
-from PyInstaller.compat import is_pure_conda
-
-binaries = []
-
-block_cipher = None
+spec_dir = Path(SPECPATH)
+codesign_identity = os.environ.get("CP_CODESIGN_IDENTITY")
+java_home = Path(os.environ.get("JAVA_HOME", Path(sys.prefix) / "lib/jvm")).resolve()
+java_jars = Path(os.environ.get("CP_JAVA_JARS", spec_dir / "build/java-jars"))
+if not (java_home / "lib/server/libjvm.dylib").is_file():
+    raise RuntimeError(f"JAVA_HOME does not contain a macOS JVM: {java_home}")
+if not list(java_jars.glob("*.jar")):
+    raise RuntimeError("Run prepare_java.py before building the application")
 
 datas = []
+for package in ("cellprofiler", "cellprofiler_core", "cellprofiler_library", "skimage"):
+    datas += collect_data_files(package)
+datas += collect_data_files("cellprofiler.modules.plugins", include_py_files=True)
+datas += copy_metadata("cellprofiler", recursive=True)
+datas += copy_metadata("appose")
+datas += [(str(java_jars), "java-jars")]
 
-datas += collect_data_files("cellprofiler")
-datas += collect_data_files("skimage.io._plugins")
-# for skimage/feature/orb_descriptor_positions.txt
-datas += collect_data_files("skimage.feature")
+binaries = []
+for path in conda_support.files("mysql-client", dependencies=False):
+    if path.parent.as_posix() == "lib/plugin" and path.suffix == ".so":
+        binaries.append((str(path.locate()), "mysql/plugin"))
 
-datas += [
-    ("../../src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("../../src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
-]
+hiddenimports = ["cellprofiler.__main__", "appose.python_worker", "pywt._extensions._cwt"]
+for package in (
+    "cellprofiler.modules", "cellprofiler_core.modules", "cellprofiler_core.readers",
+    "scipy", "skimage", "sklearn", "sentry_sdk.integrations",
+):
+    hiddenimports += collect_submodules(package, filter=lambda name: ".tests" not in name)
 
-for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
-    if 'Contents/' in subdir:
-        if len(subdir.split('Contents/')) >1:
-            _, subdir_split = subdir.split('Contents/')
-            for file in files:
-                datas += [(os.path.join(subdir, file), subdir_split)]
-
-# needed for packages getting version at runtime via importlib.metadata
-# https://pyinstaller.org/en/stable/hooks.html#PyInstaller.utils.hooks.copy_metadata
-copied_metadata = copy_metadata('scyjava')
-
-datas += copied_metadata
-
-hiddenimports = []
-
-hiddenimports += collect_submodules('cellprofiler.modules')
-hiddenimports += collect_submodules('cellprofiler_core.modules')
-hiddenimports += collect_submodules('cellprofiler_core.readers')
-
-hiddenimports += collect_submodules("numpy")
-hiddenimports += collect_submodules("numpy.core")
-hiddenimports += collect_submodules("pandas")
-hiddenimports += collect_submodules("scipy")
-hiddenimports += collect_submodules("scipy.special")
-hiddenimports += collect_submodules("wx")
-hiddenimports += collect_submodules('skimage.io._plugins')
-hiddenimports += collect_submodules("skimage.feature")
-hiddenimports += collect_submodules("skimage.filters")
-hiddenimports += collect_submodules("sklearn")
-hiddenimports += collect_submodules("sentry_sdk")
-hiddenimports += collect_submodules("sentry_sdk.integrations")
-hiddenimports += collect_submodules("sentry_sdk.integrations.stdlib")
-
-hiddenimports += [
-    "pkg_resources.py2_warn",
-    "pywt._extensions._cwt",
-    "sentry_sdk.integrations.excepthook",
-    "sentry_sdk.integrations.stdlib",
-    "sentry_sdk.integrations.modules",
-    "sentry_sdk.integrations.threading",
-]
-
-excludes = []
-
-excludes += [
-    "SimpleITK",
-    "pyamg",
-    "sphinx",
-    "whoosh",
-    "glib",
-    "PyQt5.QtGui",
-    "PyQt5.QtCore",
-    "PyQt4.QtGui",
-    "PyQt4.QtCore",
-    "PySide.QtGui",
-    "PySide.QtCore",
-    "astropy",
-    "pandas",
-    "PyQt5",
-    "PyQt4",
-    "PySide",
-    "PySide2",
-    "gtk",
-    "FixTk",
-    "tcl",
-    "tk",
-    "_tkinter",
-    "tkinter",
-    "Tkinter"
-]
-
+version = Version(importlib.metadata.version("cellprofiler")).base_version
+info_plist = plistlib.loads(
+    (spec_dir / "Info.plist.template").read_text().replace("{{CP_VERSION}}", version).encode()
+)
 a = Analysis(
-    ['CellProfiler.py'],
+    [str(spec_dir / "CellProfiler.py")],
+    pathex=[
+        str(Path(importlib.util.find_spec(package).origin).parent.parent)
+        for package in ("cellprofiler", "cellprofiler_core", "cellprofiler_library", "centriole")
+    ],
     binaries=binaries,
-    cipher=block_cipher,
     datas=datas,
-    excludes=excludes,
     hiddenimports=hiddenimports,
-    hookspath=[],
-    pathex=['../../src/frontend', '../../src/subpackages/core', '../../src/subpackages/library'],
-    runtime_hooks=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False
+    runtime_hooks=[str(spec_dir / "runtime_hook.py")],
+    excludes=["tkinter", "PyQt5", "PyQt6", "PySide2", "PySide6", "sphinx"],
 )
-
-libpng_pathname = get_homebrew_path("libpng")
-libpng_pathname = os.path.join(libpng_pathname, "lib", "libpng16.16.dylib")
-
-java_pathname = os.path.join(os.environ["JAVA_HOME"], "lib/libjava.dylib")
-
-a.binaries += [
-    ("libpng16.16.dylib", libpng_pathname, "BINARY"),
-    ("libjava.dylib", java_pathname, "BINARY")
+a.datas += [
+    (str(Path("jre") / path.relative_to(java_home)), str(path), "DATA")
+    for path in sorted(java_home.rglob("*"))
+    if path.is_file()
 ]
-
-exclude_binaries = [
-    ('libpng16.16.dylib', str(importlib.resources.files('matplotlib') / '.dylibs/libpng16.16.dylib'), 'BINARY'),
-]
-
-# in conda, numpy 1.24 stores its dylibs in <conda_path>/envs/<env_name>/lib/libgfortran.5.dylib
-# scipy stores in <conda_path>/envs/C<env_name>/lib/python3.9/site-packages/scipy/.dylibs/libgfortran.5.dylib
-# causing scipy's (incorrectly specified architecture) build to be used instead of numpys (because of some internal pyintaller reason, I guess)
-# correct for that here
-if is_pure_conda:
-    from PyInstaller.utils.hooks import conda_support
-
-    if conda_support.distributions.get('numpy') is not None:
-        numpy_dyn_libs = [d[0] for d in conda_support.collect_dynamic_libs("numpy", dependencies=True)]
-        libgfortran_path = list(filter(lambda d: 'libgfortran.5.dylib' in d, numpy_dyn_libs34j))
-        libgfortran_path = libgfortran_path[0]
-        # in python 3.9 specifically, it's compiled for arm64 (`lipo -info`), remove it
-        exclude_binaries += [('scipy/.dylibs/libgfortran.5.dylib', str(importlib.resources.files('scipy') / '.dylibs/libgfortran.5.dylib'), 'BINARY')]
-        # and replace it with the one numpy uses, which is x86_64
-        a.binaries += [('scipy/.dylibs/libgfortran.5.dylib', libgfortran_path, 'BINARY')]
-
-a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]
-
-pyz = PYZ(
-    a.pure,
-    a.zipped_data,
-    cipher=block_cipher
-)
-
+pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
     name="cp",
-    debug=True,
+    debug=False,
     strip=False,
-    upx=True,
-    console=True
+    upx=False,
+    console=True,
+    entitlements_file=str(spec_dir / "entitlements.plist"),
+    codesign_identity=codesign_identity,
 )
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    icon="../../src/frontend/cellprofiler/data/icons/CellProfiler.icns",
-    name="CellProfiler.app"
-)
-
+coll = COLLECT(exe, a.binaries, a.datas, name="CellProfiler")
 app = BUNDLE(
     coll,
     name="CellProfiler.app",
-    icon="../../src/frontend/cellprofiler/data/icons/CellProfiler.icns",
-    bundle_identifier=None
+    icon=str(spec_dir / "CellProfiler.icns"),
+    bundle_identifier="org.cellprofiler.CellProfiler",
+    version=version,
+    info_plist=info_plist,
+    codesign_identity=codesign_identity,
+    entitlements_file=str(spec_dir / "entitlements.plist"),
 )

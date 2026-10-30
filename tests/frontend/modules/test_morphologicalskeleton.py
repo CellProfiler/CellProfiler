@@ -33,7 +33,7 @@ def test_run(image, module, image_set, workspace):
     actual = image_set.get_image("MorphologicalSkeleton")
 
     if image.volumetric:
-        desired = skimage.morphology.skeletonize_3d(image.pixel_data)
+        desired = skimage.morphology.skeletonize(image.pixel_data, method="lee")
     else:
         desired = skimage.morphology.skeletonize(image.pixel_data)
 

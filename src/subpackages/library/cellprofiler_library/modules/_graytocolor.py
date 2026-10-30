@@ -50,7 +50,7 @@ def gray_to_color(
             pixel_data_arr = pixel_data_arr,
         )
     else:
-        raise ValueError(f"Unimplemented scheme: {scheme}")
+        raise ValueError(f"Unimplemented scheme: {scheme.value if isinstance(scheme, Scheme) else scheme}")
     if scheme.value != Scheme.STACK and wants_rescale:
         # If we rescaled, clip values that went out of range after multiplication
         rgb_pixel_data[rgb_pixel_data > 1] = 1

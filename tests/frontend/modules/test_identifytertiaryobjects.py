@@ -70,7 +70,7 @@ def test_zeros():
     count_feature = "Count_%s" % TERTIARY
     assert count_feature in measurements.get_feature_names("Image")
     value = measurements.get_current_measurement("Image", count_feature)
-    assert numpy.product(value.shape) == 1
+    assert numpy.prod(value.shape) == 1
     assert value == 0
     assert TERTIARY in workspace.object_set.get_object_names()
     output_objects = workspace.object_set.get_objects(TERTIARY)
@@ -105,7 +105,7 @@ def test_one_object():
     count_feature = "Count_%s" % TERTIARY
     assert count_feature in measurements.get_feature_names("Image")
     value = measurements.get_current_measurement("Image", count_feature)
-    assert numpy.product(value.shape) == 1
+    assert numpy.prod(value.shape) == 1
     assert value == 1
 
     assert TERTIARY in measurements.get_object_names()
@@ -114,18 +114,18 @@ def test_one_object():
         parents_of_feature = "Parent_%s" % parent_name
         assert parents_of_feature in measurements.get_feature_names(TERTIARY)
         value = measurements.get_current_measurement(TERTIARY, parents_of_feature)
-        assert numpy.product(value.shape), 1
+        assert numpy.prod(value.shape), 1
         assert value[0], 1
         assert child_count_feature in measurements.get_feature_names(parent_name)
         value = measurements.get_current_measurement(parent_name, child_count_feature)
-        assert numpy.product(value.shape), 1
+        assert numpy.prod(value.shape), 1
         assert value[0], 1
 
     for axis, expected in (("X", 5), ("Y", 4)):
         feature = "Location_Center_%s" % axis
         assert feature in measurements.get_feature_names(TERTIARY)
         value = measurements.get_current_measurement(TERTIARY, feature)
-        assert numpy.product(value.shape), 1
+        assert numpy.prod(value.shape), 1
         assert value[0] == expected
 
     assert TERTIARY in workspace.object_set.get_object_names()
@@ -167,7 +167,7 @@ def test_two_objects():
         assert numpy.all(cvalue == 1)
         pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
         for value in (pvalue, cvalue):
-            assert numpy.product(value.shape), 2
+            assert numpy.prod(value.shape), 2
         #
         # Make an array that maps the parent label index to the
         # corresponding child label index
@@ -213,7 +213,7 @@ def test_objects_with_same_area_no_shrink():
     ):
         parents_of_feature = "Parent_%s" % parent_name
         pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
-        label_map = numpy.zeros((numpy.product(pvalue.shape) + 1,), int)
+        label_map = numpy.zeros((numpy.prod(pvalue.shape) + 1,), int)
         label_map[1:] = pvalue.flatten()
         mapped_labels = label_map[output_labels]
         assert numpy.all(parent_labels == mapped_labels)
@@ -249,7 +249,7 @@ def test_overlapping_secondary():
     ):
         parents_of_feature = "Parent_%s" % parent_name
         pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
-        label_map = numpy.zeros((numpy.product(pvalue.shape) + 1,), int)
+        label_map = numpy.zeros((numpy.prod(pvalue.shape) + 1,), int)
         label_map[1:] = pvalue.flatten()
         mapped_labels = label_map[output_labels]
         assert numpy.all(parent_labels == mapped_labels)

@@ -203,7 +203,7 @@ class FileCollectionDisplayController:
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
             dc.SetFont(font)
             text_width, text_height = dc.GetTextExtent(text)
-            dc.DrawText(text, (width - text_width) / 2, (height - text_height) / 2)
+            dc.DrawText(text, int((width - text_width) / 2), int((height - text_height) / 2))
 
     def on_browse(self, event):
         LOGGER.debug("Browsing for file collection directory")

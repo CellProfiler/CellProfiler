@@ -19,23 +19,20 @@ class TestSegmentation:
     def test_01_02_sparse(self):
         r = numpy.random.RandomState()
         r.seed(102)
-        ijv = numpy.core.records.fromarrays(
+        ijv = numpy.rec.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
-                    1,
                 ),
             ],
         )
@@ -56,23 +53,20 @@ class TestSegmentation:
         r = numpy.random.RandomState()
         r.seed(102)
         shape = (1, 1, 1, 50, 50)
-        ijv = numpy.core.records.fromarrays(
+        ijv = numpy.rec.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
-                    1,
                 ),
             ],
         )
@@ -83,23 +77,20 @@ class TestSegmentation:
     def test_02_02_shape_sparse_implicit(self):
         r = numpy.random.RandomState()
         r.seed(102)
-        ijv = numpy.core.records.fromarrays(
+        ijv = numpy.rec.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
-                    1,
                 ),
             ],
         )
@@ -113,23 +104,20 @@ class TestSegmentation:
     def test_02_03_set_shape(self):
         r = numpy.random.RandomState()
         r.seed(102)
-        ijv = numpy.core.records.fromarrays(
+        ijv = numpy.rec.fromarrays(
             [r.randint(0, 10, size=20) for _ in range(3)],
             [
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X,
                     numpy.uint32,
-                    1,
                 ),
                 (
                     cellprofiler_core.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS,
                     numpy.uint32,
-                    1,
                 ),
             ],
         )

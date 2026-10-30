@@ -39,7 +39,7 @@ class OutlineArtist(matplotlib.collections.LineCollection):
                 my_range = numpy.arange(len(unique))
             else:
                 my_range = numpy.arange(1, len(unique))
-            idx.shape = l.shape
+            idx = idx.reshape(l.shape)
             pts, offs, counts = centriole.cpmorphology.get_outline_pts(idx, my_range)
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):

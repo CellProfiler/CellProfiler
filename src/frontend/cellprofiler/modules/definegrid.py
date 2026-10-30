@@ -1020,9 +1020,9 @@ first image.
         #
         gridding.spot_table = numpy.arange(gridding.rows * gridding.columns) + 1
         if self.ordering == NUM_BY_COLUMNS:
-            gridding.spot_table.shape = (gridding.rows, gridding.columns)
+            gridding.spot_table = gridding.spot_table.reshape(gridding.rows, gridding.columns)
         else:
-            gridding.spot_table.shape = (gridding.columns, gridding.rows)
+            gridding.spot_table = gridding.spot_table.reshape(gridding.columns, gridding.rows)
             gridding.spot_table = numpy.transpose(gridding.spot_table)
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             # Flip top and bottom

@@ -94,7 +94,7 @@ for each measurement are given below:
 
 - _00 = horizontal -, 0 degrees   (0, 1)
 - _01 = diagonal \\\\, 135 degrees or NW-SE   (1, 1)
-- _02 = vertical \|, 90 degrees   (1, 0)
+- _02 = vertical \\|, 90 degrees   (1, 0)
 - _03 = diagonal /, 45 degrees or NE-SW  (1, -1)
 
 When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:

@@ -6,7 +6,7 @@ import tempfile
 import urllib.request
 
 import base64
-import imageio
+import imageio.v2 as imageio
 import numpy
 import pytest
 import skimage.morphology

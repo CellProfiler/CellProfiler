@@ -175,6 +175,25 @@ def test_test_measure_overlap_objects():
     assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
 
 
+def test_earth_movers_distance_measurement_name():
+    labels = numpy.zeros((20, 10), int)
+    labels[5:8, 3:6] = 1
+    workspace, module = make_obj_workspace(
+        labels,
+        labels,
+        dict(image=labels > 0),
+        dict(image=labels > 0),
+    )
+    try:
+        module.run(workspace)
+        value = workspace.measurements.get_current_image_measurement(
+            "Overlap_EarthMoversDistance_Nuclei_Protein"
+        )
+        assert value == 0
+    finally:
+        workspace.measurements.close()
+
+
 def test_test_objects_rand_index():
     r = numpy.random.RandomState()
     r.seed(52)

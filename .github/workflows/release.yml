@@ -4,74 +4,32 @@ jobs:
     name: Build CellProfiler
     strategy:
       matrix:
-        os: [macos-15-intel, windows-2022, ubuntu-24.04]
-        python-version: ["3.9"]
+        os: [macos-latest, windows-latest, ubuntu-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     outputs:
-      cp-version: ${{ steps.get-cp-version-unix.outputs.CP_VERSION }}
+      cp-version: ${{ steps.version.outputs.CP_VERSION }}
     steps:
-      - name: Cache pip - Windows
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/cache@v5
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Cache pip - Mac
-        if: startsWith(matrix.os, 'macos')
-        uses: actions/cache@v5
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Checkout
         uses: actions/checkout@v6
         with:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
-      - name: Set up Python ${{ matrix.python-version }}
-        if: ${{ !startsWith(matrix.os, 'macos') }}
-        uses: actions/setup-python@v6
-        with:
-          architecture: x64
-          python-version: ${{ matrix.python-version }}
-      - name: Setup Pixi - Mac
-        if: startsWith(matrix.os, 'macos')
+      - name: Setup Pixi
         uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          pixi-version: v0.62.2
-          environments: build
-      - name: Get CellProfiler Version - Mac & Linux
-        if: ${{ !startsWith(matrix.os, 'windows') }}
-        id: get-cp-version-unix
+          pixi-version: v0.80.0
+          environments: ${{ runner.os == 'Linux' && 'prod ci-tools' || 'build ci-tools' }}
+          locked: true
+          cache: true
+          cache-key: pixi-release-
+      - name: Get CellProfiler Version
+        id: version
+        shell: bash
         run: |
-          if [ "${{ runner.os }}" = "macOS" ]; then
-            cp_version="$(pixi run --locked -e build python -m setuptools_scm -c src/frontend/pyproject.toml)"
-          else
-            pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
-            cp_version="$(python -m setuptools_scm -c src/frontend/pyproject.toml)"
-          fi
+          cp_version="$(pixi run --locked -e ci-tools python -m setuptools_scm -c src/frontend/pyproject.toml)"
           echo "CP_VERSION=$cp_version" >> "$GITHUB_ENV"
           echo "CP_VERSION=$cp_version" >> "$GITHUB_OUTPUT"
-      - name: Get CellProfiler Version - Windows
-        if: startsWith(matrix.os, 'windows')
-        id: get-cp-version-windows
-        run: |
-          pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
-          # reference with ${{ env.CP_VERSION }}
-          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
-          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> $env:GITHUB_ENV
-      - name: Setup Java - Windows
-        if: startsWith(matrix.os, 'windows')
-        uses: actions/setup-java@v5
-        with:
-          distribution: "temurin"
-          java-version: "11" # The JDK version to make available on the path.
-          java-package: jdk
-          architecture: x64
       - name: Build - Mac
         if: startsWith(matrix.os, 'macos')
         working-directory: ${{ github.workspace }}/distribution/macos
@@ -85,37 +43,21 @@ jobs:
           chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
       - name: Build - Windows
-        if: startsWith(matrix.os, 'windows')
-        env:
-          JDK_HOME: ${{ env.JAVA_HOME }}
-        # cython necessary? mysql?
+        if: runner.os == 'Windows'
+        working-directory: ${{ github.workspace }}/distribution/windows
         run: |
-          pip install "cython" 
-          pip install mysqlclient==2.0.3 #tbh, I suspect this is outside the pip install below because it's crashy and takes a long time, not for real reasons
-          echo "Installing ${{ env.CP_VERSION }}..."
-          pip install --editable "${{ github.workspace }}/src/subpackages/centriole" --upgrade
-          pip install --editable "${{ github.workspace }}/src/subpackages/library" --upgrade
-          pip install --editable "${{ github.workspace }}/src/subpackages/core" --upgrade
-          pip install --editable "${{ github.workspace }}/src/frontend[build]" --upgrade
-          cd ${{ github.workspace }}/distribution/windows
-          pyinstaller cellprofiler.spec
-          iscc cellprofiler.iss
-      - name: Setup Pixi - Linux
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: prefix-dev/setup-pixi@v0.9.4
+          pixi run --locked -e build python -m PyInstaller cellprofiler.spec
+          pixi run --locked -e build python -c "import os, subprocess; os.environ['JDK_HOME'] = os.environ['JAVA_HOME']; subprocess.run([os.path.join(os.environ['ProgramFiles(x86)'], 'Inno Setup 6', 'ISCC.exe'), 'cellprofiler.iss'], check=True)"
+      - name: Cache packed packages - Linux
+        if: runner.os == 'Linux'
+        uses: actions/cache@v5
         with:
-          pixi-version: v0.62.2
-          #cache: true
-          #cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          #locked: true
-          #environments: prod
-          run-install: false
-          global-environments: pixi-pack
+          path: .pixi_pack/cache
+          key: pixi-pack-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pixi.lock') }}
       - name: Pack Environment - Linux
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          pixi-pack --environment prod --platform linux-64 --use-cache .pixi_pack/cache --ignore-pypi-non-wheel --create-executable pixi.toml
-          ls -Al .
+          pixi run --locked -e ci-tools pixi-pack --environment prod --platform linux-64 --use-cache .pixi_pack/cache --ignore-pypi-non-wheel --create-executable pixi.toml
       - name: Create Actions Artifact - Mac
         if: startsWith(matrix.os, 'macos')
         uses: actions/upload-artifact@v6
@@ -238,7 +180,7 @@ jobs:
           mv org.cellprofiler.CellProfiler-x86_64.zip CellProfiler-Linux-${{ env.CP_VERSION }}.zip
       - name: Upload Release Artifacts
         id: upload-artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           prerelease: true

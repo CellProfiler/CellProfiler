@@ -13,14 +13,14 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: Setup Python
-      uses: actions/setup-python@v6
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.9.4
       with:
-        python-version: '3.9'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build twine
+        pixi-version: v0.80.0
+        environments: ci-tools
+        locked: true
+        cache: true
+        cache-key: pixi-ci-tools-
     - name: Download Centriole wheels
       uses: actions/download-artifact@v4
       with:
@@ -29,23 +29,23 @@ jobs:
     - name: Upload Centriole
       working-directory: ${{ github.workspace }}/src/subpackages/centriole/
       run: |
-        python -m build --sdist
-        twine upload dist/*
+        pixi run --locked -e ci-tools python -m build --no-isolation --sdist
+        pixi run --locked -e ci-tools twine upload dist/*
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
-        python -m build
-        twine upload dist/*
+        pixi run --locked -e ci-tools python -m build --no-isolation
+        pixi run --locked -e ci-tools twine upload dist/*
     - name: Upload Core
       working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
-        python -m build
-        twine upload dist/*
-    - name: Upload Library
+        pixi run --locked -e ci-tools python -m build --no-isolation
+        pixi run --locked -e ci-tools twine upload dist/*
+    - name: Upload Frontend
       working-directory: ${{ github.workspace }}/src/frontend/
       run: |
-        python -m build
-        twine upload dist/*
+        pixi run --locked -e ci-tools python -m build --no-isolation
+        pixi run --locked -e ci-tools twine upload dist/*
 on:
   release:
     types: [created]

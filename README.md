@@ -1,6 +1,6 @@
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="src/frontend/cellprofiler/data/images/splash_white_spellprofiler.webp">
-    <img alt="CellProfiler" src="src/frontend/cellprofiler/data/images/splash_black_spellprofiler.webp">
+    <source media="(prefers-color-scheme: dark)" srcset="src/frontend/cellprofiler/data/images/splash-white-text-alpha.png">
+    <img alt="CellProfiler" src="src/frontend/cellprofiler/data/images/splash-black-text-alpha.png">
 </picture>
 
 [![Version](https://img.shields.io/badge/version-4.2.8-green.svg)](https://cellprofiler.org/releases)

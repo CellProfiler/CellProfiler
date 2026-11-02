@@ -2140,12 +2140,16 @@ def two_cell_image():
 
 
 def fly_image():
-    from cellprofiler_core.reader import get_image_reader
     from cellprofiler_core.pipeline import ImageFile
+    from cellprofiler_core.reader import get_image_reader
+    from cellprofiler_core.utilities.pathname import pathname2url
 
     path = os.path.join(os.path.dirname(tests.frontend.__file__), "resources/01_POS002_D.TIF")
-    rdr = get_image_reader(ImageFile("file://"+path))
-    return rdr.read()
+    rdr = get_image_reader(ImageFile(pathname2url(path)))
+    try:
+        return rdr.read()
+    finally:
+        rdr.close()
 
 
 def draw_circle(img, center, radius, value):

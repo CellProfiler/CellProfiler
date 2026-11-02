@@ -184,6 +184,9 @@ def make_accessible_proxy(button, handler):
     stack one behind the Gen* button, mirror its geometry/visibility/enabled state,
     and route its click to the same handler.
     """
+    if wx.Platform != "__WXMAC__":
+        return None
+
     proxy = wx.Button(
         button.GetParent(), label=button.GetLabel(), style=wx.BORDER_NONE
     )

@@ -2,6 +2,24 @@
 
 Linux distributions of CellProfiler are done via Flatpak.
 
+The Pixi Linux environments use the upstream wxPython 4.3.2 wheel built for
+CPython 3.14 on Ubuntu 24.04, downloaded from the versioned GitHub release URL.
+The wheel includes wxWidgets and WebView support and requires compatible native
+GTK 3, WebKitGTK 4.1 and JavaScriptCoreGTK 4.1 libraries. The GNOME 49 Flatpak
+runtime supplies the browser libraries; a native development installation must
+provide them through its operating system. This is an Ubuntu-targeted
+`linux_x86_64` wheel, not a manylinux portability guarantee.
+
+When changing the Python minor version or the reviewed wxPython version, update
+the Linux wheel URL in `pixi.toml` and regenerate `pixi.lock` together. Retain the
+project's wxPython upper-bound policy and validate the welcome screen, example
+loading and the packaged runtime after changing the wheel. The release assets
+for different Ubuntu versions share the same wheel platform tag, so they must
+be selected explicitly (manually) rather than combined into an unrestricted wheel
+index.
+
+The wheel uses the operating system or Flatpak runtime's GTK/GdkPixbuf stack.
+
 ## Building
 
 ### Building Locally

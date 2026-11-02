@@ -54,6 +54,7 @@ jobs:
             cp312-${{ matrix.platform_id }}
             cp313-${{ matrix.platform_id }}
             cp314-${{ matrix.platform_id }}
+            cp315-${{ matrix.platform_id }}
           CIBW_ARCHS: auto
           CIBW_ENVIRONMENT: SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.version.outputs.version }}
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28

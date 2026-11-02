@@ -118,7 +118,7 @@ cython = "*"
 numpy = ">=2"
 
 [feature.ci-tools.pypi-dependencies]
-cibuildwheel = ">=3.4,<4"
+cibuildwheel = ">=4.3.5,<5"
 
 [feature.ci-tools.target.linux-64.dependencies]
 pixi-pack = "*"

@@ -48,10 +48,11 @@ appose = { git = "https://github.com/apposed/appose-python.git", rev = "f3b28336
 [target.linux-64.dependencies]
 # Review whether SDL2 is needed during Linux runtime validation.
 sdl2 = ">=2.0.0"
-wxpython = ">=4.2.5,<=4.3.2"
+
+[target.linux-64.pypi-dependencies]
+wxpython = { url = "https://github.com/wxWidgets/Phoenix/releases/download/wxPython-4.3.2/wxpython-4.3.2%2Bubuntu2404-cp314-cp314-linux_x86_64.whl" }
 
 [target.linux-64.activation]
-scripts = ["distribution/linux/activate.sh"]
 # Review whether LD_LIBRARY_PATH is needed during Linux runtime validation.
 env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
 

@@ -66,7 +66,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Pixi
@@ -77,6 +77,7 @@ jobs:
           locked: true
           cache: true
           cache-key: pixi-dev-
+          cache-write: ${{ matrix.suite == fromJSON(needs.matrix.outputs.suite)[0] }}
       - name: Stop runner MySQL
         # we run our own pixi-supplied mysql, stop the default one on linux
         if: runner.os == 'Linux' && matrix.suite == 'frontend'

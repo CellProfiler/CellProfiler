@@ -13,6 +13,7 @@ from cellprofiler.gui.help import content
     ],
 )
 def test_image_resource_windows_paths(monkeypatch, working_directory, expected):
+    windows_relpath = ntpath.relpath
     monkeypatch.setattr(
         content.importlib.resources,
         "files",
@@ -21,7 +22,7 @@ def test_image_resource_windows_paths(monkeypatch, working_directory, expected):
     monkeypatch.setattr(
         content.os.path,
         "relpath",
-        lambda path: ntpath.relpath(path, working_directory),
+        lambda path: windows_relpath(path, working_directory),
     )
     assert content.image_resource("UnmixColors.png") == expected
 

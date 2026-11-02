@@ -74,7 +74,9 @@ def run_with_mysql():
                 # directly into database tables
                 "--local-infile=1",
             ]
-            if os.name != "nt":
+            if os.name == "nt":
+                server_args.append("--no-monitor")
+            else:
                 # Unix domain socket file for local client connection via socket
                 # rather than TCP, where preferred by the client
                 server_args.append(f"--socket={rootdir / 'mysql.sock'}")

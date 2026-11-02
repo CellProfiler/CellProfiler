@@ -11,6 +11,7 @@ modules:
     build-commands:
       # unpack the bundled environment
       - ${FLATPAK_BUILDER_BUILDDIR}/environment.sh --output-directory ${FLATPAK_DEST} --verbose
+      - env -u GDK_PIXBUF_MODULEDIR -u GDK_PIXBUF_MODULE_FILE ${FLATPAK_DEST}/env/bin/gdk-pixbuf-query-loaders --update-cache
       # remove these so the flatpak bundled libs in /usr/lib/x86-64-linux-gnu are linked to instead
       - rm -f ${FLATPAK_DEST}/env/lib/libfontconfig*
       - rm -f ${FLATPAK_DEST}/env/lib/libGL*

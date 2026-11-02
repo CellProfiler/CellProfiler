@@ -51,6 +51,7 @@ sdl2 = ">=2.0.0"
 wxpython = ">=4.2.5,<=4.3.2"
 
 [target.linux-64.activation]
+scripts = ["distribution/linux/activate.sh"]
 # Review whether LD_LIBRARY_PATH is needed during Linux runtime validation.
 env = { LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:$CONDA_PREFIX/lib" }
 

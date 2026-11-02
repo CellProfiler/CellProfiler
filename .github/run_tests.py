@@ -20,42 +20,65 @@ def run_tests(suite):
     return subprocess.call(args)
 
 
+TEST_HOST = "127.0.0.1"
+TEST_DB = "cellprofiler_test"
+TEST_USER = "root"
+TEST_PASSWORD = "None"
+
 def run_with_mysql():
     import MySQLdb
 
     os.environ.update(
-        CP_MYSQL_TEST_HOST="127.0.0.1",
-        CP_MYSQL_TEST_DB="cellprofiler_test",
-        CP_MYSQL_TEST_USER="root",
-        CP_MYSQL_TEST_PASSWORD="None",
+        CP_MYSQL_TEST_HOST=TEST_HOST,
+        CP_MYSQL_TEST_DB=TEST_DB,
+        CP_MYSQL_TEST_USER=TEST_USER,
+        CP_MYSQL_TEST_PASSWORD=TEST_PASSWORD,
     )
     mysqld = shutil.which("mysqld")
     if mysqld is None:
         raise RuntimeError("The Pixi environment does not contain mysqld")
     base_dir = Path(sys.prefix) / "Library" if os.name == "nt" else Path(sys.prefix)
     with tempfile.TemporaryDirectory(prefix="cp-mysql-") as directory:
-        root = Path(directory)
-        log_path = root / "mysql.log"
+        rootdir = Path(directory)
+        log_path = rootdir / "mysql.log"
         command = [
             mysqld,
+            # ignore default config, e.g. /etc/my.cnf, ~/.my.cnf
             "--no-defaults",
+            # root path to MySQL installation dir
             f"--basedir={base_dir}",
+            # engine and authentication plugins
             f"--plugin-dir={base_dir / 'lib' / 'plugin'}",
+            # localized server error messages
             f"--lc-messages-dir={base_dir / 'share' / 'mysql'}",
-            f"--datadir={root / 'data'}",
+            # table files, metadata, system tables
+            f"--datadir={rootdir / 'data'}",
+            # startup and runtime errors
             f"--log-error={log_path}",
         ]
         server = None
         try:
+            # server init: create system database tables, generate root@localhost
+            # .run: synchronous, blocking, one-time task; exit on complete
             subprocess.run(command + ["--initialize-insecure"], check=True)
             server_args = [
-                "--bind-address=127.0.0.1",
+                # restrict incoming connections to local machine (localhost)
+                f"--bind-address={TEST_HOST}",
+                # listen on default MySQL TCP port
                 "--port=3306",
+                # disable MySQL X plugin (document store/ X DevAPI)
+                # reduces overhead and frees port 33060
                 "--mysqlx=0",
+                # enable LOAD DATA LOCAL INFILE, needed by data pipelines like
+                # CellProfiler to bulk-load CSV/tab-delimited measurement data
+                # directly into database tables
                 "--local-infile=1",
             ]
             if os.name != "nt":
-                server_args.append(f"--socket={root / 'mysql.sock'}")
+                # Unix domain socket file for local client connection via socket
+                # rather than TCP, where preferred by the client
+                server_args.append(f"--socket={rootdir / 'mysql.sock'}")
+            # Popen: async, non-blocking, long-running daemon; keep in background
             server = subprocess.Popen(command + server_args)
             deadline = time.monotonic() + 120
             while True:
@@ -63,7 +86,7 @@ def run_with_mysql():
                     raise RuntimeError("MySQL exited before accepting connections")
                 try:
                     connection = MySQLdb.connect(
-                        host="127.0.0.1", user="root", connect_timeout=2
+                        host=TEST_HOST, user=TEST_USER, connect_timeout=2
                     )
                     break
                 except MySQLdb.OperationalError:
@@ -72,7 +95,7 @@ def run_with_mysql():
                     time.sleep(1)
             try:
                 with connection.cursor() as cursor:
-                    cursor.execute("CREATE DATABASE cellprofiler_test")
+                    cursor.execute(f"CREATE DATABASE {TEST_DB}")
             finally:
                 connection.close()
             return run_tests("frontend")

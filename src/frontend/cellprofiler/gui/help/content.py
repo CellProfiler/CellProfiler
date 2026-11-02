@@ -27,11 +27,13 @@ def read_content(filename):
 
 
 def image_resource(filename):
-    relpath = os.path.relpath(
-        importlib.resources.files("cellprofiler").joinpath(
-            "data", "images", filename
-        )
+    resource_filename = importlib.resources.files("cellprofiler").joinpath(
+        "data", "images", filename
     )
+    try:
+        relpath = os.path.relpath(resource_filename)
+    except ValueError:
+        return os.fspath(resource_filename).replace("\\", "/")
 
     # With this specific relative path we are probably building the documentation
     # in sphinx The path separator used by sphinx is "/" on all platforms.

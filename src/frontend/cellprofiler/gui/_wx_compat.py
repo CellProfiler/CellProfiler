@@ -38,7 +38,11 @@ def create_webview(parent):
         "WebViewBackendDefault",
     ):
         backend = getattr(wx.html2, name)
-        if wx.html2.WebView.IsBackendAvailable(backend):
+        try:
+            available = wx.html2.WebView.IsBackendAvailable(backend)
+        except NotImplementedError:
+            available = False
+        if available:
             LOGGER.debug("Using WebView backend: %s (%r)", name, backend)
             content = wx.html2.WebView.New(backend=backend)
             if content is None:

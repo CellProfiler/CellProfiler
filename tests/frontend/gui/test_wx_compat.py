@@ -76,14 +76,18 @@ def test_label_paint_ignores_stale_event_object(
 
 
 def test_webview_is_owned_by_parent(frame):
-    if not any(
-        wx.html2.WebView.IsBackendAvailable(backend)
-        for backend in (
-            wx.html2.WebViewBackendDefault,
-            wx.html2.WebViewBackendWebKit,
-            wx.html2.WebViewBackendEdge,
+    try:
+        available = any(
+            wx.html2.WebView.IsBackendAvailable(backend)
+            for backend in (
+                wx.html2.WebViewBackendDefault,
+                wx.html2.WebViewBackendWebKit,
+                wx.html2.WebViewBackendEdge,
+            )
         )
-    ):
+    except NotImplementedError:
+        pytest.skip("wxPython was built without native WebView support")
+    if not available:
         pytest.skip("No native WebView backend is installed")
     content = create_webview(frame)
     assert content.GetParent() == frame
@@ -94,7 +98,8 @@ def test_webview_is_owned_by_parent(frame):
 
 
 @pytest.mark.parametrize("backend", [b"backend", "backend"])
-def test_webview_backend_identifiers(frame, monkeypatch, backend):
+def test_webview_backend_identifiers(monkeypatch, backend):
+    frame = Mock()
     content = Mock()
     content.Create.return_value = True
     factory = Mock()
@@ -109,7 +114,8 @@ def test_webview_backend_identifiers(frame, monkeypatch, backend):
     content.Create.assert_called_once_with(frame)
 
 
-def test_webview_falls_back_after_failed_creation(frame, monkeypatch):
+def test_webview_falls_back_after_failed_creation(monkeypatch):
+    frame = Mock()
     failed = Mock()
     failed.Create.return_value = False
     success = Mock()
@@ -125,9 +131,13 @@ def test_webview_falls_back_after_failed_creation(frame, monkeypatch):
     assert factory.New.call_count == 2
 
 
-def test_no_webview_backend(frame, monkeypatch):
+@pytest.mark.parametrize("implemented", [True, False])
+def test_no_webview_backend(monkeypatch, implemented):
+    frame = Mock()
     factory = Mock()
     factory.IsBackendAvailable.return_value = False
+    if not implemented:
+        factory.IsBackendAvailable.side_effect = NotImplementedError
     monkeypatch.setattr(wx.html2, "WebView", factory)
 
     with pytest.raises(RuntimeError, match="No usable"):

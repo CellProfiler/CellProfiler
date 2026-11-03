@@ -23,18 +23,18 @@ tests = "$PIXI_PROJECT_ROOT/scripts/mysql_test.sh run-all"
 cp = { cmd = ["python", "-m", "cellprofiler", "-L", "10"] }
 cpd = { cmd = ["python", "-Wd", "-m", "cellprofiler", "-L", "10"] }
 
-[feature.mysql.activation]
+[feature.mysql.target.osx.activation]
 # https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
 env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$CONDA_PREFIX/lib -lmysqlclient -rpath $CONDA_PREFIX/lib", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig" }
 
 [feature.mysql.target.linux-64.activation]
-env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$CONDA_PREFIX/lib" }
+env = { MYSQLCLIENT_CFLAGS = "-I$CONDA_PREFIX/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$CONDA_PREFIX/lib", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig" }
 
 [feature.java.activation]
 env = { JAVA_HOME = "$CONDA_PREFIX/lib/jvm" }
 
 [feature.java.target.win-64.activation]
-env = { JAVA_HOME = "$CONDA_PREFIX/Library/lib/jvm" }
+env = { JAVA_HOME = "%CONDA_PREFIX%/Library/lib/jvm" }
 
 [dependencies]
 python = "3.14.*"
@@ -104,6 +104,9 @@ centriole = { path = "./src/subpackages/centriole", editable = false }
 cellprofiler-library = { path = "./src/subpackages/library", editable = false }
 cellprofiler-core = { path = "./src/subpackages/core", editable = false }
 cellprofiler = { path = "./src/frontend", editable = false }
+
+[feature.profile]
+platforms = ["linux-64", "osx-64", "osx-arm64"]
 
 [feature.profile.pypi-dependencies]
 py-spy = "*"

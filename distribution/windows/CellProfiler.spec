@@ -1,8 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-import os
+import importlib.util
+from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+
+spec_dir = Path(SPECPATH)
+source_roots = {
+    package: Path(importlib.util.find_spec(package).origin).parent.parent
+    for package in ("cellprofiler", "cellprofiler_core", "cellprofiler_library", "centriole")
+}
 
 binaries = []
 
@@ -16,8 +23,8 @@ datas += collect_data_files("skimage.io._plugins")
 datas += collect_data_files("skimage.feature")
 
 datas += [
-    ("../../src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("../../src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons")
+    (str(source_roots["cellprofiler"] / "cellprofiler/data/images/*"), "cellprofiler/data/images"),
+    (str(source_roots["cellprofiler"] / "cellprofiler/data/icons/*"), "cellprofiler/data/icons")
 ]
 
 # needed for packages getting version at runtime via importlib.metadata
@@ -28,6 +35,7 @@ datas += copied_metadata
 
 hiddenimports = []
 
+hiddenimports += collect_submodules('centriole')
 hiddenimports += collect_submodules('cellprofiler.modules')
 hiddenimports += collect_submodules('cellprofiler_core.modules')
 hiddenimports += collect_submodules('cellprofiler_core.readers')
@@ -58,7 +66,7 @@ hiddenimports += [
     "sentry_sdk.integrations.threading",
 ]
 
-a = Analysis(['CellProfiler.py'],
+a = Analysis([str(spec_dir / 'CellProfiler.py')],
              binaries=binaries,
              cipher=block_cipher,
              datas=datas,
@@ -66,7 +74,7 @@ a = Analysis(['CellProfiler.py'],
              hiddenimports=hiddenimports,
              hookspath=[],
              noarchive=False,
-             pathex=['../../src/frontend', '../../src/subpackages/core', '../../src/subpackages/library'],
+             pathex=[str(root) for root in source_roots.values()],
              runtime_hooks=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False)
@@ -83,7 +91,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          icon='../../src/frontend/cellprofiler/data/icons/CellProfiler.ico',
+          icon=str(source_roots['cellprofiler'] / 'cellprofiler/data/icons/CellProfiler.ico'),
           console=True)
 
 coll = COLLECT(exe,

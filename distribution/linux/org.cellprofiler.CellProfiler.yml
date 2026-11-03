@@ -24,6 +24,18 @@ modules:
       - echo "${FLATPAK_DEST}/activate.sh python -m cellprofiler -L 10" > cellprofiler
       - install -Dm0755 cellprofiler ${FLATPAK_DEST}/bin/cellprofiler
       # pip install the sources only, the deps are already installed in the unpacked enviornment above
+      - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/appose
+      - |
+        ${FLATPAK_DEST}/env/bin/python - <<'PYTHON'
+        import importlib.metadata
+        from pathlib import Path
+        import tomllib
+        import appose
+
+        expected = tomllib.loads(Path('appose/pyproject.toml').read_text())['project']['version']
+        assert importlib.metadata.version('appose') == expected
+        assert callable(appose.file) and callable(appose.NDArray)
+        PYTHON
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/centriole
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/library
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
@@ -43,6 +55,10 @@ modules:
       - type: git
         url: https://github.com/CellProfiler/CellProfiler.git
         branch: linux
+      - type: git
+        url: "https://github.com/apposed/appose-python.git"
+        commit: "f3b28336e9ca96e794e654f2ca916a59919b64c6"
+        dest: appose
       - type: file
         path: environment.sh
         dest: .

@@ -27,6 +27,7 @@ SHELL       := bash
 
 .DEFAULT_GOAL := build-local
 
+PYTHON     ?= python3
 CP_VERSION ?= 5.0.0
 CP_BRANCH  ?= main
 CP_DIR     ?= ../..
@@ -82,11 +83,11 @@ org.cellprofiler.CellProfiler.metainfo.xml: org.cellprofiler.CellProfiler.metain
 	    -e 's/{{METAINFO_DATE}}/$(MANIFEST_DATE)/g' \
 	    $< > $(CP_DIST)/org.cellprofiler.CellProfiler.metainfo.xml
 
-org.cellprofiler.CellProfiler.yml: org.cellprofiler.CellProfiler.yml.template
+org.cellprofiler.CellProfiler.yml: org.cellprofiler.CellProfiler.yml.template render_appose.py $(CP_DIR)/pixi.toml
 	sed -e 's/{{CP_VERSION}}/$(CP_VERSION)/g' \
 	    -e 's/{{CP_VERSION_BASE}}/$(CP_VERSION_BASE)/g' \
 	    -e 's/{{CP_BRANCH}}/$(RESOLVED_CP_BRANCH)/g' \
-	    $< > $(CP_DIST)/org.cellprofiler.CellProfiler.yml
+	    "$<" | $(PYTHON) "$(CP_DIST)/render_appose.py" "$(CP_DIR)/pixi.toml" > "$(CP_DIST)/org.cellprofiler.CellProfiler.yml"
 
 .PHONY: build-local
 build-local: CellProfiler metadata

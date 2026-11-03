@@ -30,6 +30,9 @@ A `Makefile` is provided for building. The `Makefile` takes several optional arg
 make CP_VERSION="$(python -m setuptools_scm -c ../../src/frontend/pyproject.toml)" CP_BRANCH=""
 ```
 
+Metadata generation requires Python 3.11 or newer for `tomllib`. Set the
+`PYTHON` make variable to select another interpreter when necessary.
+
 The manifest and metainfo file (both explained below in the "Flatpak Manifest" section) are generated from templates:
 
 ```
@@ -79,6 +82,20 @@ Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/e
 The [desktop file](https://docs.flatpak.org/en/latest/conventions.html#desktop-files), compliant with the [FreeDesktop dektop entry specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
 
 The desktop entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`. It can be validated with `desktop-file-validate`.
+
+## Appose source build
+
+Appose is pinned to a Git commit in `pixi.toml`. Because `pixi-pack` skips this
+non-wheel dependency, the Flatpak manifest fetches Appose as a separate Git
+source and installs it after unpacking the environment, before CellProfiler.
+The install builds a wheel offline with the packaged setuptools backend;
+`--no-index --no-build-isolation --no-deps` prevents dependency downloads.
+
+The manifest generator reads both the Appose Git URL and full commit from
+`pixi.toml`, which is also a Makefile dependency. Changing that pin regenerates
+the Flatpak source entry automatically. The build checks the installed Appose
+version against its source metadata and verifies the `file` and `NDArray` APIs.
+Do not maintain another Appose pin in the Flatpak template.
 
 ## Pixi Pack
 

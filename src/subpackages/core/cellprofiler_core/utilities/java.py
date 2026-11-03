@@ -28,7 +28,7 @@ def start_java():
 
     # java fetching
     # https://github.com/scijava/scyjava/issues/89
-    if sys.platform == "darwin" and getattr(sys, "frozen", False):
+    if sys.platform in ("darwin", "win32") and getattr(sys, "frozen", False):
         jars = Path(sys._MEIPASS) / "java-jars"
         if not jars.is_dir():
             raise RuntimeError("The application bundle is missing its Java jars")

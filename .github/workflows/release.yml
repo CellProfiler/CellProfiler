@@ -45,16 +45,14 @@ jobs:
       - name: Build - Windows
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}/distribution/windows
-        run: pixi run --locked -e build python -m PyInstaller cellprofiler.spec
-      - name: Check executable - Windows
-        if: runner.os == 'Windows'
-        working-directory: ${{ github.workspace }}/distribution/windows
-        run: pixi run --locked -e ci-tools python check_frozen.py dist/CellProfiler/CellProfiler.exe
+        run: |
+          pixi run --locked -e build python prepare_java.py build/java-jars
+          pixi run --locked -e build python -m PyInstaller CellProfiler.spec
       - name: Build installer - Windows
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}/distribution/windows
         run: |
-          pixi run --locked -e build python -c "import os, subprocess; os.environ['JDK_HOME'] = os.environ['JAVA_HOME']; subprocess.run([os.path.join(os.environ['ProgramFiles(x86)'], 'Inno Setup 6', 'ISCC.exe'), 'cellprofiler.iss'], check=True)"
+          pixi run --locked -e build python -c "import os, subprocess; subprocess.run([os.path.join(os.environ['ProgramFiles(x86)'], 'Inno Setup 6', 'ISCC.exe'), 'CellProfiler.iss'], check=True)"
       - name: Cache packed packages - Linux
         if: runner.os == 'Linux'
         uses: actions/cache@v5

@@ -45,9 +45,11 @@ jobs:
       - name: Determine package version
         id: version
         shell: bash
-        run: echo "version=$(pixi run --locked -e ci-tools python -m setuptools_scm -c src/subpackages/centriole/pyproject.toml)" >> "$GITHUB_OUTPUT"
+        run: |
+          version="$(pixi run ${{ inputs.nightly && '--frozen' || '--locked' }} -e ci-tools python -m setuptools_scm -c src/subpackages/centriole/pyproject.toml)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Build and check wheels
-        run: pixi run --locked -e ci-tools python -m cibuildwheel src/subpackages/centriole --output-dir wheelhouse
+        run: pixi run ${{ inputs.nightly && '--frozen' || '--locked' }} -e ci-tools python -m cibuildwheel src/subpackages/centriole --output-dir wheelhouse
         env:
           CIBW_BUILD: >-
             cp311-${{ matrix.platform_id }}

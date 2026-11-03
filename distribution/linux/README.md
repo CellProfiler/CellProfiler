@@ -5,7 +5,7 @@ Linux distributions of CellProfiler are done via Flatpak.
 The Pixi Linux environments use the upstream wxPython 4.3.2 wheel built for
 CPython 3.14 on Ubuntu 24.04, downloaded from the versioned GitHub release URL.
 The wheel includes wxWidgets and WebView support and requires compatible native
-GTK 3, WebKitGTK 4.1 and JavaScriptCoreGTK 4.1 libraries. The GNOME 49 Flatpak
+GTK 3, libnotify, WebKitGTK 4.1 and JavaScriptCoreGTK 4.1 libraries. The GNOME 49 Flatpak
 runtime supplies the browser libraries; a native development installation must
 provide them through its operating system. This is an Ubuntu-targeted
 `linux_x86_64` wheel, not a manylinux portability guarantee.

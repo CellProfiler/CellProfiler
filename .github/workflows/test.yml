@@ -78,6 +78,11 @@ jobs:
           cache: true
           cache-key: pixi-dev-
           cache-write: ${{ matrix.suite == fromJSON(needs.matrix.outputs.suite)[0] }}
+      - name: Install Linux GUI dependencies
+        if: runner.os == 'Linux' && matrix.suite == 'frontend'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 libnotify4 libwebkit2gtk-4.1-0
       - name: Stop runner MySQL
         # we run our own pixi-supplied mysql, stop the default one on linux
         if: runner.os == 'Linux' && matrix.suite == 'frontend'

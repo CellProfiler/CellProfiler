@@ -1,6 +1,6 @@
-import centrosome.filter
-import centrosome.kirsch
-import centrosome.otsu
+import centriole.filter
+import centriole.kirsch
+import centriole.otsu
 import numpy
 
 import cellprofiler_core.image
@@ -11,6 +11,7 @@ import cellprofiler.modules.enhanceedges
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.enhanceedges import EdgeDirection, EdgeFindingMethod
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -47,11 +48,11 @@ def test_sobel_horizontal():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
+    module.method.value = EdgeFindingMethod.SOBEL
+    module.direction.value = EdgeDirection.HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.hsobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.hsobel(image))
 
 
 def test_sobel_vertical():
@@ -59,11 +60,11 @@ def test_sobel_vertical():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
+    module.method.value = EdgeFindingMethod.SOBEL
+    module.direction.value = EdgeDirection.VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.vsobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.vsobel(image))
 
 
 def test_sobel_all():
@@ -71,11 +72,11 @@ def test_sobel_all():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
-    module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
+    module.method.value = EdgeFindingMethod.SOBEL
+    module.direction.value = EdgeDirection.ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.sobel(image))
+    assert numpy.all(output.pixel_data == centriole.filter.sobel(image))
 
 
 def test_prewitt_horizontal():
@@ -83,11 +84,11 @@ def test_prewitt_horizontal():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
+    module.method.value = EdgeFindingMethod.PREWITT
+    module.direction.value = EdgeDirection.HORIZONTAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.hprewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.hprewitt(image))
 
 
 def test_prewitt_vertical():
@@ -95,11 +96,11 @@ def test_prewitt_vertical():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
+    module.method.value = EdgeFindingMethod.PREWITT
+    module.direction.value = EdgeDirection.VERTICAL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.vprewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.vprewitt(image))
 
 
 def test_prewitt_all():
@@ -107,11 +108,11 @@ def test_prewitt_all():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
-    module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
+    module.method.value = EdgeFindingMethod.PREWITT
+    module.direction.value = EdgeDirection.ALL
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.prewitt(image))
+    assert numpy.all(output.pixel_data == centriole.filter.prewitt(image))
 
 
 def test_roberts():
@@ -119,10 +120,10 @@ def test_roberts():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_ROBERTS
+    module.method.value = EdgeFindingMethod.ROBERTS
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    assert numpy.all(output.pixel_data == centrosome.filter.roberts(image))
+    assert numpy.all(output.pixel_data == centriole.filter.roberts(image))
 
 
 def test_log_automatic():
@@ -130,13 +131,13 @@ def test_log_automatic():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_LOG
+    module.method.value = EdgeFindingMethod.LOG
     module.sigma.value = 20
     module.wants_automatic_sigma.value = True
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     sigma = 2.0
-    expected = centrosome.filter.laplacian_of_gaussian(
+    expected = centriole.filter.laplacian_of_gaussian(
         image, numpy.ones(image.shape, bool), int(sigma * 4) + 1, sigma
     ).astype(numpy.float32)
 
@@ -148,13 +149,13 @@ def test_log_manual():
     numpy.random.seed(0)
     image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_LOG
+    module.method.value = EdgeFindingMethod.LOG
     module.sigma.value = 4
     module.wants_automatic_sigma.value = False
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     sigma = 4.0
-    expected = centrosome.filter.laplacian_of_gaussian(
+    expected = centriole.filter.laplacian_of_gaussian(
         image, numpy.ones(image.shape, bool), int(sigma * 4) + 1, sigma
     ).astype(numpy.float32)
 
@@ -169,14 +170,14 @@ def test_canny():
     image = image * 0.5 + numpy.random.uniform(size=image.shape) * 0.3
     image = numpy.ascontiguousarray(image, numpy.float32)
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_CANNY
+    module.method.value = EdgeFindingMethod.CANNY
     module.wants_automatic_threshold.value = True
     module.wants_automatic_low_threshold.value = True
     module.wants_automatic_sigma.value = True
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    t1, t2 = centrosome.otsu.otsu3(centrosome.filter.sobel(image))
-    result = centrosome.filter.canny(image, numpy.ones(image.shape, bool), 1.0, t1, t2)
+    t1, t2 = centriole.otsu.otsu3(centriole.filter.sobel(image))
+    result = centriole.filter.canny(image, numpy.ones(image.shape, bool), 1.0, t1, t2)
     assert numpy.all(output.pixel_data == result)
 
 
@@ -186,8 +187,8 @@ def test_kirsch():
     image = (numpy.sqrt(i * i + j * j) <= 10).astype(float) * 0.5
     image = image + r.uniform(size=image.shape) * 0.1
     workspace, module = make_workspace(image)
-    module.method.value = cellprofiler.modules.enhanceedges.M_KIRSCH
+    module.method.value = EdgeFindingMethod.KIRSCH
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    result = centrosome.kirsch.kirsch(image)
+    result = centriole.kirsch.kirsch(image)
     numpy.testing.assert_almost_equal(output.pixel_data, result, decimal=4)

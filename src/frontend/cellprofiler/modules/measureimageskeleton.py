@@ -30,66 +30,9 @@ Measurements made by this module
 - *Endpoints*: Total number of pixels with only one neighbor.
 """
 
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-import skimage.util
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-
-
-def _neighbors(image):
-    """
-
-    Counts the neighbor pixels for each pixel of an image:
-
-            x = [
-                [0, 1, 0],
-                [1, 1, 1],
-                [0, 1, 0]
-            ]
-
-            _neighbors(x)
-
-            [
-                [0, 3, 0],
-                [3, 4, 3],
-                [0, 3, 0]
-            ]
-
-    :type image: numpy.ndarray
-
-    :param image: A two-or-three dimensional image
-
-    :return: neighbor pixels for each pixel of an image
-
-    """
-    padding = numpy.pad(image, 1, "constant")
-
-    mask = padding > 0
-
-    padding = padding.astype(float)
-
-    if image.ndim == 2:
-        response = 3 ** 2 * scipy.ndimage.uniform_filter(padding) - 1
-
-        labels = (response * mask)[1:-1, 1:-1]
-
-        return labels.astype(numpy.uint16)
-    elif image.ndim == 3:
-        response = 3 ** 3 * scipy.ndimage.uniform_filter(padding) - 1
-
-        labels = (response * mask)[1:-1, 1:-1, 1:-1]
-
-        return labels.astype(numpy.uint16)
-
-
-def branches(image):
-    return _neighbors(image) > 2
-
-
-def endpoints(image):
-    return _neighbors(image) == 1
+from cellprofiler_library.modules._measureimageskeleton import measure_image_skeleton
 
 
 class MeasureImageSkeleton(Module):
@@ -113,8 +56,6 @@ You can create a morphological skeleton with the
         return [self.skeleton_name]
 
     def run(self, workspace):
-        names = ["Branches", "Endpoints"]
-
         input_image_name = self.skeleton_name.value
 
         image_set = workspace.image_set
@@ -125,32 +66,30 @@ You can create a morphological skeleton with the
 
         pixels = input_image.pixel_data
 
-        pixels = pixels > 0
+        result = measure_image_skeleton(
+            pixels, 
+            im_name=self.skeleton_name.value,
+            return_visualization_data=self.show_window
+        )
 
-        branch_nodes = branches(pixels)
+        if self.show_window:
+            lib_measurements, lib_display = result
+        else:
+            lib_measurements = result
 
-        endpoint_nodes = endpoints(pixels)
-
-        statistics = self.measure(input_image, workspace)
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
 
         if self.show_window:
             workspace.display_data.skeleton = pixels
 
-            a = numpy.copy(branch_nodes).astype(numpy.uint16)
-            b = numpy.copy(endpoint_nodes).astype(numpy.uint16)
-
-            a[a == 1] = 1
-            b[b == 1] = 2
-
-            nodes = skimage.segmentation.join_segmentations(a, b)
-
-            workspace.display_data.nodes = nodes
+            workspace.display_data.nodes = lib_display.nodes
 
             workspace.display_data.dimensions = dimensions
 
-            workspace.display_data.names = names
+            workspace.display_data.names = ["Branches", "Endpoints"]
 
-            workspace.display_data.statistics = statistics
+            workspace.display_data.statistics = lib_display.statistics
 
     def display(self, workspace, figure=None):
         layout = (2, 2)
@@ -195,8 +134,6 @@ You can create a morphological skeleton with the
         return "Skeleton_{}_{}".format(name, image)
 
     def get_measurements(self, pipeline, object_name, category):
-        name = self.skeleton_name.value
-
         if object_name == "Image" and category == "Skeleton":
             return [
                 "Branches",
@@ -227,35 +164,6 @@ You can create a morphological skeleton with the
         feature = self.get_feature_name(name)
 
         return feature
-
-    def measure(self, image, workspace):
-        data = image.pixel_data
-
-        data = data.astype(bool)
-
-        measurements = workspace.measurements
-
-        measurement_name = self.skeleton_name.value
-
-        statistics = []
-
-        name = "Skeleton_Branches_{}".format(measurement_name)
-
-        value = numpy.count_nonzero(branches(data))
-
-        statistics.append(value)
-
-        measurements.add_image_measurement(name, value)
-
-        name = "Skeleton_Endpoints_{}".format(measurement_name)
-
-        value = numpy.count_nonzero(endpoints(data))
-
-        statistics.append(value)
-
-        measurements.add_image_measurement(name, value)
-
-        return [statistics]
 
     def volumetric(self):
         return True

@@ -4,12 +4,15 @@ java.py - CellProfiler-specific JVM utilities
 
 import logging
 import os
+import sys
+from pathlib import Path
+
 import scyjava
 
 import cellprofiler_core.preferences
 
-
 LOGGER = logging.getLogger(__name__)
+BIOFORMATS_VERSION = "7.3.1"
 
 def start_java():
     """Start CellProfiler's JVM via Javabridge
@@ -24,9 +27,21 @@ def start_java():
     if scyjava.jvm_started():
         return
 
-    # Add Bio-Formats Java dependency.
-    scyjava.config.endpoints.append("ome:formats-gpl")
-    scyjava.config.endpoints.append("org.scijava:scijava-config")
+    # java fetching
+    # https://github.com/scijava/scyjava/issues/89
+    if sys.platform in ("darwin", "win32") and getattr(sys, "frozen", False):
+        jars = Path(sys._MEIPASS) / "java-jars"
+        if not jars.is_dir():
+            raise RuntimeError("The application bundle is missing its Java jars")
+        scyjava.config.set_java_constraints(fetch="never")
+        scyjava.config.add_classpath(str(jars / "*"))
+    else:
+        scyjava.config.set_java_constraints(fetch="auto")
+        scyjava.config.endpoints.extend(
+            f"ome:{artifact}:{BIOFORMATS_VERSION}"
+            for artifact in ("formats-gpl", "formats-api", "formats-bsd")
+        )
+        scyjava.config.endpoints.append("org.scijava:scijava-config")
 
     LOGGER.info("Initializing Java Virtual Machine")
     args = [

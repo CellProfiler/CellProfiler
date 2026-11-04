@@ -3,8 +3,8 @@
 
 import io
 
-import centrosome.cpmorphology
-import imageio
+import centriole.cpmorphology
+import imageio.v2 as imageio
 import matplotlib
 import matplotlib.figure
 import matplotlib.transforms
@@ -55,4 +55,4 @@ def renumber_labels_for_display(labels):
     so a random numbering has more color-distance between labels than a
     straightforward one
     """
-    return centrosome.cpmorphology.distance_color_labels(labels)
+    return centriole.cpmorphology.distance_color_labels(labels)

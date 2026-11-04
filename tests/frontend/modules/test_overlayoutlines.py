@@ -14,6 +14,8 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
 
+from cellprofiler_library.opts.overlayoutlines import BrightnessMode, LineMode, SourceMode, OutlineMode
+
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 OUTLINE_NAME = "outlineimage"
@@ -62,7 +64,7 @@ def test_load_v2():
     assert module.image_name == "DNA"
     assert module.output_image_name == "PrimaryOverlay"
     assert module.wants_color == "Color"
-    assert module.max_type == cellprofiler.modules.overlayoutlines.MAX_IMAGE
+    assert module.max_type == BrightnessMode.MAX_IMAGE.value
     assert module.line_mode.value == "Inner"
     assert len(module.outlines) == 2
     for outline, name, color in zip(
@@ -86,22 +88,22 @@ def test_load_v3():
     assert module.image_name == "DNA"
     assert module.output_image_name == "PrimaryOverlay"
     assert module.wants_color == "Color"
-    assert module.max_type == cellprofiler.modules.overlayoutlines.MAX_IMAGE
-    assert module.line_mode.value == "Inner"
+    assert module.max_type == BrightnessMode.MAX_IMAGE.value
+    assert module.line_mode.value == LineMode.INNER
     assert len(module.outlines) == 2
     for outline, name, color, choice, objects_name in (
         (
             module.outlines[0],
             "PrimaryOutlines",
             "Red",
-            cellprofiler.modules.overlayoutlines.FROM_IMAGES,
+            SourceMode.FROM_IMAGES,
             "Nuclei",
         ),
         (
             module.outlines[1],
             "SecondaryOutlines",
             "Green",
-            cellprofiler.modules.overlayoutlines.FROM_OBJECTS,
+            SourceMode.FROM_OBJECTS,
             "Cells",
         ),
     ):
@@ -121,9 +123,9 @@ def test_gray_to_color_outlines():
     expected[:, :, 1][outline.astype(bool)] = 0
     expected[:, :, 2][outline.astype(bool)] = 0
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -141,9 +143,9 @@ def test_color_to_color_outlines():
     expected[:, :, 1][outline.astype(bool)] = 0
     expected[:, :, 2][outline.astype(bool)] = 0
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -162,9 +164,9 @@ def test_blank_to_color_outlines():
     expected[:, :, 2][outline.astype(bool)] = 0
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = True
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -184,9 +186,9 @@ def test_wrong_size_gray_to_color():
     sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
     sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -205,9 +207,9 @@ def test_wrong_size_color_to_color():
     sub_expected[:, :, 1][outline[:50, :40].astype(bool)] = 0
     sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert numpy.all(output_image.pixel_data == expected)
@@ -223,8 +225,8 @@ def test_blank_to_gray():
     expected[outline.astype(bool)] = 1
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = True
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-    module.line_mode.value = "Inner"
+    module.wants_color.value = OutlineMode.GRAYSCALE
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -240,9 +242,9 @@ def test_gray_max_image():
     expected[outline.astype(bool)] = numpy.max(image)
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-    module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
-    module.line_mode.value = "Inner"
+    module.wants_color.value = OutlineMode.GRAYSCALE
+    module.max_type.value = BrightnessMode.MAX_IMAGE.value
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
@@ -258,9 +260,9 @@ def test_gray_max_possible():
     expected[outline.astype(bool)] = 1
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-    module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
-    module.line_mode.value = "Inner"
+    module.wants_color.value = OutlineMode.GRAYSCALE
+    module.max_type.value = BrightnessMode.MAX_POSSIBLE.value
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
@@ -277,9 +279,9 @@ def test_wrong_size_gray():
     expected[:50, :40][outline[:50, :40]] = 1
     workspace, module = make_workspace(image, labels=[outline.astype(int)])
     module.blank_image.value = False
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
-    module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
-    module.line_mode.value = "Inner"
+    module.wants_color.value = OutlineMode.GRAYSCALE
+    module.max_type.value = BrightnessMode.MAX_POSSIBLE.value
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_almost_equal(output_image.pixel_data, expected)
@@ -307,9 +309,9 @@ def test_ijv():
     expected[mask, 0] = 1
     expected[mask, 1:] = 0
     workspace, module = make_workspace(image, labels=labels)
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
     module.outlines[0].color.value = "Red"
-    module.line_mode.value = "Inner"
+    module.line_mode.value = LineMode.INNER
     module.run(workspace)
     output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     numpy.testing.assert_array_equal(output_image.pixel_data, expected)
@@ -328,7 +330,7 @@ def test_color_outlines_on_blank_volume():
 
     module.blank_image.value = True
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
 
     module.outlines[0].color.value = "Red"
 
@@ -361,7 +363,7 @@ def test_color_outlines_on_gray_volume():
 
     module.blank_image.value = False
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
 
     module.outlines[0].color.value = "Red"
 
@@ -394,7 +396,7 @@ def test_color_outlines_on_color_volume():
 
     module.blank_image.value = False
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_COLOR
+    module.wants_color.value = OutlineMode.COLOR
 
     module.outlines[0].color.value = "Red"
 
@@ -425,7 +427,7 @@ def test_gray_outlines_on_blank_volume():
 
     module.blank_image.value = True
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+    module.wants_color.value = OutlineMode.GRAYSCALE
 
     module.run(workspace)
 
@@ -458,9 +460,9 @@ def test_gray_outlines_max_possible_on_volume():
 
     module.blank_image.value = False
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+    module.wants_color.value = OutlineMode.GRAYSCALE
 
-    module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_POSSIBLE
+    module.max_type.value = BrightnessMode.MAX_POSSIBLE.value
 
     module.run(workspace)
 
@@ -495,9 +497,9 @@ def test_gray_outlines_image_max_on_volume():
 
     module.blank_image.value = False
 
-    module.wants_color.value = cellprofiler.modules.overlayoutlines.WANTS_GRAYSCALE
+    module.wants_color.value = OutlineMode.GRAYSCALE
 
-    module.max_type.value = cellprofiler.modules.overlayoutlines.MAX_IMAGE
+    module.max_type.value = BrightnessMode.MAX_IMAGE.value
 
     module.run(workspace)
 

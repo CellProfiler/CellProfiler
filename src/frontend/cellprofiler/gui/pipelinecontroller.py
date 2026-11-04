@@ -167,11 +167,61 @@ from .workspace_view import WorkspaceView
 
 LOGGER = logging.getLogger(__name__)
 
-RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
-RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
+RECENT_PIPELINE_FILE_MENU_ID = [wx.NewIdRef() for i in range(RECENT_FILE_COUNT)]
+RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewIdRef() for i in range(RECENT_FILE_COUNT)]
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
+
+
+def make_accessible_proxy(button, handler):
+    """Overlay an invisible native wx.Button on top of a wx.lib.buttons.Gen* button
+
+    Gen* buttons (GenBitmapTextButton, etc.) are custom-drawn windows, not native
+    controls, so they don't publish themselves to the OS Accessibility API and
+    are invisible to tools that hint UI elements via that API. A plain
+    wx.Button is backed by a real NSButton and gets picked up automatically, so we
+    stack one behind the Gen* button, mirror its geometry/visibility/enabled state,
+    and route its click to the same handler.
+    """
+    if wx.Platform != "__WXMAC__":
+        return None
+
+    proxy = wx.Button(
+        button.GetParent(), label=button.GetLabel(), style=wx.BORDER_NONE
+    )
+    proxy.Bind(wx.EVT_BUTTON, handler)
+    proxy.Lower()
+    # Keep it out of Tab order: it's a real second control layered behind the
+    # visible one, and without this Tab would stop on it and draw its focus
+    # ring where nothing appears to be.
+    proxy.DisableFocusFromKeyboard()
+
+    def sync_geometry(event=None):
+        proxy.SetSize(button.GetSize())
+        proxy.SetPosition(button.GetPosition())
+        if event is not None:
+            event.Skip()
+
+    def sync_shown(event):
+        proxy.Show(event.IsShown())
+        event.Skip()
+
+    button.Bind(wx.EVT_SIZE, sync_geometry)
+    button.Bind(wx.EVT_MOVE, sync_geometry)
+    button.Bind(wx.EVT_SHOW, sync_shown)
+    sync_geometry()
+    proxy.Show(button.IsShown())
+
+    unproxied_enable = button.Enable
+
+    def enable(enable=True):
+        proxy.Enable(enable)
+        return unproxied_enable(enable)
+
+    button.Enable = enable
+
+    return proxy
 
 
 class PipelineController(object):
@@ -584,13 +634,19 @@ class PipelineController(object):
             "?",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT,
         )
         self.__help_button.SetToolTip("Get Help for selected module")
         self.__mcp_text = wx.StaticText(
             self.__module_controls_panel, -1, "Adjust modules:"
         )
         self.__mcp_add_module_button = wx.Button(
-            self.__module_controls_panel, -1, "+", (0, 0), (30, -1)
+            self.__module_controls_panel,
+            cellprofiler.gui.cpframe.ID_MODULE_ADD,
+            "+",
+            (0, 0),
+            (30, -1),
+            style=wx.BU_EXACTFIT,
         )
         self.__mcp_add_module_button.SetToolTip("Add a module")
         self.__mcp_remove_module_button = wx.Button(
@@ -599,6 +655,7 @@ class PipelineController(object):
             "-",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT,
         )
         self.__mcp_remove_module_button.SetToolTip("Remove selected module")
         self.__mcp_module_up_button = wx.Button(
@@ -607,6 +664,7 @@ class PipelineController(object):
             "^",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT,
         )
         self.__mcp_module_up_button.SetToolTip("Move selected module up")
         self.__mcp_module_down_button = wx.Button(
@@ -615,6 +673,7 @@ class PipelineController(object):
             "v",
             (0, 0),
             (30, -1),
+            style=wx.BU_EXACTFIT,
         )
         self.__mcp_module_down_button.SetToolTip("Move selected module down")
         mcp_sizer.AddMany(
@@ -686,6 +745,7 @@ class PipelineController(object):
         )
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
         self.__test_mode_button.SetToolTip(self.ENTER_TEST_MODE_HELP)
+        make_accessible_proxy(self.__test_mode_button, self.on_debug_toggle)
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
@@ -695,6 +755,7 @@ class PipelineController(object):
         )
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
         self.__analyze_images_button.SetToolTip(self.ANALYZE_IMAGES_HELP)
+        make_accessible_proxy(self.__analyze_images_button, self.on_analyze_images)
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
@@ -708,6 +769,7 @@ class PipelineController(object):
         )
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
         self.__pause_button.SetToolTip(self.PAUSE_HELP)
+        make_accessible_proxy(self.__pause_button, self.on_pause)
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
         self.__resume_button = wx.lib.buttons.GenBitmapTextButton(
@@ -715,6 +777,7 @@ class PipelineController(object):
         )
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
         self.__resume_button.SetToolTip(self.RESUME_HELP)
+        make_accessible_proxy(self.__resume_button, self.on_resume)
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
         self.__stop_analysis_button = wx.lib.buttons.GenBitmapTextButton(
@@ -722,6 +785,7 @@ class PipelineController(object):
         )
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
         self.__stop_analysis_button.SetToolTip("Cancel the analysis run")
+        make_accessible_proxy(self.__stop_analysis_button, self.on_stop_running)
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #
         # Test mode sizer
@@ -736,6 +800,7 @@ class PipelineController(object):
         )
         self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
         self.__tcp_continue.Bind(wx.EVT_BUTTON, self.on_debug_continue)
+        make_accessible_proxy(self.__tcp_continue, self.on_debug_continue)
         sub_sizer.Add(self.__tcp_continue, 1, wx.EXPAND)
 
         self.__tcp_step = wx.lib.buttons.GenBitmapTextButton(
@@ -743,6 +808,7 @@ class PipelineController(object):
         )
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
+        make_accessible_proxy(self.__tcp_step, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -753,6 +819,7 @@ class PipelineController(object):
         )
         self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
+        make_accessible_proxy(self.__tcp_stop_testmode, self.on_debug_stop)
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
 
         next_image_bmp = wx.Bitmap(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
@@ -761,6 +828,7 @@ class PipelineController(object):
         )
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
+        make_accessible_proxy(self.__tcp_next_imageset, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
 
         self.show_launch_controls()
@@ -1613,20 +1681,21 @@ class PipelineController(object):
 
     def set_title(self):
         """Set the title of the parent frame"""
+        displayname = wx.GetApp().GetAppDisplayName()
         pathname = get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler_version
+            self.__frame.Title = displayname
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
-            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
-                cellprofiler_version,
+            self.__frame.Title = "%s: %s* (%s)" % (
+                displayname,
                 filename,
                 path,
             )
         else:
-            self.__frame.Title = "CellProfiler %s: %s (%s)" % (
-                cellprofiler_version,
+            self.__frame.Title = "%s: %s (%s)" % (
+                displayname,
                 filename,
                 path,
             )
@@ -1679,9 +1748,9 @@ class PipelineController(object):
             #
             button_sizer = wx.BoxSizer(wx.HORIZONTAL)
             super_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
-            SAVE_ID = wx.NewId()
-            DONT_SAVE_ID = wx.NewId()
-            RETURN_TO_CP_ID = wx.NewId()
+            SAVE_ID = wx.NewIdRef()
+            DONT_SAVE_ID = wx.NewIdRef()
+            RETURN_TO_CP_ID = wx.NewIdRef()
             answer = [RETURN_TO_CP_ID]
             for button_id, text, set_default in (
                 (SAVE_ID, "Save", True),
@@ -2509,7 +2578,7 @@ class PipelineController(object):
                 if module_name in self.module_name_to_menu_id:
                     menu_id = self.module_name_to_menu_id[module_name]
                 else:
-                    menu_id = wx.NewId()
+                    menu_id = wx.NewIdRef()
                     self.module_name_to_menu_id[module_name] = menu_id
                     self.menu_id_to_module_name[menu_id] = module_name
                     self.__frame.Bind(wx.EVT_MENU, self.on_menu_add_module, id=menu_id)
@@ -2525,12 +2594,12 @@ class PipelineController(object):
         for item in menu.GetMenuItems():
             assert isinstance(item, wx.MenuItem)
             self.__frame.Unbind(wx.EVT_MENU, id=item.GetId())
-            ids.append(item.GetId())
+            ids.append(wx.WindowIDRef(item.GetId()))
         for item_id in ids:
             menu.Delete(item_id)
         modules = self.__pipeline.modules(exclude_disabled=False)
         if len(ids) < len(modules):
-            ids += [wx.NewId() for _ in range(len(ids), len(modules))]
+            ids += [wx.NewIdRef() for _ in range(len(ids), len(modules))]
         for item_id, module in zip(ids, modules):
             item = menu.Append(
                 item_id, "#%02d %s" % (module.module_num, module.module_name)
@@ -3321,11 +3390,10 @@ class PipelineController(object):
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def sentry_pack_pipeline(self, err_module_name="", err_module_num=0):
-        from sentry_sdk import utils, serializer, push_scope
+        from sentry_sdk import utils, serializer, isolation_scope
         utils.MAX_STRING_LENGTH = 15000
         serializer.MAX_DATABAG_BREADTH = 25
-        # push_scope will attach data to the next event only
-        with push_scope() as scope:
+        with isolation_scope() as scope:
             with io.StringIO() as fp:
                 self.__pipeline.dump(fp, save_image_plane_details=False, sanitize=True)
                 pipeline_parts = fp.getvalue().split("\n\n")
@@ -3625,7 +3693,7 @@ class PipelineController(object):
             count += 1
         message_format = "Running module %d of %d: %s"
         index = 0
-        with wx.ProgressDialog(
+        with wx.GenericProgressDialog(
             "Running modules in test mode",
             message_format % (index + 1, count, first_module.module_name),
             maximum=count,
@@ -3635,7 +3703,7 @@ class PipelineController(object):
             dlg.Show()
             max_message_width = None
             while True:
-                assert isinstance(dlg, wx.ProgressDialog)
+                assert isinstance(dlg, wx.GenericProgressDialog)
                 module = self.current_debug_module()
                 message = message_format % (index + 1, count, module.module_name)
                 message_width = dlg.GetFullTextExtent(message)[0]

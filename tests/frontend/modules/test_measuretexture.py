@@ -8,6 +8,7 @@ import cellprofiler.modules.measuretexture
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.measuretexture import HaralickFeatures, MeasurementTarget
 
 INPUT_IMAGE_NAME = "Cytoplasm"
 INPUT_OBJECTS_NAME = "inputobjects"
@@ -146,7 +147,7 @@ Number of angles to compute for Gabor:6
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5
-        assert module.images_or_objects == cellprofiler.modules.measuretexture.IO_BOTH
+        assert module.images_or_objects == MeasurementTarget.BOTH
 
 
 def test_load_v4():
@@ -213,11 +214,11 @@ Measure images or objects?:Both
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 3
-    for i, (wants_gabor, io_choice) in enumerate(
+    for i, (wants_gabor, choice) in enumerate(
         (
-            (True, cellprofiler.modules.measuretexture.IO_IMAGES),
-            (False, cellprofiler.modules.measuretexture.IO_OBJECTS),
-            (False, cellprofiler.modules.measuretexture.IO_BOTH),
+            (True, MeasurementTarget.IMAGES),
+            (False, MeasurementTarget.OBJECTS),
+            (False, MeasurementTarget.BOTH),
         )
     ):
         module = pipeline.modules()[i]
@@ -271,24 +272,24 @@ def test_many_objects():
         ]
     )
     for measurement in cellprofiler.modules.measuretexture.F_HARALICK:
-        assert measurement in all_measurements
+        assert measurement.value in all_measurements
         assert INPUT_IMAGE_NAME in module.get_measurement_images(
             workspace.pipeline,
             INPUT_OBJECTS_NAME,
             cellprofiler.modules.measuretexture.TEXTURE,
-            measurement,
+            measurement.value,
         )
         all_scales = module.get_measurement_scales(
             workspace.pipeline,
             INPUT_OBJECTS_NAME,
             cellprofiler.modules.measuretexture.TEXTURE,
-            measurement,
+            measurement.value,
             INPUT_IMAGE_NAME,
         )
         for angle in range(4):
             mname = "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                 cellprofiler.modules.measuretexture.TEXTURE,
-                measurement,
+                measurement.value,
                 INPUT_IMAGE_NAME,
                 2,
                 angle,
@@ -337,14 +338,14 @@ def test_categories():
             assert categories[0] == cellprofiler.modules.measuretexture.TEXTURE
         else:
             assert len(categories) == 0
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
+    module.images_or_objects.value = MeasurementTarget.IMAGES
     categories = module.get_categories(
         workspace.pipeline, "Image"
     )
     assert len(categories) == 1
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
     assert len(categories) == 0
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+    module.images_or_objects.value = MeasurementTarget.OBJECTS
     categories = module.get_categories(
         workspace.pipeline, "Image"
     )
@@ -363,10 +364,10 @@ def test_measurements():
             workspace.pipeline, object_name, cellprofiler.modules.measuretexture.TEXTURE
         )
         assert all(
-            [f in cellprofiler.modules.measuretexture.F_HARALICK for f in features]
+            [HaralickFeatures(f) in cellprofiler.modules.measuretexture.F_HARALICK for f in features]
         )
         assert all(
-            [f in features for f in cellprofiler.modules.measuretexture.F_HARALICK]
+            [f.value in features for f in cellprofiler.modules.measuretexture.F_HARALICK]
         )
 
 
@@ -426,7 +427,7 @@ def test_no_image_measurements():
     labels = numpy.ones((10, 10), int)
     workspace, module = make_workspace(image, labels)
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+    module.images_or_objects.value = MeasurementTarget.OBJECTS
     module.scale_groups[0].scale.value = 2
     module.run(workspace)
     m = workspace.measurements
@@ -444,7 +445,7 @@ def test_no_object_measurements():
     labels = numpy.ones((10, 10), int)
     workspace, module = make_workspace(image, labels)
     assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
+    module.images_or_objects.value = MeasurementTarget.IMAGES
     module.scale_groups[0].scale.value = 2
     module.run(workspace)
     m = workspace.measurements
@@ -484,7 +485,7 @@ def test_volume_image_measurements():
 
     workspace, module = make_workspace(image, labels)
 
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_IMAGES
+    module.images_or_objects.value = MeasurementTarget.IMAGES
 
     module.scale_groups[0].scale.value = 2
 
@@ -508,7 +509,7 @@ def test_volume_object_measurements_no_objects():
 
     workspace, module = make_workspace(image, labels)
 
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+    module.images_or_objects.value = MeasurementTarget.OBJECTS
 
     module.scale_groups[0].scale.value = 2
 
@@ -533,7 +534,7 @@ def test_volume_object_measurements():
 
     workspace, module = make_workspace(image, labels)
 
-    module.images_or_objects.value = cellprofiler.modules.measuretexture.IO_OBJECTS
+    module.images_or_objects.value = MeasurementTarget.OBJECTS
 
     module.scale_groups[0].scale.value = 2
 

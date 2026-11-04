@@ -69,7 +69,7 @@ Measurements made by this module
 
 -  *Recall:* Number of true positive pixels/ (number of true positive pixels + number of false negative pixels).
 
--  *F-factor:* 2 × (precision × recall)/(precision + recall). Also known as F\ :sub:`1` score, F-score or F-measure.
+-  *F-factor:* 2 × (precision × recall)/(precision + recall). Also known as F\\ :sub:`1` score, F-score or F-measure.
 
 -  *Earth mover’s distance:* The minimum distance required to move each foreground pixel in the test image to
    some corresponding foreground pixel in the reference image.
@@ -90,39 +90,14 @@ References
 """
 
 from cellprofiler.modules import _help
-
 from cellprofiler_library.modules import measureimageoverlap
-from cellprofiler_library.opts.measureimageoverlap import DM
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer
-
-C_IMAGE_OVERLAP = "Overlap"
-FTR_F_FACTOR = "Ffactor"
-FTR_PRECISION = "Precision"
-FTR_RECALL = "Recall"
-FTR_TRUE_POS_RATE = "TruePosRate"
-FTR_FALSE_POS_RATE = "FalsePosRate"
-FTR_FALSE_NEG_RATE = "FalseNegRate"
-FTR_TRUE_NEG_RATE = "TrueNegRate"
-FTR_RAND_INDEX = "RandIndex"
-FTR_ADJUSTED_RAND_INDEX = "AdjustedRandIndex"
-FTR_EARTH_MOVERS_DISTANCE = "EarthMoversDistance"
-
-FTR_ALL = [
-    FTR_F_FACTOR,
-    FTR_PRECISION,
-    FTR_RECALL,
-    FTR_TRUE_POS_RATE,
-    FTR_FALSE_POS_RATE,
-    FTR_FALSE_NEG_RATE,
-    FTR_TRUE_NEG_RATE,
-    FTR_RAND_INDEX,
-    FTR_ADJUSTED_RAND_INDEX,
-]
+from cellprofiler_library.opts.measureimageoverlap import DM, Feature, ALL_FEATURES, C_IMAGE_OVERLAP
 
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
@@ -225,8 +200,8 @@ worms or neurites.
 
 This setting sets an upper bound to the distance penalty assessed during
 the movement calculation. As an example, the score for moving 10 pixels
-from one location to a location that is 100 pixels away is 10\*100, but
-if the maximum distance were set to 50, the score would be 10\*50
+from one location to a location that is 100 pixels away is 10\\*100, but
+if the maximum distance were set to 50, the score would be 10\\*50
 instead.
 
 The maximum distance should be set to the largest reasonable distance
@@ -298,84 +273,45 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         test_pixels = test_image.pixel_data
 
-        data = measureimageoverlap(
+        lib_measurements, lib_display = measureimageoverlap(
             ground_truth_pixels, 
             test_pixels, 
+            self.test_img.value,
             mask=mask,
-            calculate_emd=self.wants_emd,
+            calculate_emd=self.wants_emd.value,
             decimation_method=self.decimation_method.enum_member,
             max_distance=self.max_distance.value,
             max_points=self.max_points.value,
-            penalize_missing=self.penalize_missing
+            penalize_missing=self.penalize_missing.value,
+            return_visualization_data=True,
             )
 
         m = workspace.measurements
 
-        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), data[FTR_F_FACTOR])
-
-        m.add_image_measurement(self.measurement_name(FTR_PRECISION), data[FTR_PRECISION])
-
-        m.add_image_measurement(self.measurement_name(FTR_RECALL), data[FTR_RECALL])
-
-        m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_POS_RATE), data[FTR_TRUE_POS_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_POS_RATE), data[FTR_FALSE_POS_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_NEG_RATE), data[FTR_TRUE_NEG_RATE]
-        )
-
-        m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_NEG_RATE), data[FTR_FALSE_NEG_RATE]
-        )
-
-        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX), data[FTR_RAND_INDEX])
-
-        m.add_image_measurement(
-            self.measurement_name(FTR_ADJUSTED_RAND_INDEX), data[FTR_ADJUSTED_RAND_INDEX]
-        )
-
-        if self.wants_emd:
-
-            m.add_image_measurement(
-                self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), data[FTR_EARTH_MOVERS_DISTANCE]
-            )
+        for feature_name, value in lib_measurements.image.items():
+            if feature_name.startswith(C_IMAGE_OVERLAP + "_"):
+                 m.add_image_measurement(feature_name, value)
 
         if self.show_window:
            
             workspace.display_data.dimensions = test_image.dimensions
            
-            workspace.display_data.true_positives = data["true_positives"]
+            workspace.display_data.true_positives = lib_measurements.image["true_positives"]
 
-            workspace.display_data.true_negatives = data["true_negatives"]
+            workspace.display_data.true_negatives = lib_measurements.image["true_negatives"]
 
-            workspace.display_data.false_positives = data["false_positives"]
+            workspace.display_data.false_positives = lib_measurements.image["false_positives"]
 
-            workspace.display_data.false_negatives = data["false_negatives"]
+            workspace.display_data.false_negatives = lib_measurements.image["false_negatives"]
 
-            workspace.display_data.rand_index = data[FTR_RAND_INDEX]
+            def get_val(feature):
+                 return lib_measurements.image[self.measurement_name(feature)]
 
-            workspace.display_data.adjusted_rand_index = data[FTR_ADJUSTED_RAND_INDEX]
+            workspace.display_data.rand_index = get_val(Feature.RAND_INDEX)
 
-            workspace.display_data.statistics = [
-                (FTR_F_FACTOR, data[FTR_F_FACTOR]),
-                (FTR_PRECISION, data[FTR_PRECISION]),
-                (FTR_RECALL, data[FTR_RECALL]),
-                (FTR_FALSE_POS_RATE, data[FTR_FALSE_POS_RATE]),
-                (FTR_FALSE_NEG_RATE, data[FTR_FALSE_NEG_RATE]),
-                (FTR_RAND_INDEX, data[FTR_RAND_INDEX]),
-                (FTR_ADJUSTED_RAND_INDEX, data[FTR_ADJUSTED_RAND_INDEX]),
-            ]
+            workspace.display_data.adjusted_rand_index = get_val(Feature.ADJUSTED_RAND_INDEX)
 
-            if self.wants_emd:
-                workspace.display_data.statistics.append(
-                    (FTR_EARTH_MOVERS_DISTANCE, data[FTR_EARTH_MOVERS_DISTANCE])
-                )
-
+            workspace.display_data.statistics = lib_display.statistics
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""
@@ -421,10 +357,10 @@ the two images. Set this setting to “No” to assess no penalty.""",
         return []
 
     def all_features(self):
-        all_features = list(FTR_ALL)
+        all_features = list(ALL_FEATURES)
 
         if self.wants_emd:
-            all_features.append(FTR_EARTH_MOVERS_DISTANCE)
+            all_features.append(Feature.EARTH_MOVERS_DISTANCE)
 
         return all_features
 

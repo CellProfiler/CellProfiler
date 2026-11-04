@@ -5,17 +5,126 @@ import inspect
 import logging
 import os
 import re
+import shutil
 import sys
+import tempfile
 import traceback
+import zipfile
+
+import requests
 
 from cellprofiler_core.constants.modules import all_modules
 from cellprofiler_core.constants.modules import pymodules
 from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS, AVAILABLE_READERS
-from cellprofiler_core.preferences import get_plugin_directory, config_read_typed
+from cellprofiler_core.preferences import get_plugin_directory, get_user_data_directory, config_read_typed
 from cellprofiler_core.module import Module
 from cellprofiler_core.reader import Reader
 
 LOGGER = logging.getLogger(__name__)
+
+OFFICIAL_PLUGINS_URL = "https://plugins.cellprofiler.org/"
+OFFICIAL_PLUGINS_REPO_ZIP_URL = "https://github.com/CellProfiler/CellProfiler-plugins/archive/refs/heads/master.zip"
+OFFICIAL_PLUGINS_ZIP_SUBPATH = "CP5/active_plugins/"
+OFFICIAL_PLUGINS_DIRECTORY_NAME = "official_plugins"
+
+# Per-plugin load status, keyed by plugin source name (as returned by plugin_list).
+#
+# Each value is {"loaded": bool, "kind": "module"|"reader"|None, "error": str|None,
+# "directory": str|None, "appose_env_spec": str|pathlib.Path|None}
+#
+# "directory" is whichever plugin directory this name was actually last
+# attempted from. If the same name exists in more than one plugin directory,
+# only the highest-priority one that successfully loads is ever attempted (see
+# load_plugin's skip-guard, and _plugin_directories for priority order), so
+# this dict only ever holds one entry per name reflecting whichever attempt
+# is actually responsible for that name's current state.
+#
+# "appose_env_spec" is the plugin class's (Module or Reader) declared
+# `appose_env_spec` class attribute (see load_plugin), or None for plugins
+# that don't run via Appose.
+PLUGIN_STATUS = {}
+
+# display-only module name prefix
+PLUGIN_NAME_PREFIX = "\U0001F9E9 "
+
+_PLUGIN_WARNING_OFFICIAL_NON_APPOSE = (
+    '"{name}" is an official plugin, however care should still be taken to '
+    "ensure it is executing correct code, and that your environment is able "
+    "to run it. Plugins are provided as-is and may throw errors or provide "
+    "unexpected results. See {url} for more info."
+)
+_PLUGIN_WARNING_OFFICIAL_APPOSE = (
+    '"{name}" is an official plugin, which will automatically download '
+    "dependencies and configure its environment, however care should still "
+    "be taken to ensure it is executing correct code. Plugins are provided "
+    "as-is and may throw errors or provide unexpected results. See {url} for "
+    "more info."
+)
+_PLUGIN_WARNING_USER_SUPPLIED = (
+    '"{name}" is a non-official plugin. Great care should be taken to '
+    "ensure it is executing safe and trusted code, and that your environment "
+    "is able to run it. Plugins are loaded and executed as-is and may throw "
+    "errors or provide unexpected results. See {url} for official plugins info."
+)
+
+
+def get_module_display_name(module):
+    """Return a module's display name, decorated if it came from a plugin.
+
+    Does not use or affect `module_name`, which is the pipeline-file serialization key.
+    """
+    name = module.module_name
+    if getattr(module, "is_plugin", False):
+        return PLUGIN_NAME_PREFIX + name
+    return name
+
+
+def classify_plugin_directory(directory):
+    """
+    Classify a plugin directory path as "User", "Official", or "Unknown"
+    Returns "Unknown" for None or a directory matching neither (e.g. stale/unconfigured).
+    """
+    if directory is None:
+        return "Unknown"
+    real = os.path.realpath(directory)
+    user_directory = get_plugin_directory()
+    if user_directory and real == os.path.realpath(user_directory):
+        return "User"
+    if real == os.path.realpath(get_official_plugins_directory()):
+        return "Official"
+    return "Unknown"
+
+
+def get_plugin_source_label(module):
+    """
+    Return "User", "Official", or "Unknown" for a loaded plugin Module or
+    Reader (class or instance).
+
+    NOTE: `is_plugin` (`add_module()`) and `plugin_directory` (`load_plugin()`)
+    are injected at plugin load time.
+    """
+    if not getattr(module, "is_plugin", False):
+        return None
+    return classify_plugin_directory(getattr(module, "plugin_directory", None))
+
+
+def get_plugin_warning_text(module):
+    """
+    Return the safety/trust warning banner text for `module` based on value
+    returned by `classify_plugin_directory()`, or None if not a plugin.
+    """
+    if not getattr(module, "is_plugin", False):
+        return None
+    is_appose = bool(getattr(module, "appose_env_spec", None))
+    if get_plugin_source_label(module) == "Official":
+        template = (
+            _PLUGIN_WARNING_OFFICIAL_APPOSE
+            if is_appose
+            else _PLUGIN_WARNING_OFFICIAL_NON_APPOSE
+        )
+    else:
+        template = _PLUGIN_WARNING_USER_SUPPLIED
+    return template.format(name=module.module_name, url=OFFICIAL_PLUGINS_URL)
 
 
 def plugin_list(plugin_dir):
@@ -25,20 +134,108 @@ def plugin_list(plugin_dir):
     return []
 
 
+def get_official_plugins_directory():
+    return os.path.join(get_user_data_directory(), OFFICIAL_PLUGINS_DIRECTORY_NAME)
+
+
+def official_plugins_repo_exists():
+    directory = get_official_plugins_directory()
+    return os.path.isdir(directory) and len(plugin_list(directory)) > 0
+
+
+def download_official_plugins_repo():
+    """Download the officially-supported CellProfiler-plugins subset and
+    extract it into `get_official_plugins_directory()`, replacing any
+    existing copy there.
+    """
+    response = requests.get(OFFICIAL_PLUGINS_REPO_ZIP_URL, stream=True, timeout=30)
+    response.raise_for_status()
+    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_zip:
+        for chunk in response.iter_content(chunk_size=1024 * 1024):
+            tmp_zip.write(chunk)
+        tmp_zip_path = tmp_zip.name
+    try:
+        with zipfile.ZipFile(tmp_zip_path) as zf:
+            members = [
+                name
+                for name in zf.namelist()
+                if OFFICIAL_PLUGINS_ZIP_SUBPATH in name and not name.endswith("/")
+            ]
+            if not members:
+                raise RuntimeError(
+                    f"Could not find {OFFICIAL_PLUGINS_ZIP_SUBPATH!r} in the downloaded archive"
+                )
+            target_directory = get_official_plugins_directory()
+            if os.path.isdir(target_directory):
+                shutil.rmtree(target_directory)
+            os.makedirs(target_directory, exist_ok=True)
+            for name in members:
+                prefix, _, relative_path = name.partition(OFFICIAL_PLUGINS_ZIP_SUBPATH)
+                destination = os.path.join(target_directory, relative_path)
+                os.makedirs(os.path.dirname(destination), exist_ok=True)
+                with zf.open(name) as src, open(destination, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
+    finally:
+        os.remove(tmp_zip_path)
+    return get_official_plugins_directory()
+
+
+def get_plugin_statuses():
+    """
+    Return one status entry per plugin *name* found across all plugin
+    directories, merging in PLUGIN_STATUS where available.
+
+    A name present in all gets resolved to the single highest priority
+    (i.e. user plugins take priority over official ones).
+    """
+    default_directory_by_name = {}
+    for directory in _plugin_directories():
+        for name in plugin_list(directory):
+            default_directory_by_name.setdefault(name, directory)
+    statuses = []
+    for name in sorted(default_directory_by_name):
+        status = PLUGIN_STATUS.get(name)
+        if status is None:
+            status = {
+                "loaded": False,
+                "kind": None,
+                "error": None,
+                "directory": default_directory_by_name[name],
+                "appose_env_spec": None,
+            }
+        statuses.append({"name": name, **status})
+    return statuses
+
+
+def _plugin_directories():
+    directories = []
+    seen_realpaths = set()
+    for directory in (get_plugin_directory(), get_official_plugins_directory()):
+        if directory is None or not os.path.isdir(directory):
+            continue
+        real = os.path.realpath(directory)
+        if real in seen_realpaths:
+            continue
+        seen_realpaths.add(real)
+        directories.append(directory)
+    return directories
+
+
 def load_plugins(modules_only=False):
     # Find and import plugins
-    plugin_directory = get_plugin_directory()
-    if plugin_directory is not None:
+    for plugin_directory in _plugin_directories():
         old_path = sys.path
         sys.path.insert(0, plugin_directory)
         try:
             for plugin in plugin_list(plugin_directory):
-                load_plugin(plugin, modules_only=modules_only)
+                load_plugin(plugin, directory=plugin_directory, modules_only=modules_only)
         finally:
             sys.path = old_path
 
 
-def load_plugin(source, modules_only=False):
+def load_plugin(source, directory=None, modules_only=False):
+    if PLUGIN_STATUS.get(source, {}).get("loaded"):
+        return
     try:
         m = importlib.import_module(source)
         pymodules.append(m)
@@ -46,30 +243,65 @@ def load_plugin(source, modules_only=False):
             m, lambda member: inspect.isclass(member) and member.__module__ == m.__name__)
         for name, plugin_class in available_classes:
             if issubclass(plugin_class, Module):
-                add_module(plugin_class)
+                loaded, error = add_module(plugin_class)
+                plugin_class.plugin_directory = directory
+                PLUGIN_STATUS[source] = {
+                    "loaded": loaded,
+                    "kind": "module",
+                    "error": error,
+                    "directory": directory,
+                    "appose_env_spec": getattr(plugin_class, "appose_env_spec", None),
+                }
                 break
             elif modules_only:
                 continue
             elif issubclass(plugin_class, Reader):
-                add_reader(plugin_class)
+                loaded, error = add_reader(plugin_class)
+                plugin_class.plugin_directory = directory
+                PLUGIN_STATUS[source] = {
+                    "loaded": loaded,
+                    "kind": "reader",
+                    "error": error,
+                    "directory": directory,
+                    "appose_env_spec": getattr(plugin_class, "appose_env_spec", None),
+                }
                 break
         else:
-            LOGGER.warning(f"Could not find Module{' or Reader' if not modules_only else ''} class in {m.__file__}")
+            message = f"Could not find Module{' or Reader' if not modules_only else ''} class in {m.__file__}"
+            LOGGER.warning(message)
+            PLUGIN_STATUS[source] = {
+                "loaded": False,
+                "kind": None,
+                "error": message,
+                "directory": directory,
+                "appose_env_spec": None,
+            }
     except Exception as e:
+        tb = traceback.format_exc()
         if not modules_only:
             # Figure out and store Reader class name, if present
-            spec = importlib.util.find_spec(source)
-            with open(spec.origin) as fd:
-                for line in fd:
-                    if line.endswith("Reader):\n"):
-                        result = re.search(r'.*class (?P<classname>.*)\(.*Reader\)', line)
-                        if result:
-                            reader_name = result.group('classname')
-                            BAD_READERS[reader_name] = traceback.format_exc()
-                        break
-                    elif line.endswith("Module):\n"):
-                        break
+            try:
+                spec = importlib.util.find_spec(source)
+                with open(spec.origin) as fd:
+                    for line in fd:
+                        if line.endswith("Reader):\n"):
+                            result = re.search(r'.*class (?P<classname>.*)\(.*Reader\)', line)
+                            if result:
+                                reader_name = result.group('classname')
+                                BAD_READERS[reader_name] = tb
+                            break
+                        elif line.endswith("Module):\n"):
+                            break
+            except Exception:
+                pass
         LOGGER.warning("Could not load %s", source, exc_info=False)
+        PLUGIN_STATUS[source] = {
+            "loaded": False,
+            "kind": None,
+            "error": tb,
+            "directory": directory,
+            "appose_env_spec": None,
+        }
         return
 
 
@@ -86,16 +318,20 @@ def add_module(cp_module):
                 inspect.getfile(cp_module),
             )
         all_modules[name] = cp_module
+        cp_module.is_plugin = True
         from cellprofiler_core.utilities.core.modules import check_module
         check_module(cp_module, name)
         # attempt to instantiate
         if not hasattr(cp_module, "do_not_check"):
             cp_module()
     except Exception as e:
+        tb = traceback.format_exc()
         LOGGER.warning("Failed to load %s", cp_module, exc_info=True)
         if name in all_modules:
             del all_modules[name]
             del pymodules[-1]
+        return False, tb
+    return True, None
 
 
 def add_reader(cp_reader):
@@ -116,7 +352,10 @@ def add_reader(cp_reader):
         if enabled or enabled is None:
             AVAILABLE_READERS[name] = cp_reader
     except Exception as e:
+        tb = traceback.format_exc()
         LOGGER.warning("Failed to load %s", name, exc_info=True)
         if name in ALL_READERS:
             del ALL_READERS[name]
             del pymodules[-1]
+        return False, tb
+    return True, None

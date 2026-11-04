@@ -2,15 +2,7 @@
 
 import cellprofiler_core.object
 import numpy
-import scipy.ndimage
-import skimage.segmentation
 from cellprofiler_core.constants.measurement import (
-    C_PARENT,
-    C_CHILDREN,
-    FF_PARENT,
-    FF_CHILDREN_COUNT,
-    R_PARENT,
-    R_CHILD,
     MCA_AVAILABLE_EACH_CYCLE,
     C_COUNT,
     C_LOCATION,
@@ -19,7 +11,6 @@ from cellprofiler_core.constants.measurement import (
     FTR_CENTER_Y,
     FTR_CENTER_Z,
     FTR_OBJECT_NUMBER,
-    M_NUMBER_OBJECT_NUMBER,
     COLTYPE_FLOAT,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
@@ -30,6 +21,16 @@ from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
 
 from cellprofiler.modules import _help
+
+from cellprofiler_library.opts.relateobjects import DistanceMethod, TemplateMeasurementFormat, Relationship, C_PARENT, C_CHILDREN
+from cellprofiler_library.modules._relateobjects import (
+    relate_objects,
+    should_aggregate_feature as _should_aggregate_feature,
+)
+from cellprofiler_library.measurements.measurement_model import (
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+)
 
 __doc__ = """\
 RelateObjects
@@ -86,17 +87,6 @@ Measurements made by this module
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-D_NONE = "None"
-D_CENTROID = "Centroid"
-D_MINIMUM = "Minimum"
-D_BOTH = "Both"
-
-D_ALL = [D_NONE, D_CENTROID, D_MINIMUM, D_BOTH]
-
-C_MEAN = "Mean"
-
-FF_MEAN = "%s_%%s_%%s" % C_MEAN
-
 """Distance category"""
 C_DISTANCE = "Distance"
 
@@ -105,12 +95,6 @@ FEAT_CENTROID = "Centroid"
 
 """Minimum distance feature"""
 FEAT_MINIMUM = "Minimum"
-
-"""Centroid distance measurement (FF_DISTANCE % parent)"""
-FF_CENTROID = "%s_%s_%%s" % (C_DISTANCE, FEAT_CENTROID)
-
-"""Minimum distance measurement (FF_MINIMUM % parent)"""
-FF_MINIMUM = "%s_%s_%%s" % (C_DISTANCE, FEAT_MINIMUM)
 
 FIXED_SETTING_COUNT = 7
 VARIABLE_SETTING_COUNT = 1
@@ -142,7 +126,7 @@ speckles to the nuclei that contains them, the speckles are the children.
 
         self.find_parent_child_distances = Choice(
             "Calculate child-parent distances?",
-            D_ALL,
+            [DistanceMethod.NONE, DistanceMethod.CENTROID, DistanceMethod.MINIMUM, DistanceMethod.BOTH],
             doc="""\
 Choose the method to calculate distances of each child to its parent.
 For example, these measurements can tell you whether nuclear speckles
@@ -157,10 +141,10 @@ periphery.
 -  *{D_BOTH}:* Calculate both the *{D_MINIMUM}* and *{D_CENTROID}*
    distances.""".format(
                 **{
-                    "D_NONE": D_NONE,
-                    "D_MINIMUM": D_MINIMUM,
-                    "D_CENTROID": D_CENTROID,
-                    "D_BOTH": D_BOTH,
+                    "D_NONE": DistanceMethod.NONE.value,
+                    "D_MINIMUM": DistanceMethod.MINIMUM.value,
+                    "D_CENTROID": DistanceMethod.CENTROID.value,
+                    "D_BOTH": DistanceMethod.BOTH.value,
                 }
             ),
         )
@@ -176,7 +160,7 @@ other objects. These objects must be either parents or children of your
 parent object in order for this module to determine the distances. For
 instance, you might find “Nuclei” using **IdentifyPrimaryObjects**, find
 “Cells” using **IdentifySecondaryObjects** and find “Cytoplasm” using
-**IdentifyTertiaryObjects**. You can use **Relate** to relate speckles
+**IdentifyTertiaryObjects**. You can use **RelateObjects** to relate speckles
 to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
 measure distances to nuclei, because nuclei are neither a direct parent
@@ -319,7 +303,7 @@ parents or children of the parent object.""",
         if self.wants_child_objects_saved:
             visible_settings += [self.output_child_objects_name]
 
-        if self.find_parent_child_distances != D_NONE and self.has_step_parents:
+        if self.find_parent_child_distances != DistanceMethod.NONE and self.has_step_parents:
             visible_settings += [self.wants_step_parent_distances]
 
             if self.wants_step_parent_distances:
@@ -334,121 +318,83 @@ parents or children of the parent object.""",
         parents = workspace.object_set.get_objects(self.x_name.value)
 
         children = workspace.object_set.get_objects(self.y_name.value)
+        parent_labels = parents.segmented
+        child_labels = children.segmented
+        
+        volumetric = parents.volumetric
+        parent_ijv = parents.ijv
+        child_ijv = children.ijv
 
-        child_count, parents_of = parents.relate_children(children)
+        find_centroid = self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID)
+        find_minimum = self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM)
 
         m = workspace.measurements
+        all_measurements = m.to_library_measurements()
+        step_parent_names = self.get_parent_names()
 
-        m.add_measurement(
-            self.y_name.value, FF_PARENT % self.x_name.value, parents_of,
+        wants_child_objects_saved = self.wants_child_objects_saved.value
+
+        # Relate Primary
+        lib_result = relate_objects(
+            parent_labels=parent_labels,
+            child_labels=child_labels,
+            parent_ijv=parent_ijv,
+            child_ijv=child_ijv,
+            parent_name=self.x_name.value,
+            child_name=self.y_name.value,
+            volumetric=volumetric,
+            parent_and_step_parent_names=step_parent_names,
+            find_centroid=find_centroid,
+            find_minimum=find_minimum,
+            child_dimensions = children.dimensions,
+            wants_per_parent_means=self.wants_per_parent_means.value,
+            measurements=all_measurements,
+            wants_child_objects_saved=wants_child_objects_saved,
+            child_small_removed_segmented=children.small_removed_segmented if wants_child_objects_saved else None,
         )
+        if wants_child_objects_saved:
+            lib_measurements, child_objects = lib_result
+        else:
+            lib_measurements = lib_result
 
-        m.add_measurement(
-            self.x_name.value, FF_CHILDREN_COUNT % self.y_name.value, child_count,
+        # Unpack library measurements
+        for obj_name, features in lib_measurements.objects.items():
+            for feature_name, values in features.items():
+                m.add_measurement(obj_name, feature_name, values)
+
+        #
+        # Add the relationships to core measurements
+        #
+        # get image_numbers
+        parents_of = lib_measurements.get_measurement(
+            self.y_name.value,
+            TemplateMeasurementFormat.FF_PARENT % self.x_name.value
         )
-
         good_parents = parents_of[parents_of != 0]
-
         image_numbers = numpy.ones(len(good_parents), int) * m.image_set_number
 
-        good_children = numpy.argwhere(parents_of != 0).flatten() + 1
-
-        if numpy.any(good_parents):
+        # iterate over the relationships and add them to the measurements along with the stateful values like module number and image numbers
+        for relationship in lib_measurements.relationships:
             m.add_relate_measurement(
-                self.module_num,
-                R_PARENT,
-                self.x_name.value,
-                self.y_name.value,
-                image_numbers,
-                good_parents,
-                image_numbers,
-                good_children,
-            )
-
-            m.add_relate_measurement(
-                self.module_num,
-                R_CHILD,
-                self.y_name.value,
-                self.x_name.value,
-                image_numbers,
-                good_children,
-                image_numbers,
-                good_parents,
-            )
-
-        parent_names = self.get_parent_names()
-
-        for parent_name in parent_names:
-            if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-                self.calculate_centroid_distances(workspace, parent_name)
-
-            if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-                self.calculate_minimum_distances(workspace, parent_name)
-
-        if self.wants_per_parent_means.value:
-            parent_indexes = numpy.arange(numpy.max(parents.segmented)) + 1
-
-            for feature_name in m.get_feature_names(self.y_name.value):
-                if not self.should_aggregate_feature(feature_name):
-                    continue
-
-                data = m.get_current_measurement(self.y_name.value, feature_name)
-
-                if data is not None and len(data) > 0:
-                    if len(parents_of) > 0:
-                        means = scipy.ndimage.mean(
-                            data.astype(float), parents_of, parent_indexes
-                        )
-                    else:
-                        means = numpy.zeros((0,))
-                else:
-                    # No child measurements - all NaN
-                    means = numpy.ones(len(parents_of)) * numpy.nan
-
-                mean_feature_name = FF_MEAN % (self.y_name.value, feature_name)
-
-                m.add_measurement(self.x_name.value, mean_feature_name, means)
-
-        if self.wants_child_objects_saved.value:
-            # most of this is lifted wholesale from FilterObjects
-            parent_labels = parents.segmented
-
-            child_labels = children.segmented
-
-            children_with_parents = numpy.where(parent_labels > 0, child_labels, 0)
-
-            indexes = numpy.unique(children_with_parents)[1:]
-
-            # Create an array that maps label indexes to their new values
-            # All labels to be deleted have a value in this array of zero
-            #
-            new_object_count = len(indexes)
-            max_label = numpy.max(child_labels)
-            label_indexes = numpy.zeros((max_label + 1,), int)
-            label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
-
-            target_labels = children.segmented.copy()
-            #
-            # Reindex the labels of the old source image
-            #
-            target_labels[target_labels > max_label] = 0
-            target_labels = label_indexes[target_labels]
+                module_number=self.module_num,
+                relationship=relationship.relationship,
+                object_name1=relationship.object_name1,
+                object_name2=relationship.object_name2,
+                image_numbers1=image_numbers,
+                image_numbers2=image_numbers,
+                object_numbers1=relationship[R_FIRST_OBJECT_NUMBER],
+                object_numbers2=relationship[R_SECOND_OBJECT_NUMBER],
+            )       
+        if wants_child_objects_saved:
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
             target_objects = cellprofiler_core.object.Objects()
-            target_objects.segmented = target_labels
+            target_objects.segmented = child_objects.segmented
             target_objects.unedited_segmented = children.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = children.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) & (children.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
+            target_objects.small_removed_segmented = child_objects.small_removed_segmented
             if children.has_parent_image:
                 target_objects.parent_image = children.parent_image
             workspace.object_set.add_objects(
@@ -546,229 +492,13 @@ parents or children of the parent object.""",
 
         return parent_names
 
-    def calculate_centroid_distances(self, workspace, parent_name):
-        """Calculate the centroid-centroid distance between parent & child"""
-        meas = workspace.measurements
-
-        sub_object_name = self.y_name.value
-
-        parents = workspace.object_set.get_objects(parent_name)
-
-        children = workspace.object_set.get_objects(sub_object_name)
-
-        parents_of = self.get_parents_of(workspace, parent_name)
-
-        pcenters = parents.center_of_mass()
-
-        ccenters = children.center_of_mass()
-
-        if pcenters.shape[0] == 0 or ccenters.shape[0] == 0:
-            dist = numpy.array([numpy.NaN] * len(parents_of))
-        else:
-            #
-            # Make indexing of parents_of be same as pcenters
-            #
-            parents_of = parents_of - 1
-
-            mask = (parents_of != -1) | (parents_of > pcenters.shape[0])
-
-            dist = numpy.array([numpy.NaN] * ccenters.shape[0])
-
-            dist[mask] = numpy.sqrt(
-                numpy.sum((ccenters[mask, :] - pcenters[parents_of[mask], :]) ** 2, 1)
-            )
-
-        meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
-
-    def calculate_minimum_distances(self, workspace, parent_name):
-        """Calculate the distance from child center to parent perimeter"""
-        meas = workspace.measurements
-
-        sub_object_name = self.y_name.value
-
-        parents = workspace.object_set.get_objects(parent_name)
-
-        children = workspace.object_set.get_objects(sub_object_name)
-
-        parents_of = self.get_parents_of(workspace, parent_name)
-
-        if len(parents_of) == 0:
-            dist = numpy.zeros((0,))
-        elif numpy.all(parents_of == 0):
-            dist = numpy.array([numpy.NaN] * len(parents_of))
-        else:
-            mask = parents_of > 0
-
-            ccenters = children.center_of_mass()
-
-            ccenters = ccenters[mask, :]
-
-            parents_of_masked = parents_of[mask] - 1
-
-            pperim = (
-                skimage.segmentation.find_boundaries(parents.segmented, mode="inner")
-                * parents.segmented
-            )
-
-            # Get a list of all points on the perimeter
-            perim_loc = numpy.argwhere(pperim != 0)
-
-            # Get the label # for each point
-            # multidimensional indexing with non-tuple values not allowed as of numpy 1.23
-            perim_loc_t = tuple(map(tuple, perim_loc.transpose()))
-            perim_idx = pperim[perim_loc_t]
-
-            # Sort the points by label #
-            reverse_column_order = list(range(children.dimensions))[::-1]
-
-            coordinates = perim_loc[:, reverse_column_order].transpose().tolist()
-
-            coordinates.append(perim_idx)
-
-            idx = numpy.lexsort(coordinates)
-
-            perim_loc = perim_loc[idx, :]
-
-            perim_idx = perim_idx[idx]
-
-            # Get counts and indexes to each run of perimeter points
-            counts = scipy.ndimage.sum(
-                numpy.ones(len(perim_idx)),
-                perim_idx,
-                numpy.arange(1, perim_idx[-1] + 1),
-            ).astype(numpy.int32)
-
-            indexes = numpy.cumsum(counts) - counts
-
-            # For the children, get the index and count of the parent
-            ccounts = counts[parents_of_masked]
-
-            cindexes = indexes[parents_of_masked]
-
-            # Now make an array that has an element for each of that child's perimeter points
-            clabel = numpy.zeros(numpy.sum(ccounts), int)
-
-            # cfirst is the eventual first index of each child in the clabel array
-            cfirst = numpy.cumsum(ccounts) - ccounts
-
-            clabel[cfirst[1:]] += 1
-
-            clabel = numpy.cumsum(clabel)
-
-            # Make an index that runs from 0 to ccounts for each child label.
-            cp_index = numpy.arange(len(clabel)) - cfirst[clabel]
-
-            # then add cindexes to get an index to the perimeter point
-            cp_index += cindexes[clabel]
-
-            # Now, calculate the distance from the centroid of each label to each perimeter point in the parent.
-            dist = numpy.sqrt(
-                numpy.sum((perim_loc[cp_index, :] - ccenters[clabel, :]) ** 2, 1)
-            )
-
-            # Finally, find the minimum distance per child
-            min_dist = scipy.ndimage.minimum(dist, clabel, numpy.arange(len(ccounts)))
-
-            # Account for unparented children
-            dist = numpy.array([numpy.NaN] * len(mask))
-
-            dist[mask] = min_dist
-
-        meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
-
-    def get_parents_of(self, workspace, parent_name):
-        """Return the parents_of measurement or equivalent
-        parent_name - name of parent objects
-
-        Return a vector of parent indexes to the given parent name using
-        the Parent measurement. Look for a direct parent / child link first
-        and then look for relationships between self.parent_name and the
-        named parent.
-        """
-        meas = workspace.measurements
-
-        parent_feature = FF_PARENT % parent_name
-
-        primary_parent = self.x_name.value
-
-        sub_object_name = self.y_name.value
-
-        primary_parent_feature = FF_PARENT % primary_parent
-
-        if parent_feature in meas.get_feature_names(sub_object_name):
-            parents_of = meas.get_current_measurement(sub_object_name, parent_feature)
-        elif parent_feature in meas.get_feature_names(primary_parent):
-            #
-            # parent_name is the grandparent of the sub-object via
-            # the primary parent.
-            #
-            primary_parents_of = meas.get_current_measurement(
-                sub_object_name, primary_parent_feature
-            )
-
-            grandparents_of = meas.get_current_measurement(
-                primary_parent, parent_feature
-            )
-
-            mask = primary_parents_of != 0
-
-            parents_of = numpy.zeros(primary_parents_of.shape[0], grandparents_of.dtype)
-
-            if primary_parents_of.shape[0] > 0:
-                parents_of[mask] = grandparents_of[primary_parents_of[mask] - 1]
-        elif primary_parent_feature in meas.get_feature_names(parent_name):
-            primary_parents_of = meas.get_current_measurement(
-                sub_object_name, primary_parent_feature
-            )
-
-            primary_parents_of_parent = meas.get_current_measurement(
-                parent_name, primary_parent_feature
-            )
-
-            if len(primary_parents_of_parent) == 0:
-                return primary_parents_of_parent
-
-            #
-            # There may not be a 1-1 relationship, but we attempt to
-            # construct one
-            #
-            reverse_lookup_len = max(
-                numpy.max(primary_parents_of) + 1, len(primary_parents_of_parent)
-            )
-
-            reverse_lookup = numpy.zeros(reverse_lookup_len, int)
-
-            if primary_parents_of_parent.shape[0] > 0:
-                reverse_lookup[primary_parents_of_parent] = numpy.arange(
-                    1, len(primary_parents_of_parent) + 1
-                )
-
-            if primary_parents_of.shape[0] > 0:
-                parents_of = reverse_lookup[primary_parents_of]
-        else:
-            raise ValueError(
-                "Don't know how to relate {} to {}".format(primary_parent, parent_name)
-            )
-
-        return parents_of
-
-    ignore_features = set(M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
         """Return True if aggregate measurements should be made on a feature
 
         feature_name - name of a measurement, such as Location_Center_X
         """
-        if feature_name.startswith(C_MEAN):
-            return False
-
-        if feature_name.startswith(C_PARENT):
-            return False
-
-        if feature_name in self.ignore_features:
-            return False
-
-        return True
+        return _should_aggregate_feature(feature_name)
 
     def validate_module(self, pipeline):
         """Validate the module's settings
@@ -819,13 +549,13 @@ parents or children of the parent object.""",
 
     def get_child_measurement_columns(self, pipeline):
         columns = []
-        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+        if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID):
             for parent_name in self.get_parent_names():
-                columns += [(self.y_name.value, FF_CENTROID % parent_name, "integer",)]
+                columns += [(self.y_name.value, TemplateMeasurementFormat.FF_CENTROID % parent_name, "integer",)]
 
-        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+        if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM):
             for parent_name in self.get_parent_names():
-                columns += [(self.y_name.value, FF_MINIMUM % parent_name, "integer",)]
+                columns += [(self.y_name.value, TemplateMeasurementFormat.FF_MINIMUM % parent_name, "integer",)]
 
         return columns
 
@@ -852,8 +582,8 @@ parents or children of the parent object.""",
         """Return the column definitions for this module's measurements"""
 
         columns = [
-            (self.y_name.value, FF_PARENT % self.x_name.value, "integer",),
-            (self.x_name.value, FF_CHILDREN_COUNT % self.y_name.value, "integer",),
+            (self.y_name.value, TemplateMeasurementFormat.FF_PARENT % self.x_name.value, "integer",),
+            (self.x_name.value, TemplateMeasurementFormat.FF_CHILDREN_COUNT % self.y_name.value, "integer",),
         ]
 
         if self.wants_child_objects_saved:
@@ -865,7 +595,7 @@ parents or children of the parent object.""",
             columns += [
                 (
                     self.x_name.value,
-                    FF_MEAN % (self.y_name.value, column[1]),
+                    TemplateMeasurementFormat.FF_MEAN % (self.y_name.value, column[1]),
                     COLTYPE_FLOAT,
                 )
                 for column in child_columns
@@ -882,8 +612,8 @@ parents or children of the parent object.""",
         sub_object_name = self.y_name.value
 
         return [
-            (R_PARENT, parent_name, sub_object_name, MCA_AVAILABLE_EACH_CYCLE,),
-            (R_CHILD, sub_object_name, parent_name, MCA_AVAILABLE_EACH_CYCLE,),
+            (Relationship.PARENT.value, parent_name, sub_object_name, MCA_AVAILABLE_EACH_CYCLE,),
+            (Relationship.CHILD.value, sub_object_name, parent_name, MCA_AVAILABLE_EACH_CYCLE,),
         ]
 
     def get_categories(self, pipeline, object_name):
@@ -896,7 +626,7 @@ parents or children of the parent object.""",
         elif object_name == self.y_name.value:
             result = ["Parent"]
 
-            if self.find_parent_child_distances != D_NONE:
+            if self.find_parent_child_distances != DistanceMethod.NONE:
                 result += [C_DISTANCE]
         elif object_name == "Image":
             result += [C_COUNT]
@@ -924,13 +654,13 @@ parents or children of the parent object.""",
         elif object_name == self.y_name.value and category == C_DISTANCE:
             result = []
 
-            if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+            if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.CENTROID):
                 result += [
                     "{}_{}".format(FEAT_CENTROID, parent_name)
                     for parent_name in self.get_parent_names()
                 ]
 
-            if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+            if self.find_parent_child_distances in (DistanceMethod.BOTH, DistanceMethod.MINIMUM):
                 result += [
                     "{}_{}".format(FEAT_MINIMUM, parent_name)
                     for parent_name in self.get_parent_names()
@@ -977,7 +707,7 @@ parents or children of the parent object.""",
             # Added other distance parents
             #
             if setting_values[2] == "Do not use":
-                find_parent_distances = D_NONE
+                find_parent_distances = DistanceMethod.NONE
             else:
                 find_parent_distances = setting_values[2]
 

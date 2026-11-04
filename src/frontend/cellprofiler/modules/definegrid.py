@@ -47,7 +47,7 @@ Measurements made by this module
 
 import logging
 
-import centrosome.cpmorphology
+import centriole.cpmorphology
 import numpy
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
@@ -628,7 +628,7 @@ first image.
         Returns a CPGridInfo object
         """
         objects = workspace.object_set.get_objects(self.object_name.value)
-        centroids = centrosome.cpmorphology.centers_of_labels(objects.segmented)
+        centroids = centriole.cpmorphology.centers_of_labels(objects.segmented)
         try:
             if centroids.shape[1] < 2:
                 #
@@ -1020,9 +1020,9 @@ first image.
         #
         gridding.spot_table = numpy.arange(gridding.rows * gridding.columns) + 1
         if self.ordering == NUM_BY_COLUMNS:
-            gridding.spot_table.shape = (gridding.rows, gridding.columns)
+            gridding.spot_table = gridding.spot_table.reshape(gridding.rows, gridding.columns)
         else:
-            gridding.spot_table.shape = (gridding.columns, gridding.rows)
+            gridding.spot_table = gridding.spot_table.reshape(gridding.columns, gridding.rows)
             gridding.spot_table = numpy.transpose(gridding.spot_table)
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             # Flip top and bottom

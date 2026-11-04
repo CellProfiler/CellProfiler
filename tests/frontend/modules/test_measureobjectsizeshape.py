@@ -11,7 +11,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures, F_STD_2D, F_ADV_2D, F_ADV_3D, F_STANDARD
 
 import tests.frontend
 import tests.frontend.modules
@@ -203,10 +203,10 @@ def test_measurements_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            ObjectSizeShapeFeatures.F_STANDARD.value
-            + ObjectSizeShapeFeatures.F_STD_2D.value
+            F_STANDARD
+            + F_STD_2D
         ):
-            assert measurement in measurements
+            assert measurement.value in measurements
         assert "Zernike_3_1" in measurements
 
 
@@ -218,10 +218,10 @@ def test_measurements_no_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            ObjectSizeShapeFeatures.F_STANDARD.value
-            + ObjectSizeShapeFeatures.F_STD_2D.value
+            F_STANDARD
+            + F_STD_2D
         ):
-            assert measurement in measurements
+            assert measurement.value in measurements
         assert not ("Zernike_3_1" in measurements)
 
 
@@ -596,13 +596,13 @@ def test_run_without_advanced():
     measurements = workspace.measurements
 
     standard = [
-        f"AreaShape_{name}"
-        for name in ObjectSizeShapeFeatures.F_STANDARD.value
-        + ObjectSizeShapeFeatures.F_STD_2D.value
+        f"AreaShape_{name.value}"
+        for name in F_STANDARD
+        + F_STD_2D
     ]
     advanced = [
-        f"AreaShape_{name}"
-        for name in ObjectSizeShapeFeatures.F_ADV_2D.value
+        f"AreaShape_{name.value}"
+        for name in F_ADV_2D
     ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in standard:
@@ -626,10 +626,10 @@ def test_run_with_advanced():
     measurements = workspace.measurements
 
     allfeatures = [
-        f"AreaShape_{name}"
-        for name in ObjectSizeShapeFeatures.F_STANDARD.value
-        + ObjectSizeShapeFeatures.F_STD_2D.value
-        + ObjectSizeShapeFeatures.F_ADV_2D.value
+        f"AreaShape_{name.value}"
+        for name in F_STANDARD
+        + F_STD_2D
+        + F_ADV_2D
     ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in allfeatures:

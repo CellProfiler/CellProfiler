@@ -1,19 +1,12 @@
-import centrosome.cpmorphology
-import centrosome.zernike
-import numpy
-import scipy.ndimage
-import skimage.measure
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
-from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Divider, Binary, ValidationError
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 
 import cellprofiler.gui.help.content
-import cellprofiler.icons
 
 from cellprofiler_library.modules import measureobjectsizeshape
-from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.opts.objectsizeshapefeatures import get_zernike_indexes, ObjectSizeShapeFeatures, F_STD_2D, F_STD_3D, F_ADV_2D, F_ADV_3D, F_STANDARD
 
 __doc__ = """\
 MeasureObjectSizeShape
@@ -64,7 +57,7 @@ ellipse with the same second-moments as each object.
    region in the image.
 -  *SurfaceArea:* *(3D only)* The total number of voxels around the boundary of
    each region in the image.
--  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
+-  *FormFactor:* *(2D only)* Calculated as 4\\*π\\*Area/Perimeter\\ :sup:`2`. Equals 1
    for a perfectly circular object.
 -  *Convex Area:* The area of a convex polygon containing the whole object.
    Best imagined as a rubber band stretched around the object. 
@@ -75,12 +68,12 @@ ellipse with the same second-moments as each object.
    by the area/volume of the bounding box.
 -  *EulerNumber:* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
--  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
+-  *Center\\_X, Center\\_Y, Center\\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
    coordinates of the point farthest away from any object edge (the *centroid*).
    Note that this is not the same as the *Location-X* and *-Y* measurements
    produced by the **Identify** or **Watershed**
    modules or the *Location-Z* measurement produced by the **Watershed** module.
--  *BoundingBoxMinimum/Maximum\_X/Y/Z:* The minimum/maximum *x*-, *y*-, and (for 3D objects)
+-  *BoundingBoxMinimum/Maximum\\_X/Y/Z:* The minimum/maximum *x*-, *y*-, and (for 3D objects)
    *z-* coordinates of the object.
 -  *BoundingBoxArea:* *(2D only)* The area of a box containing the object.
 -  *BoundingBoxVolume:* *(3D only)* The volume of a box containing the object.
@@ -105,7 +98,7 @@ ellipse with the same second-moments as each object.
 -  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
--  *Compactness:* *(2D only)* Calculated as Perimeter\ :sup:`2`/4\*π\*Area, related to 
+-  *Compactness:* *(2D only)* Calculated as Perimeter\\ :sup:`2`/4\\*π\\*Area, related to 
    Form Factor. A filled circle will have a compactness of 1, with irregular objects or 
    objects with holes having a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
@@ -281,15 +274,6 @@ module.""".format(
         else:
             return []
 
-    def get_zernike_numbers(self):
-        """The Zernike numbers measured by this module"""
-        if self.calculate_zernikes.value:
-            return centrosome.zernike.get_zernike_indexes(
-                ObjectSizeShapeFeatures.ZERNIKE_N.value + 1
-            )
-        else:
-            return []
-
     def get_zernike_name(self, zernike_index):
         """Return the name of a Zernike feature, given a (N,M) 2-tuple
 
@@ -299,20 +283,20 @@ module.""".format(
 
     def get_feature_names(self, pipeline):
         """Return the names of the features measured"""
-        feature_names = list(ObjectSizeShapeFeatures.F_STANDARD.value)
+        feature_names = [i.value for i in F_STANDARD]
 
         if pipeline.volumetric():
-            feature_names += list(ObjectSizeShapeFeatures.F_STD_3D.value)
+            feature_names += [i.value for i in F_STD_3D]
             if self.calculate_advanced.value:
-                feature_names += list(ObjectSizeShapeFeatures.F_ADV_3D.value)
+                feature_names += [i.value for i in F_ADV_3D]
         else:
-            feature_names += list(ObjectSizeShapeFeatures.F_STD_2D.value)
+            feature_names += [i.value for i in F_STD_2D]
             if self.calculate_zernikes.value:
                 feature_names += [
-                    self.get_zernike_name(index) for index in self.get_zernike_numbers()
+                    self.get_zernike_name(index) for index in get_zernike_indexes()
                 ]
             if self.calculate_advanced.value:
-                feature_names += list(get_feature_names.F_ADV_2D.values)
+                feature_names += [i.value for i in F_ADV_2D]
 
         return feature_names
 
@@ -347,18 +331,31 @@ module.""".format(
 
             objects = workspace.get_objects(object_name)
 
-            features_to_record = measureobjectsizeshape(
+            res = measureobjectsizeshape(
                 objects=objects.dense,
+                object_name=object_name,
                 calculate_advanced=self.calculate_advanced.value,
                 calculate_zernikes=self.calculate_zernikes.value,
                 volumetric=workspace.pipeline.volumetric(),
                 spacing=objects.parent_image.spacing
                 if objects.has_parent_image
                 else (1.0,) * objects.dimensions,  # TODO: Check this change is OK
+                return_visualization_data=self.show_window,
             )
+            if self.show_window:
+                lib_measurements, lib_display = res
+                workspace.display_data.statistics += lib_display.statistics
+            else:
+                lib_measurements = res
 
-            for f, m in features_to_record.items():
-                self.record_measurement(workspace, object_name, f, m)
+            # Unpack LibraryMeasurements into workspace
+            for obj_name, features in lib_measurements.objects.items():
+                for feature_name, values in features.items():
+                    if not feature_name.startswith(ObjectSizeShapeFeatures.AREA_SHAPE.value):
+                        f = "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name)
+                    else:
+                        f = feature_name
+                    workspace.measurements.add_measurement(object_name, f, values)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
@@ -369,26 +366,6 @@ module.""".format(
             col_labels=workspace.display_data.col_labels,
             title="default",
         )
-
-    def record_measurement(self, workspace, object_name, feature_name, result):
-        """Record the result of a measurement in the workspace's measurements"""
-        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
-        workspace.add_measurement(
-            object_name,
-            "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
-            data,
-        )
-        if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
-            data = data[numpy.isfinite(data)]
-            workspace.display_data.statistics.append(
-                (
-                    object_name,
-                    feature_name,
-                    "%.2f" % numpy.mean(data),
-                    "%.2f" % numpy.median(data),
-                    "%.2f" % numpy.std(data),
-                )
-            )
 
     def get_measurement_columns(self, pipeline):
         """Return measurement column definitions.

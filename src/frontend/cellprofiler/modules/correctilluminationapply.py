@@ -25,7 +25,6 @@ See also
 
 See also **CorrectIlluminationCalculate**.
 """
-
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -37,9 +36,8 @@ from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName
-
-DOS_DIVIDE = "Divide"
-DOS_SUBTRACT = "Subtract"
+from cellprofiler_library.opts.correctilluminationapply import Method
+from cellprofiler_library.modules._correctilluminationapply import correct_illumination_apply
 
 ######################################
 #
@@ -57,7 +55,6 @@ RE_MATCH = "Match maximums"
 ######################################
 
 SETTINGS_PER_IMAGE = 4
-
 
 class CorrectIlluminationApply(Module):
     category = "Image Processing"
@@ -116,22 +113,22 @@ a future version of CellProfiler. You can export .mat format images as
 
         divide_or_subtract = Choice(
             "Select how the illumination function is applied",
-            [DOS_DIVIDE, DOS_SUBTRACT],
-            doc="""\
+            [Method.DIVIDE.value, Method.SUBTRACT.value],
+            doc=f"""\
 This choice depends on how the illumination function was calculated and
 on your physical model of the way illumination variation affects the
 background of images relative to the objects in images; it is also
 somewhat empirical.
 
--  *%(DOS_SUBTRACT)s:* Use this option if the background signal is
+-  *{Method.SUBTRACT.value}:* Use this option if the background signal is
    significant relative to the real signal coming from the cells. If you
    created the illumination correction function using
    *Background*, then you will want to choose
-   *%(DOS_SUBTRACT)s* here.
--  *%(DOS_DIVIDE)s:* Choose this option if the signal to background
+   *{Method.SUBTRACT.value}* here.
+-  *{Method.DIVIDE.value}:* Choose this option if the signal to background
    ratio is high (the cells are stained very strongly). If you created
    the illumination correction function using *Regular*, then
-   you will want to choose *%(DOS_DIVIDE)s* here.
+   you will want to choose *{Method.DIVIDE.value}* here.
 """
             % globals(),
         )
@@ -248,6 +245,9 @@ somewhat empirical.
         orig_image = workspace.image_set.get_image(image_name)
         illum_function = workspace.image_set.get_image(illum_correct_name)
         illum_function_pixel_data = illum_function.pixel_data
+        #
+        # Validate the illumination function
+        #
         if orig_image.pixel_data.ndim == 2:
             illum_function = workspace.image_set.get_image(
                 illum_correct_name, must_be_grayscale=True
@@ -257,7 +257,6 @@ somewhat empirical.
                 illum_function_pixel_data = illum_function_pixel_data[
                     :, :, numpy.newaxis
                 ]
-        # Throw an error if image and illum data are incompatible
         if orig_image.pixel_data.shape[:2] != illum_function_pixel_data.shape[:2]:
             raise ValueError(
                 "This module requires that the image and illumination function have equal dimensions.\n"
@@ -271,27 +270,16 @@ somewhat empirical.
                 )
             )
         #
-        # Either divide or subtract the illumination image from the original
+        # Apply the illumination function
         #
-        if image.divide_or_subtract == DOS_DIVIDE:
-            output_pixels = orig_image.pixel_data / illum_function_pixel_data
-        elif image.divide_or_subtract == DOS_SUBTRACT:
-            output_pixels = orig_image.pixel_data - illum_function_pixel_data
-            output_pixels[output_pixels < 0] = 0
-        else:
-            raise ValueError(
-                "Unhandled option for divide or subtract: %s"
-                % image.divide_or_subtract.value
-            )
-        
-        #
-        # Optionally, clip high and low values
-        #
-        if self.truncate_low.value:
-            output_pixels = numpy.where(output_pixels < 0, 0, output_pixels)
-        if self.truncate_high.value:
-            output_pixels = numpy.where(output_pixels > 1, 1, output_pixels)
-        
+        output_pixels = correct_illumination_apply(
+            orig_image.pixel_data,
+            illum_function_pixel_data,
+            image.divide_or_subtract.value,
+            truncate_low=self.truncate_low.value,
+            truncate_high=self.truncate_high.value,
+        )
+
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.

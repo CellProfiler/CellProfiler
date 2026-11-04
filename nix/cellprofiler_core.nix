@@ -8,7 +8,7 @@
   pytest,
   # runtime deps
   cellprofiler-library,
-  centrosome,
+  centriole,
   boto3,
   docutils,
   future,
@@ -58,7 +58,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [
     cellprofiler-library
-    centrosome
+    centriole
     boto3
     docutils
     future

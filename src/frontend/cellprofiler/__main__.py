@@ -63,43 +63,17 @@ LOGGER = logging.getLogger(__name__)
 
 if hasattr(sys, "frozen"):
     if sys.platform == "darwin":
-        # Some versions of Macos like to put CP in a sandbox. If we're frozen Java should be packed in,
-        # so let's just figure out the directory at run time.
-        try:
-            os.environ["CP_JAVA_HOME"] = os.path.abspath(os.path.join(sys.prefix, "..", "Resources/Home"))
-        except:
-            print("Unable to set JAVA directory to inbuilt java environment")
+        os.environ["JAVA_HOME"] = os.environ.get(
+            "CP_JAVA_HOME", os.path.join(sys._MEIPASS, "jre")
+        )
     elif sys.platform.startswith("win"):
-        # Clear out deprecation warnings from PyInstaller
-        os.system('cls')
-        # For Windows builds use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
-        # Users can use a custom java installation by removing CP_JAVA_HOME.
-        # JAVA_HOME must be set before bioformats import.
-        try:
-            if "CP_JAVA_HOME" in os.environ:
-                # Use user-provided Java
-                os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
-            elif "JAVA_HOME" not in os.environ:
-                # Use built-in java
-                test_dir = os.path.abspath(os.path.join(sys.prefix, "java"))
-                if os.path.exists(test_dir):
-                    os.environ["JAVA_HOME"] = test_dir
-                else:
-                    print(f"Failed to detect java automatically. Searched in: {test_dir}.")
-            assert "JAVA_HOME" in os.environ and os.path.exists(os.environ['JAVA_HOME'])
-            # Ensure we start in the correct directory when launching a build.
-            # Opening a file directly may end up with us starting on the wrong drive.
-            os.chdir(sys.prefix)
-        except AssertionError:
-            print(
-                "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
-                "Please set the CP_JAVA_HOME system environment variable.\n"
-                "Visit http://broad.io/cpjava for instructions."
-            )
-            os.system("pause")  # Keep console window open until keypress.
-            sys.exit(1)
-        except Exception as e:
-            print(f"Encountered unknown error during startup: {e}")
+        java_home = os.path.abspath(os.environ.get(
+            "CP_JAVA_HOME", os.path.join(sys._MEIPASS, "jre")
+        ))
+        if not os.path.isfile(os.path.join(java_home, "bin", "server", "jvm.dll")):
+            raise RuntimeError(f"The selected Java runtime is missing jvm.dll: {java_home}")
+        os.environ["JAVA_HOME"] = java_home
+        os.environ["PATH"] = os.path.join(java_home, "bin") + os.pathsep + os.environ.get("PATH", "")
     else:
         # Clear out deprecation warnings from PyInstaller
         os.system('clear')
@@ -138,7 +112,7 @@ def main(main_args=None):
         worker_main()
         return exit_code
 
-    args = parse_args(main_args)
+    args = parse_args()
 
     # put up towards top, some things below need log level set
     set_log_level(args.log_level)
@@ -351,7 +325,7 @@ def stop_cellprofiler():
     stop_java()
 
 
-def parse_args(args):
+def parse_args():
     """Parse the CellProfiler command-line arguments"""
 
     # https://stackoverflow.com/a/22157136
@@ -364,11 +338,6 @@ def parse_args(args):
 
     usage = """%(prog)s [arguments]
          The flags -p, -r and -c are required for a headless run."""
-
-    if "--do-not-fetch" in args:
-        args = list(args)
-
-        args.remove("--do-not-fetch")
 
     parser = argparse.ArgumentParser(usage=usage, prog="cellprofiler", formatter_class=SmartFormatter)
 
@@ -383,7 +352,7 @@ def parse_args(args):
 
     default_show_gui = True
 
-    if sys.platform.startswith("linux") and not os.getenv("DISPLAY"):
+    if sys.platform.startswith("linux") and not os.getenv("DISPLAY") and not os.getenv("WAYLAND_DISPLAY"):
         default_show_gui = False
 
     parser.add_argument(

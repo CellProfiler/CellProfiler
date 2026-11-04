@@ -6,6 +6,7 @@ import sys
 import sentry_sdk
 import wx
 import wx.lib.inspection
+from cellprofiler_core.preferences import APP_NAME
 from cellprofiler_core.preferences import get_telemetry_prompt
 from cellprofiler_core.preferences import get_telemetry
 from cellprofiler_core.preferences import set_telemetry
@@ -70,9 +71,19 @@ class App(wx.App):
 
         # wx.lib.inspection.InspectionTool().Show()
 
-        self.SetAppName("CellProfiler{0:s}".format(cellprofiler_version))
+        # WARN: APP_NAME also names the user data directory
+        # (cellprofiler_core.preferences.get_user_data_directory), where the
+        # official plugins live, and the user config directory
+        # (cellprofiler_core.preferences.get_user_config_directory), where the
+        # config file lives.
+        # Be careful changing this, as it will change the config file location,
+        # and where official plugins live.
+        self.SetAppName(APP_NAME)
+        self.SetAppDisplayName("{0:s} {1:s}".format(APP_NAME, cellprofiler_version))
+        # useful for Linux - e.g. window manager's "class hint"
+        self.SetClassName(APP_NAME)
 
-        self.frame = CPFrame(None, -1, "CellProfiler")
+        self.frame = CPFrame(None, -1, APP_NAME)
 
         self.frame.start(self.workspace_path, self.pipeline_path)
 

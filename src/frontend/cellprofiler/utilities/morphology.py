@@ -5,6 +5,7 @@ Shared mophology methods used by multiple modules
 import numpy
 import scipy.ndimage
 import skimage.morphology
+from cellprofiler_library.functions.morphology import binary_erosion as erode_binary
 
 
 def dilation(x_data, structuring_element):
@@ -65,7 +66,7 @@ def binary_erosion(x_data, structuring_element):
 
         for index, plane in enumerate(x_data):
 
-            y_data[index] = skimage.morphology.binary_erosion(
+            y_data[index] = erode_binary(
                 plane, structuring_element
             )
 
@@ -76,7 +77,7 @@ def binary_erosion(x_data, structuring_element):
             "A 3D structuring element cannot be applied to a 2D image."
         )
 
-    y_data = skimage.morphology.binary_erosion(x_data, structuring_element)
+    y_data = erode_binary(x_data, structuring_element)
 
     return y_data
 

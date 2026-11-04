@@ -92,7 +92,7 @@ class BioformatsReader(Reader):
             openBytes_func = self._reader.openBytes
             width, height = self._reader.getSizeX(), self._reader.getSizeY()
 
-        # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
+        # FIXME: instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
         if pixel_type == FormatTools.INT8:
@@ -111,27 +111,28 @@ class BioformatsReader(Reader):
             dtype = '<f4' if little_endian else '>f4'
         elif pixel_type == FormatTools.DOUBLE:
             dtype = '<f8' if little_endian else '>f8'
+
         if index is not None:
             image = np.frombuffer(openBytes_func(index), dtype)
             if len(image) / height / width in (3,4):
                 n_channels = int(len(image) / height / width)
                 if self._reader.isInterleaved():
-                    image.shape = (height, width, n_channels)
+                    image = image.reshape(height, width, n_channels)
                 else:
-                    image.shape = (n_channels, height, width)
+                    image = image.reshape(n_channels, height, width)
                     image = image.transpose(1, 2, 0)
             else:
-                image.shape = (height, width)
+                image = image.reshape(height, width)
         elif self._reader.isRGB() and self._reader.isInterleaved():
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index), dtype)
-            image.shape = (height, width, self._reader.getSizeC())
+            image = image.reshape(height, width, self._reader.getSizeC())
             if image.shape[2] > 3:
                 image = image[:, :, :3]
         elif c is not None and self._reader.getRGBChannelCount() == 1:
             index = self._reader.getIndex(z,c,t)
             image = np.frombuffer(openBytes_func(index), dtype)
-            image.shape = (height, width)
+            image = image.reshape(height, width)
         elif self._reader.getRGBChannelCount() > 1:
             n_planes = self._reader.getRGBChannelCount()
             rdr = ChannelSeparator(self._reader)
@@ -149,13 +150,13 @@ class BioformatsReader(Reader):
                 # see issue #775
                 planes.append(np.zeros(planes[0].shape, planes[0].dtype))
             image = np.dstack(planes)
-            image.shape=(height, width, 3)
+            image = image.reshape(height, width, 3)
         elif self._reader.getSizeC() > 1:
             images = [
                 np.frombuffer(openBytes_func(self._reader.getIndex(z,i,t)), dtype)
                       for i in range(self._reader.getSizeC())]
             image = np.dstack(images)
-            image.shape = (height, width, self._reader.getSizeC())
+            image = image.reshape(height, width, self._reader.getSizeC())
             if not channel_names is None:
                 metadata = self._reader.getMetadataStore()
                 for i in range(self._reader.getSizeC()):
@@ -164,31 +165,18 @@ class BioformatsReader(Reader):
                     if channel_name is None:
                         channel_name = metadata.getChannelID(index, i)
                     channel_names.append(channel_name)
-        elif self._reader.isIndexed():
-            # TODO can we use ChannelFiller, which automatically expands channels if they
-            # are "true" color and does nothing if they are "false" (e.g. applied color table)?
-            #
-            # The image data is indexes into a color lookup-table
-            # But sometimes the table is the identity table and just generates
-            # a monochrome RGB image
-            #
-            index = self._reader.getIndex(z,0,t)
-            image = np.frombuffer(openBytes_func(index),dtype)
-            lut = None
-            if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
-                lut = self._reader.get16BitLookupTable()
-            else:
-                lut = self._reader.get8BitLookupTable()
-            if lut is not None:
-                lut = np.array([d for d in lut]).transpose()
-            image.shape = (height, width)
-            if (lut is not None) \
-               and not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):
-                image = lut[image, :]
         else:
+            # NOTE: Indexed ("palette") planes land here too
+            # (self._reader.isIndexed()) and we deliberately do not expand them
+            # through their color lookup-table. Their pixel values are row
+            # numbers into a table of display colors chosen at acquisition time,
+            # so applying it would have us quantify someone's pseudo-coloring
+            # rather than the signal. The raw indices are the measurement.
+            # CellProfiler 4 and the ImageIO readers both hand back the indices;
+            # match them. See issue #5151.
             index = self._reader.getIndex(z,0,t)
             image = np.frombuffer(openBytes_func(index),dtype)
-            image.shape = (height,width)
+            image = image.reshape(height, width)
 
         if wants_metadata_rescale == True:
             # tiff-specific

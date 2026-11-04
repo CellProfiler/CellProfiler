@@ -60,7 +60,7 @@ from ..utilities.hdf5_dict import HDF5Dict, NullLock
 from ..utilities.measurement import agg_ignore_feature
 from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
-
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements, Relationship
 
 LOGGER = logging.getLogger(__name__)
 
@@ -188,7 +188,7 @@ class Measurements:
             and isinstance(key[2], slice)
             and key[2] == slice(None, None, None)
         ):
-            return self.get_all_measurements(*key[:2])
+            return self.get_measurement(*key[:2], image_set_number=self.get_image_numbers())
         return self.get_measurement(*key)
 
     def __setitem__(self, key, value):
@@ -532,7 +532,7 @@ class Measurements:
                         second objects in these image numbers.
 
         returns a recarray with the following fields:
-        R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
+        R_FIRST_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER, R_SECOND_IMAGE_NUMBER, 
         R_SECOND_OBJECT_NUMBER
         """
         features = (
@@ -699,7 +699,7 @@ class Measurements:
                 data = [data]
             data = [
                 d
-                if d is None or d is numpy.NaN
+                if d is None or d is numpy.nan
                 else Measurements.wrap_string(d)
                 if numpy.isscalar(d)
                 else Measurements.wrap_string(d[0])
@@ -883,7 +883,7 @@ class Measurements:
                     #
                     result = numpy.array(
                         [
-                            numpy.NaN
+                            numpy.nan
                             if v is None or len(v) == 0
                             else v[0].decode("utf-8")
                             if len(v) == 1 and isinstance(v[0], bytes)
@@ -976,8 +976,8 @@ class Measurements:
 
         pattern - a regexp-like pattern that specifies how to insert
                   metadata into a string. Each token has the form:
-                  "\(?<METADATA_TAG>\)" (matlab-style) or
-                  "\g<METADATA_TAG>" (Python-style)
+                  "\\(?<METADATA_TAG>\\)" (matlab-style) or
+                  "\\g<METADATA_TAG>" (Python-style)
         image_name - name of image associated with the metadata (or None
                      if metadata is not associated with an image)
         image_set_number - # of image set to use to retrieve data.
@@ -1218,19 +1218,19 @@ class Measurements:
                     mean_feature_name = get_agg_measurement_name(
                         AGG_MEAN, object_name, feature
                     )
-                    mean = numpy.mean(values) if values is not None else numpy.NaN
+                    mean = numpy.mean(values) if values is not None else numpy.nan
                     d[mean_feature_name] = mean
                 if AGG_MEDIAN in aggs:
                     median_feature_name = get_agg_measurement_name(
                         AGG_MEDIAN, object_name, feature
                     )
-                    median = numpy.median(values) if values is not None else numpy.NaN
+                    median = numpy.median(values) if values is not None else numpy.nan
                     d[median_feature_name] = median
                 if AGG_STD_DEV in aggs:
                     stdev_feature_name = get_agg_measurement_name(
                         AGG_STD_DEV, object_name, feature
                     )
-                    stdev = numpy.std(values) if values is not None else numpy.NaN
+                    stdev = numpy.std(values) if values is not None else numpy.nan
                     d[stdev_feature_name] = stdev
         return d
 
@@ -1353,7 +1353,7 @@ class Measurements:
         for i, image_number in enumerate(image_numbers):
             for j, column in enumerate(columns):
                 field = column[i]
-                if field is numpy.NaN or field is None:
+                if field is numpy.nan or field is None:
                     field = ""
                 if isinstance(field, str):
                     if isinstance(field, str):
@@ -1764,3 +1764,56 @@ class Measurements:
             return []
 
         return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))
+
+    def to_library_measurements(self, image_numbers=None):
+        """Convert a Measurements instance to a LibraryMeasurements instance
+        
+        Args:
+            measurements: A Measurements instance
+            
+        Returns:
+            A LibraryMeasurements instance
+        """        
+        image = {}
+        objects = {}
+        experiment = {}
+        relationships = []
+        
+        for object_name in self.get_object_names():
+            objects[object_name] = {}
+            for feature in self.get_feature_names(object_name):
+                objects[object_name][feature] = self.get_measurement(object_name, feature)
+        
+        for feature in self.get_feature_names("Image"):
+            image[feature] = self.get_measurement("Image", feature)
+        try:
+            for feature in self.get_feature_names("Experiment"):
+                experiment[feature] = self.get_measurement("Experiment", feature)
+        except KeyError:
+            pass
+        
+        for relationship in self.get_relationship_groups():
+            relationship_measurements = self.get_relationships(
+                relationship.module_number,
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                image_numbers=image_numbers
+            )
+            
+            relationships.append(Relationship(
+                relationship.relationship,
+                relationship.object_name1,
+                relationship.object_name2,
+                relationship_measurements[R_FIRST_OBJECT_NUMBER],
+                relationship_measurements[R_SECOND_OBJECT_NUMBER],
+            ))
+        
+        return LibraryMeasurements(
+            image=image,
+            objects=objects,
+            experiment=experiment,
+            relationships=relationships
+        )
+
+        

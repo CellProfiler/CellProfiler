@@ -8,6 +8,7 @@ from cellprofiler_core.utilities.core.modules import (
     instantiate_module,
     get_module_class,
 )
+from cellprofiler_core.utilities.core.plugins import get_module_display_name
 
 import cellprofiler.gui
 import cellprofiler.gui.cpframe
@@ -166,11 +167,12 @@ class AddModuleFrame(wx.Frame):
                     if isinstance(module.category, str)
                     else list(module.category)
                 ) + ["All"]
+                display_name = get_module_display_name(module)
                 for category in categories:
                     if category not in self.__module_files:
                         self.__module_files.insert(-2, category)
                         self.__module_dict[category] = {}
-                    self.__module_dict[category][module.module_name] = loader
+                    self.__module_dict[category][display_name] = loader
             except Exception as e:
                 import traceback
                 import logging

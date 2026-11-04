@@ -7,6 +7,7 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, COLTYPE_INTEGER
+from cellprofiler_library.opts.measureimageintensity import TemplateMeasurementFormat
 
 
 import cellprofiler.modules.measureimageintensity
@@ -496,39 +497,39 @@ def test_get_measurement_columns_whole_image_mode(module):
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                TemplateMeasurementFormat.TOTAL_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                TemplateMeasurementFormat.MEAN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                TemplateMeasurementFormat.MIN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                TemplateMeasurementFormat.MAX_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                TemplateMeasurementFormat.TOTAL_AREA,
                 COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                TemplateMeasurementFormat.PERCENT_MAXIMAL,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                TemplateMeasurementFormat.MAD_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                TemplateMeasurementFormat.LOWER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                TemplateMeasurementFormat.UPPER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
         ):
@@ -567,39 +568,39 @@ def test_get_measurement_columns_object_mode(module):
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                TemplateMeasurementFormat.TOTAL_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                TemplateMeasurementFormat.MEAN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                TemplateMeasurementFormat.MIN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                TemplateMeasurementFormat.MAX_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                TemplateMeasurementFormat.TOTAL_AREA,
                 COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                TemplateMeasurementFormat.PERCENT_MAXIMAL,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                TemplateMeasurementFormat.MAD_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                TemplateMeasurementFormat.LOWER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                TemplateMeasurementFormat.UPPER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
         ):
@@ -635,39 +636,39 @@ def test_get_measurement_columns_percentile_mode(module):
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                TemplateMeasurementFormat.TOTAL_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                TemplateMeasurementFormat.MEAN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                TemplateMeasurementFormat.MIN_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                TemplateMeasurementFormat.MAX_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                TemplateMeasurementFormat.TOTAL_AREA,
                 COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                TemplateMeasurementFormat.PERCENT_MAXIMAL,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                TemplateMeasurementFormat.MAD_INTENSITY,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                TemplateMeasurementFormat.LOWER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                TemplateMeasurementFormat.UPPER_QUARTILE,
                 COLTYPE_FLOAT,
             ),
             (

@@ -1,6 +1,6 @@
 import io
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 
 import cellprofiler_core.image
@@ -17,6 +17,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.measureimagequality import Feature, C_IMAGE_QUALITY, Aggregate, INTENSITY_FEATURES, SATURATION_FEATURES, MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES, STD_THRESH_ALL_IMAGES 
 
 IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -27,10 +28,10 @@ def make_workspace(pixel_data, mask=None, objects=None, dimensions=2):
     image_set = image_set_list.get_image_set(0)
     object_set = cellprofiler_core.object.ObjectSet()
     image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
-    if not mask is None:
+    if mask is not None:
         image.mask = mask
     image_set.add(IMAGES_NAME, image)
-    if not objects is None:
+    if objects is not None:
         o = cellprofiler_core.object.Objects()
         o.segmented = objects
         object_set.add_objects(o, OBJECTS_NAME)
@@ -84,7 +85,7 @@ def test_zeros():
         m_value = m.get_current_measurement(
             "Image", feature_name
         )
-        if not value is None:
+        if value is not None:
             assert m_value == value, "Measured value, %f, for feature %s was not %f" % (
                 m_value,
                 feature_name,
@@ -448,8 +449,8 @@ def test_threshold():
     q = workspace.module
 
     for tm, idx in zip(
-        centrosome.threshold.TM_GLOBAL_METHODS,
-        list(range(len(centrosome.threshold.TM_GLOBAL_METHODS))),
+        centriole.threshold.TM_GLOBAL_METHODS,
+        list(range(len(centriole.threshold.TM_GLOBAL_METHODS))),
     ):
         if idx != 0:
             q.add_image_group()
@@ -482,12 +483,12 @@ def test_threshold():
             "Image", feature_name
         )
     for tm, idx in zip(
-        centrosome.threshold.TM_GLOBAL_METHODS,
-        list(range(len(centrosome.threshold.TM_GLOBAL_METHODS))),
+        centriole.threshold.TM_GLOBAL_METHODS,
+        list(range(len(centriole.threshold.TM_GLOBAL_METHODS))),
     ):
-        if tm == centrosome.threshold.TM_OTSU_GLOBAL:
+        if tm == centriole.threshold.TM_OTSU_GLOBAL:
             feature_name = "ImageQuality_ThresholdOtsu_my_image_3FW"
-        elif tm == centrosome.threshold.TM_MOG_GLOBAL:
+        elif tm == centriole.threshold.TM_MOG_GLOBAL:
             feature_name = "ImageQuality_ThresholdMoG_my_image_20"
         else:
             feature_name = "ImageQuality_Threshold%s_my_image" % tm.split(" ")[0]
@@ -518,13 +519,13 @@ def test_experiment_threshold():
 
     # Check threshold algorithms
     threshold_group = module.image_groups[0].threshold_groups[0]
-    threshold_algorithm = threshold_group.threshold_algorithm
+    # threshold_algorithm = threshold_group.threshold_algorithm
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.measureimagequality.AGG_STD,
+            Aggregate.MEAN.value,
+            Aggregate.MEDIAN.value,
+            Aggregate.STD.value,
         )
     ]
 
@@ -573,14 +574,14 @@ def test_experiment_threshold_cycle_skipping():
 
     # Check threshold algorithms
     threshold_group = module.image_groups[0].threshold_groups[0]
-    threshold_algorithm = threshold_group.threshold_algorithm
+    # threshold_algorithm = threshold_group.threshold_algorithm
     image_name = module.image_groups[0].image_names.value_text
     f_mean, f_median, f_std = [
         threshold_group.threshold_feature_name(image_name, agg)
         for agg in (
-            cellprofiler.modules.measureimagequality.AGG_MEAN,
-            cellprofiler.modules.measureimagequality.AGG_MEDIAN,
-            cellprofiler.modules.measureimagequality.AGG_STD,
+            Aggregate.MEAN.value,
+            Aggregate.MEDIAN.value,
+            Aggregate.STD.value,
         )
     ]
 
@@ -656,7 +657,7 @@ def test_load_v3():
     assert group.scale_groups[0].scale == 25
     assert group.check_saturation
     assert group.calculate_threshold
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert round(abs(thr.object_fraction.value - 0.2), 7) == 0
     assert thr.two_class_otsu == O_THREE_CLASS
     assert (
@@ -675,7 +676,7 @@ def test_load_v3():
     assert group.scale_groups[0].scale == 15
     assert not group.check_saturation
     assert not group.calculate_threshold
-    assert thr.threshold_method == centrosome.threshold.TM_MOG
+    assert thr.threshold_method == centriole.threshold.TM_MOG
     assert round(abs(thr.object_fraction.value - 0.3), 7) == 0
     assert thr.two_class_otsu == O_TWO_CLASS
     assert thr.use_weighted_variance == O_ENTROPY
@@ -737,7 +738,7 @@ def test_load_v4():
     assert group.check_intensity
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE
@@ -753,14 +754,14 @@ def test_load_v4():
     assert group.image_names.value_text == "Zeta"
     assert not group.use_all_threshold_methods
     thr = group.threshold_groups[0]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE
     )
     assert thr.two_class_otsu == O_TWO_CLASS
     thr = group.threshold_groups[1]
-    assert thr.threshold_method == centrosome.threshold.TM_OTSU
+    assert thr.threshold_method == centriole.threshold.TM_OTSU
     assert (
         thr.use_weighted_variance
         == O_WEIGHTED_VARIANCE
@@ -937,20 +938,20 @@ def test_volumetric_measurements():
     names = [
         "_".join(
             [
-                cellprofiler.modules.measureimagequality.C_IMAGE_QUALITY,
+                C_IMAGE_QUALITY,
                 feature,
                 IMAGES_NAME,
             ]
         )
         for feature in [
-            cellprofiler.modules.measureimagequality.F_TOTAL_VOLUME,
-            cellprofiler.modules.measureimagequality.F_TOTAL_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MEAN_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MEDIAN_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_STD_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MAD_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MAX_INTENSITY,
-            cellprofiler.modules.measureimagequality.F_MIN_INTENSITY,
+            Feature.TOTAL_VOLUME.value,
+            Feature.TOTAL_INTENSITY.value,
+            Feature.MEAN_INTENSITY.value,
+            Feature.MEDIAN_INTENSITY.value,
+            Feature.STD_INTENSITY.value,
+            Feature.MAD_INTENSITY.value,
+            Feature.MAX_INTENSITY.value,
+            Feature.MIN_INTENSITY.value,
         ]
     ]
     values = [

@@ -1,4 +1,5 @@
 import numpy
+import scipy.ndimage
 import skimage.morphology
 
 import cellprofiler_core.image
@@ -26,7 +27,11 @@ def test_run(image, module, workspace):
 
     data = skimage.img_as_bool(image.pixel_data)
 
-    expected = skimage.morphology.remove_small_holes(data, numpy.pi * factor)
+    components, _ = scipy.ndimage.label(~data)
+    sizes = numpy.bincount(components.ravel())
+    small = sizes <= numpy.pi * factor
+    small[0] = False
+    expected = data | small[components]
 
     numpy.testing.assert_array_equal(actual, expected)
 
@@ -55,6 +60,7 @@ def test_run_label_image(module):
 
     module.x_name.value = "example"
     module.y_name.value = "output"
+    module.size.value = 3.0
     module.run(workspace)
 
     actual = workspace.image_set.get_image("output").pixel_data

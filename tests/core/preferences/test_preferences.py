@@ -2,6 +2,7 @@ import tempfile
 import unittest
 
 import cellprofiler_core.preferences
+import pytest
 
 
 class TestPreferences(unittest.TestCase):
@@ -151,6 +152,152 @@ class TestPreferences(unittest.TestCase):
         cellprofiler_core.preferences.get_config().Write("test_preferences", gotcha)
         result = cellprofiler_core.preferences.config_read("test_preferences")
         assert result == gotcha
+
+
+@pytest.fixture
+def user_home(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        cellprofiler_core.preferences.os.path, "expanduser", lambda path: str(tmp_path)
+    )
+    return tmp_path
+
+
+class TestUserDataDirectory:
+    def test_darwin(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "darwin")
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            user_home / "Library" / "Application Support" / "CellProfiler"
+        )
+
+    def test_windows(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "win32")
+        monkeypatch.setenv("APPDATA", str(tmp_path))
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            tmp_path / "CellProfiler"
+        )
+
+    def test_linux(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            tmp_path / "CellProfiler"
+        )
+
+    # the XDG Base Directory Specification requires an unset, empty, or
+    # relative XDG_DATA_HOME to be ignored in favour of ~/.local/share
+    def test_linux_xdg_data_home_unset(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            user_home / ".local" / "share" / "CellProfiler"
+        )
+
+    def test_linux_xdg_data_home_empty(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_DATA_HOME", "")
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            user_home / ".local" / "share" / "CellProfiler"
+        )
+
+    def test_linux_xdg_data_home_relative(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_DATA_HOME", "relative/share")
+        assert cellprofiler_core.preferences.get_user_data_directory() == str(
+            user_home / ".local" / "share" / "CellProfiler"
+        )
+
+
+class TestUserConfigDirectory:
+    # everywhere but linux the config sits in the data directory
+    def test_darwin(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "darwin")
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            user_home / "Library" / "Application Support" / "CellProfiler"
+        )
+
+    def test_windows(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "win32")
+        monkeypatch.setenv("APPDATA", str(tmp_path))
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            tmp_path / "CellProfiler"
+        )
+
+    # on linux XDG separates config from data, and we want a directory of our
+    # own rather than wx's bare $XDG_CONFIG_HOME/CellProfilerLocal.cfg
+    def test_linux(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+        monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            tmp_path / "CellProfiler"
+        )
+
+    # the XDG Base Directory Specification requires an unset, empty, or
+    # relative XDG_CONFIG_HOME to be ignored in favour of ~/.config
+    def test_linux_xdg_config_home_unset(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            user_home / ".config" / "CellProfiler"
+        )
+
+    def test_linux_xdg_config_home_empty(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_CONFIG_HOME", "")
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            user_home / ".config" / "CellProfiler"
+        )
+
+    def test_linux_xdg_config_home_relative(self, monkeypatch, user_home):
+        monkeypatch.setattr(cellprofiler_core.preferences.sys, "platform", "linux")
+        monkeypatch.setenv("XDG_CONFIG_HOME", "relative/config")
+        assert cellprofiler_core.preferences.get_user_config_directory() == str(
+            user_home / ".config" / "CellProfiler"
+        )
+
+
+class TestCopyLegacyConfig:
+    def _set_legacy_path(self, monkeypatch, path):
+        monkeypatch.setattr(
+            cellprofiler_core.preferences, "get_legacy_config_path", lambda: str(path)
+        )
+
+    def test_copies_legacy_config(self, monkeypatch, tmp_path):
+        legacy_path = tmp_path / "legacy" / "CellProfilerLocal.cfg"
+        legacy_path.parent.mkdir()
+        legacy_path.write_text("[Preferences]\n")
+        self._set_legacy_path(monkeypatch, legacy_path)
+        config_path = tmp_path / "data" / "CellProfilerLocal.cfg"
+        config_path.parent.mkdir()
+
+        assert cellprofiler_core.preferences._copy_legacy_config(str(config_path))
+
+        assert config_path.read_text() == "[Preferences]\n"
+        # left in place for CellProfiler 4, which shares that location
+        assert legacy_path.read_text() == "[Preferences]\n"
+
+    def test_keeps_existing_config(self, monkeypatch, tmp_path):
+        legacy_path = tmp_path / "legacy" / "CellProfilerLocal.cfg"
+        legacy_path.parent.mkdir()
+        legacy_path.write_text("legacy\n")
+        self._set_legacy_path(monkeypatch, legacy_path)
+        config_path = tmp_path / "data" / "CellProfilerLocal.cfg"
+        config_path.parent.mkdir()
+        config_path.write_text("current\n")
+
+        assert not cellprofiler_core.preferences._copy_legacy_config(str(config_path))
+
+        assert config_path.read_text() == "current\n"
+        assert legacy_path.read_text() == "legacy\n"
+
+    def test_no_legacy_config(self, monkeypatch, tmp_path):
+        self._set_legacy_path(monkeypatch, tmp_path / "legacy" / "CellProfilerLocal.cfg")
+        config_path = tmp_path / "data" / "CellProfilerLocal.cfg"
+        config_path.parent.mkdir()
+
+        assert not cellprofiler_core.preferences._copy_legacy_config(str(config_path))
+
+        assert not config_path.exists()
 
 
 class TestPreferences_02(unittest.TestCase):

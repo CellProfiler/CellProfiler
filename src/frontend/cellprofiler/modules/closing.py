@@ -49,8 +49,6 @@ class Closing(ImageProcessing):
 
     def run(self, workspace):
 
-        x = workspace.image_set.get_image(self.x_name.value)
-
         self.function = (
             lambda image, structuring_element: closing(
                 image,
@@ -59,13 +57,3 @@ class Closing(ImageProcessing):
         )
 
         super(Closing, self).run(workspace)
-
-
-def planewise_morphology_closing(x_data, structuring_element):
-    y_data = numpy.zeros_like(x_data)
-
-    for index, plane in enumerate(x_data):
-
-        y_data[index] = skimage.morphology.closing(plane, structuring_element)
-
-    return y_data

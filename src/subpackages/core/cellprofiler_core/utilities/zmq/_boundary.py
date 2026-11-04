@@ -141,6 +141,19 @@ class Boundary:
         """
         self.send_to_boundary_thread(self.NOTIFY_STOP, None)
         self.thread.join()
+        self.close_thread_socket()
+
+    def close_thread_socket(self):
+        socket = getattr(self.threadlocal, "notify_socket", None)
+        if socket is not None:
+            socket.close()
+            del self.threadlocal.notify_socket
+
+    def run_in_thread(self, function, *args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        finally:
+            self.close_thread_socket()
 
     def spin(self):
         try:

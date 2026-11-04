@@ -11,6 +11,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 import tests.frontend.modules
+from cellprofiler_library.opts.graytocolor import Scheme
 
 OUTPUT_IMAGE_NAME = "outputimage"
 
@@ -20,8 +21,8 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     module.scheme_choice.value = scheme
     module.wants_rescale.value = False
     if scheme not in (
-        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
-        cellprofiler.modules.graytocolor.SCHEME_STACK,
+        Scheme.COMPOSITE,
+        Scheme.STACK,
     ):
         image_names = [
             "image%d" % i
@@ -113,7 +114,7 @@ def test_load_v3():
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.graytocolor.GrayToColor)
-    assert module.scheme_choice == cellprofiler.modules.graytocolor.SCHEME_COMPOSITE
+    assert module.scheme_choice == Scheme.COMPOSITE.value
     assert module.rgb_image_name == "myimage"
     assert module.red_image_name == "1"
     assert module.green_image_name == "2"
@@ -154,7 +155,7 @@ def test_rgb():
         ]
         images += [None] * 4
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_RGB, images, adjustments
+            Scheme.RGB, images, adjustments
         )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -181,7 +182,7 @@ def test_cmyk():
         ]
         images = [None] * 3 + images
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_CMYK, images, adjustments
+            Scheme.CMYK, images, adjustments
         )
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -212,7 +213,7 @@ def test_stack():
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_STACK, images
+        Scheme.STACK, images
     )
     module.run(workspace)
     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
@@ -230,7 +231,7 @@ def test_composite():
     weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
     color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        Scheme.COMPOSITE,
         images,
         colors=color_names,
         weights=weights,
@@ -267,7 +268,7 @@ def test_rgb_rescale():
         ]
         images += [None] * 4
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_RGB, images, adjustments
+            Scheme.RGB, images, adjustments
         )
         module.wants_rescale.value = True
         module.run(workspace)
@@ -299,7 +300,7 @@ def test_cmyk_rescale():
         ]
         images = [None] * 3 + images
         workspace, module = make_workspace(
-            cellprofiler.modules.graytocolor.SCHEME_CMYK, images, adjustments
+            Scheme.CMYK, images, adjustments
         )
         module.wants_rescale.value = True
         module.run(workspace)
@@ -332,7 +333,7 @@ def test_stack_rescale():
     r.seed(41)
     images = [r.uniform(size=(11, 13)) for _ in range(5)]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_STACK, images
+        Scheme.STACK, images
     )
     module.wants_rescale.value = True
     module.run(workspace)
@@ -351,7 +352,7 @@ def test_composite_rescale():
     weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
     color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
     workspace, module = make_workspace(
-        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        Scheme.COMPOSITE,
         images,
         colors=color_names,
         weights=weights,

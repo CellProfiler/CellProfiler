@@ -1,16 +1,17 @@
 import numpy
 import numpy.random
 import scipy.ndimage
+import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler_core.module
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 
 import cellprofiler.modules.measureobjectoverlap
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+from cellprofiler_library.opts.measureobjectoverlap import Feature, ALL_FEATURES
 
 GROUND_TRUTH_IMAGE_NAME = "groundtruth"
 TEST_IMAGE_NAME = "test"
@@ -84,7 +85,7 @@ def test_get_measurement_columns():
     x = columns[-1]
     assert all([x[0] == "Image"])
     assert all([x[2] == COLTYPE_FLOAT])
-    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+    for feature in ALL_FEATURES:
         field = "_".join(
             (
                 cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
@@ -108,7 +109,7 @@ def test_get_measurement_scales():
         workspace.pipeline,
         "Image",
         cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-        cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
+        Feature.RAND_INDEX,
         None,
     )
 
@@ -126,12 +127,12 @@ def test_test_measure_overlap_no_objects():
     )
     module.run(workspace)
     m = workspace.measurements
-    for feature in cellprofiler.modules.measureobjectoverlap.FTR_ALL:
+    for feature in ALL_FEATURES:
         mname = module.measurement_name(feature)
         value = m["Image", mname, 1]
-        if feature == cellprofiler.modules.measureobjectoverlap.FTR_TRUE_NEG_RATE:
+        if feature == Feature.TRUE_NEG_RATE:
             assert value == 1
-        elif feature == cellprofiler.modules.measureobjectoverlap.FTR_FALSE_POS_RATE:
+        elif feature == Feature.FALSE_POS_RATE:
             assert value == 0
         else:
             assert numpy.isnan(value), "%s was %f. not nan" % (mname, value)
@@ -174,6 +175,25 @@ def test_test_measure_overlap_objects():
     assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
 
 
+def test_earth_movers_distance_measurement_name():
+    labels = numpy.zeros((20, 10), int)
+    labels[5:8, 3:6] = 1
+    workspace, module = make_obj_workspace(
+        labels,
+        labels,
+        dict(image=labels > 0),
+        dict(image=labels > 0),
+    )
+    try:
+        module.run(workspace)
+        value = workspace.measurements.get_current_image_measurement(
+            "Overlap_EarthMoversDistance_Nuclei_Protein"
+        )
+        assert value == 0
+    finally:
+        workspace.measurements.close()
+
+
 def test_test_objects_rand_index():
     r = numpy.random.RandomState()
     r.seed(52)
@@ -201,7 +221,7 @@ def test_test_objects_rand_index():
     mname = "_".join(
         (
             cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-            cellprofiler.modules.measureobjectoverlap.FTR_RAND_INDEX,
+            Feature.RAND_INDEX,
             GROUND_TRUTH_OBJ,
             ID_OBJ,
         )
@@ -212,12 +232,10 @@ def test_test_objects_rand_index():
     mname = "_".join(
         (
             cellprofiler.modules.measureobjectoverlap.C_IMAGE_OVERLAP,
-            cellprofiler.modules.measureobjectoverlap.FTR_ADJUSTED_RAND_INDEX,
+            Feature.ADJUSTED_RAND_INDEX,
             GROUND_TRUTH_OBJ,
             ID_OBJ,
         )
     )
     adjusted_rand_index = measurements.get_current_image_measurement(mname)
-
-
-#        assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)
+    assert 0.6217000249633685 == pytest.approx(adjusted_rand_index)

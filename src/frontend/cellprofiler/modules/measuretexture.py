@@ -1,5 +1,4 @@
 import cellprofiler.gui.help.content
-import cellprofiler.icons
 
 __doc__ = """\
 MeasureTexture
@@ -95,7 +94,7 @@ for each measurement are given below:
 
 - _00 = horizontal -, 0 degrees   (0, 1)
 - _01 = diagonal \\\\, 135 degrees or NW-SE   (1, 1)
-- _02 = vertical \|, 90 degrees   (1, 0)
+- _02 = vertical \\|, 90 degrees   (1, 0)
 - _03 = diagonal /, 45 degrees or NE-SW  (1, -1)
 
 When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:
@@ -154,11 +153,7 @@ References
     }
 )
 
-import mahotas.features
 import numpy
-import skimage.exposure
-import skimage.measure
-import skimage.util
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -175,17 +170,8 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.utilities.core.object import size_similarly
-
-TEXTURE = "Texture"
-
-F_HARALICK = """AngularSecondMoment Contrast Correlation Variance
-InverseDifferenceMoment SumAverage SumVariance SumEntropy Entropy
-DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
-
-IO_IMAGES = "Images"
-IO_OBJECTS = "Objects"
-IO_BOTH = "Both"
-
+from cellprofiler_library.opts.measuretexture import MeasurementTarget, TEXTURE, F_HARALICK
+from cellprofiler_library.modules._measuretexture import MeasureTextureStatistics, measure_image_texture, measure_object_texture
 
 class MeasureTexture(Module):
     module_name = "MeasureTexture"
@@ -259,8 +245,8 @@ class MeasureTexture(Module):
 
         self.images_or_objects = Choice(
             "Measure whole images or objects?",
-            [IO_IMAGES, IO_OBJECTS, IO_BOTH],
-            value=IO_BOTH,
+            [MeasurementTarget.IMAGES.value, MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value],
+            value=MeasurementTarget.BOTH.value,
             doc="""\
 This setting determines whether the module computes image-wide
 measurements, per-object measurements or both.
@@ -271,7 +257,7 @@ measurements, per-object measurements or both.
    on a per-object basis only.
 -  *{IO_BOTH}:* Select to make both image and object measurements.
 """.format(
-                **{"IO_IMAGES": IO_IMAGES, "IO_OBJECTS": IO_OBJECTS, "IO_BOTH": IO_BOTH}
+                **{"IO_IMAGES": MeasurementTarget.IMAGES.value, "IO_OBJECTS": MeasurementTarget.OBJECTS.value, "IO_BOTH": MeasurementTarget.BOTH.value}
             ),
         )
 
@@ -320,10 +306,10 @@ measurements, per-object measurements or both.
         return visible_settings
 
     def wants_image_measurements(self):
-        return self.images_or_objects in (IO_IMAGES, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.IMAGES.value, MeasurementTarget.BOTH.value)
 
     def wants_object_measurements(self):
-        return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
+        return self.images_or_objects in (MeasurementTarget.OBJECTS.value, MeasurementTarget.BOTH.value)
 
     def add_scale(self, removable=True):
         """
@@ -409,7 +395,7 @@ measured and will result in a undefined value in the output file.
         return []
 
     def get_features(self):
-        return F_HARALICK
+        return [i.value for i in F_HARALICK]
 
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
@@ -505,19 +491,19 @@ measured and will result in a undefined value in the output file.
             "Value",
         ]
 
-        statistics = []
+        statistics: MeasureTextureStatistics = []
 
         for image_name in self.images_list.value:
             for scale_group in self.scale_groups:
                 scale = scale_group.scale.value
 
                 if self.wants_image_measurements():
-                    statistics += self.run_image(image_name, scale, workspace)
+                    statistics += self.run_image(image_name, scale, workspace, self.show_window)
 
                 if self.wants_object_measurements():
                     for object_name in self.objects_list.value:
                         statistics += self.run_one(
-                            image_name, object_name, scale, workspace
+                            image_name, object_name, scale, workspace, self.show_window
                         )
 
         if self.show_window:
@@ -537,34 +523,11 @@ measured and will result in a undefined value in the output file.
             title=helptext,
         )
 
-    def run_one(self, image_name, object_name, scale, workspace):
-        statistics = []
-
+    def run_one(self, image_name, object_name, scale, workspace, calculate_statistics=False) -> MeasureTextureStatistics:
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
-
-        gray_levels = int(self.gray_levels.value)
-
-        unique_labels = objects.indices
-
-        n_directions = 13 if objects.volumetric else 4
-
-        if len(unique_labels) == 0:
-            for direction in range(n_directions):
-                for feature_name in F_HARALICK:
-                    statistics += self.record_measurement(
-                        image=image_name,
-                        feature=feature_name,
-                        obj=object_name,
-                        result=numpy.zeros((0,)),
-                        scale="{:d}_{:02d}".format(scale, direction),
-                        workspace=workspace,
-                        gray_levels="{:d}".format(gray_levels),
-                    )
-
-            return statistics
 
         # IMG-961: Ensure image and objects have the same shape.
         try:
@@ -584,125 +547,63 @@ measured and will result in a undefined value in the output file.
                 else:
                     mask = m1
 
-        pixel_data[~mask] = 0
-        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(pixel_data)
-        if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(
-                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-            ).astype(numpy.uint8)
-        props = skimage.measure.regionprops(labels, pixel_data)
-        features = numpy.empty((n_directions, 13, max(unique_labels)))
+        res = measure_object_texture(
+            object_name, 
+            labels,
+            image_name, 
+            pixel_data,
+            mask if image.has_mask else None,
+            int(self.gray_levels.value),
+            objects.indices,
+            scale, 
+            objects.volumetric,
+            return_visualization_data=calculate_statistics
+        )
 
-        for prop in props:
-            label_data = prop["intensity_image"]
-            try:
-                features[:, :, prop.label-1] = mahotas.features.haralick(
-                    label_data, distance=scale, ignore_zeros=True
-                )
-            except ValueError:
-                features[:, :, prop.label-1] = numpy.nan
+        if calculate_statistics:
+            lib_measurements, lib_display = res
+            lib_stats = lib_display.statistics
+        else:
+            lib_measurements = res
+            lib_stats: MeasureTextureStatistics = []
+        
+        # Unpack measurements
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+        for obj, features in lib_measurements.objects.items():
+            for feature_name, val in features.items():
+                workspace.measurements.add_measurement(obj, feature_name, val)
+        
+        return lib_stats
+    
 
-        for direction, direction_features in enumerate(features):
-            for feature_name, feature in zip(F_HARALICK, direction_features):
-                statistics += self.record_measurement(
-                    image=image_name,
-                    feature=feature_name,
-                    obj=object_name,
-                    result=feature,
-                    scale="{:d}_{:02d}".format(scale, direction),
-                    workspace=workspace,
-                    gray_levels="{:d}".format(gray_levels),
-                )
-
-        return statistics
-
-    def run_image(self, image_name, scale, workspace):
-        statistics = []
-
+    def run_image(self, image_name, scale, workspace, calculate_statistics=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         gray_levels = int(self.gray_levels.value)
-        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
-        if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(
-                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
-            ).astype(numpy.uint8)
+        pixel_data = image.pixel_data
 
-        features = mahotas.features.haralick(pixel_data, distance=scale)
-
-        for direction, direction_features in enumerate(features):
-            object_name = "{:d}_{:02d}".format(scale, direction)
-
-            for feature_name, feature in zip(F_HARALICK, direction_features):
-                statistics += self.record_image_measurement(
-                    feature_name=feature_name,
-                    image_name=image_name,
-                    result=feature,
-                    scale=object_name,
-                    workspace=workspace,
-                    gray_levels="{:d}".format(gray_levels),
-                )
-
-        return statistics
-
-    def record_measurement(
-        self, workspace, image, obj, scale, feature, result, gray_levels
-    ):
-        result[~numpy.isfinite(result)] = 0
-
-        workspace.add_measurement(
-            obj,
-            "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale), gray_levels),
-            result,
-        )
-
-        # TODO: get outta crazee towne
-        functions = [
-            ("min", numpy.min),
-            ("max", numpy.max),
-            ("mean", numpy.mean),
-            ("median", numpy.median),
-            ("std dev", numpy.std),
-        ]
-
-        # TODO: poop emoji
-        statistics = [
-            [
-                image,
-                obj,
-                "{} {}".format(aggregate, feature),
-                scale,
-                "{:.2}".format(fn(result)) if len(result) else "-",
-            ]
-            for aggregate, fn in functions
-        ]
-
-        return statistics
-
-    def record_image_measurement(
-        self, workspace, image_name, scale, feature_name, result, gray_levels
-    ):
-        # TODO: this is very concerning
-        if not numpy.isfinite(result):
-            result = 0
-
-        feature = "{}_{}_{}_{}_{}".format(
-            TEXTURE, feature_name, image_name, str(scale), gray_levels
-        )
-
-        workspace.measurements.add_image_measurement(feature, result)
-
-        statistics = [
-            image_name,
-            "-",
-            feature_name,
+        res = measure_image_texture(
+            pixel_data,
+            gray_levels,
             scale,
-            "{:.2}".format(float(result)),
-        ]
+            image_name,
+            return_visualization_data=calculate_statistics
+        )
 
-        return [statistics]
+        if calculate_statistics:
+            lib_measurements, lib_display = res
+            lib_stats = lib_display.statistics
+        else:
+            lib_measurements = res
+            lib_stats: MeasureTextureStatistics = []
+        
+        # Unpack measurements
+        for feature_name, value in lib_measurements.image.items():
+            workspace.measurements.add_image_measurement(feature_name, value)
+            
+        return lib_stats
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
@@ -740,7 +641,7 @@ measured and will result in a undefined value in the output file.
             #
             # Added image / objects choice
             #
-            setting_values = setting_values + [IO_BOTH]
+            setting_values = setting_values + [MeasurementTarget.BOTH.value]
 
             variable_revision_number = 4
 

@@ -225,9 +225,9 @@ class NameSubscriberListBox(wx.Panel):
 
     def right_menu(self, evt):
         menu = wx.Menu()
-        sel_all = wx.MenuItem(menu, wx.NewId(), "Select All")
-        sel_none = wx.MenuItem(menu, wx.NewId(), "Select None")
-        force_refresh = wx.MenuItem(menu, wx.NewId(), "Refresh List")
+        sel_all = wx.MenuItem(menu, wx.NewIdRef(), "Select All")
+        sel_none = wx.MenuItem(menu, wx.NewIdRef(), "Select None")
+        force_refresh = wx.MenuItem(menu, wx.NewIdRef(), "Refresh List")
         menu.Append(sel_all)
         menu.Append(sel_none)
         menu.Append(force_refresh)

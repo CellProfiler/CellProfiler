@@ -1,0 +1,157 @@
+import numpy
+from numpy.typing import NDArray
+from typing import Optional, Tuple, Annotated, Union, List
+from pydantic import Field, validate_call, ConfigDict, BaseModel
+
+from cellprofiler_library.types import ObjectSegmentation, ObjectLabelMask
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
+from cellprofiler_library.opts.measureobjectneighbors import (
+    DistanceMethod as NeighborsDistanceMethod,
+    Measurement as NeighborsMeasurement,
+    MeasurementScale as NeighborsMeasurementScale,
+    C_NEIGHBORS
+)
+from cellprofiler_library.functions.measurement import measure_object_neighbors as _measure_object_neighbors
+
+
+ObjectNeighborsStatistics = List[None]
+
+class ObjectNeighborsDisplayData(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, 
+        populate_by_name=True
+    )
+
+    statistics: ObjectNeighborsStatistics
+    first_objects: NDArray[numpy.int_]
+    second_objects: NDArray[numpy.int_]
+    expanded_labels: Optional[NDArray[numpy.int_]]
+    object_mask: ObjectLabelMask
+    neighbor_count_image: NDArray[numpy.float64]
+    percent_touching_image: NDArray[numpy.float64]
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def measure_object_neighbors(
+        labels:                 Annotated[ObjectSegmentation, Field(description="Input labeled objects. Remember to include any small objects or objects that are on the edge")],
+        kept_labels:            Annotated[ObjectSegmentation, Field(description="Input labels of interest. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
+        neighbor_labels:        Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
+        neighbor_kept_labels:   Annotated[ObjectSegmentation, Field(description="Input labels for neighboring objects of interest. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
+        object_name:            Annotated[str, Field(description="Name of the objects being measured")],
+        neighbors_name:         Annotated[str, Field(description="Name of the neighbor objects")],
+        neighbors_are_objects:  Annotated[bool, Field(description="Set to True if the neighbors are taken from the same object set as the input objects")],
+        dimensions:             Annotated[int, Field(description="Use 2 for 2D and 3 for 3D")],
+        distance_value:         Annotated[int, Field(description="Neighbor distance")],
+        distance_method:        Annotated[NeighborsDistanceMethod, Field(description="Method to determine neighbors")], 
+        kept_label_has_pixels:  Annotated[NDArray[numpy.bool_], Field(description="Array of booleans indicating whether each object has any pixels. Can ignore small objects or objects that are on the edge and need to be ignored in the final output")],
+        nkept_objects:          Annotated[int, Field(description="Number of objects in the segmentation that are of interest (excluding objects that have been discarded for touching image border)")],
+        wants_excluded_objects: Annotated[bool, Field(description="Consider objects discarded for touching image border?")]=True,
+        return_visualization_data: Annotated[bool, Field(description="Return data for display")] = False,
+    ) -> Union[LibraryMeasurements, Tuple[LibraryMeasurements, ObjectNeighborsDisplayData]]:
+    (
+        neighbor_count,
+        first_object_number,
+        second_object_number,
+        first_closest_distance,
+        second_closest_distance,
+        angle,
+        percent_touching,
+        first_objects,
+        second_objects,
+        expanded_labels,
+    ) = _measure_object_neighbors(
+        labels, 
+        kept_labels,
+        neighbor_labels, 
+        neighbor_kept_labels,
+        neighbors_are_objects,
+        dimensions, 
+        distance_value,
+        distance_method, 
+        kept_label_has_pixels,
+        nkept_objects,
+        wants_excluded_objects,
+    )
+
+    # Determine scale string
+    if distance_method == NeighborsDistanceMethod.EXPAND:
+        scale = NeighborsMeasurementScale.EXPANDED.value
+    elif distance_method == NeighborsDistanceMethod.WITHIN:
+        scale = str(distance_value)
+    elif distance_method == NeighborsDistanceMethod.ADJACENT:
+        scale = NeighborsMeasurementScale.ADJACENT.value
+    else:
+        raise ValueError(f"Unknown distance method: {distance_method.value if isinstance(distance_method, NeighborsDistanceMethod) else distance_method}")
+
+    # Helper to format feature name
+    def get_feature_name(feature: str) -> str:
+        if neighbors_are_objects:
+             return "_".join((C_NEIGHBORS, feature, scale))
+        else:
+             return "_".join((C_NEIGHBORS, feature, neighbors_name, scale))
+
+    measurements = LibraryMeasurements()
+    
+    features_and_data = [
+        (NeighborsMeasurement.NUMBER_OF_NEIGHBORS.value, neighbor_count),
+        (NeighborsMeasurement.FIRST_CLOSEST_OBJECT_NUMBER.value, first_object_number),
+        (NeighborsMeasurement.FIRST_CLOSEST_DISTANCE.value, first_closest_distance),
+        (NeighborsMeasurement.SECOND_CLOSEST_OBJECT_NUMBER.value, second_object_number),
+        (NeighborsMeasurement.SECOND_CLOSEST_DISTANCE.value, second_closest_distance),
+        (NeighborsMeasurement.ANGLE_BETWEEN_NEIGHBORS.value, angle),
+        (NeighborsMeasurement.PERCENT_TOUCHING.value, percent_touching),
+    ]
+
+    for feature_name, data in features_and_data:
+        full_name = get_feature_name(feature_name)
+        measurements.add_measurement(object_name, full_name, data)
+
+    # Calculate statistics
+    for feature_name, data in features_and_data:
+        full_name = get_feature_name(feature_name)
+        
+        # Skip stats for object IDs
+        if feature_name in [NeighborsMeasurement.FIRST_CLOSEST_OBJECT_NUMBER.value, NeighborsMeasurement.SECOND_CLOSEST_OBJECT_NUMBER.value]:
+            continue
+
+        if len(data) > 0:
+            measurements.add_image_measurement(f"Mean_{full_name}", float(numpy.mean(data)))
+            measurements.add_image_measurement(f"Median_{full_name}", float(numpy.median(data)))
+            measurements.add_image_measurement(f"Max_{full_name}", float(numpy.max(data)))
+            measurements.add_image_measurement(f"Min_{full_name}", float(numpy.min(data)))
+            measurements.add_image_measurement(f"StDev_{full_name}", float(numpy.std(data)))
+        else:
+            measurements.add_image_measurement(f"Mean_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Median_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Max_{full_name}", 0.0)
+            measurements.add_image_measurement(f"Min_{full_name}", 0.0)
+            measurements.add_image_measurement(f"StDev_{full_name}", 0.0)
+
+    if len(first_objects) > 0:
+        measurements.add_relate_measurement(
+            C_NEIGHBORS,
+            object_name,
+            neighbors_name,
+            first_objects,
+            second_objects,
+        )
+
+    if return_visualization_data:
+        object_mask: ObjectLabelMask = kept_labels != 0
+        object_indexes = kept_labels[object_mask] - 1
+
+        neighbor_count_image = numpy.zeros(kept_labels.shape)
+        neighbor_count_image[object_mask] = neighbor_count[object_indexes]
+
+        percent_touching_image = numpy.zeros(kept_labels.shape)
+        percent_touching_image[object_mask] = percent_touching[object_indexes]
+
+        return measurements, ObjectNeighborsDisplayData(
+                statistics=[],
+                first_objects=first_objects,
+                second_objects=second_objects,
+                expanded_labels=expanded_labels,
+                object_mask=object_mask,
+                neighbor_count_image=neighbor_count_image,
+                percent_touching_image=percent_touching_image,
+        )
+    return measurements

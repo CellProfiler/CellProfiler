@@ -1,0 +1,82 @@
+name: Build Centriole wheels
+
+on:
+  workflow_call:
+    inputs:
+      nightly:
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      nightly:
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform_id: manylinux_x86_64
+          - os: windows-latest
+            platform_id: win_amd64
+          - os: macos-latest
+            platform_id: macosx_arm64
+          - os: macos-15-intel
+            platform_id: macosx_x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.80.0
+          environments: ci-tools
+          locked: true
+          cache: true
+          cache-key: pixi-ci-tools-
+      - name: Prepare nightly config
+        if: inputs.nightly
+        run: pixi run --locked -e ci-tools python scripts/nightly_build.py
+      - name: Determine package version
+        id: version
+        shell: bash
+        run: |
+          version="$(pixi run ${{ inputs.nightly && '--frozen' || '--locked' }} -e ci-tools python -m setuptools_scm -c src/subpackages/centriole/pyproject.toml)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Build and check wheels
+        run: pixi run ${{ inputs.nightly && '--frozen' || '--locked' }} -e ci-tools python -m cibuildwheel src/subpackages/centriole --output-dir wheelhouse
+        env:
+          CIBW_BUILD: >-
+            cp311-${{ matrix.platform_id }}
+            cp312-${{ matrix.platform_id }}
+            cp313-${{ matrix.platform_id }}
+            cp314-${{ matrix.platform_id }}
+            cp315-${{ matrix.platform_id }}
+          CIBW_ARCHS: auto
+          CIBW_ENVIRONMENT: SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.version.outputs.version }}
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_TEST_COMMAND: python -c "import centriole._cpmorphology2, centriole._convex_hull, centriole._filter, centriole._lapjv, centriole._propagate, centriole._fastemd"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: centriole-${{ inputs.nightly && 'nightly' || 'release' }}-${{ matrix.platform_id }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+  collect:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: centriole-${{ inputs.nightly && 'nightly' || 'release' }}-*
+          merge-multiple: true
+          path: wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: centriole-${{ inputs.nightly && 'nightly' || 'release' }}-wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error

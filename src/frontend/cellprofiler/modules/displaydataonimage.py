@@ -22,6 +22,7 @@ YES          NO           YES
 
 import matplotlib.axes
 import matplotlib.cm
+import matplotlib.pyplot
 import matplotlib.figure
 import matplotlib.text
 import numpy
@@ -194,6 +195,7 @@ modules (such as **SaveImages**).
         self.font_choice = Choice(
             "Font",
             font_list,
+            value="DejaVu Sans",
             doc="""\
 Set the font of the text to be displayed. 
 
@@ -420,7 +422,7 @@ color map.
             img[img < 0] = 0
             img[img > 255] = 255
             img = img.astype(numpy.uint8)
-            axes.imshow(img, cmap=matplotlib.cm.get_cmap("Greys"))
+            axes.imshow(img, cmap=matplotlib.pyplot.get_cmap("Greys"))
 
         self.display_on_figure(workspace, axes, imshow_fn)
 
@@ -510,7 +512,7 @@ color map.
             colormap_name = self.colormap.value
             if colormap_name == "Default":
                 colormap_name = get_default_colormap()
-            colormap = matplotlib.cm.get_cmap(colormap_name)
+            colormap = matplotlib.pyplot.get_cmap(colormap_name)
             values = workspace.display_data.values
             vmask = workspace.display_data.mask
             colors = numpy.ones((len(vmask) + 1, 4))

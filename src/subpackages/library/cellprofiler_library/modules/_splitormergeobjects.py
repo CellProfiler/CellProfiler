@@ -1,0 +1,100 @@
+import numpy as np
+from pydantic import validate_call, Field, ConfigDict
+from typing import Annotated, Optional, Tuple, Union
+from cellprofiler_library.types import ObjectSegmentation, Image2DGrayscale, ParentsOf
+from cellprofiler_library.measurements.measurement_model import LibraryMeasurements
+from cellprofiler_library.opts.splitormergeobjects import RelabelOption, MergeOption, MergingMethod, C_PARENT, ObjectIntensityMethod
+from cellprofiler_library.functions.object_processing import split_objects, merge_unify_distance, merge_unify_parent
+from cellprofiler_library.measurements.wrappers import wrap_object_count_measurements, wrap_object_location_measurements, wrap_relate_object_measurements
+from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
+from cellprofiler_library.functions.segmentation import copy_labels
+
+@validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+def split_or_merge_objects(
+        labels:                          Annotated[ObjectSegmentation, Field(description="The input object segmentation.")],
+        relabel_option:                  Annotated[RelabelOption, Field(description="Whether to split separate objects sharing a label or merge adjacent objects.")],
+        objects_name:                    Annotated[str, Field(description="The name of the input objects.")],
+        objects_small_removed_segmented: Annotated[Optional[ObjectSegmentation], Field(description="The input objects' small-removed segmentation, if present.")],
+        objects_unedited_segmented:      Annotated[Optional[ObjectSegmentation], Field(description="The input objects' unedited segmentation, if present.")],
+        parent_name:                     Annotated[Optional[str], Field(description="The name of the parent object used to guide merging (if using 'Unify Parent').")], 
+        merge_option:                    Annotated[Optional[MergeOption], Field(description="The method used to merge objects (Distance or Parent).")],
+        merging_method:                  Annotated[Optional[MergingMethod], Field(description="Whether to keep merged objects as disconnected pieces or create a convex hull.")], 
+        distance_threshold:              Annotated[Optional[float], Field(description="The maximum distance (in pixels) within which to merge objects.")], 
+        image:                           Annotated[Optional[Image2DGrayscale], Field(description="The grayscale image used to guide merging. You must also pass the minimum intensity fraction and where algorithm if using this option.")],
+        parents_of:                      Annotated[Optional[ParentsOf], Field(description="1-base array containing the parent-child relationships.")],
+        merge_condition:                 Annotated[Optional[ObjectIntensityMethod], Field(description="The algorithm used to evaluate intensity between objects (Centroids or Closest Point).")],
+        minimum_intensity_fraction:      Annotated[Optional[float], Field(description="The minimum intensity fraction required to merge objects when using an image.")],
+        output_objects_name:             Annotated[Optional[str], Field(description="The name of the output objects. Only used if returning measurements.")],
+        output_object_volumetric:        Annotated[Optional[bool], Field(description="Whether the output objects are volumetric. Only used if returning measurements.")],
+        labels_ijv:                      Annotated[Optional[ObjectSegmentation], Field(description="The ijv representation of the input objects. Only used if returning measurements.")],
+        return_measurements:             Annotated[bool, Field(description="Whether to return the relabeled objects and their measurements.")] = False
+    ) -> Union[
+            Tuple[ObjectSegmentation, Optional[ObjectSegmentation], Optional[ObjectSegmentation]],
+            Tuple[ObjectSegmentation, Optional[ObjectSegmentation], Optional[ObjectSegmentation], LibraryMeasurements]
+        ]:
+    """
+    Returns:
+        output_labels: The relabeled (split or merged) object segmentation.
+        output_small_removed_segmented: `objects_small_removed_segmented` relabeled to match
+            `output_labels`, or None if `objects_small_removed_segmented` was not provided.
+        output_unedited_segmented: `objects_unedited_segmented` relabeled to match
+            `output_labels`, or None if `objects_unedited_segmented` was not provided.
+        final_lib_measurements: Object count, location, and parent/child relationship
+            measurements for the output objects. Only returned if `return_measurements` is True.
+    """
+    output_small_removed_segmented = None
+    output_unedited_segmented = None
+
+    if relabel_option == RelabelOption.SPLIT:
+        output_labels = split_objects(labels)
+    else:
+        if merge_option == MergeOption.UNIFY_DISTANCE:
+            assert distance_threshold is not None
+            if image is not None:
+                assert merge_condition is not None, "Merge condition must be provided when merge_using_image is True"
+                assert minimum_intensity_fraction is not None, "Minimum intensity fraction must be provided when merge_using_image is True"
+            output_labels = merge_unify_distance(
+                labels,
+                distance_threshold,
+                image,
+                merge_condition,
+                minimum_intensity_fraction
+            )
+        elif merge_option == MergeOption.UNIFY_PARENT:
+            assert parent_name is not None, "Parent name must be provided when merge_option is Unify Parent"
+            assert merging_method is not None, "Merging method must be provided when merge_option is Unify Parent"
+            assert parents_of is not None, "Parent-child relationships must be provided when merge_option is Unify Parent"
+            output_labels = merge_unify_parent(
+                labels,
+                parents_of,
+                merging_method,
+            )
+        else:
+            raise NotImplementedError(f"Unimplemented merging method: {merging_method.value if isinstance(merging_method, MergingMethod) else merging_method}")
+
+    if objects_small_removed_segmented is not None:
+        output_small_removed_segmented = copy_labels(
+            objects_small_removed_segmented, output_labels
+        )
+
+    if objects_unedited_segmented is not None:
+        output_unedited_segmented = copy_labels(
+            objects_unedited_segmented, output_labels
+        )
+
+    if return_measurements:
+        assert labels_ijv is not None, "labels_ijv must be provided if returning measurements"
+        assert output_object_volumetric is not None, "output_object_volumetric must be provided if returning measurements"
+        assert output_objects_name is not None, "output_objects_name must be provided if returning measurements"
+
+        output_object_ijv = convert_labels_to_ijv(output_labels)
+
+        lib_measurements_object_count = wrap_object_count_measurements(output_objects_name, np.max(output_labels))
+        lib_mesaurements_object_location = wrap_object_location_measurements(output_objects_name, output_labels)
+        lib_measurements_relate = wrap_relate_object_measurements(
+        output_labels, output_object_volumetric, output_objects_name, output_object_ijv,
+        objects_name, labels, labels_ijv
+        )
+        final_lib_measurements = lib_measurements_object_count.merge(lib_mesaurements_object_location).merge(lib_measurements_relate)
+        return output_labels, output_small_removed_segmented, output_unedited_segmented, final_lib_measurements
+    return output_labels, output_small_removed_segmented, output_unedited_segmented

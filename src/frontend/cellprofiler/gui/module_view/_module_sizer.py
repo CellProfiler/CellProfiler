@@ -84,7 +84,7 @@ class ModuleSizer(wx.Sizer):
                 self.calc_edit_size()[0]
                 + self.__min_text_width
                 + self.calc_help_size()[0],
-                height,
+                int(height),
             )
         except:
             # This happens, hopefully transiently, on the Mac
@@ -191,9 +191,10 @@ class ModuleSizer(wx.Sizer):
                     border = edit_item.GetBorder()
                     third_width = (text_width + edit_width - 2 * border) / 3
                     item_location = wx.Point(
-                        text_width - third_width / 2, height + border + item_height / 2
+                        int(text_width - third_width / 2),
+                        int(height + border + item_height / 2),
                     )
-                    item_size = wx.Size(third_width, edit_item.GetSize()[1])
+                    item_size = wx.Size(int(third_width), edit_item.GetSize()[1])
                     item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:
@@ -204,7 +205,7 @@ class ModuleSizer(wx.Sizer):
                     ):
                         text = text.replace("\n", " ")
                         control.SetLabel(text)
-                        control.Wrap(inner_text_width)
+                        control.Wrap(int(inner_text_width))
                     row_height = self.get_row_height(i)
                     for j in range(self.__cols):
                         item = self.get_item(j, i)
@@ -219,8 +220,8 @@ class ModuleSizer(wx.Sizer):
                             elif item.Flag & wx.ALIGN_RIGHT:
                                 item_x += widths[j] - item_size[0]
                         else:
-                            item_size = wx.Size(widths[j], item.CalcMin()[1])
-                        item_location = wx.Point(item_x, item_y)
+                            item_size = wx.Size(int(widths[j]), item.CalcMin()[1])
+                        item_location = wx.Point(int(item_x), int(item_y))
                         item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
                 height += self.get_row_height(i) + 2 * height_border

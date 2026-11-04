@@ -6,11 +6,11 @@ from ...constants.measurement import C_CHILDREN
 from ...constants.measurement import C_NUMBER
 from ...constants.measurement import C_PARENT
 from ...constants.measurement import FF_CHILDREN_COUNT
-from ...constants.measurement import FF_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
 from ...object import Objects
-
+from cellprofiler_library.measurements.wrappers import wrap_object_processing_measurements
+from cellprofiler_core.utilities.core.workspace import add_library_measurements_to_workspace_measurements
 
 class ObjectProcessing(ImageSegmentation):
     category = "Object Processing"
@@ -24,25 +24,29 @@ class ObjectProcessing(ImageSegmentation):
         if output_object_name is None:
             output_object_name = self.y_name.value
 
-        super(ObjectProcessing, self).add_measurements(workspace, output_object_name)
+        #
+        # Output object name, labels, volumetric, count needed to run wrap_image_segmentation_measurements
+        #
+        output_objects = workspace.object_set.get_objects(output_object_name)
+        output_objects_labels = output_objects.segmented
+        output_objects_volumetric = output_objects.volumetric
+        output_objects_count = output_objects.count
 
-        objects = workspace.object_set.get_objects(output_object_name)
+        #
+        # Input object name, labels, ijv, and output object ijv needed to run relate_children inside wrap_object_processing_measurements, This is the parent object
+        #
+        input_objects = workspace.object_set.get_objects(input_object_name)
+        input_objects_labels = input_objects.segmented
+        input_objects_ijv = input_objects.ijv
+        output_objects_ijv = output_objects.ijv
 
-        parent_objects = workspace.object_set.get_objects(input_object_name)
-
-        children_per_parent, parents_of_children = parent_objects.relate_children(
-            objects
+        lib_measurements = wrap_object_processing_measurements(
+            output_objects_labels, output_objects_volumetric, output_objects_count, 
+            output_object_name, output_objects_ijv, 
+            input_object_name, input_objects_labels, input_objects_ijv, 
         )
+        add_library_measurements_to_workspace_measurements(workspace.measurements, lib_measurements)
 
-        workspace.measurements.add_measurement(
-            input_object_name,
-            FF_CHILDREN_COUNT % output_object_name,
-            children_per_parent,
-        )
-
-        workspace.measurements.add_measurement(
-            output_object_name, FF_PARENT % input_object_name, parents_of_children,
-        )
 
     def create_settings(self):
         super(ObjectProcessing, self).create_settings()

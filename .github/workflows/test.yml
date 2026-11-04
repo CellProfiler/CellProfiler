@@ -1,184 +1,96 @@
 name: Run tests
-jobs:
-  test-cp:
-    name: Install and test Cellprofiler
-    strategy:
-      matrix:
-        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        # https://github.com/actions/runner-images/tree/main
-        # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
-        os: [macos-13]
-        python-version: [3.9]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.draft == false
-    env:
-      CP_MYSQL_TEST_HOST: "127.0.0.1"
-      CP_MYSQL_TEST_DB: "cellprofiler_test"
-      CP_MYSQL_TEST_USER: "root"
-      CP_MYSQL_TEST_PASSWORD: "None"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # need to get git tags for setuptools-scm
-          fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          # NOTE: if/when we move to a runner using apple M[1-3] (arm64)
-          # architecture we'll need to adjust:
-          # https://github.com/actions/setup-python/issues/108
-          architecture: x64
-          python-version: ${{ matrix.python-version }}
-      - name: Get pip cache dir
-        id: pip-cache-dir
-        run: |
-          echo "PIP_CACHE_DIR=$(pip cache dir)" >> "$GITHUB_OUTPUT"
-      - name: Cache pip
-        uses: actions/cache@v4
-        id: cache-pip
-        with:
-          path: ${{ steps.pip-cache-dir.outputs.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "11"
-          java-package: jdk
-          architecture: x64
-      - name: Mac - Install and setup mysql
-        if: startsWith(matrix.os, 'macos')
-        env:
-          LC_ALL: "en_US.UTF-8"
-        run: |
-          brew install mysql@8.4
-          brew link mysql@8.4 --force
-          mysql.server start
-          mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-      - name: Install cellprofiler
-        working-directory: ${{ github.workspace }}
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e src/subpackages/library
-          pip install -e src/subpackages/core
-          pip install -e src/frontend[test]
-      - name: Get all packages
-        run: |
-          pip freeze --all
-      - name: Run tests
-        run: |
-          pytest ${{ github.workspace }}/tests/frontend
-
-  test-core:
-    name: Install and test Core
-    strategy:
-      max-parallel: 4
-      matrix:
-        os: [macos-13]
-        python-version: [3.9]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.draft == false
-    env:
-      CP_MYSQL_TEST_HOST: "127.0.0.1"
-      CP_MYSQL_TEST_DB: "cellprofiler_test"
-      CP_MYSQL_TEST_USER: "root"
-      CP_MYSQL_TEST_PASSWORD: "None"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # need to get git tags for setuptools-scm
-          fetch-depth: 0
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          architecture: x64
-          python-version: ${{ matrix.python-version }}
-      - name: Get pip cache dir
-        id: pip-cache-dir
-        run: |
-          echo "PIP_CACHE_DIR=$(pip cache dir)" >> "$GITHUB_OUTPUT"
-      - name: Cache pip
-        uses: actions/cache@v4
-        id: cache-pip
-        with:
-          path: ${{ steps.pip-cache-dir.outputs.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
-      - name: Install java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "11"
-          java-package: jdk
-          architecture: x64
-      - name: Mac - Install and setup mysql
-        if: startsWith(matrix.os, 'macos')
-        env:
-          LC_ALL: "en_US.UTF-8"
-        run: |
-          brew install mysql@8.4
-          brew link mysql@8.4 --force
-          mysql.server start
-          mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-      - name: Install core
-        working-directory: ${{ github.workspace }}
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e src/subpackages/library
-          pip install -e src/subpackages/core[test]
-      - name: Run Tests
-        timeout-minutes: 10
-        run: |
-          # add -rP if you want to see debug for all tests, not just failed ones
-          pytest -v --exitfirst --disable-warnings -o log_cli_level=10 --tb=long --show-capture=all --capture=sys --color=yes --code-highlight=yes --timeout=60 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
-
-  test-library:
-    name: Install and test Library
-    strategy:
-      max-parallel: 4
-      matrix:
-        os: [macos-13]
-        python-version: [3.9]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.draft == false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # need to get git tags for setuptools-scm
-          fetch-depth: 0
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          architecture: x64
-          python-version: ${{ matrix.python-version }}
-      - name: Get pip cache dir
-        id: pip-cache-dir
-        run: |
-          echo "PIP_CACHE_DIR=$(pip cache dir)" >> "$GITHUB_OUTPUT"
-      - name: Cache pip
-        uses: actions/cache@v4
-        id: cache-pip
-        with:
-          path: ${{ steps.pip-cache-dir.outputs.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
-      - name: Install library
-        working-directory: ${{ github.workspace }}
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e src/subpackages/library[test]
-      - name: Run Tests
-        run: |
-          pytest ${{ github.workspace }}/tests/library
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review, review_requested]
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
-    branches:
-      - "main"
+    branches: [main]
+    paths-ignore: [README.md]
   workflow_dispatch:
+    inputs:
+      macos:
+        description: "Also run the tests on macOS"
+        type: boolean
+        default: false
+      windows:
+        description: "Also run the tests on Windows"
+        type: boolean
+        default: false
+      suites:
+        description: "Comma-separated suites to run, or 'all'"
+        type: string
+        default: all
+
+jobs:
+  matrix:
+    name: Build test matrix
+    # linux always runs, macos/windows are opt-in via workflow_dispatch inputs
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    outputs:
+      os: ${{ steps.build.outputs.os }}
+      suite: ${{ steps.build.outputs.suite }}
+    steps:
+      - name: Build matrix
+        id: build
+        env:
+          # empty (falsy) for every trigger other than workflow_dispatch
+          MACOS: ${{ inputs.macos }}
+          WINDOWS: ${{ inputs.windows }}
+          SUITES: ${{ inputs.suites }}
+        run: |
+          os=(ubuntu-latest)
+          if [ "$MACOS" = "true" ]; then os+=(macos-latest); fi
+          if [ "$WINDOWS" = "true" ]; then os+=(windows-latest); fi
+
+          suites=$SUITES
+          if [ -z "$suites" ] || [ "$suites" = "all" ]; then
+            suites="frontend,core,library,centriole"
+          fi
+
+          {
+            echo "os=$(jq -cn '$ARGS.positional' --args "${os[@]}")"
+            echo "suite=$(printf '%s' "$suites" | jq -Rc 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))')"
+          } >> "$GITHUB_OUTPUT"
+      - name: Show matrix
+        run: echo '${{ steps.build.outputs.os }} x ${{ steps.build.outputs.suite }}'
+
+  test:
+    name: Test ${{ matrix.suite }} (${{ matrix.os }})
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.matrix.outputs.os) }}
+        suite: ${{ fromJSON(needs.matrix.outputs.suite) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.80.0
+          environments: dev
+          locked: true
+          cache: true
+          cache-key: pixi-dev-
+          cache-write: ${{ matrix.suite == fromJSON(needs.matrix.outputs.suite)[0] }}
+      - name: Install Linux GUI dependencies
+        if: runner.os == 'Linux' && matrix.suite == 'frontend'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libgtk-3-0t64 libnotify4 libwebkit2gtk-4.1-0
+      - name: Stop runner MySQL
+        # we run our own pixi-supplied mysql, stop the default one on linux
+        if: runner.os == 'Linux' && matrix.suite == 'frontend'
+        run: sudo systemctl stop mysql
+      - name: Run tests - Linux
+        if: runner.os == 'Linux'
+        # run in headless X server (X virtual framebuffer) for GUI tests
+        run: xvfb-run -a pixi run --locked -e dev python .github/run_tests.py ${{ matrix.suite }}
+      - name: Run tests - Windows and macOS
+        if: runner.os != 'Linux'
+        run: pixi run --locked -e dev python .github/run_tests.py ${{ matrix.suite }}

@@ -58,7 +58,6 @@
 /vendor/bundle
 __pycache__/
 build/
-build/
 celerybeat-schedule
 coverage.xml
 develop-eggs/
@@ -84,3 +83,7 @@ target/
 var/
 venv/
 wheels/
+linux/builddir
+linux/.flatpak-builder
+linux/repo
+linux/environment.sh

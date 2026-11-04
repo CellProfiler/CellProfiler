@@ -19,9 +19,8 @@ YES          YES          NO
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
 
-import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
-
+from cellprofiler_library.modules._erodeimage import erode_image
 
 class ErodeImage(ImageProcessing):
     category = "Advanced"
@@ -48,6 +47,5 @@ class ErodeImage(ImageProcessing):
         return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.morphology.erosion
-
+        self.function = erode_image
         super(ErodeImage, self).run(workspace)

@@ -1,6 +1,5 @@
 from cellprofiler_core.constants.measurement import (
-    M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y, C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
+    C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
     FTR_CENTER_Y, FTR_CENTER_Z,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
@@ -24,6 +23,16 @@ from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Directory, Filename, Float, LabelName
 
 from cellprofiler.modules import _help
+from cellprofiler_library.modules._filterobjects import filter_objects
+
+from cellprofiler_library.opts.filterobjects import (
+    FilterMethod,
+    FilterMode,
+    OverlapAssignment,
+    FI_ALL,
+    DIR_CUSTOM,
+    PO_ALL
+)
 
 __doc__ = """\
 FilterObjects
@@ -73,7 +82,7 @@ Measurements made by this module
 
 -  *Parent:* The identity of the input object associated with each
    filtered (remaining) object.
--  *Location\_X, Location\_Y, Location\_Z:* The pixel (X,Y,Z)
+-  *Location\\_X, Location\\_Y, Location\\_Z:* The pixel (X,Y,Z)
    coordinates of the center of mass of the filtered (remaining) objects.
 """.format(
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
@@ -83,39 +92,12 @@ import logging
 import os
 
 import numpy
-import scipy
-import scipy.ndimage
-import scipy.sparse
-
 import cellprofiler.gui.help
 import cellprofiler_core.object
-from cellprofiler.utilities.rules import Rules
+from cellprofiler.utilities.rules import Rules, Rule, scores_from_measurements
 
 LOGGER = logging.getLogger(__name__)
 
-
-"""Minimal filter - pick a single object per image by minimum measured value"""
-FI_MINIMAL = "Minimal"
-
-"""Maximal filter - pick a single object per image by maximum measured value"""
-FI_MAXIMAL = "Maximal"
-
-"""Pick one object per containing object by minimum measured value"""
-FI_MINIMAL_PER_OBJECT = "Minimal per object"
-
-"""Pick one object per containing object by maximum measured value"""
-FI_MAXIMAL_PER_OBJECT = "Maximal per object"
-
-"""Keep all objects whose values fall between set limits"""
-FI_LIMITS = "Limits"
-
-FI_ALL = [
-    FI_MINIMAL,
-    FI_MAXIMAL,
-    FI_MINIMAL_PER_OBJECT,
-    FI_MAXIMAL_PER_OBJECT,
-    FI_LIMITS,
-]
 
 """The number of settings for this module in the pipeline if no additional objects"""
 FIXED_SETTING_COUNT_V6 = 12
@@ -126,22 +108,12 @@ ADDITIONAL_OBJECT_SETTING_INDEX = 9
 """The location of the measurements count setting"""
 MEASUREMENT_COUNT_SETTING_INDEX = 8
 
-MODE_RULES = "Rules"
-MODE_CLASSIFIERS = "Classifiers"
-MODE_MEASUREMENTS = "Measurements"
-MODE_BORDER = "Image or mask border"
-
-DIR_CUSTOM = "Custom folder"
-
-PO_BOTH = "Both parents"
-PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
-PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
-
+S_RULES = "Rules"
 
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
-    variable_revision_number = 10
+    variable_revision_number = 11
 
     def __init__(self):
         self.rules = Rules()
@@ -172,7 +144,7 @@ object."""
 
         self.mode = Choice(
             "Select the filtering mode",
-            [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],
+            [FilterMode.MEASUREMENTS.value, FilterMode.RULES.value, FilterMode.BORDER.value, FilterMode.CLASSIFIERS.value],
             doc="""\
 You can choose from the following options:
 
@@ -189,10 +161,10 @@ You can choose from the following options:
    specified by the file are produced by upstream modules in the
    pipeline. This setting is not compatible with data processed as 3D.""".format(
                 **{
-                    "MODE_MEASUREMENTS": MODE_MEASUREMENTS,
-                    "MODE_RULES": MODE_RULES,
-                    "MODE_BORDER": MODE_BORDER,
-                    "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
+                    "MODE_MEASUREMENTS": FilterMode.MEASUREMENTS.value,
+                    "MODE_RULES": FilterMode.RULES.value,
+                    "MODE_BORDER": FilterMode.BORDER.value,
+                    "MODE_CLASSIFIERS": FilterMode.CLASSIFIERS.value,
                 }
             ),
         )
@@ -212,7 +184,7 @@ You can choose from the following options:
         self.filter_choice = Choice(
             "Select the filtering method",
             FI_ALL,
-            FI_LIMITS,
+            FilterMethod.LIMITS.value,
             doc="""\
 *(Used only if filtering using measurements)*
 
@@ -237,11 +209,11 @@ There are five different ways to filter objects:
 -  *{FI_MINIMAL_PER_OBJECT}:* Same as *Maximal per object*, except
    filtering is based on the minimum value.""".format(
                 **{
-                    "FI_LIMITS": FI_LIMITS,
-                    "FI_MAXIMAL": FI_MAXIMAL,
-                    "FI_MINIMAL": FI_MINIMAL,
-                    "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
-                    "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT,
+                    "FI_LIMITS": FilterMethod.LIMITS.value,
+                    "FI_MAXIMAL": FilterMethod.MAXIMAL.value,
+                    "FI_MINIMAL": FilterMethod.MINIMAL.value,
+                    "FI_MAXIMAL_PER_OBJECT": FilterMethod.MAXIMAL_PER_OBJECT.value,
+                    "FI_MINIMAL_PER_OBJECT": FilterMethod.MINIMAL_PER_OBJECT.value,
                 }
             ),
         )
@@ -274,8 +246,8 @@ maximal child is assigned. The choices are:
    non-overlapping child object are assigned some child object by a
    subsequent **RelateObjects** module.""".format(
                 **{
-                    "PO_BOTH": PO_BOTH,
-                    "PO_PARENT_WITH_MOST_OVERLAP": PO_PARENT_WITH_MOST_OVERLAP,
+                    "PO_BOTH": OverlapAssignment.BOTH.value,
+                    "PO_PARENT_WITH_MOST_OVERLAP": OverlapAssignment.PARENT_WITH_MOST_OVERLAP.value,
                 }
             ),
         )
@@ -290,8 +262,8 @@ This setting selects the container (i.e., parent) objects for the
 *{FI_MAXIMAL_PER_OBJECT}* and *{FI_MINIMAL_PER_OBJECT}* filtering
 choices.""".format(
                 **{
-                    "FI_MAXIMAL_PER_OBJECT": FI_MAXIMAL_PER_OBJECT,
-                    "FI_MINIMAL_PER_OBJECT": FI_MINIMAL_PER_OBJECT,
+                    "FI_MAXIMAL_PER_OBJECT": FilterMethod.MAXIMAL_PER_OBJECT.value,
+                    "FI_MINIMAL_PER_OBJECT": FilterMethod.MINIMAL_PER_OBJECT.value,
                 }
             ),
         )
@@ -307,8 +279,8 @@ filtering.
 {IO_FOLDER_CHOICE_HELP_TEXT}
 """.format(
                 **{
-                    "MODE_CLASSIFIERS": MODE_CLASSIFIERS,
-                    "MODE_RULES": MODE_RULES,
+                    "MODE_CLASSIFIERS": FilterMode.CLASSIFIERS.value,
+                    "MODE_RULES": FilterMode.RULES.value,
                     "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT,
                 }
             ),
@@ -332,7 +304,7 @@ Please note the following:
 -  You can make multiple class selections. If you do so, the module will
    retain the object if the object falls into any of the selected
    classes.""".format(
-                **{"MODE_CLASSIFIERS": MODE_CLASSIFIERS, "MODE_RULES": MODE_RULES}
+                **{"MODE_CLASSIFIERS": FilterMode.CLASSIFIERS.value, "MODE_RULES": FilterMode.RULES.value}
             ),
         )
 
@@ -373,7 +345,7 @@ You will need to ensure that the measurements specified by the file are
 produced by upstream modules in the pipeline. This setting is not compatible
 with data processed as 3D.
 """.format(
-                **{"MODE_CLASSIFIERS": MODE_CLASSIFIERS, "MODE_RULES": MODE_RULES}
+                **{"MODE_CLASSIFIERS": FilterMode.CLASSIFIERS.value, "MODE_RULES": FilterMode.RULES.value}
             ),
         )
 
@@ -423,9 +395,9 @@ could have unexpected parent-child relations.""",
         self.allow_fuzzy = self.rules.settings()[0]
 
     def get_class_choices(self, pipeline):
-        if self.mode == MODE_CLASSIFIERS:
+        if self.mode == FilterMode.CLASSIFIERS.value:
             return self.get_bin_labels()
-        elif self.mode == MODE_RULES:
+        elif self.mode == FilterMode.RULES.value:
             rules = self.get_rules()
             nclasses = len(rules.rules[0].weights[0])
             return [str(i) for i in range(1, nclasses + 1)]
@@ -453,7 +425,7 @@ could have unexpected parent-child relations.""",
 
 See the **Measurements** modules help pages for more information on the
 features measured.""".format(
-                    **{"MODE_MEASUREMENTS": MODE_MEASUREMENTS}
+                    **{"MODE_MEASUREMENTS": FilterMode.MEASUREMENTS.value}
                 ),
             ),
         )
@@ -469,7 +441,7 @@ features measured.""".format(
 Select "*{YES}*" to filter the objects based on a minimum acceptable
 object measurement value. Objects which are greater than or equal to
 this value will be retained.""".format(
-                    **{"FI_LIMITS": FI_LIMITS, "YES": "Yes"}
+                    **{"FI_LIMITS": FilterMethod.LIMITS.value, "YES": "Yes"}
                 ),
             ),
         )
@@ -487,7 +459,7 @@ this value will be retained.""".format(
 Select "*{YES}*" to filter the objects based on a maximum acceptable
 object measurement value. Objects which are less than or equal to this
 value will be retained.""".format(
-                    **{"FI_LIMITS": FI_LIMITS, "YES": "Yes"}
+                    **{"FI_LIMITS": FilterMethod.LIMITS.value, "YES": "Yes"}
                 ),
             ),
         )
@@ -516,6 +488,17 @@ value will be retained.""".format(
 
         group.append(
             "target_name", LabelName("Name the relabeled objects", "FilteredGreen"),
+        )
+
+        group.append(
+            "keep_unassociated_objects",
+            Binary(
+                "Keep unassociated objects?",
+                False,
+                doc="""\
+                Select *{YES}* to keep objects that do not have a parent object. Select *{NO}* to only keep child objects of the objects that get selected by the filter.
+                """
+            )
         )
 
         group.append(
@@ -565,7 +548,7 @@ value will be retained.""".format(
             settings += x.pipeline_settings()
 
         for x in self.additional_objects:
-            settings += [x.object_name, x.target_name]
+            settings += [x.object_name, x.target_name, x.keep_unassociated_objects]
 
         settings += [self.allow_fuzzy]
 
@@ -593,7 +576,7 @@ value will be retained.""".format(
 
         visible_settings += [self.spacer_2, self.mode]
 
-        if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
+        if self.mode == FilterMode.RULES.value or self.mode == FilterMode.CLASSIFIERS.value:
             visible_settings += [
                 self.allow_fuzzy,
                 self.rules_file_name,
@@ -601,28 +584,28 @@ value will be retained.""".format(
                 self.rules_class,
             ]
             self.rules_class.text = (
-                "Class number" if self.mode == MODE_RULES else "Class name"
+                "Class number" if self.mode == FilterMode.RULES.value else "Class name"
             )
             try:
                 self.rules_class.test_valid(None)
             except:
                 pass
 
-        elif self.mode == MODE_MEASUREMENTS:
+        elif self.mode == FilterMode.MEASUREMENTS.value:
             visible_settings += [self.spacer_1, self.filter_choice]
-            if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
+            if self.filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
                 visible_settings += [
                     self.measurements[0].measurement,
                     self.measurements[0].divider,
                 ]
-            elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
+            elif self.filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
                 visible_settings += [
                     self.per_object_assignment,
                     self.measurements[0].measurement,
                     self.enclosing_object_name,
                     self.measurements[0].divider,
                 ]
-            elif self.filter_choice == FI_LIMITS:
+            elif self.filter_choice == FilterMethod.LIMITS.value:
                 for i, group in enumerate(self.measurements):
                     visible_settings += [group.measurement, group.wants_minimum]
                     if group.wants_minimum:
@@ -645,14 +628,14 @@ value will be retained.""".format(
 
     def validate_module(self, pipeline):
         """Make sure that the user has selected some limits when filtering"""
-        if self.mode == MODE_MEASUREMENTS and self.filter_choice == FI_LIMITS:
+        if self.mode == FilterMode.MEASUREMENTS.value and self.filter_choice == FilterMethod.LIMITS.value:
             for group in self.measurements:
                 if not (group.wants_minimum.value or group.wants_maximum.value):
                     raise ValidationError(
                         "Please enter a minimum and/or maximum limit for your measurement",
                         group.wants_minimum,
                     )
-        if self.mode == MODE_RULES:
+        if self.mode == FilterMode.RULES.value:
             try:
                 rules = self.get_rules()
             except Exception as instance:
@@ -661,7 +644,7 @@ value will be retained.""".format(
                 )
                 raise ValidationError(str(instance), self.rules_file_name)
             for r in rules.rules:
-                if self.rules.Rule.return_fuzzy_measurement_name(
+                if Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(self),
                     r.object_name,
                     r.feature,
@@ -679,7 +662,7 @@ value will be retained.""".format(
                         % (self.rules_file_name, r.feature, r.object_name),
                         self.rules_file_name,
                     )
-        elif self.mode == MODE_CLASSIFIERS:
+        elif self.mode == FilterMode.CLASSIFIERS.value:
             try:
                 self.get_classifier()
                 self.get_bin_labels()
@@ -698,7 +681,7 @@ value will be retained.""".format(
             features = self.get_classifier_features()
 
             for feature in features:
-                fuzzy_feature = self.rules.Rule.return_fuzzy_measurement_name(
+                fuzzy_feature = Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(),
                     feature[:feature.index('_')],
                     feature[feature.index('_'):],
@@ -714,63 +697,58 @@ measurement is not available at this stage of the pipeline. Consider adding modu
 
     def run(self, workspace):
         """Filter objects for this image set, display results"""
-        src_objects = workspace.get_objects(self.x_name.value)
-        if self.mode == MODE_RULES:
-            indexes = self.keep_by_rules(workspace, src_objects)
-        elif self.mode == MODE_MEASUREMENTS:
-            if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
-                indexes = self.keep_one(workspace, src_objects)
-            if self.filter_choice in (FI_MINIMAL_PER_OBJECT, FI_MAXIMAL_PER_OBJECT):
-                indexes = self.keep_per_object(workspace, src_objects)
-            if self.filter_choice == FI_LIMITS:
-                indexes = self.keep_within_limits(workspace, src_objects)
-        elif self.mode == MODE_BORDER:
-            indexes = self.discard_border_objects(src_objects)
-        elif self.mode == MODE_CLASSIFIERS:
-            indexes = self.keep_by_class(workspace, src_objects)
-        else:
-            raise ValueError("Unknown filter choice: %s" % self.mode.value)
+        src_name = self.x_name.value
+        src_objects = workspace.get_objects(src_name)
+
+        filter_kwargs = self.get_filter_kwargs(workspace, src_objects, src_name)
+
+        additional_objects = [
+            (
+                workspace.get_objects(x.object_name.value).segmented,
+                self.get_parent_objects(workspace, x.object_name.value),
+                x.keep_unassociated_objects.value,
+            )
+            for x in self.additional_objects
+        ]
+
+        target_segmented, additional_segmented, removed_segmented = filter_objects(
+            src_labels=src_objects.segmented,
+            mode=self.mode.value,
+            keep_removed_objects=self.keep_removed_objects.value,
+            additional_objects=additional_objects,
+            **filter_kwargs,
+        )
 
         #
-        # Create an array that maps label indexes to their new values
-        # All labels to be deleted have a value in this array of zero
-        #
-        new_object_count = len(indexes)
-        max_label = numpy.max(src_objects.segmented)
-        label_indexes = numpy.zeros((max_label + 1,), int)
-        label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
-        #
         # Loop over both the primary and additional objects
+        # Note: Parent of first_set is always None
         #
-        object_list = [(self.x_name.value, self.y_name.value)] + [
-            (x.object_name.value, x.target_name.value) for x in self.additional_objects
+        object_list = [(self.x_name.value, self.y_name.value, target_segmented)] + [
+            (x.object_name.value, x.target_name.value, segmented)
+            for x, segmented in zip(self.additional_objects, additional_segmented)
         ]
-        m = workspace.measurements
         first_set = True
-        for src_name, target_name in object_list:
+        for src_name, target_name, target_objects_segmented in object_list:
             src_objects = workspace.get_objects(src_name)
-            target_labels = src_objects.segmented.copy()
+
             #
-            # Reindex the labels of the old source image
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
             #
-            target_labels[target_labels > max_label] = 0
-            target_labels = label_indexes[target_labels]
+            target_objects_small_removed_segmented = src_objects.small_removed_segmented.copy()
+            target_objects_small_removed_segmented[(target_objects_segmented == 0) & (src_objects.segmented != 0)] = 0
+
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
             target_objects = cellprofiler_core.object.Objects()
-            target_objects.segmented = target_labels
+            target_objects.segmented = target_objects_segmented
             target_objects.unedited_segmented = src_objects.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = src_objects.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
+            target_objects.small_removed_segmented = target_objects_small_removed_segmented
+
             if src_objects.has_parent_image:
                 target_objects.parent_image = src_objects.parent_image
             workspace.object_set.add_objects(target_objects, target_name)
@@ -780,22 +758,19 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                 workspace.display_data.src_objects_segmented = src_objects.segmented
                 workspace.display_data.target_objects_segmented = target_objects.segmented
                 workspace.display_data.dimensions = src_objects.dimensions
-                first_set = False
+            first_set = False
 
         if self.keep_removed_objects.value:
             # Isolate objects removed by the filter
-            removed_indexes = [x for x in range(1, max_label+1) if x not in indexes]
-            removed_object_count = len(removed_indexes)
-            removed_label_indexes = numpy.zeros((max_label + 1,), int)
-            removed_label_indexes[removed_indexes] = numpy.arange(1, removed_object_count + 1)
-
             src_objects = workspace.get_objects(self.x_name.value)
-            removed_labels = src_objects.segmented.copy()
+            removed_labels = removed_segmented
             #
-            # Reindex the labels of the old source image
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
             #
-            removed_labels[removed_labels > max_label] = 0
-            removed_labels = removed_label_indexes[removed_labels]
+            small_removed = src_objects.small_removed_segmented.copy()
+            small_removed[(removed_labels == 0) & (src_objects.segmented != 0)] = 0
             #
             # Make a new set of objects - retain the old set's unedited
             # segmentation for the new and generally try to copy stuff
@@ -804,13 +779,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             removed_objects = cellprofiler_core.object.Objects()
             removed_objects.segmented = removed_labels
             removed_objects.unedited_segmented = src_objects.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = src_objects.small_removed_segmented.copy()
-            small_removed[(removed_labels == 0) & (src_objects.segmented != 0)] = 0
             removed_objects.small_removed_segmented = small_removed
             if src_objects.has_parent_image:
                 removed_objects.parent_image = src_objects.parent_image
@@ -869,219 +837,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                 sharexy=figure.subplot(0, 0),
             )
 
-
-    def keep_one(self, workspace, src_objects):
-        """Return an array containing the single object to keep
-
-        workspace - workspace passed into Run
-        src_objects - the Objects instance to be filtered
-        """
-        measurement = self.measurements[0].measurement.value
-        src_name = self.x_name.value
-        values = workspace.measurements.get_current_measurement(src_name, measurement)
-        if len(values) == 0:
-            return numpy.array([], int)
-        best_idx = (
-            numpy.argmax(values)
-            if self.filter_choice == FI_MAXIMAL
-            else numpy.argmin(values)
-        ) + 1
-        return numpy.array([best_idx], int)
-
-    def keep_per_object(self, workspace, src_objects):
-        """Return an array containing the best object per enclosing object
-
-        workspace - workspace passed into Run
-        src_objects - the Objects instance to be filtered
-        """
-        measurement = self.measurements[0].measurement.value
-        src_name = self.x_name.value
-        enclosing_name = self.enclosing_object_name.value
-        src_objects = workspace.get_objects(src_name)
-        enclosing_objects = workspace.get_objects(enclosing_name)
-        enclosing_labels = enclosing_objects.segmented
-        enclosing_max = enclosing_objects.count
-        if enclosing_max == 0:
-            return numpy.array([], int)
-        enclosing_range = numpy.arange(1, enclosing_max + 1)
-        #
-        # Make a vector of the value of the measurement per label index.
-        # We can then label each pixel in the image with the measurement
-        # value for the object at that pixel.
-        # For unlabeled pixels, put the minimum value if looking for the
-        # maximum value and vice-versa
-        #
-        values = workspace.measurements.get_current_measurement(src_name, measurement)
-        wants_max = self.filter_choice == FI_MAXIMAL_PER_OBJECT
-        src_labels = src_objects.segmented
-        src_count = src_objects.count
-        if self.per_object_assignment == PO_PARENT_WITH_MOST_OVERLAP:
-            #
-            # Find the number of overlapping pixels in enclosing
-            # and source objects
-            #
-            mask = enclosing_labels * src_labels != 0
-            enclosing_labels = enclosing_labels[mask]
-            src_labels = src_labels[mask]
-            order = numpy.lexsort((enclosing_labels, src_labels))
-            src_labels = src_labels[order]
-            enclosing_labels = enclosing_labels[order]
-            firsts = numpy.hstack(
-                (
-                    [0],
-                    numpy.where(
-                        (src_labels[:-1] != src_labels[1:])
-                        | (enclosing_labels[:-1] != enclosing_labels[1:])
-                    )[0]
-                    + 1,
-                    [len(src_labels)],
-                )
-            )
-            areas = firsts[1:] - firsts[:-1]
-            enclosing_labels = enclosing_labels[firsts[:-1]]
-            src_labels = src_labels[firsts[:-1]]
-            #
-            # Re-sort by source label value and area descending
-            #
-            if wants_max:
-                svalues = -values
-            else:
-                svalues = values
-            order = numpy.lexsort((-areas, svalues[src_labels - 1]))
-            src_labels, enclosing_labels, areas = [
-                x[order] for x in (src_labels, enclosing_labels, areas)
-            ]
-            firsts = numpy.hstack(
-                (
-                    [0],
-                    numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
-                    src_labels.shape[:1],
-                )
-            )
-            counts = firsts[1:] - firsts[:-1]
-            #
-            # Process them in order. The maximal or minimal child
-            # will be assigned to the most overlapping parent and that
-            # parent will be excluded.
-            #
-            best_src_label = numpy.zeros(enclosing_max + 1, int)
-            for idx, count in zip(firsts[:-1], counts):
-                for i in range(count):
-                    enclosing_object_number = enclosing_labels[idx + i]
-                    if best_src_label[enclosing_object_number] == 0:
-                        best_src_label[enclosing_object_number] = src_labels[idx]
-                        break
-            #
-            # Remove best source labels = 0 and sort to get the list
-            #
-            best_src_label = best_src_label[best_src_label != 0]
-            best_src_label.sort()
-            return best_src_label
-        else:
-            tricky_values = numpy.zeros((len(values) + 1,))
-            tricky_values[1:] = values
-            if wants_max:
-                tricky_values[0] = -numpy.Inf
-            else:
-                tricky_values[0] = numpy.Inf
-            src_values = tricky_values[src_labels]
-            #
-            # Now find the location of the best for each of the enclosing objects
-            #
-            fn = (
-                scipy.ndimage.maximum_position
-                if wants_max
-                else scipy.ndimage.minimum_position
-            )
-            best_pos = fn(src_values, enclosing_labels, enclosing_range)
-            best_pos = numpy.array(
-                (best_pos,) if isinstance(best_pos, tuple) else best_pos
-            )
-            best_pos = best_pos.astype(numpy.uint32)
-            #
-            # Get the label of the pixel at each location
-            #
-            # Multidimensional indexing with non-tuple values is not allowed as of numpy 1.23
-            best_pos = tuple(map(tuple, best_pos.transpose()))
-            indexes = src_labels[best_pos]
-            indexes = set(indexes)
-            indexes = list(indexes)
-            indexes.sort()
-            return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
-
-    def keep_within_limits(self, workspace, src_objects):
-        """Return an array containing the indices of objects to keep
-
-        workspace - workspace passed into Run
-        src_objects - the Objects instance to be filtered
-        """
-        src_name = self.x_name.value
-        hits = None
-        m = workspace.measurements
-        for group in self.measurements:
-            measurement = group.measurement.value
-            values = m.get_current_measurement(src_name, measurement)
-            if hits is None:
-                hits = numpy.ones(len(values), bool)
-            elif len(hits) < len(values):
-                temp = numpy.ones(len(values), bool)
-                temp[~hits] = False
-                hits = temp
-            low_limit = group.min_limit.value
-            high_limit = group.max_limit.value
-            if group.wants_minimum.value:
-                hits[values < low_limit] = False
-            if group.wants_maximum.value:
-                hits[values > high_limit] = False
-        indexes = numpy.argwhere(hits)[:, 0]
-        indexes = indexes + 1
-        return indexes
-
-    def discard_border_objects(self, src_objects):
-        """Return an array containing the indices of objects to keep
-
-        workspace - workspace passed into Run
-        src_objects - the Objects instance to be filtered
-        """
-        labels = src_objects.segmented
-
-        if src_objects.has_parent_image and src_objects.parent_image.has_mask:
-
-            mask = src_objects.parent_image.mask
-
-            interior_pixels = scipy.ndimage.binary_erosion(mask)
-
-        else:
-
-            interior_pixels = scipy.ndimage.binary_erosion(numpy.ones_like(labels))
-
-        border_pixels = numpy.logical_not(interior_pixels)
-
-        border_labels = set(labels[border_pixels])
-
-        if (
-            border_labels == {0}
-            and src_objects.has_parent_image
-            and src_objects.parent_image.has_mask
-        ):
-            # The assumption here is that, if nothing touches the border,
-            # the mask is a large, elliptical mask that tells you where the
-            # well is. That's the way the old Matlab code works and it's duplicated here
-            #
-            # The operation below gets the mask pixels that are on the border of the mask
-            # The erosion turns all pixels touching an edge to zero. The not of this
-            # is the border + formerly masked-out pixels.
-
-            mask = src_objects.parent_image.mask
-
-            interior_pixels = scipy.ndimage.binary_erosion(mask)
-
-            border_pixels = numpy.logical_not(interior_pixels)
-
-            border_labels = set(labels[border_pixels])
-
-        return list(set(labels.ravel()).difference(border_labels))
-
     def get_rules(self):
         """Read the rules from a file"""
         rules_file = self.rules_file_name.value
@@ -1093,6 +848,109 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             rules = Rules(allow_fuzzy=self.allow_fuzzy)
             rules.parse(path)
             return rules
+
+    def get_parent_objects(self, workspace, object_name):
+        """
+        Return the Parent_<x_name> measurement for object_name, or None if absent
+
+        Parent relation is used if it exists (use RelateObjects module).
+        """
+        m = workspace.measurements
+        parent_feature = f"Parent_{self.x_name.value}"
+        parent_relation_exists = len(
+            [i for i in m.get_measurement_columns() if i[0] == object_name and i[1] == parent_feature]
+        ) > 0
+        return m.get_measurement(object_name, parent_feature) if parent_relation_exists else None
+
+    def get_filter_kwargs(self, workspace, src_objects, src_name):
+        # keep_by_rules
+        if self.mode == FilterMode.RULES.value:
+            rules = self.get_rules()
+            rules_class = int(self.rules_class.value) - 1
+            return {"rules_class": rules_class, "scores": scores_from_measurements(workspace.measurements, rules)}
+
+        elif self.mode == FilterMode.MEASUREMENTS.value:
+            filter_choice = self.filter_choice.value
+            # keep_one
+            if filter_choice in (FilterMethod.MINIMAL.value, FilterMethod.MAXIMAL.value):
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                return {"filter_choice": filter_choice, "values": values}
+
+            # keep_per_object
+            elif filter_choice in (FilterMethod.MINIMAL_PER_OBJECT.value, FilterMethod.MAXIMAL_PER_OBJECT.value):
+                measurement = self.measurements[0].measurement.value
+                values = workspace.measurements.get_current_measurement(src_name, measurement)
+                enclosing_objects = workspace.get_objects(self.enclosing_object_name.value)
+                enclosing_labels, enclosing_count = enclosing_objects.segmented, enclosing_objects.count
+                return {
+                    "filter_choice": filter_choice,
+                    "values": values,
+                    "enclosing_labels": enclosing_labels,
+                    "enclosing_count": enclosing_count,
+                    "per_object_assignment": self.per_object_assignment.value,
+                }
+
+            # keep_within_limits
+            elif filter_choice == FilterMethod.LIMITS.value:
+                limit_groups = []
+                for group in self.measurements:
+                    measurement = group.measurement.value
+                    values = workspace.measurements.get_current_measurement(src_name, measurement)
+                    limit_groups.append({
+                        "values": values,
+                        "min_limit": group.min_limit.value if group.wants_minimum.value else None,
+                        "max_limit": group.max_limit.value if group.wants_maximum.value else None,
+                    })
+                return {"filter_choice": filter_choice, "limit_groups": limit_groups}
+
+            else:
+                raise ValueError(f"Unknown filter choice: {filter_choice} for mode {self.mode.value}")
+
+        # discard_border_objects
+        elif self.mode == FilterMode.BORDER.value:
+            parent_image = src_objects.parent_image if src_objects.has_parent_image else None
+            parent_image_mask = src_objects.parent_image.mask if parent_image and parent_image.has_mask else None
+            return {"parent_image_mask": parent_image_mask}
+
+        elif self.mode == FilterMode.CLASSIFIERS.value:
+            # predict objects' classes and package the plain result
+            classifier = self.get_classifier()
+
+            # keep_by_rules
+            if self.get_classifier_type() == S_RULES:
+                rules_class = self.get_bin_labels().index(self.rules_class.value)
+                return {"rules_class": rules_class, "scores": self.get_scores(workspace, classifier)}
+
+            # keep_by_hits
+
+            target_idx = self.get_bin_labels().index(self.rules_class.value)
+            target_class = classifier.classes_[target_idx]
+            features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
+            feature_vector = numpy.column_stack(
+                [
+                    workspace.measurements[
+                        object_name,
+                        Rule.return_fuzzy_measurement_name(
+                            workspace.measurements.get_measurement_columns(),
+                            object_name,
+                            feature_name,
+                            False,
+                            self.allow_fuzzy
+                            )
+                            ]
+                    for object_name, feature_name in features
+                ]
+            )
+            if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+                feature_vector = classifier.scaler.transform(feature_vector)
+            numpy.nan_to_num(feature_vector, copy=False)
+            predicted_classes = classifier.predict(feature_vector)
+            hits = predicted_classes == target_class
+            return {"hits": hits}
+
+        else:
+            raise ValueError("Unknown filter choice: %s" % self.mode.value)
 
     def load_classifier(self):
         """Load the classifier pickle if not cached
@@ -1122,7 +980,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                         rules.load(d[path_][0])
                         d[path_] = (rules,
                                     d[path_][1],
-                                    "Rules",
+                                    S_RULES,
                                     [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
                 else:
                     # Probably a rules list
@@ -1131,7 +989,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                     # Construct a classifier-like object
                     d[path_] = (rules,
                                 rules.get_classes(),
-                                "Rules",
+                                S_RULES,
                                 [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
         return d[path_]
 
@@ -1147,72 +1005,11 @@ measurement is not available at this stage of the pipeline. Consider adding modu
     def get_classifier_features(self):
         return self.load_classifier()[3]
 
-    def keep_by_rules(self, workspace, src_objects, rules=None):
-        """Keep objects according to rules
-
-        workspace - workspace holding the measurements for the rules
-        src_objects - filter these objects (uses measurement indexes instead)
-        rules - supply pre-generated rules loaded from a classifier model file
-
-        Open the rules file indicated by the settings and score the
-        objects by the rules. Return the indexes of the objects that pass.
-        """
-        if not rules:
-            rules = self.get_rules()
-            rules_class = int(self.rules_class.value) - 1
-        else:
-            rules_class = self.get_bin_labels().index(self.rules_class.value)
-        scores = rules.score(workspace.measurements)
-        if len(scores) > 0:
-            is_not_nan = numpy.any(~numpy.isnan(scores), 1)
-            best_class = numpy.argmax(scores[is_not_nan], 1).flatten()
-            hits = numpy.zeros(scores.shape[0], bool)
-            hits[is_not_nan] = best_class == rules_class
-            indexes = numpy.argwhere(hits).flatten() + 1
-        else:
-            indexes = numpy.array([], int)
-        return indexes
-
-    def keep_by_class(self, workspace, src_objects):
-        """ Keep objects according to their predicted class
-        :param workspace: workspace holding the measurements for the rules
-        :param src_objects: filter these objects (uses measurement indexes instead)
-        :return: indexes (base 1) of the objects that pass
-        """
-        classifier = self.get_classifier()
-        if self.get_classifier_type() == "Rules":
-            return self.keep_by_rules(workspace, src_objects, rules=classifier)
-        target_idx = self.get_bin_labels().index(self.rules_class.value)
-        target_class = classifier.classes_[target_idx]
-        features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
-        feature_vector = numpy.column_stack(
-            [
-                workspace.measurements[
-                    object_name, 
-                    self.rules.Rule.return_fuzzy_measurement_name(
-                        workspace.measurements.get_measurement_columns(),
-                        object_name,
-                        feature_name,
-                        False,
-                        self.allow_fuzzy
-                        )
-                        ]
-                for object_name, feature_name in features
-            ]
-        )
-        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
-            feature_vector = classifier.scaler.transform(feature_vector)
-        numpy.nan_to_num(feature_vector, copy=False)
-        predicted_classes = classifier.predict(feature_vector)
-        hits = predicted_classes == target_class
-        indexes = numpy.argwhere(hits) + 1
-        return indexes.flatten()
-
     def get_measurement_columns(self, pipeline):
         return super(FilterObjects, self).get_measurement_columns(
             pipeline,
             additional_objects=[
-                (x.object_name.value, x.target_name.value)
+                (x.object_name.value, x.target_name.valu, x.keep_unassociated_objects.value)
                 for x in self.additional_objects
             ] + [(self.x_name.value,self.removed_objects_name.value)] if self.keep_removed_objects.value else [],
         )
@@ -1272,7 +1069,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             #
             setting_values = (
                 setting_values[:11]
-                + [MODE_MEASUREMENTS, DEFAULT_INPUT_FOLDER_NAME, ".",]
+                + [FilterMode.MEASUREMENTS.value, DEFAULT_INPUT_FOLDER_NAME, ".",]
                 + setting_values[11:]
             )
             variable_revision_number = 2
@@ -1360,7 +1157,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             #
             setting_values = (
                 setting_values[:FIXED_SETTING_COUNT_V6]
-                + [PO_BOTH]
+                + [OverlapAssignment.BOTH.value]
                 + setting_values[FIXED_SETTING_COUNT_V6:]
             )
 
@@ -1417,6 +1214,64 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if variable_revision_number == 9:
             setting_values.append(False)
             variable_revision_number = 10
+
+        if variable_revision_number == 10:
+            (
+                x_name,
+                y_name,
+                mode,
+                filter_choice,
+                enclosing_object_name,
+                rules_directory,
+                rules_file_name,
+                rules_class,
+                measurement_count,
+                additional_object_count,
+                per_object_assignment,
+                keep_removed_objects,
+                removed_objects_name,
+            ) = setting_values[:13]
+            additional_object_count = int(additional_object_count)
+            n_measurement_settings = int(measurement_count) * 5
+
+            additional_object_settings_index_offset = 13 + n_measurement_settings
+
+            additional_object_settings = setting_values[additional_object_settings_index_offset: additional_object_settings_index_offset + (additional_object_count*2) ] 
+            additional_object_names = additional_object_settings[::2]
+            additional_target_names = additional_object_settings[1::2]
+
+            (allow_fuzzy, ) = setting_values[additional_object_settings_index_offset + ((additional_object_count)*2):]
+            
+            # Add 'No' for keep_unassociated_objects setting
+            new_additional_object_settings = sum(
+                [
+                    [object_name, target_name, "No"]
+                    for object_name, target_name in zip(
+                        additional_object_names, additional_target_names
+                    )
+                ],
+                []
+            )
+            setting_values = ([
+                x_name,
+                y_name,
+                mode,
+                filter_choice,
+                enclosing_object_name,
+                rules_directory,
+                rules_file_name,
+                rules_class,
+                str(measurement_count),
+                str(additional_object_count),
+                per_object_assignment,
+                keep_removed_objects,
+                removed_objects_name,
+            ]
+            + setting_values[13:13+n_measurement_settings]
+            + new_additional_object_settings
+            + [allow_fuzzy]
+            )
+            variable_revision_number = 11
 
         return setting_values, variable_revision_number
 

@@ -2,7 +2,10 @@ from enum import Enum
 import numpy as np
 from numpy.random.mtrand import RandomState
 import scipy.sparse
-import centrosome.index
+import centriole.index
+from typing import Tuple
+from numpy.typing import NDArray
+from ..types import ObjectLabel, ObjectSegmentation
 
 class SPARSE_FIELD(Enum):
     label = "label"
@@ -354,7 +357,7 @@ def convert_dense_to_sparse(dense, validate=True):
 
     dtype = [(axis, coords_dtype) for axis in axes]
     dtype.append((SPARSE_FIELD.label.value, labels_dtype))
-    sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+    sparse = np.rec.fromarrays(list(coords) + [labels], dtype=dtype)
 
     return sparse
 
@@ -362,7 +365,7 @@ def convert_ijv_to_sparse(ijv, validate=True):
     if validate:
         _validate_ijv(ijv)
 
-    return np.core.records.fromarrays(
+    return np.rec.fromarrays(
         (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
         [
             (SPARSE_FIELD.y.value, ijv.dtype),
@@ -413,6 +416,8 @@ def convert_ijv_to_label_set(ijv, dense_shape=None, validate=True):
     return label_set
 
 def convert_label_set_to_ijv(label_set, validate=True):
+    if label_set[0][0].shape == ():
+        return np.empty_like([], shape=(0,3), dtype=np.int64)
     return np.concatenate(
         [convert_labels_to_ijv(l[0], validate) for l in label_set],
         axis=0
@@ -487,7 +492,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # There are n * n-1 pairs for each coordinate (n = # labels)
     # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
     #
-    pairs = centrosome.index.all_pairs(np.max(counts))
+    pairs = centriole.index.all_pairs(np.max(counts))
     pair_counts = counts * (counts - 1)
     #
     # Create an indexer for the inputs (indexes) and for the outputs
@@ -496,7 +501,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     # Remember idx points into sort_order which points into labels
     # to get the nth label, grouped into consecutive positions.
     #
-    output_indexer = centrosome.index.Indexes(pair_counts)
+    output_indexer = centriole.index.Indexes(pair_counts)
     #
     # The start of the run of overlaps and the offsets
     #
@@ -612,7 +617,7 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
     # don't overlap.
     #
     label_outline_set = [
-        (centrosome.outline.outline(label), indexes)
+        (centriole.outline.outline(label), indexes)
         for label, indexes in label_set
     ]
     rgb_image = np.zeros(list(label_outline_set[0][0].shape) + [3], np.float32)
@@ -702,7 +707,7 @@ def find_label_overlaps(parent_labels, child_labels, validate=True):
         shape=(parent_count + 1, child_count + 1),
     )
 
-# needs library tests
+# TODO: library - needs library tests
 def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
     """
     Find per pixel overlap of parent labels and child labels
@@ -722,22 +727,22 @@ def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
     child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
 
     if parent_count == 0 or child_count == 0:
-        return np.zeros((parent_count + 1, child_count + 1), int)
+        return np.zeros((parent_count + np.int64(1), child_count + np.int64(1)), int)
 
-    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
-    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
-    parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
+    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + np.int64(1)
+    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + np.int64(1)
+    parent_linear_ij = parent_ijv[:, 0] + dim_i.item() * parent_ijv[:, 1].astype(
         np.uint64
     )
-    child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
+    child_linear_ij = child_ijv[:, 0] + dim_i.item() * child_ijv[:, 1].astype(np.uint64)
 
     parent_matrix = scipy.sparse.coo_matrix(
         (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
-        shape=(parent_count + 1, dim_i * dim_j),
+        shape=(parent_count + np.int64(1), dim_i * dim_j),
     )
     child_matrix = scipy.sparse.coo_matrix(
         (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
-        shape=(dim_i * dim_j, child_count + 1),
+        shape=(dim_i * dim_j, child_count + np.int64(1)),
     )
     # I surely do not understand the sparse code.  Converting both
     # arrays to csc gives the best peformance... Why not p.csr and
@@ -752,3 +757,111 @@ def center_of_labels_mass(labels, validate=True):
     return np.array(
         scipy.ndimage.center_of_mass(np.ones_like(labels), labels, indices)
     )
+
+
+###############################################################################
+# MeasureObjectNeighbors
+###############################################################################
+
+def relate_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
+    """relate the object numbers in one label to those in another
+
+    parent_labels - 2d label matrix of parent labels
+
+    child_labels - 2d label matrix of child labels
+
+    Returns two 1-d arrays. The first gives the number of children within
+    each parent. The second gives the mapping of each child to its parent's
+    object number.
+    """
+    histogram = histogram_from_labels(parent_labels, child_labels)
+    return relate_histogram(histogram)
+
+def histogram_from_labels(parent_labels: ObjectSegmentation, child_labels: ObjectSegmentation) -> scipy.sparse.coo_matrix:
+    """Find per pixel overlap of parent labels and child labels
+
+    parent_labels - the parents which contain the children
+    child_labels - the children to be mapped to a parent
+
+    Returns a sparse matrix of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    return find_label_overlaps(parent_labels, child_labels, validate=True)
+
+def relate_histogram(histogram: scipy.sparse.coo_matrix) -> Tuple[NDArray[ObjectLabel], NDArray[ObjectLabel]]:
+    """Return child counts and parents of children given a histogram
+
+    histogram - histogram from histogram_from_ijv or histogram_from_labels
+    """
+    parent_count = histogram.shape[0] - 1
+
+    parents_of_children = np.asarray(histogram.argmax(axis=0))
+    if len(parents_of_children.shape) == 2:
+        parents_of_children = np.squeeze(parents_of_children, axis=0)
+    #
+    # Create a histogram of # of children per parent
+    children_per_parent = np.histogram(
+        parents_of_children[1:], np.arange(parent_count + 2)
+    )[0][1:]
+
+    #
+    # Make sure to remove the background elements at index 0
+    #
+    return children_per_parent, parents_of_children[1:]
+
+def relate_children(
+        parent_segmentations, 
+        child_segmentations, 
+        parent_ijv, 
+        child_ijv, 
+        volumetric=False
+    ):
+    """Relate the object numbers in one label to the object numbers in another
+
+    children - another "objects" instance: the labels of children within
+                the parent which is "self"
+
+    Returns two 1-d arrays. The first gives the number of children within
+    each parent. The second gives the mapping of each child to its parent's
+    object number.
+    """
+    if volumetric:
+        histogram = histogram_from_labels(parent_segmentations, child_segmentations)
+    else:
+        histogram = histogram_from_ijv(parent_ijv, child_ijv)
+
+    return relate_histogram(histogram)
+
+def histogram_from_ijv(
+        parent_ijv, 
+        child_ijv
+    ):
+    """Find per pixel overlap of parent labels and child labels,
+    stored in ijv format.
+
+    parent_ijv - the parents which contain the children
+    child_ijv - the children to be mapped to a parent
+
+    Returns a sparse matrix of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    return find_ijv_overlaps(parent_ijv, child_ijv, validate=True)
+
+###############################################################################
+# SplitOrMergeObjects
+###############################################################################
+
+def copy_labels(labels, segmented):
+    """Carry differences between orig_segmented and new_segmented into "labels"
+
+    labels - labels matrix similarly segmented to "segmented"
+    segmented - the newly numbered labels matrix (a subset of pixels are labeled)
+    """
+    max_labels = len(np.unique(segmented))
+    seglabel = scipy.ndimage.minimum(labels, segmented, np.arange(1, max_labels + 1))
+    labels_new = labels.copy()
+    labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
+    return labels_new
+

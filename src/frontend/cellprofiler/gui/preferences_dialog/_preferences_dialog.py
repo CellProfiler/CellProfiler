@@ -242,11 +242,11 @@ class PreferencesDialog(wx.Dialog):
             else:
                 on_press = None
             if on_press is not None:
-                identifier = wx.NewId()
+                identifier = wx.NewIdRef()
                 button = wx.Button(scrollpanel, identifier, ui_info)
                 self.Bind(wx.EVT_BUTTON, on_press, button, identifier)
                 sizer.Add(button, (index, 2))
-            button = wx.Button(scrollpanel, -1, "?", (0, 0), (30, -1))
+            button = wx.Button(scrollpanel, -1, "?", (0, 0), (30, -1), style=wx.BU_EXACTFIT)
 
             def on_help(event, help_text=help_text):
                 dlg = HTMLDialog(

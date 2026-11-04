@@ -40,6 +40,7 @@ from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
 from .preferences_dialog._preferences_dialog import PreferencesDialog
 from .readers_dialog._readers_dialog import ReadersDialog
+from .plugins_dialog._plugins_dialog import PluginsDialog
 from .preferences_view import PreferencesView
 from .utilities.module_view import stop_validation_queue_thread
 
@@ -77,73 +78,74 @@ Pipeline.\
 
 ID_FILE_NEW_WORKSPACE = wx.ID_NEW
 ID_FILE_LOAD = wx.ID_OPEN
-ID_FILE_LOAD_PIPELINE = wx.NewId()
-ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
-ID_FILE_OPEN_IMAGE = wx.NewId()
-ID_FILE_EXIT = wx.NewId()
-ID_FILE_WIDGET_INSPECTOR = wx.NewId()
-ID_FILE_SAVE_PIPELINE = wx.NewId()
+ID_FILE_LOAD_PIPELINE = wx.NewIdRef()
+ID_FILE_URL_LOAD_PIPELINE = wx.NewIdRef()
+ID_FILE_OPEN_IMAGE = wx.NewIdRef()
+ID_FILE_EXIT = wx.NewIdRef()
+ID_FILE_WIDGET_INSPECTOR = wx.NewIdRef()
+ID_FILE_SAVE_PIPELINE = wx.NewIdRef()
 ID_FILE_SAVE = wx.ID_SAVE
 ID_FILE_SAVE_AS = wx.ID_SAVEAS
-ID_FILE_REVERT_TO_SAVED = wx.NewId()
-ID_FILE_CLEAR_PIPELINE = wx.NewId()
-ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
-ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
-ID_FILE_EXPORT_PIPELINE_CITATIONS = wx.NewId()
-ID_FILE_IMPORT_FILE_LIST = wx.NewId()
-ID_FILE_ANALYZE_IMAGES = wx.NewId()
-ID_FILE_STOP_ANALYSIS = wx.NewId()
-ID_FILE_PRINT = wx.NewId()
-ID_FILE_PLATEVIEWER = wx.NewId()
-ID_FILE_NEW_CP = wx.NewId()
+ID_FILE_REVERT_TO_SAVED = wx.NewIdRef()
+ID_FILE_CLEAR_PIPELINE = wx.NewIdRef()
+ID_FILE_EXPORT_IMAGE_SETS = wx.NewIdRef()
+ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewIdRef()
+ID_FILE_EXPORT_PIPELINE_CITATIONS = wx.NewIdRef()
+ID_FILE_IMPORT_FILE_LIST = wx.NewIdRef()
+ID_FILE_ANALYZE_IMAGES = wx.NewIdRef()
+ID_FILE_STOP_ANALYSIS = wx.NewIdRef()
+ID_FILE_PRINT = wx.NewIdRef()
+ID_FILE_PLATEVIEWER = wx.NewIdRef()
+ID_FILE_NEW_CP = wx.NewIdRef()
 
-ID_EDIT_SELECT_ALL = wx.NewId()
-ID_EDIT_COPY = wx.NewId()
-ID_EDIT_DUPLICATE = wx.NewId()
+ID_EDIT_SELECT_ALL = wx.NewIdRef()
+ID_EDIT_COPY = wx.NewIdRef()
+ID_EDIT_DUPLICATE = wx.NewIdRef()
 ID_EDIT_UNDO = wx.ID_UNDO
-ID_EDIT_MOVE_UP = wx.NewId()
-ID_EDIT_MOVE_DOWN = wx.NewId()
-ID_EDIT_DELETE = wx.NewId()
+ID_EDIT_MOVE_UP = wx.NewIdRef()
+ID_EDIT_MOVE_DOWN = wx.NewIdRef()
+ID_EDIT_DELETE = wx.NewIdRef()
 
-ID_EDIT_EXPAND_ALL = wx.NewId()
-ID_EDIT_COLLAPSE_ALL = wx.NewId()
-ID_EDIT_BROWSE_FOR_FILES = wx.NewId()
-ID_EDIT_BROWSE_FOR_FOLDER = wx.NewId()
-ID_EDIT_CLEAR_FILE_LIST = wx.NewId()
-ID_EDIT_REMOVE_FROM_FILE_LIST = wx.NewId()
-ID_EDIT_SHOW_FILE_LIST_IMAGE = wx.NewId()
-ID_EDIT_ENABLE_MODULE = wx.NewId()
-ID_EDIT_DISPLAY_MODULE = wx.NewId()
-ID_EDIT_GO_TO_MODULE = wx.NewId()
-ID_FIND_USAGES = wx.NewId()
+ID_EDIT_EXPAND_ALL = wx.NewIdRef()
+ID_EDIT_COLLAPSE_ALL = wx.NewIdRef()
+ID_EDIT_BROWSE_FOR_FILES = wx.NewIdRef()
+ID_EDIT_BROWSE_FOR_FOLDER = wx.NewIdRef()
+ID_EDIT_CLEAR_FILE_LIST = wx.NewIdRef()
+ID_EDIT_REMOVE_FROM_FILE_LIST = wx.NewIdRef()
+ID_EDIT_SHOW_FILE_LIST_IMAGE = wx.NewIdRef()
+ID_EDIT_ENABLE_MODULE = wx.NewIdRef()
+ID_EDIT_DISPLAY_MODULE = wx.NewIdRef()
+ID_EDIT_GO_TO_MODULE = wx.NewIdRef()
+ID_FIND_USAGES = wx.NewIdRef()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
-ID_OPTIONS_READERS = wx.NewId()
-ID_CHECK_NEW_VERSION = wx.NewId()
+ID_OPTIONS_READERS = wx.NewIdRef()
+ID_FILE_PLUGINS = wx.NewIdRef()
+ID_CHECK_NEW_VERSION = wx.NewIdRef()
 
-ID_DEBUG_TOGGLE = wx.NewId()
-ID_DEBUG_STEP = wx.NewId()
-ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
-ID_DEBUG_NEXT_GROUP = wx.NewId()
-ID_DEBUG_CHOOSE_GROUP = wx.NewId()
-ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
-ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
-ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP = wx.NewId()
-ID_DEBUG_RELOAD = wx.NewId()
-ID_DEBUG_PDB = wx.NewId()
-ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewId()
-ID_DEBUG_STEP_FROM_THIS_MODULE = wx.NewId()
-ID_DEBUG_HELP = wx.NewId()
-ID_DEBUG_VIEW_WORKSPACE = wx.NewId()
+ID_DEBUG_TOGGLE = wx.NewIdRef()
+ID_DEBUG_STEP = wx.NewIdRef()
+ID_DEBUG_NEXT_IMAGE_SET = wx.NewIdRef()
+ID_DEBUG_NEXT_GROUP = wx.NewIdRef()
+ID_DEBUG_CHOOSE_GROUP = wx.NewIdRef()
+ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewIdRef()
+ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewIdRef()
+ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP = wx.NewIdRef()
+ID_DEBUG_RELOAD = wx.NewIdRef()
+ID_DEBUG_PDB = wx.NewIdRef()
+ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewIdRef()
+ID_DEBUG_STEP_FROM_THIS_MODULE = wx.NewIdRef()
+ID_DEBUG_HELP = wx.NewIdRef()
+ID_DEBUG_VIEW_WORKSPACE = wx.NewIdRef()
 
 # ~*~
-ID_SAMPLE_INIT = wx.NewId()
+ID_SAMPLE_INIT = wx.NewIdRef()
 # ~^~
 
-ID_WINDOW = wx.NewId()
-ID_WINDOW_CLOSE_ALL = wx.NewId()
-ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewId()
-ID_WINDOW_HIDE_ALL_WINDOWS = wx.NewId()
+ID_WINDOW = wx.NewIdRef()
+ID_WINDOW_CLOSE_ALL = wx.NewIdRef()
+ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewIdRef()
+ID_WINDOW_HIDE_ALL_WINDOWS = wx.NewIdRef()
 ID_WINDOW_ALL = (
     ID_WINDOW_CLOSE_ALL,
     ID_WINDOW_SHOW_ALL_WINDOWS,
@@ -152,8 +154,14 @@ ID_WINDOW_ALL = (
 
 WINDOW_IDS = []
 
-ID_HELP_MODULE = wx.NewId()
-ID_HELP_SOURCE_CODE = wx.NewId()
+ID_HELP_MODULE = wx.NewIdRef()
+ID_HELP_SOURCE_CODE = wx.NewIdRef()
+
+# Why -1? Not sure. I just moved this here from
+# frontend/cellprofiler/gui/module_view/_module_view.py
+# where it was a hardcoded positional argument to wx.Button for the "+" button (__mcp_add_module_button)
+# the other buttons ("-", "^", "v") had Constants with generated IDs defined above
+ID_MODULE_ADD = -1
 
 
 class CPFrame(wx.Frame):
@@ -206,6 +214,7 @@ class CPFrame(wx.Frame):
         #
         #  right_win
         #    Notes window
+        #    plugin_warning_panel (conditional)
         #    path_module_imageset_panel
         #        path_list_sash
         #            group_box
@@ -220,6 +229,13 @@ class CPFrame(wx.Frame):
         self.__right_win.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.__notes_panel = wx.Panel(self.__right_win)
         self.__right_win.GetSizer().Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
+        self.__right_win.GetSizer().AddSpacer(4)
+        self.__plugin_warning_panel = wx.Panel(
+            self.__right_win, name="plugin_warning_panel"
+        )
+        self.__right_win.GetSizer().Add(
+            self.__plugin_warning_panel, 0, wx.EXPAND | wx.LEFT | wx.RIGHT
+        )
         self.__right_win.GetSizer().AddSpacer(4)
         self.__path_module_imageset_panel = wx.Panel(self.__right_win, name="path_module_imageset_panel")
         self.__right_win.GetSizer().Add(
@@ -246,7 +262,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.adv.LAYOUT_TOP)
-        self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
+        self.__path_list_sash.SetDefaultSize((screen_width, int(screen_height / 4)))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.adv.SASH_BOTTOM, True)
         self.__path_list_sash.SetAutoLayout(True)
@@ -313,7 +329,7 @@ class CPFrame(wx.Frame):
         )
         self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
-        self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
+        self.__imageset_sash.SetDefaultSize((screen_width, int(screen_height / 4)))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
@@ -444,6 +460,18 @@ class CPFrame(wx.Frame):
         right_sizer = self.__right_win.GetSizer()
         assert isinstance(right_sizer, wx.Sizer)
         right_sizer.Show(self.__notes_panel, show)
+        # whether plugin_warning_panel itself should be shown is
+        # per-module (most modules don't get a warning at all) and is
+        # governed entirely by ModuleView.set_selection()/clear_selection(),
+        # which runs independently of this method and may well have
+        # already run *before* this call (e.g. __on_pipeline_loaded()
+        # selects the first module, then calls show_module_ui(True)) - so
+        # only ever force it off here (nothing selected => definitely no
+        # warning either), never force it on, or this would clobber
+        # whatever ModuleView correctly decided for the actual selected
+        # module with a blank, unstyled panel.
+        if not show:
+            right_sizer.Show(self.__plugin_warning_panel, False)
         right_sizer.Show(self.__path_module_imageset_panel, show)
         self.__right_win.Layout()
         if show:
@@ -551,7 +579,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % cellprofiler_version)
+        self.SetTitle(wx.GetApp().GetAppDisplayName())
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
@@ -679,6 +707,11 @@ class CPFrame(wx.Frame):
             ID_OPTIONS_PREFERENCES,
             "&Preferences...",
             "Set global application preferences",
+        )
+        self.__menu_file.Append(
+            ID_FILE_PLUGINS,
+            "&Plugins...",
+            "Manage CellProfiler plugins",
         )
 
         self.recent_files = wx.Menu()
@@ -909,6 +942,7 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_readers, id=ID_OPTIONS_READERS)
         
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
+        self.Bind(wx.EVT_MENU, self.__on_plugins, id=ID_FILE_PLUGINS)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
         self.Bind(wx.EVT_MENU, self.__on_debug_help, id=ID_DEBUG_HELP)
@@ -1063,6 +1097,11 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_preferences(event):
         dlg = PreferencesDialog()
+        dlg.Show()
+
+    @staticmethod
+    def __on_plugins(event):
+        dlg = PluginsDialog()
         dlg.Show()
 
     def __on_close_all(self, event):
@@ -1294,6 +1333,7 @@ class CPFrame(wx.Frame):
             self.__workspace,
             frame=self,
             notes_panel=self.__notes_panel,
+            plugin_warning_panel=self.__plugin_warning_panel,
         )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)

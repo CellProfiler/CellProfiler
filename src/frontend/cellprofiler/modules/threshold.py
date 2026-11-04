@@ -16,7 +16,7 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.threshold
+import centriole.threshold
 import numpy
 from cellprofiler_core.constants.measurement import (
     FF_WEIGHTED_VARIANCE,
@@ -42,7 +42,6 @@ from cellprofiler_core.setting.text import Float, Integer
 from cellprofiler.modules import _help
 from cellprofiler_library.modules import threshold
 import cellprofiler_library.opts.threshold as ThresholdOpts
-from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -113,8 +112,8 @@ The choices for the threshold strategy are:
 """.format(
                 **{
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
-                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE,
-                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL,
+                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value,
+                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL.value,
                 }
             ),
         )
@@ -249,12 +248,12 @@ There are a number of methods for finding thresholds automatically:
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
-                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
-                    "TM_MANUAL": ThresholdOpts.Method.MANUAL,
-                    "TM_MEASUREMENT": ThresholdOpts.Method.MEASUREMENT,
-                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL,
+                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
+                    "TM_MANUAL": ThresholdOpts.Method.MANUAL.value,
+                    "TM_MEASUREMENT": ThresholdOpts.Method.MEASUREMENT.value,
+                    "TS_GLOBAL": ThresholdOpts.Scope.GLOBAL.value,
                 }
             ),
         )
@@ -379,11 +378,11 @@ threshold value.
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
-                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
-                    "TM_SAUVOLA": ThresholdOpts.Method.SAUVOLA,
-                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
+                    "TM_LI": ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
+                    "TM_SAUVOLA": ThresholdOpts.Method.SAUVOLA.value,
+                    "TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value,
                 }
             ),
         )
@@ -433,7 +432,7 @@ setting.
 """.format(
                 **{
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
-                    "TM_OTSU": ThresholdOpts.Method.OTSU,
+                    "TM_OTSU": ThresholdOpts.Method.OTSU.value,
                 }
             ),
         )
@@ -530,8 +529,8 @@ objects, three-class thresholding may perform worse than two-class.
 .. |image1| image:: {PROTIP_AVOID_ICON}
 """.format(
                 **{
-                    "O_THREE_CLASS": ThresholdOpts.OtsuMethod.THREE_CLASS,
-                    "O_TWO_CLASS": ThresholdOpts.OtsuMethod.TWO_CLASS,
+                    "O_THREE_CLASS": ThresholdOpts.OtsuMethod.THREE_CLASS.value,
+                    "O_TWO_CLASS": ThresholdOpts.OtsuMethod.TWO_CLASS.value,
                     "PROTIP_AVOID_ICON": _help.PROTIP_AVOID_ICON,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
@@ -560,7 +559,7 @@ be assigned to the foreground class or the background class.
 Discard this fraction of the pixels in the image starting with those of
 the lowest intensity.
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -575,7 +574,7 @@ the lowest intensity.
 Discard this fraction of the pixels in the image starting with those of
 the highest intensity.
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -600,10 +599,10 @@ This setting determines how the intensity midpoint is determined.
    the intensity associated with the bin with the most pixels.
 """.format(
                 **{
-                    "RB_MEAN": ThresholdOpts.AveragingMethod.MEAN,
-                    "RB_MEDIAN": ThresholdOpts.AveragingMethod.MEDIAN,
-                    "RB_MODE": ThresholdOpts.AveragingMethod.MODE,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
+                    "RB_MEAN": ThresholdOpts.AveragingMethod.MEAN.value,
+                    "RB_MEDIAN": ThresholdOpts.AveragingMethod.MEDIAN.value,
+                    "RB_MODE": ThresholdOpts.AveragingMethod.MODE.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
                 }
             ),
         )
@@ -621,9 +620,9 @@ Choose one of *{RB_SD}* or *{RB_MAD}* (the median of the absolute
 difference of the pixel intensities from their median).
 """.format(
                 **{
-                    "RB_MAD": ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION,
-                    "RB_SD": ThresholdOpts.VarianceMethod.STANDARD_DEVIATION,
-                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND,
+                    "RB_MAD": ThresholdOpts.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION.value,
+                    "RB_SD": ThresholdOpts.VarianceMethod.STANDARD_DEVIATION.value,
+                    "TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value,
                 }
             ),
         )
@@ -642,7 +641,7 @@ Use a smaller number to be less stringent. It’s even possible to
 use a negative number if you want the threshold to be lower than the average
 (e.g., for images that are densely covered by foreground).
 """.format(
-                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND}
+                **{"TM_ROBUST_BACKGROUND": ThresholdOpts.Method.ROBUST_BACKGROUND.value}
             ),
         )
 
@@ -655,14 +654,14 @@ use a negative number if you want the threshold to be lower than the average
 Enter the size of the window (in pixels) to be used for the adaptive method.
 Often a good choice is some multiple of the largest expected object size.
 """.format(
-                **{"TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE}
+                **{"TS_ADAPTIVE": ThresholdOpts.Scope.ADAPTIVE.value}
             ),
         )
         self.log_transform = Binary(
             "Log transform before thresholding?",
             value=False,
             doc=f"""\
-*(Used only with the "{ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY}" and "{ThresholdOpts.Method.OTSU}" methods)*
+*(Used only with the "{ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY.value}" and "{ThresholdOpts.Method.OTSU.value}" methods)*
 
 Choose whether to log-transform intensity values before thresholding.
 The log transformation is applied before calculating the threshold, and the resulting 
@@ -780,7 +779,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
+        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, _ = self.get_threshold(
             input_image,
             workspace
         )
@@ -788,9 +787,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(
@@ -811,54 +810,43 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == ThresholdOpts.Scope.ADAPTIVE:
-                workspace.display_data.threshold_image = final_threshold
+                workspace.display_data.threshold_image = self.final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
 
-    def convert_setting(self, gui_setting_str):
-        """
-        Convert GUI setting strings to something cellprofiler
-        library compatible. That is, remove spaces and hyphens.
-        """
-        rep_list = ((" ", "_"), ("-", "_"))
-        converted_str = gui_setting_str
-        for replacement in rep_list:
-            converted_str = converted_str.replace(*replacement)
-        return converted_str.lower()
-
     def get_threshold(self, input_image, workspace, automatic=False):
         """
         Get manual, measurement or other thresholds
         """
-        # Handle manual and measurement thresholds, which are not supported
+        # Handle manual and measurement thresholds, which are not supported 
         # by cellprofiler_library
         if self.threshold_operation == ThresholdOpts.Method.MANUAL:
-            final_threshold = float(self.manual_threshold.value) 
-            orig_threshold = float(self.manual_threshold.value)
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
+            # Thresholds added to class so they are accessible in tests
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=self.manual_threshold.value,
+                    threshold_correction_factor=1, # No correction applied
+                    threshold_min=None, # Manual has no min/max fitlering
+                    threshold_max=None,
+                    volumetric=input_image.volumetric, 
             )
         elif self.threshold_operation == ThresholdOpts.Method.MEASUREMENT:
-            orig_threshold = float(
+            predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
                     self.thresholding_measurement.value
                 )
             )
-            final_threshold = orig_threshold
-            final_threshold *= float(self.threshold_correction_factor.value)
-            final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=predefined_threshold,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    smoothing=self.threshold_smoothing_scale.value,
             )
         else:
             # Convert threshold method for CellProfiler Library
@@ -892,11 +880,10 @@ staining.
                     variance_method=self.variance_method.value,
                     number_of_deviations=self.number_of_deviations.value,
                     volumetric=input_image.volumetric,  
-                    automatic=automatic
             )
-        
-        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
+    
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions
 
@@ -964,13 +951,13 @@ staining.
 
         mask = image.mask
 
-        wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
+        wv = centriole.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
             "Image", FF_WEIGHTED_VARIANCE % objname, numpy.array([wv], dtype=float),
         )
 
-        entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
+        entropies = centriole.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
             "Image",
@@ -1048,18 +1035,18 @@ staining.
                 setting_values[2] = ThresholdOpts.Scope.GLOBAL
 
             if setting_values[2] == ThresholdOpts.Scope.ADAPTIVE and setting_values[3] in [
-                centrosome.threshold.TM_MCT,
-                centrosome.threshold.TM_ROBUST_BACKGROUND,
+                centriole.threshold.TM_MCT,
+                centriole.threshold.TM_ROBUST_BACKGROUND,
             ]:
                 setting_values[2] = ThresholdOpts.Scope.GLOBAL
 
-            if setting_values[3] == centrosome.threshold.TM_MCT:
+            if setting_values[3] == centriole.threshold.TM_MCT:
                 setting_values[3] = ThresholdOpts.Method.MINIMUM_CROSS_ENTROPY
 
             if setting_values[2] == ThresholdOpts.Scope.ADAPTIVE:
                 setting_values += [setting_values[3]]
             else:
-                setting_values += [centrosome.threshold.TM_OTSU]
+                setting_values += [centriole.threshold.TM_OTSU]
             variable_revision_number = 10
         used_log_otsu = False
         if variable_revision_number == 10:
@@ -1105,23 +1092,23 @@ staining.
 
             if setting_values[1] == "Automatic":
                 setting_values[1] = ThresholdOpts.Scope.GLOBAL
-                setting_values[2] = centrosome.threshold.TM_MCT
+                setting_values[2] = centriole.threshold.TM_MCT
                 setting_values[3] = "Manual"
                 setting_values[4] = "1.3488"
                 setting_values[5] = "1"
                 setting_values[6] = "(0.0, 1.0)"
 
             removed_threshold_methods = [
-                centrosome.threshold.TM_KAPUR,
-                centrosome.threshold.TM_MOG,
-                centrosome.threshold.TM_RIDLER_CALVARD,
+                centriole.threshold.TM_KAPUR,
+                centriole.threshold.TM_MOG,
+                centriole.threshold.TM_RIDLER_CALVARD,
             ]
 
             if setting_values[2] in removed_threshold_methods:
                 setting_values[2] = "None"
 
-            if setting_values[2] == centrosome.threshold.TM_BACKGROUND:
-                setting_values[2] = centrosome.threshold.TM_ROBUST_BACKGROUND
+            if setting_values[2] == centriole.threshold.TM_BACKGROUND:
+                setting_values[2] = centriole.threshold.TM_ROBUST_BACKGROUND
                 setting_values[17] = "Custom"
                 setting_values[18] = "0.02"
                 setting_values[19] = "0.02"

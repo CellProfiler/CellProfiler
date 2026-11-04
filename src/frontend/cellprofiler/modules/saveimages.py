@@ -828,14 +828,15 @@ to unexpected behavior like saving in the original input file directory. For saf
         """handle an interaction request from check_overwrite()"""
         import wx
 
-        dlg = wx.MessageDialog(
-            wx.GetApp().TopWindow,
+        parent = wx.GetActiveWindow() or wx.GetApp().TopWindow
+        with wx.MessageDialog(
+            parent,
             "%s #%d, set #%d - Do you want to overwrite %s?"
             % (self.module_name, self.module_num, image_set_number, filename),
             "Warning: overwriting file",
             wx.YES_NO | wx.ICON_QUESTION,
-        )
-        result = dlg.ShowModal() == wx.ID_YES
+        ) as dlg:
+            result = dlg.ShowModal() == wx.ID_YES
         return "Yes" if result else "No"
 
     def save_filename_measurements(self, workspace):

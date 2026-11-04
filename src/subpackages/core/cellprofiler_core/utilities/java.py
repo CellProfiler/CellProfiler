@@ -12,6 +12,7 @@ import scyjava
 import cellprofiler_core.preferences
 
 LOGGER = logging.getLogger(__name__)
+BIOFORMATS_VERSION = "7.3.1"
 
 def start_java():
     """Start CellProfiler's JVM via Javabridge
@@ -36,7 +37,10 @@ def start_java():
         scyjava.config.add_classpath(str(jars / "*"))
     else:
         scyjava.config.set_java_constraints(fetch="auto")
-        scyjava.config.endpoints.append("ome:formats-gpl")
+        scyjava.config.endpoints.extend(
+            f"ome:{artifact}:{BIOFORMATS_VERSION}"
+            for artifact in ("formats-gpl", "formats-api", "formats-bsd")
+        )
         scyjava.config.endpoints.append("org.scijava:scijava-config")
 
     LOGGER.info("Initializing Java Virtual Machine")

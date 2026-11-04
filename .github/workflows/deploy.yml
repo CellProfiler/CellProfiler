@@ -47,5 +47,4 @@ jobs:
         pixi run --locked -e ci-tools python -m build --no-isolation
         pixi run --locked -e ci-tools twine upload dist/*
 on:
-  release:
-    types: [created]
+  workflow_dispatch:

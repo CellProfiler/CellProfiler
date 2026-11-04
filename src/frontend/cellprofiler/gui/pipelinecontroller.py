@@ -3693,7 +3693,7 @@ class PipelineController(object):
             count += 1
         message_format = "Running module %d of %d: %s"
         index = 0
-        with wx.ProgressDialog(
+        with wx.GenericProgressDialog(
             "Running modules in test mode",
             message_format % (index + 1, count, first_module.module_name),
             maximum=count,
@@ -3703,7 +3703,7 @@ class PipelineController(object):
             dlg.Show()
             max_message_width = None
             while True:
-                assert isinstance(dlg, wx.ProgressDialog)
+                assert isinstance(dlg, wx.GenericProgressDialog)
                 module = self.current_debug_module()
                 message = message_format % (index + 1, count, module.module_name)
                 message_width = dlg.GetFullTextExtent(message)[0]

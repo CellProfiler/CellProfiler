@@ -35,7 +35,7 @@ def dump(pipeline, fp, save_image_plane_details):
     }
 
     if save_image_plane_details:
-        urls = [url for url in pipeline.file_list]
+        urls = [image_file.url for image_file in pipeline.file_list]
         file_list = {
             "version": '"%s":"%d","%s":"%d"'
             % (

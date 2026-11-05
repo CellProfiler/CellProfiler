@@ -10,6 +10,21 @@ import sys
 import tempfile
 import urllib.parse
 
+if sys.platform.startswith("linux") and "GDK_BACKEND" not in os.environ:
+    # When running under a Wayland session, force the GTK X11 (XWayland)
+    # backend. GTK3's native Wayland drag-and-drop implementation has a
+    # use-after-free that segfaults the app whenever a file is dropped
+    # on the Images tab's path list: the crash is in
+    # gdk_wayland_drag_context_commit_status, reached from the
+    # wx.FileDropTarget on PathListCtrl. wxPython does not implement
+    # Wayland DnD itself, so it relies on this buggy GTK code path,
+    # while the X11 backend's Xdnd implementation is stable. The guard
+    # requires DISPLAY as well so pure-Wayland setups without XWayland
+    # keep their default backend. An explicit GDK_BACKEND from the
+    # environment always wins.
+    if os.environ.get("WAYLAND_DISPLAY") and os.environ.get("DISPLAY"):
+        os.environ["GDK_BACKEND"] = "x11"
+
 import h5py
 import matplotlib
 import numpy

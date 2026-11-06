@@ -13,6 +13,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import pytest
 
 import tests.core
 
@@ -296,7 +297,7 @@ def test_load_v5():
     assert em1.csv_filename.value == "metadata.csv"
 
 
-def check(module, url, dd, keys=None):
+def check(module, url, dd, keys=None, series_count=None):
     """Check that running the metadata module on a url generates the expected dictionary"""
     pipeline = cellprofiler_core.pipeline.Pipeline()
     imgs = cellprofiler_core.modules.images.Images()
@@ -307,13 +308,20 @@ def check(module, url, dd, keys=None):
     pipeline.add_module(imgs)
     module.set_module_num(2)
     pipeline.add_module(module)
-    pipeline.add_urls([url])
+    urls = [url] if isinstance(url, str) else url
+    pipeline.add_urls(urls)
+    if series_count is not None:
+        imgs.want_split.value = True
+        for image_file in pipeline.file_list:
+            image_file.load_plane_metadata(
+                [1, 1, 1, 64, 64] * series_count, [""] * series_count
+            )
     m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, None, None, m, None
     )
     file_list = workspace.file_list
-    file_list.add_files_to_filelist([url])
+    file_list.add_files_to_filelist(urls)
     assert module.prepare_run(workspace)
     image_planes = pipeline.get_image_plane_list(workspace)
     assert len(image_planes) == len(dd)
@@ -921,6 +929,76 @@ def test_well_row_column():
         assert cellprofiler_core.constants.measurement.M_WELL in [
             c[1] for c in module.get_measurement_columns(pipeline)
         ]
+
+
+@pytest.mark.parametrize(
+    "row, column, well",
+    [
+        ("1", "01", "A01"),
+        ("02", "03", "B03"),
+        ("8", "12", "H12"),
+        ("16", "24", "P24"),
+        ("24", "05", "X05"),
+        ("25", "05", "Y05"),
+        ("26", "05", "Z05"),
+        ("27", "05", "AA05"),
+        ("28", "005", "AB005"),
+        ("32", "48", "AF48"),
+        ("52", "123", "AZ123"),
+        ("53", "05", "BA05"),
+        ("702", "05", "ZZ05"),
+        ("703", "05", "AAA05"),
+        ("A", "05", "A05"),
+        ("AA", "005", "AA005"),
+        ("aa", "123", "aa123"),
+    ],
+)
+def test_well_row_column_large_plates(row, column, well):
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    em = module.extraction_methods[0]
+    em.file_regexp.value = r"^r(?P<wellrow>[A-Za-z0-9]+)c(?P<wellcol>[0-9]+)\.tif$"
+    check(
+        module,
+        f"file:/imaging/analysis/r{row}c{column}.tif",
+        [{"wellrow": row, "wellcol": column, "Well": well}],
+        ("wellrow", "wellcol", "Well"),
+    )
+
+
+@pytest.mark.parametrize("row", ["27", "AA"])
+def test_well_row_column_preserves_explicit_well(row):
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    em = module.extraction_methods[0]
+    em.file_regexp.value = (
+        r"^r(?P<wellrow>[A-Za-z0-9]+)c(?P<wellcol>[0-9]+)_(?P<Well>.+)\.tif$"
+    )
+    check(
+        module,
+        f"file:/imaging/analysis/r{row}c05_custom-well.tif",
+        [{"wellrow": row, "wellcol": "05", "Well": "custom-well"}],
+    )
+
+
+def test_well_row_column_multiple_files_and_series():
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    em = module.extraction_methods[0]
+    em.file_regexp.value = r"^r(?P<wellrow>[0-9]+)c(?P<wellcol>[0-9]+)\.tif$"
+    check(
+        module,
+        [
+            "file:/imaging/analysis/r27c05.tif",
+            "file:/imaging/analysis/r53c123.tif",
+        ],
+        [
+            {"wellrow": row, "wellcol": column, "Well": well, "Series": series}
+            for row, column, well in [("27", "05", "AA05"), ("53", "123", "BA123")]
+            for series in range(2)
+        ],
+        series_count=2,
+    )
 
 
 def test_well_row_column_before_import():

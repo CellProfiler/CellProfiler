@@ -907,9 +907,13 @@ not being applied, your choice on this setting may be the culprit.
                     row = file_object.metadata[row_key]
                     if row.isdigit():
                         row = int(row)
-                    if isinstance(row, int):
-                        if 0 < row <= 24:
-                            row = string.ascii_uppercase[row - 1]
+                    if isinstance(row, int) and row > 0:
+                        letters = []
+                        while row > 0:
+                            # Spreadsheet row labels use one-based digits A through Z.
+                            row, remainder = divmod(row - 1, 26)
+                            letters.append(string.ascii_uppercase[remainder])
+                        row = "".join(reversed(letters))
                     well = row + col
                     file_object.set_metadata(FTR_WELL, well)
         for group in self.extraction_methods:

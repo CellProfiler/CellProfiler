@@ -4,6 +4,8 @@ import os
 import os.path
 import re
 import base64
+from pathlib import Path
+from urllib.parse import quote
 
 import pkg_resources
 
@@ -25,22 +27,18 @@ def read_content(filename):
     )
 
 
-def image_resource(filename):
-    relpath = os.path.relpath(
+def image_resource_path(filename):
+    return Path(
         pkg_resources.resource_filename(
             "cellprofiler", os.path.join("data", "images", filename)
         )
-    )
+    ).resolve()
 
-    # With this specific relative path we are probably building the documentation
-    # in sphinx The path separator used by sphinx is "/" on all platforms.
-    if relpath == os.path.join("..", "cellprofiler", "data", "images", filename):
-        return "../images/{}".format(filename)
 
-    # Otherwise, if you're rendering in the GUI, relative paths are fine
-    # Note: the HTML renderer requires to paths to use '/' so we replace
-    # the windows default '\\' here
-    return relpath.replace("\\", "/")
+def image_resource(filename):
+    if os.environ.get("CELLPROFILER_BUILDING_DOCS") == "1":
+        return "/images/{}".format(quote(filename))
+    return image_resource_path(filename).as_uri()
 
 # returns a base64 encoded dataURL of the image pointed to by filename
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
@@ -56,7 +54,7 @@ def image_resource_dataUrl(filename):
 
     media_type = f"image/{ext}"
 
-    with open(image_resource(filename), "rb") as img:
+    with open(image_resource_path(filename), "rb") as img:
         b64_string = base64.b64encode(img.read())
 
     data_url = f"data:{media_type};base64,{b64_string.decode('utf-8')}"

@@ -19,6 +19,8 @@
 import os
 import sys
 
+os.environ["CELLPROFILER_BUILDING_DOCS"] = "1"
+
 import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))

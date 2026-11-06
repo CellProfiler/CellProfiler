@@ -1,3 +1,4 @@
+import numpy
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.text import Integer
@@ -120,8 +121,24 @@ If set to 0, a full connectivity of the input dimension is used.
 
         super(ConvertImageToObjects, self).run(workspace)
 
+        if self.show_window:
+            labels = workspace.display_data.y_data
+            foreground = labels[labels > 0]
+            # Preserved labels may be sparse or have disconnected parts.
+            object_count = numpy.unique(foreground).size
+            coverage = 100.0 * foreground.size / labels.size if labels.size else 0.0
+            coverage_label = (
+                "Volume covered by objects"
+                if workspace.display_data.dimensions == 3
+                else "Area covered by objects"
+            )
+            workspace.display_data.statistics = [
+                ("# of objects", str(object_count)),
+                (coverage_label, f"{coverage:.1f} %"),
+            ]
+
     def display(self, workspace, figure):
-        layout = (2, 1)
+        layout = (2, 2)
 
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions, subplots=layout
@@ -141,4 +158,11 @@ If set to 0, a full connectivity of the input dimension is used.
             title=self.y_name.value,
             x=1,
             y=0,
+        )
+
+        figure.subplot_table(
+            1,
+            1,
+            [[value] for _, value in workspace.display_data.statistics],
+            row_labels=[label for label, _ in workspace.display_data.statistics],
         )

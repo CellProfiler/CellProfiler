@@ -848,6 +848,8 @@ not being applied, your choice on this setting may be the culprit.
                 self.import_csv_dict(group)
         for file_object in file_objects:
             file_object.clear_metadata()
+            explicit_well = False
+            pending_well_error = None
             for group in self.extraction_methods:
                 if group.filter_choice == F_FILTERED_IMAGES:
                     modpath = file_object.modpath
@@ -864,6 +866,7 @@ not being applied, your choice on this setting may be the culprit.
                     if matches:
                         file_metadata = self.apply_data_types(matches.groupdict())
                         file_object.add_metadata(file_metadata)
+                        explicit_well |= FTR_WELL in file_metadata
                 elif group.extraction_method == X_IMPORTED_EXTRACTION:
                     # Imported from CSV. Test the image against available dicts.
                     joins = group.csv_joiner.parse()
@@ -892,6 +895,7 @@ not being applied, your choice on this setting may be the culprit.
                                 break
                         if valid:
                             file_object.add_metadata(candidate_dict)
+                            explicit_well |= FTR_WELL in candidate_dict
                             break
                     if not valid:
                         LOGGER.info(f"No matching metadata found for {file_object.filename}")
@@ -899,23 +903,19 @@ not being applied, your choice on this setting may be the culprit.
                     pass
                 else:
                     raise NotImplementedError(f"Invalid extraction method '{group.extraction_method}'")
-            if FTR_WELL not in file_object.metadata:
-                row_key = next((x for x in ROW_KEYS if x in file_object.metadata), None)
-                col_key = next((x for x in COL_KEYS if x in file_object.metadata), None)
-                if row_key is not None and col_key is not None:
-                    col = file_object.metadata[col_key]
-                    row = file_object.metadata[row_key]
-                    if row.isdigit():
-                        row = int(row)
-                    if isinstance(row, int) and row > 0:
-                        letters = []
-                        while row > 0:
-                            # Spreadsheet row labels use one-based digits A through Z.
-                            row, remainder = divmod(row - 1, 26)
-                            letters.append(string.ascii_uppercase[remainder])
-                        row = "".join(reversed(letters))
-                    well = row + col
-                    file_object.set_metadata(FTR_WELL, well)
+                if not explicit_well:
+                    # Make a valid derived Well available to the next CSV join.
+                    # Defer an invalid row/column error: a later group may
+                    # supply an explicit Well instead.
+                    try:
+                        self._update_well_metadata(file_object)
+                    except (ValueError, TypeError) as exc:
+                        pending_well_error = exc
+                        file_object.metadata.pop(FTR_WELL, None)
+                    else:
+                        pending_well_error = None
+            if not explicit_well and pending_well_error is not None:
+                raise pending_well_error
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 # Extraction is done, clear the dict list to save memory.
@@ -923,6 +923,28 @@ not being applied, your choice on this setting may be the culprit.
                 group.imported_metadata_dicts = None
                 group.imported_metadata_dicts_timestamp = 0
                 group.imported_metadata_dicts_path = None
+
+    @staticmethod
+    def _update_well_metadata(file_object):
+        """Refresh a derived Well; the caller must exclude explicitly supplied Well values."""
+        metadata = file_object.metadata
+        row_key = next((key for key in ROW_KEYS if key in metadata), None)
+        col_key = next((key for key in COL_KEYS if key in metadata), None)
+        if row_key is None or col_key is None:
+            return
+        row = metadata[row_key]
+        if isinstance(row, str) and row.isdigit():
+            row = int(row)
+        if isinstance(row, int):
+            if row <= 0:
+                raise ValueError("Well row must be a positive one-based integer")
+            letters = []
+            while row > 0:
+                # Spreadsheet row labels use one-based digits A through Z.
+                row, remainder = divmod(row - 1, 26)
+                letters.append(string.ascii_uppercase[remainder])
+            row = "".join(reversed(letters))
+        file_object.set_metadata(FTR_WELL, row + metadata[col_key])
 
     def import_csv_dict(self, group):
         csv_path = self.csv_path(group)

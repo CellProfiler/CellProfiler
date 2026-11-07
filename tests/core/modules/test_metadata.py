@@ -885,6 +885,9 @@ def test_well_row_column():
         ("row", "column"),
         ("wellrow", "wellcolumn"),
         ("well_row", "well_column"),
+        ("WellRow", "WellCol"),
+        ("WellRow", "WellColumn"),
+        ("Row", "Column"),
     ):
         module = cellprofiler_core.modules.metadata.Metadata()
         module.wants_metadata.value = True
@@ -1001,13 +1004,30 @@ def test_well_row_column_multiple_files_and_series():
     )
 
 
-def test_well_row_column_before_import():
+@pytest.mark.parametrize(
+    "row, well, typed",
+    [
+        ("C", "C05", False),
+        ("AA", "AA05", False),
+        ("27", "AA05", True),
+        ("53", "BA05", True),
+    ],
+)
+@pytest.mark.parametrize(
+    "row_tag, column_tag", [("Row", "Column"), ("wellrow", "wellcol")]
+)
+def test_well_row_column_before_import(row, well, typed, row_tag, column_tag):
     # Regression test for issue #1347
     # WellRow and WellColumn must be united asap so they can
     # be used downstream.
     #
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
+    if typed:
+        module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
+        module.data_types.value = cellprofiler_core.setting.DataTypes.encode_data_types(
+            {row_tag: cellprofiler_core.setting.DataTypes.DT_INTEGER}
+        )
     em = module.extraction_methods[0]
     em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     em.extraction_method.value = (
@@ -1015,16 +1035,14 @@ def test_well_row_column_before_import():
     )
     em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = (
-        "^Channel(?P<Wavelength>[1-2])-" "(?P<%s>[A-H])-" "(?P<%s>[0-9]{2}).tif$"
+        "^Channel(?P<Wavelength>[1-2])-" "(?P<%s>[A-Za-z0-9]+)-" "(?P<%s>[0-9]{2}).tif$"
     ) % (
-        cellprofiler_core.constants.measurement.FTR_ROW,
-        cellprofiler_core.constants.measurement.FTR_COLUMN,
+        row_tag,
+        column_tag,
     )
     em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     module.add_extraction_method()
-    metadata_csv = """WellName,Treatment
-C05,DMSO
-"""
+    metadata_csv = f"WellName,Treatment\n{well},DMSO\n"
     filenum, path = tempfile.mkstemp(suffix=".csv")
     fd = os.fdopen(filenum, "w")
     fd.write(metadata_csv)
@@ -1049,20 +1067,130 @@ C05,DMSO
             module.CSV_JOIN_NAME,
             module.IPD_JOIN_NAME,
         )
-        url = "file:/imaging/analysis/Channel1-C-05.tif"
+        url = f"file:/imaging/analysis/Channel1-{row}-05.tif"
         check(
             module,
             url,
             [
                 {
                     "Wavelength": "1",
-                    cellprofiler_core.constants.measurement.FTR_ROW: "C",
-                    cellprofiler_core.constants.measurement.FTR_COLUMN: "05",
+                    row_tag: int(row) if typed else row,
+                    column_tag: "05",
                     "Treatment": "DMSO",
-                    cellprofiler_core.constants.measurement.FTR_WELL: "C05",
+                    cellprofiler_core.constants.measurement.FTR_WELL: well,
                 }
             ],
         )
-    except:
+    finally:
         os.remove(path)
 
+
+
+@pytest.mark.parametrize(
+    "row, well",
+    [(24, "X05"), (25, "Y05"), (26, "Z05"), (27, "AA05"),
+     (32, "AF05"), (52, "AZ05"), (53, "BA05")],
+)
+def test_well_row_column_integer(row, well):
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
+    module.data_types.value = cellprofiler_core.setting.DataTypes.encode_data_types(
+        {"wellrow": cellprofiler_core.setting.DataTypes.DT_INTEGER}
+    )
+    module.extraction_methods[0].file_regexp.value = (
+        r"^r(?P<wellrow>[0-9]+)c(?P<wellcol>[0-9]+)\.tif$"
+    )
+    check(
+        module,
+        f"file:/imaging/r{row}c05.tif",
+        [{"wellrow": row, "wellcol": "05", "Well": well}],
+    )
+
+
+@pytest.mark.parametrize("typed", [False, True])
+def test_well_row_column_zero(typed):
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    if typed:
+        module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
+        module.data_types.value = cellprofiler_core.setting.DataTypes.encode_data_types(
+            {"wellrow": cellprofiler_core.setting.DataTypes.DT_INTEGER}
+        )
+    module.extraction_methods[0].file_regexp.value = r"r(?P<wellrow>0)c(?P<wellcol>05)"
+    with pytest.raises(ValueError, match="Well row must be a positive one-based integer"):
+        check(module, "file:/imaging/r0c05.tif", [])
+
+
+@pytest.mark.parametrize("explicit", [None, "AA05", "custom"])
+@pytest.mark.parametrize("update_source", ["manual", "csv"])
+def test_well_row_column_later_groups(tmp_path, explicit, update_source):
+    # Join on the early Well, update its components, then join on the final Well.
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    module.extraction_methods[0].file_regexp.value = r"r(?P<wellrow>27)c(?P<wellcol>05)"
+
+    def add_csv(name, content, image_key, csv_key):
+        path = tmp_path / name
+        path.write_text(content)
+        module.add_extraction_method()
+        group = module.extraction_methods[-1]
+        group.extraction_method.value = (
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
+        )
+        group.csv_location.value = f"{cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME}|{tmp_path}"
+        group.csv_filename.value = name
+        group.csv_joiner.value = json.dumps(
+            [{module.CSV_JOIN_NAME: csv_key, module.IPD_JOIN_NAME: image_key}]
+        )
+
+    # Even an explicit Well equal to the derived one must remain authoritative.
+    header = "WellName,Treatment" + (",Well" if explicit is not None else "")
+    record = "AA05,DMSO" + (f",{explicit}" if explicit is not None else "")
+    add_csv("early.csv", f"{header}\n{record}\n", "Well", "WellName")
+    if update_source == "manual":
+        module.add_extraction_method()
+        module.extraction_methods[-1].file_regexp.value = (
+            r"_r(?P<wellrow>53)c(?P<wellcol>007)"
+        )
+    else:
+        add_csv(
+            "update.csv", "Treatment,wellrow,wellcol\nDMSO,53,007\n",
+            "Treatment", "Treatment",
+        )
+    final_well = explicit if explicit is not None else "BA007"
+    add_csv("final.csv", f"FinalWell,Dose\n{final_well},10\n", "Well", "FinalWell")
+    check(
+        module,
+        "file:/imaging/r27c05_r53c007.tif",
+        [{
+            "wellrow": "53", "wellcol": "007", "Well": final_well,
+            "Treatment": "DMSO", "Dose": "10",
+        }],
+    )
+
+
+@pytest.mark.parametrize(
+    ("row", "typed_column", "expected_column"),
+    [("0", False, "05"), ("A", True, 5)],
+)
+def test_well_invalid_early_group_followed_by_explicit(row, typed_column, expected_column):
+    # A later explicitly supplied Well must take priority even when the earlier
+    # row/column pair cannot be converted into a derived Well.
+    module = cellprofiler_core.modules.metadata.Metadata()
+    module.wants_metadata.value = True
+    if typed_column:
+        module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
+        module.data_types.value = cellprofiler_core.setting.DataTypes.encode_data_types(
+            {"wellcol": cellprofiler_core.setting.DataTypes.DT_INTEGER}
+        )
+    module.extraction_methods[0].file_regexp.value = (
+        r"^r(?P<wellrow>[A0])c(?P<wellcol>05)_"
+    )
+    module.add_extraction_method()
+    module.extraction_methods[-1].file_regexp.value = r"_(?P<Well>custom)\.tif$"
+    check(
+        module,
+        f"file:/imaging/r{row}c05_custom.tif",
+        [{"wellrow": row, "wellcol": expected_column, "Well": "custom"}],
+    )

@@ -29,8 +29,11 @@ FTR_WELL = "Well"
 FTR_ROW = "Row"
 FTR_COLUMN = "Column"
 FTR_PLATE = "Plate"
-ROW_KEYS = ("wellrow", "well_row", "row")
-COL_KEYS = ("wellcol", "well_col", "wellcolumn", "well_column", "column", "col")
+ROW_KEYS = ("wellrow", "well_row", "row", "WellRow", "Row")
+COL_KEYS = (
+    "wellcol", "well_col", "wellcolumn", "well_column", "column", "col",
+    "WellCol", "WellColumn", "Column",
+)
 MEASUREMENTS_GROUP_NAME = "Measurements"
 IMAGE_NUMBER = "ImageNumber"
 OBJECT_NUMBER = "ObjectNumber"

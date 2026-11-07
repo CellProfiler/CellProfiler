@@ -40,11 +40,17 @@ jobs:
 
           images = Path("src/frontend/cellprofiler/data/images")
           seasonal_black_text = {
+              1: "splash_black_cellebrateprofiler.webp",
+              2: "splash_black_cellentinesprofiler.webp",
               10: "splash_black_spellprofiler.webp",
+              11: "splash_black_cellprofaller.webp",
               12: "splash_black_jinglecellprofiler.webp",
           }
           seasonal_white_text = {
+              1: "splash_white_cellebrateprofiler.webp",
+              2: "splash_white_cellentinesprofiler.webp",
               10: "splash_white_spellprofiler.webp",
+              11: "splash_white_cellprofaller.webp",
               12: "splash_white_jinglecellprofiler.webp",
           }
           month = datetime.now(timezone.utc).month

@@ -28,4 +28,4 @@ def split_colortogray(input_image: Image2DColor, image_type:ImageChannelType = I
      elif image_type == ImageChannelType.CHANNELS:
           return split_multichannel(input_image)
      else:
-          raise ValueError(f"Unsupported image type: {image_type}")
+          raise ValueError(f"Unsupported image type: {image_type.value if isinstance(image_type, ImageChannelType) else image_type}")

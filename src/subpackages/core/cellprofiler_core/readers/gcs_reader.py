@@ -2,7 +2,7 @@ import io
 from urllib.parse import urlparse
 import logging
 
-import imageio
+import imageio.v2 as imageio
 from cellprofiler_core.readers.imageio_reader import ImageIOReader
 from cellprofiler_core.readers.imageio_reader import SUPPORTED_EXTENSIONS as IMAGEIO_SUPPORTED_EXTENSIONS
 from cellprofiler_core.readers.imageio_reader import SEMI_SUPPORTED_EXTENSIONS as IMAGEIO_SEMI_SUPPORTED_EXTENSIONS

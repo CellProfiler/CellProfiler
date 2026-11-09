@@ -1,68 +1,33 @@
-# MacOS
+# macOS packaging
 
-## Prerequisites
-
-### Homebrew
-
-[Homebrew](https://brew.sh) is a free and open-source software package management system that simplifies the installation of software on Apple’s macOS operating system.
-
-#### Installation
+Build with the repository's Pixi `build` environment on the target Mac architecture:
 
 ```sh
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+pixi install -e build
+make -C distribution/macos
 ```
 
-### Java
+The application is written to `distribution/macos/dist/CellProfiler.app`. The build uses the current source tree and installed package version. It does not check out a branch or install packages with pip. Java 11 and MySQL client libraries come from Pixi. The recipe does not invoke Homebrew or UPX. PyInstaller also collects native dependencies of installed wheels; inspect its dependency report for any libraries supplied outside Pixi.
 
-[Java](https://java.com) is a general-purpose computer programming language that is concurrent, class-based, object-oriented, and specifically designed to have as few implementation dependencies as possible.
+`prepare_java.py` resolves CellProfiler's Bio-Formats dependencies during the build, verifies the reader class, and copies the resolved jars and their hashes into the build directory. Initial dependency resolution needs network access or a populated Java dependency cache. Maven endpoints are currently unversioned; keep the generated jar manifest with each release artifact to record the selected versions and hashes. The application includes those jars, the JDK and its legal notices, and the MySQL client authentication plugins. It locates these resources relative to the application at runtime. `CP_JAVA_HOME` can override the bundled Java runtime.
 
-#### Installation
+Build and output paths can be changed without editing the source tree:
 
 ```sh
-brew cask install java
+make -C distribution/macos CP_BUILD="/absolute/path/build" CP_OUTPUT="/absolute/path/output"
 ```
 
-### MySQL
-
-[MySQL](https://www.mysql.com) is an open-source relational database management system (RDBMS).
-
-#### Installation
+To use an installed Developer ID signing certificate, set `CP_CODESIGN_IDENTITY` before building. PyInstaller signs the native files and application while assembling the bundle. Without that variable, PyInstaller uses ad-hoc signing for local testing.
 
 ```sh
-brew install mysql
+CP_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" make -C distribution/macos
+sh distribution/macos/osx-codesign.sh distribution/macos/dist/CellProfiler.app
 ```
 
-### Python
+Signature verification does not establish notarization or Gatekeeper acceptance. Notarization and testing a quarantined downloaded artifact require separate release checks.
 
-[Python](https://en.wikipedia.org/wiki/Python_(programming_language)) is a widely used high-level programming language for general-purpose programming, created by Guido van Rossum and first released in 1991.
+Before distributing, copy the complete `.app` to an unrelated path containing spaces. Test direct execution through `Contents/MacOS/cp` and Finder launch, image loading, a representative pipeline, Java image reading, native processing, workers and normal shutdown. Remove development environment variables and make the original source/build environment unavailable. Check loaded libraries and symlinks for dependencies outside the bundle, allowing macOS system libraries and explicitly configured plugin environments. Appose plugins use their own managed environments; the application bundle is not a general Python interpreter for them.
 
-#### Installation
+Local relocation tests do not replace testing on a clean Mac. Record the tested macOS version, architecture, interpreter, artifact hashes, loaded libraries and scientific output comparisons. Repeat for each distributed architecture and the oldest supported macOS release.
 
-```sh
-brew install python@3.9
-```
-
-### UPX
-
-[UPX](https://upx.github.io) (Ultimate Packer for Executables) is a free and open source executable packer supporting a number of file formats from different operating systems.
-
-#### Installation
-
-```sh
-brew install upx
-```
-
-## Use
-
-Use the Makefile to create an [Apple Disk Image](https://en.wikipedia.org/wiki/Apple_Disk_Image) (CellProfiler.dmg) that contains the MacOS [package](https://en.wikipedia.org/wiki/Package_(macOS)) (CellProfiler.app), making sure to specify the version via environment variable `CP_VERSION`:
-
-```sh
-# Specify the version via environment variable CP_VERSION
-# can set manually if different version desired
-# can exclude --strip-dev for dev/local parts of version string
-export CP_VERSION="$(python -m setuptools_scm --strip-dev -c ../../src/frontend/pyproject.toml)"
-
-make CP_VERSION="$CP_VERSION"
-```
-
-Among other things, the Makefile constructs the file `Info.plist` from `Info.plist.template`. The `Info.plist.template` file contains the version number in double curly braces, `{{CP_VERSION}}`, which in `Info.plist` is replaced by the actual version you specify above.
+Use `make -C distribution/macos clean` to remove the selected build and output directories.

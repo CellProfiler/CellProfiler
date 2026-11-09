@@ -598,6 +598,7 @@ class PipelineListView(object):
             module = list_ctrl.items[item].module
             w = self.find_module_figure_window(module)
             if w is not None:
+                w.Show()
                 w.Raise()
                 w.SetFocus()
 
@@ -1711,7 +1712,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         top = (
             self.line_height - self.bmp_slider.GetHeight()
         ) / 2 + self.line_height * self.running_item
-        return wx.Rect(1, top, self.bmp_slider.GetWidth(), self.bmp_slider.GetHeight())
+        return wx.Rect(1, int(top), self.bmp_slider.GetWidth(), self.bmp_slider.GetHeight())
 
     def on_paint(self, event):
         assert isinstance(event, wx.PaintEvent)

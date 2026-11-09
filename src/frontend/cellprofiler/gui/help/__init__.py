@@ -8,8 +8,11 @@ def make_help_menu(h, window, menu=None):
 
     if menu is None:
         menu = wx.Menu()
+    if not hasattr(window, "_help_menu_ids"):
+        window._help_menu_ids = []
     for key, value in h:
-        my_id = wx.NewId()
+        my_id = wx.NewIdRef()
+        window._help_menu_ids.append(my_id)
         if hasattr(value, "__iter__") and not isinstance(value, str):
             menu.Append(my_id, key, make_help_menu(value, window))
         else:

@@ -4,7 +4,6 @@ import base64
 import unittest
 import numpy as np
 import scipy.ndimage as scind
-import scipy.misc
 import scipy.io.matlab
 
 import centriole.cpmorphology as morph
@@ -3030,9 +3029,9 @@ class TestWhiteTophat(unittest.TestCase):
             "HxNU/TugfQWuE5z8="
         )
         data = np.frombuffer(data)
-        data.shape = (40, 40)
+        data = data.reshape(40, 40)
         expected = np.frombuffer(expected)
-        expected.shape = (40, 40)
+        expected = expected.reshape(40, 40)
         result = morph.white_tophat(data, 3)
         #
         # Matlab will give different results because of edge stuff
@@ -4555,7 +4554,7 @@ class TestAllConnectedComponents(unittest.TestCase):
             i, j = np.mgrid[0 : d[0], 0 : d[1]]
             connected_top = (i > 0) & mask[i, j] & mask[i - 1, j]
             idx = np.arange(np.prod(d))
-            idx.shape = d
+            idx = idx.reshape(d)
             connected_top_j = idx[connected_top] - d[1]
 
             connected_bottom = (i < d[0] - 1) & mask[i, j] & mask[(i + 1) % d[0], j]
@@ -4587,7 +4586,7 @@ class TestAllConnectedComponents(unittest.TestCase):
             )
             result = morph.all_connected_components(i, j)
             self.assertEqual(len(result), np.prod(d))
-            result.shape = d
+            result = result.reshape(d)
             result[mask] += 1
             result[~mask] = 0
             #
@@ -18382,7 +18381,7 @@ class TestFeretDiameter(unittest.TestCase):
             pt1[angle_idx.ravel() >= 10, 0] += 200
             pt2[angle_idx.ravel() >= 10, 0] += 200
             distances = np.sqrt(morph.distance2_to_line(v, pt1, pt2))
-            distances.shape = (counts[0], 20)
+            distances = distances.reshape(counts[0], 20)
             dmin = np.min(distances, 0)
             dmax = np.max(distances, 0)
             expected_min = np.min(dmax - dmin)

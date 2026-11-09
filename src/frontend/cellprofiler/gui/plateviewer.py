@@ -7,6 +7,7 @@ import threading
 import traceback
 
 import matplotlib
+import matplotlib.pyplot
 import matplotlib.backends.backend_wx
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
@@ -166,7 +167,7 @@ class PlateViewer(object):
 
     def __init__(self, frame, data):
         self.data = data
-        self.palette = matplotlib.cm.get_cmap("jet")
+        self.palette = matplotlib.pyplot.get_cmap("jet")
         data.register_for_updates(self.on_update)
         self.frame = frame
         self.plate_bitmap = None
@@ -518,7 +519,7 @@ class PlateViewer(object):
             self.image_dict_generation += 1
 
         def fn():
-            from scipy.io.matlab.mio import loadmat
+            from scipy.io import loadmat
             from cellprofiler_core.utilities.pathname import url2pathname
 
             with self.image_dict_lock:

@@ -232,7 +232,7 @@ def identifysecondaryobjects(
             small_removed_segmented_out, objects, mask=mask, discard_edge=discard_edge
         )
     else:
-        raise ValueError(f"Method {secondary_object_method} is not supported")
+        raise ValueError(f"Method {secondary_object_method.value if isinstance(secondary_object_method, SecondaryObjectMethod) else secondary_object_method} is not supported")
     
     if discard_edge:
         lookup = scipy.ndimage.maximum(

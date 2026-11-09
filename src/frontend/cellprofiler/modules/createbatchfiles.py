@@ -156,15 +156,15 @@ local machine (i.e., the computer setting up the batch files).
 For instance, a Windows machine might access files images by mounting the file system using a drive
 letter, like this:
 
-``Z:\your_data\images``
+``Z:\\your_data\\images``
 
 and the cluster computers access the same file system like this:
 
 ``/server_name/your_name/your_data/images``
 
-In this case, since the ``your_data\images`` portion of the path is
+In this case, since the ``your_data\\images`` portion of the path is
 the same for both, the local root path is the portion prior, i.e.,
-``Z:\`` and similarly for the cluster root path, i.e.,
+``Z:\\`` and similarly for the cluster root path, i.e.,
 ``/server_name/your_name/``.
 
 If **CreateBatchFiles** finds any pathname that matches the local root path
@@ -172,13 +172,13 @@ at the beginning, it will replace that matching portion with the cluster root pa
 
 For example, if you have mapped the remote cluster machine like this:
 
-``Z:\your_data\images``
+``Z:\\your_data\\images``
 
 (on a Windows machine, for instance) and the cluster machine sees the same folder like this:
 
 ``/server_name/your_name/your_data/images``
 
-you would enter ``Z:\`` here for the local root path and ``/server_name/your_name/`` for the
+you would enter ``Z:\\`` here for the local root path and ``/server_name/your_name/`` for the
 cluster root path in the next setting.""",
             ),
         )
@@ -196,15 +196,15 @@ input/output files are stored.
 For instance, a Windows machine might access files images by mounting the file system using a drive
 letter, like this:
 
-``Z:\your_data\images``
+``Z:\\your_data\\images``
 
 and the cluster computers access the same file system like this:
 
 ``/server_name/your_name/your_data/images``
 
-In this case, since the ``your_data\images`` portion of the path is
+In this case, since the ``your_data\\images`` portion of the path is
 the same for both, the local root path is the portion prior, i.e.,
-``Z:\`` and similarly for the cluster root path, i.e.,
+``Z:\\`` and similarly for the cluster root path, i.e.,
 ``/server_name/your_name/``.
 
 If **CreateBatchFiles** finds any pathname that matches the local root path
@@ -212,13 +212,13 @@ at the beginning, it will replace that matching portion with the cluster root pa
 
 For example, if you have mapped the remote cluster machine like this:
 
-``Z:\your_data\images``
+``Z:\\your_data\\images``
 
 (on a Windows machine, for instance) and the cluster machine sees the same folder like this:
 
 ``/server_name/your_name/your_data/images``
 
-you would enter ``Z:\`` in the previous setting for the local root
+you would enter ``Z:\\`` in the previous setting for the local root
 path and ``/server_name/your_name/`` here for the cluster root path.""",
             ),
         )
@@ -435,7 +435,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         """Modify the path passed so that it can be executed on the remote host
 
         path = path to modify
-        regexp_substitution - if true, exclude \g<...> from substitution
+        regexp_substitution - if true, exclude \\g<...> from substitution
         """
         regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:

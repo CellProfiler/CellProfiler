@@ -54,7 +54,7 @@ Measurements made by this module
 
 **Object measurements:**
 
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the edited objects.
 
 See also
@@ -324,7 +324,7 @@ supplied by a previous module.
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
         from cellprofiler_core.reader import get_image_reader
-        import imageio
+        import imageio.v2 as imageio
 
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"

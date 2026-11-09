@@ -6,7 +6,6 @@
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
 #define ExeDir "dist\CellProfiler"
-#define JDKPath GetEnv('JDK_HOME')
 #define MyAppVersion GetEnv('CP_VERSION')
 
 [Setup]
@@ -43,7 +42,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#ExeDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ExeDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#JDKPath}\*"; DestDir: "{app}\java"; Flags: recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

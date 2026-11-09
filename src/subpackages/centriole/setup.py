@@ -6,9 +6,32 @@ setuptools still needs a setup.py to declare C/Cython extension modules.
 
 import glob
 import os.path
+import sys
 
 import numpy
 import setuptools
+from setuptools.command.build_ext import build_ext
+
+
+class BuildExt(build_ext):
+    def build_extensions(self):
+        if sys.platform == "darwin":
+            prefix_flags = {
+                flag
+                for prefix in (sys.prefix, sys.base_prefix)
+                for flag in (
+                    "-L" + os.path.join(prefix, "lib"),
+                    "-Wl,-rpath," + os.path.join(prefix, "lib"),
+                )
+            }
+            for name in ("linker_so", "linker_so_cxx"):
+                command = getattr(self.compiler, name, None)
+                if command is not None:
+                    self.compiler.set_executable(
+                        name, [arg for arg in command if arg not in prefix_flags]
+                    )
+        super().build_extensions()
+
 
 try:
     import Cython.Build
@@ -61,4 +84,4 @@ if __suffix == "pyx":
         __extensions, compiler_directives={"language_level": "3"}
     )
 
-setuptools.setup(ext_modules=__extensions)
+setuptools.setup(ext_modules=__extensions, cmdclass={"build_ext": BuildExt})

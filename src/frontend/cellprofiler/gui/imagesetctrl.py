@@ -11,7 +11,7 @@ import numpy
 import wx
 import wx.adv
 import wx.grid
-import wx.lib.mixins.gridlabelrenderer as wxglr
+from cellprofiler.gui._wx_compat import GridWithLabelRenderersMixin
 from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
 from cellprofiler_core.constants.measurement import C_FILE_NAME, C_C, C_Z, C_T, C_SERIES_NAME
@@ -422,7 +422,7 @@ class ImageSetCache:
         self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
 
-class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
+class ImageSetCtrl(wx.grid.Grid, GridWithLabelRenderersMixin):
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
 
@@ -445,7 +445,7 @@ class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
             display_mode = DISPLAY_MODE_ALTERNATE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        wxglr.GridWithLabelRenderersMixin.__init__(self)
+        GridWithLabelRenderersMixin.__init__(self)
         self.SetCornerLabelRenderer(cpglr.CornerLabelRenderer(
             self, self.on_update, tooltip="Update and display the image set", label="Update"))
         self.SetDefaultRowLabelRenderer(cpglr.RowLabelRenderer())
@@ -1200,15 +1200,15 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
                     half_height = int(grid.DROP_HEIGHT) / 2
                     dc.DrawPolygon(
                         [
-                            (rect.GetX(), y - half_height - 1),
-                            (rect.GetX() + half_height + 1, y),
-                            (rect.GetX() + rect.GetWidth() - half_height - 1, y),
-                            (rect.GetX() + rect.GetWidth(), y - half_height - 1),
-                            (rect.GetX() + rect.GetWidth(), y + half_height + 1),
-                            (rect.GetX() + rect.GetWidth() - half_height, y + 1),
-                            (rect.GetX() + half_height, y + 1),
-                            (rect.GetX(), y + half_height + 1),
-                            (rect.GetX(), y - half_height),
+                            (rect.GetX(), int(y - half_height - 1)),
+                            (int(rect.GetX() + half_height + 1), y),
+                            (int(rect.GetX() + rect.GetWidth() - half_height - 1), y),
+                            (rect.GetX() + rect.GetWidth(), int(y - half_height - 1)),
+                            (rect.GetX() + rect.GetWidth(), int(y + half_height + 1)),
+                            (int(rect.GetX() + rect.GetWidth() - half_height), y + 1),
+                            (int(rect.GetX() + half_height), y + 1),
+                            (rect.GetX(), int(y + half_height + 1)),
+                            (rect.GetX(), int(y - half_height)),
                         ]
                     )
         finally:
@@ -1311,7 +1311,7 @@ class ColLabelRenderer(cpglr.ColLabelRenderer):
                 x = (rect.width - label_size[0] + 1) / 2
                 y = self.icon_padding + self.gap_size
                 for line_number, line in enumerate(label.split("\n")):
-                    mdc.DrawText(line, x, y + label_size[1] * line_number)
+                    mdc.DrawText(line, int(x), y + label_size[1] * line_number)
             dc.Blit(rect.X, rect.Y, rect.width, rect.height, mdc, 0, 0)
         finally:
             mdc.SelectObject(wx.NullBitmap)
@@ -1399,7 +1399,7 @@ class ColLabelRenderer(cpglr.ColLabelRenderer):
             width, height = dc.GetTextExtent(bitmap)
             x = rect.GetX() + (rect.GetWidth() - width) / 2
             y = rect.GetY() + (rect.GetHeight() - height) / 2
-            dc.DrawText(bitmap, x, y)
+            dc.DrawText(bitmap, int(x), int(y))
             dc.SetFont(wx.NullFont)
 
     def label_rect(self, rect, label_size, last, only):
@@ -1417,7 +1417,7 @@ class ColLabelRenderer(cpglr.ColLabelRenderer):
             available_width = first_button_rect.GetX() - self.gap_size - rect.X
         x = rect.x + self.gap_size + (available_width - label_width) / 2
         y = self.icon_padding + self.gap_size
-        return wx.Rect(x, y, label_width, max(self.icon_size, label_height))
+        return wx.Rect(int(x), y, label_width, max(self.icon_size, label_height))
 
     def minimum_width(self, label_size, last, only):
         if self.read_only:

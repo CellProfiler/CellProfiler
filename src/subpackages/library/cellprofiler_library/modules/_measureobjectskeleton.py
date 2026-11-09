@@ -17,8 +17,8 @@ class ObjectSkeletonDisplayData(BaseModel):
     )
 
     statistics: ObjectSkeletonStatistics
-    edge_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
-    vertex_graph: Optional[Dict[str, NDArray[Union[numpy.float_, numpy.int_]]]]
+    edge_graph: Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]]
+    vertex_graph: Optional[Dict[str, NDArray[Union[numpy.float64, numpy.int_]]]]
     branchpoint_image: Optional[Image2DColor]
 
 @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -65,7 +65,7 @@ def measure_object_skeleton(
 
     for feature_name, values in feature_map.items():
         # Feature name format: ObjectSkeleton_Feature_Image
-        full_feature_name = f"{C_OBJSKELETON}_{feature_name}_{image_name}"
+        full_feature_name = f"{C_OBJSKELETON}_{feature_name.value}_{image_name}"
         measurements.add_measurement(object_name, full_feature_name, values)
         
         # Calculate summary statistics

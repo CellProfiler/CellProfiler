@@ -922,7 +922,7 @@ def test_nan_measurements(output_dir):
     m = cellprofiler_core.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(2,))
-    mvalues[1] = numpy.NaN
+    mvalues[1] = numpy.nan
     m.add_measurement("my_object", "my_measurement", mvalues)
     m.add_image_measurement("Count_my_object", 2)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -946,7 +946,7 @@ def test_nan_measurements(output_dir):
         assert round(abs(float(row[2]) - mvalues[0]), 4) == 0
         row = next(reader)
         assert len(row) == 3
-        assert row[2] == str(numpy.NaN)
+        assert row[2] == str(numpy.nan)
         with pytest.raises(StopIteration):
             reader.__next__()
     finally:
@@ -968,7 +968,7 @@ def test_null_measurements(output_dir):
     m = cellprofiler_core.measurement.Measurements()
     numpy.random.seed(0)
     mvalues = numpy.random.uniform(size=(2,))
-    mvalues[1] = numpy.NaN
+    mvalues[1] = numpy.nan
     m.add_measurement("my_object", "my_measurement", mvalues)
     m.add_image_measurement("Count_my_object", 2)
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -1068,7 +1068,7 @@ def test_nan_image_measurements(output_dir):
         image_set_number=1,
         data_type=numpy.float64,
     )
-    mvalues = numpy.array([numpy.NaN, numpy.NaN])
+    mvalues = numpy.array([numpy.nan, numpy.nan])
     m.add_measurement(
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
@@ -1081,7 +1081,7 @@ def test_nan_image_measurements(output_dir):
     m.add_measurement(
         "Image",
         IMG_MEAS,
-        numpy.NaN,
+        numpy.nan,
         image_set_number=2,
         data_type=numpy.float64,
     )
@@ -1108,7 +1108,7 @@ def test_nan_image_measurements(output_dir):
         assert IMG_MEAS in d
         row = next(reader)
         value = row[d[agg_meas]]
-        assert value == str(numpy.NaN), "Expected nan %s measurement, got %s" % (
+        assert value == str(numpy.nan), "Expected nan %s measurement, got %s" % (
             agg_meas,
             value,
         )
@@ -1116,7 +1116,7 @@ def test_nan_image_measurements(output_dir):
         row = next(reader)
         for meas in agg_meas, IMG_MEAS:
             value = row[d[meas]]
-            assert value == str(numpy.NaN), "Expected nan %s measurement, got %s" % (
+            assert value == str(numpy.nan), "Expected nan %s measurement, got %s" % (
                 meas,
                 value,
             )
@@ -1145,7 +1145,7 @@ def test_null_image_measurements(output_dir):
         image_set_number=1,
         data_type=numpy.float64,
     )
-    mvalues = numpy.array([numpy.NaN, numpy.NaN])
+    mvalues = numpy.array([numpy.nan, numpy.nan])
     m.add_measurement(
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
@@ -1158,7 +1158,7 @@ def test_null_image_measurements(output_dir):
     m.add_measurement(
         "Image",
         IMG_MEAS,
-        numpy.NaN,
+        numpy.nan,
         image_set_number=2,
         data_type=numpy.float64,
     )
@@ -1723,7 +1723,7 @@ def test_aggregate_image_columns(output_dir):
                 if agg == AGG_STD_DEV
                 else numpy.median(data)
                 if agg == AGG_MEDIAN
-                else numpy.NAN
+                else numpy.nan
             )
             assert (
                 round(
@@ -2144,7 +2144,7 @@ def test_missing_measurements(output_dir):
                 row = next(reader)
                 assert len(row) == 3
                 if image_idx == 1:
-                    assert row[d["my_measurement"]] == str(numpy.NAN)
+                    assert row[d["my_measurement"]] == str(numpy.nan)
                 else:
                     assert (
                         round(
@@ -2263,7 +2263,7 @@ def test_missing_row_measurements(output_dir):
             m.add_image_measurement("my_measurement", 100)
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
         else:
-            m.add_image_measurement("Count_my_objects", numpy.NAN)
+            m.add_image_measurement("Count_my_objects", numpy.nan)
             m.add_image_measurement("my_measurement", 100)
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -2451,23 +2451,23 @@ def test_basic_gct_check():
         assert isinstance(m,cellprofiler_core.measurement.Measurements)
         p, n = os.path.splitext(output_csv_filename)
         output_gct_filename = p + ".gct"
-        fd = open(output_gct_filename, "r")
-        reader = csv.reader(fd, delimiter="\t")
-        row = next(reader)
-        assert len(row) == 1
-        assert row[0] == "#1.2"
-        row = next(reader)
-        assert len(row) == 2
-        assert row[0] == "2"
-        assert row[1] == "2"
-        row = next(reader)
-        assert len(row) == 4
-        assert row[0].lower() == "name"
-        assert row[1].lower() == "description"
-        assert row[2].lower() == "group_length"
-        assert row[3] == metadata_name
-        row = next(reader)
-        assert row[1] == input_dir
+        with open(output_gct_filename, "r") as fd:
+            reader = csv.reader(fd, delimiter="\t")
+            row = next(reader)
+            assert len(row) == 1
+            assert row[0] == "#1.2"
+            row = next(reader)
+            assert len(row) == 2
+            assert row[0] == "2"
+            assert row[1] == "2"
+            row = next(reader)
+            assert len(row) == 4
+            assert row[0].lower() == "name"
+            assert row[1].lower() == "description"
+            assert row[2].lower() == "group_length"
+            assert row[3] == metadata_name
+            row = next(reader)
+            assert row[1] == input_dir
     finally:
         try:
             os.remove(input_filename)

@@ -1,6 +1,6 @@
 import collections
 import numpy
-import imageio
+import imageio.v2 as imageio
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from ..preferences import config_read_typed

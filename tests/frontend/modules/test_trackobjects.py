@@ -1157,7 +1157,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
             m.add_measurement(
                 OBJECT_NAME,
                 module.measurement_name(feature),
-                numpy.NaN * numpy.ones(nobjects[i], dtype)
+                numpy.nan * numpy.ones(nobjects[i], dtype)
                 if feature == cellprofiler.modules.trackobjects.F_FINAL_AGE
                 else numpy.zeros(nobjects[i], dtype),
                 image_set_number=i + 1,
@@ -2156,7 +2156,7 @@ def test_filter_by_final_age():
         {
             cellprofiler.modules.trackobjects.F_LABEL: [
                 numpy.array([1]),
-                numpy.array([1, numpy.NaN]),
+                numpy.array([1, numpy.nan]),
                 numpy.array([1]),
             ],
             cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER: [

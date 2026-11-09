@@ -12,7 +12,6 @@ from pathlib import Path
 from importlib.util import find_spec
 
 import numpy
-import numpy.lib.index_tricks
 import six
 import six.moves
 
@@ -85,7 +84,7 @@ def module_directory():
 
 def image_with_one_cell(size=(100, 100)):
     img = numpy.zeros(size)
-    mgrid = numpy.lib.index_tricks.nd_grid()
+    mgrid = numpy.mgrid
     g = mgrid[0: size[0], 0: size[1]] - 50
     dist = (
             g[0, :, :] * g[0, :, :] + g[1, :, :] * g[1, :, :]
@@ -346,12 +345,12 @@ HasImagePlaneDetails:False"""
         pipeline.add_module(module)
         measurements = pipeline.run()
         assert expects[0] == "Done"
-        image_numbers = measurements.get_all_measurements("Image", "mymeasurement")
+        image_numbers = measurements.get_measurement("Image", "mymeasurement", measurements.get_image_numbers())
         assert len(image_numbers) == 4
         assert numpy.all(image_numbers == numpy.array([1, 2, 3, 4]))
-        group_numbers = measurements.get_all_measurements("Image", "Group_Number")
+        group_numbers = measurements.get_measurement("Image", "Group_Number", measurements.get_image_numbers())
         assert numpy.all(group_numbers == numpy.array([1, 1, 2, 2]))
-        group_indexes = measurements.get_all_measurements("Image", "Group_Index")
+        group_indexes = measurements.get_measurement("Image", "Group_Index", measurements.get_image_numbers())
         assert numpy.all(group_indexes == numpy.array([1, 2, 1, 2]))
 
     def test_one_group(self):
@@ -598,12 +597,12 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         temp_file = tempfile.NamedTemporaryFile(mode="w+b", suffix=".json", delete=False)
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         print(temp_file.name)
         with open(temp_file.name, "w") as fp:
             dump(pipeline, fp, save_image_plane_details=True)
             fp.seek(0)
-        temp_file.flush()
-        fp.close()
 
         import json
         with open(os.path.realpath(
@@ -633,11 +632,11 @@ HasImagePlaneDetails:False"""
         pipeline.load(pathname)
 
         temp_file = tempfile.NamedTemporaryFile(mode="w+b", suffix=".json", delete=False)
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         with open(temp_file.name, "w") as fp:
             dump(pipeline, fp, save_image_plane_details=True)
             fp.seek(0)
-        temp_file.flush()
-        fp.close()
 
         new_pipeline = get_empty_pipeline()
         with open(temp_file.name, "r") as fp:
@@ -1239,6 +1238,8 @@ HasImagePlaneDetails:False"""
         temp_file = tempfile.NamedTemporaryFile(
             mode="w+b", suffix=".cppipe", delete=False
         )
+        self.addCleanup(os.unlink, temp_file.name)
+        temp_file.close()
         with open(temp_file.name, "w") as fp:
             fp.write(content)
 
@@ -1506,3 +1507,29 @@ class TestUtils(unittest.TestCase):
         encapsulate_strings_in_arrays(cell)
         assert isinstance(struct["foo"][0, 0], numpy.ndarray)
         assert struct["foo"][0, 0][0] == "Hello, world"
+
+
+def test_load_closes_owned_files_and_preserves_caller_streams(tmp_path, monkeypatch):
+    import builtins
+    import importlib
+
+    module = importlib.import_module("cellprofiler_core.pipeline._pipeline")
+    pipeline = module.Pipeline()
+    text = io.StringIO()
+    pipeline.dump(text)
+    path = tmp_path / "empty.cppipe"
+    path.write_text(text.getvalue())
+    handles = []
+
+    def open_file(*args, **kwargs):
+        handle = builtins.open(*args, **kwargs)
+        handles.append(handle)
+        return handle
+
+    monkeypatch.setattr(module, "open", open_file, raising=False)
+    pipeline.load(str(path))
+    assert handles and all(handle.closed for handle in handles)
+    text.seek(0)
+    pipeline.load(text)
+    assert not text.closed
+    text.close()

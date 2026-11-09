@@ -1,8 +1,8 @@
 import multiprocessing
-
-import cellprofiler.__main__
+import sys
 
 if __name__ == "__main__":
-    # allows multiprocessing on Windows after freeze
     multiprocessing.freeze_support()
-    cellprofiler.__main__.main()
+    import cellprofiler.__main__
+
+    sys.exit(cellprofiler.__main__.main())

@@ -5,6 +5,7 @@ import stat
 import sys
 
 import matplotlib.cm
+import matplotlib.pyplot
 import numpy
 import wx
 import wx.grid
@@ -12,7 +13,7 @@ import wx.html
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import wx.lib.mixins.gridlabelrenderer as wxglr
+from cellprofiler.gui._wx_compat import GridWithLabelRenderersMixin
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -1211,13 +1212,13 @@ class ModuleView:
                 cmap_name = get_default_colormap()
             else:
                 cmap_name = v.value
-            cm = matplotlib.cm.get_cmap(cmap_name)
+            cm = matplotlib.pyplot.get_cmap(cmap_name)
             sm = matplotlib.cm.ScalarMappable(cmap=cm)
             i, j = numpy.mgrid[0:12, 0:128]
             if cm.N < 128:
                 j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
-            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
+            bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tobytes())
         except:
             LOGGER.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
@@ -2212,7 +2213,7 @@ class ModuleView:
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-    class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
+    class CornerButtonGrid(wx.grid.Grid, GridWithLabelRenderersMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -2222,7 +2223,7 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
-            wxglr.GridWithLabelRenderersMixin.__init__(self)
+            GridWithLabelRenderersMixin.__init__(self)
             self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
             self.SetCornerLabelRenderer(self._corner_label_renderer)
             self.SetDefaultRowLabelRenderer(RowLabelRenderer())

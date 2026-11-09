@@ -39,13 +39,17 @@ jobs:
           import re
 
           images = Path("src/frontend/cellprofiler/data/images")
-          seasonal = {
-              10: "SpellProfiler.webp",
-              12: "JingleCellProfiler.webp",
+          seasonal_black_text = {
+              10: "splash_black_spellprofiler.webp",
+              12: "splash_black_jinglecellprofiler.webp",
           }
-          banner = seasonal.get(datetime.now(timezone.utc).month)
-          dark = images / (banner or "splash-white-text-alpha.png")
-          light = images / (banner or "splash-black-text-alpha.png")
+          seasonal_white_text = {
+              10: "splash_white_spellprofiler.webp",
+              12: "splash_white_jinglecellprofiler.webp",
+          }
+          month = datetime.now(timezone.utc).month
+          dark = images / (seasonal_white_text.get(month) or "splash-white-text-alpha.png")
+          light = images / (seasonal_black_text.get(month) or "splash-black-text-alpha.png")
           for image in (dark, light):
               if not image.is_file():
                   raise SystemExit(f"Missing banner image: {image}")

@@ -16,7 +16,7 @@ __choice_ids = []
 def get_choice_id(index):
     global __choice_ids
     while len(__choice_ids) <= index:
-        __choice_ids.append(wx.NewId())
+        __choice_ids.append(wx.NewIdRef())
     return __choice_ids[index]
 
 
@@ -343,50 +343,73 @@ class MetadataControl(wx.Control):
         #
         ##################
         elif (keycode == ord("V")) and cmd_down:
-            # Cribbed from the WX drag and drop demo
-            if wx.TheClipboard.Open():
-                try:
-                    data_object = wx.TextDataObject()
-                    success = wx.TheClipboard.GetData(data_object)
-                finally:
-                    wx.TheClipboard.Close()
-                if success:
-                    self.delete_selection()
-                    self.__tokens = (
-                        self.__tokens[0 : self.__cursor_pos]
-                        + list(data_object.GetText())
-                        + self.__tokens[self.__cursor_pos :]
-                    )
-                    self.move_cursor_pos(self.__cursor_pos + len(data_object.GetText()))
-                    self.on_token_change()
+            self.Paste()
         ################
         #
         # Cut / copy
         #
         ################
         elif (keycode in (ord("C"), ord("X"))) and cmd_down:
-            if self.selection[0] == self.selection[1]:
-                return
-            selection = list(self.selection)
-            selection.sort()
-            text = self.get_text(selection[0], selection[1])
-            if wx.TheClipboard.Open():
-                try:
-                    self.__clipboard_text = wx.TextDataObject()
-                    self.__clipboard_text.SetText(text)
-                    wx.TheClipboard.SetData(self.__clipboard_text)
-                finally:
-                    wx.TheClipboard.Close()
             if keycode == ord("X"):
-                self.delete_selection()
+                self.Cut()
+            else:
+                self.Copy()
         else:
             event.Skip()
+
+    def CanCopy(self):
+        return self.selection[0] != self.selection[1]
+
+    def CanCut(self):
+        return self.CanCopy()
+
+    def CanPaste(self):
+        if not wx.TheClipboard.Open():
+            return False
+        try:
+            return wx.TheClipboard.IsSupported(wx.DataFormat(wx.DF_UNICODETEXT))
+        finally:
+            wx.TheClipboard.Close()
+
+    def Copy(self):
+        if not self.CanCopy() or not wx.TheClipboard.Open():
+            return False
+        try:
+            start, end = sorted(self.selection)
+            return wx.TheClipboard.SetData(wx.TextDataObject(self.get_text(start, end)))
+        finally:
+            wx.TheClipboard.Close()
+
+    def Cut(self):
+        if self.Copy():
+            self.delete_selection()
+
+    def Paste(self):
+        if not wx.TheClipboard.Open():
+            return
+        try:
+            data_object = wx.TextDataObject()
+            success = wx.TheClipboard.GetData(data_object)
+        finally:
+            wx.TheClipboard.Close()
+        if success:
+            self.delete_selection()
+            text = data_object.GetText()
+            self.__tokens[self.__cursor_pos : self.__cursor_pos] = list(text)
+            self.move_cursor_pos(self.__cursor_pos + len(text))
+            self.on_token_change()
+
+    def SelectAll(self):
+        self.selection = [0, len(self.__tokens)]
+        self.move_cursor_pos(len(self.__tokens), reselect=False)
+        self.Refresh()
 
     def delete_selection(self):
         if self.selection[0] != self.selection[1]:
             selection = list(self.selection)
             selection.sort()
             del self.__tokens[selection[0] : selection[1]]
+            self.selection = [selection[0], selection[0]]
             self.move_cursor_pos(selection[0])
             self.on_token_change()
 

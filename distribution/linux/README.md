@@ -2,6 +2,24 @@
 
 Linux distributions of CellProfiler are done via Flatpak.
 
+The Pixi Linux environments use the upstream wxPython 4.3.2 wheel built for
+CPython 3.14 on Ubuntu 24.04, downloaded from the versioned GitHub release URL.
+The wheel includes wxWidgets and WebView support and requires compatible native
+GTK 3, libnotify, WebKitGTK 4.1 and JavaScriptCoreGTK 4.1 libraries. The GNOME 49 Flatpak
+runtime supplies the browser libraries; a native development installation must
+provide them through its operating system. This is an Ubuntu-targeted
+`linux_x86_64` wheel, not a manylinux portability guarantee.
+
+When changing the Python minor version or the reviewed wxPython version, update
+the Linux wheel URL in `pixi.toml` and regenerate `pixi.lock` together. Retain the
+project's wxPython upper-bound policy and validate the welcome screen, example
+loading and the packaged runtime after changing the wheel. The release assets
+for different Ubuntu versions share the same wheel platform tag, so they must
+be selected explicitly (manually) rather than combined into an unrestricted wheel
+index.
+
+The wheel uses the operating system or Flatpak runtime's GTK/GdkPixbuf stack.
+
 ## Building
 
 ### Building Locally
@@ -11,6 +29,9 @@ A `Makefile` is provided for building. The `Makefile` takes several optional arg
 ```sh
 make CP_VERSION="$(python -m setuptools_scm -c ../../src/frontend/pyproject.toml)" CP_BRANCH=""
 ```
+
+Metadata generation requires Python 3.11 or newer for `tomllib`. Set the
+`PYTHON` make variable to select another interpreter when necessary.
 
 The manifest and metainfo file (both explained below in the "Flatpak Manifest" section) are generated from templates:
 
@@ -61,6 +82,20 @@ Exported icons are in the `icons` folder of either `$HOME/.local/share/flatpak/e
 The [desktop file](https://docs.flatpak.org/en/latest/conventions.html#desktop-files), compliant with the [FreeDesktop dektop entry specification](https://specifications.freedesktop.org/desktop-entry/latest/), is installed in `/app/share/applications/org.cellprofiler.CellProfiler.desktop`.
 
 The desktop entry file can be generated from the Metainfo file with: `appstreamcli make-desktop-file org.cellprofiler.CellProfiler.metainfo.xml org.cellprofiler.CellProfiler.desktop`. It can be validated with `desktop-file-validate`.
+
+## Appose source build
+
+Appose is pinned to a Git commit in `pixi.toml`. Because `pixi-pack` skips this
+non-wheel dependency, the Flatpak manifest fetches Appose as a separate Git
+source and installs it after unpacking the environment, before CellProfiler.
+The install builds a wheel offline with the packaged setuptools backend;
+`--no-index --no-build-isolation --no-deps` prevents dependency downloads.
+
+The manifest generator reads both the Appose Git URL and full commit from
+`pixi.toml`, which is also a Makefile dependency. Changing that pin regenerates
+the Flatpak source entry automatically. The build checks the installed Appose
+version against its source metadata and verifies the `file` and `NDArray` APIs.
+Do not maintain another Appose pin in the Flatpak template.
 
 ## Pixi Pack
 

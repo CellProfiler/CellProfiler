@@ -198,7 +198,7 @@ are all equal to or greater than 1. You have the following options:
    rescaling causes the illumination function to have values from 1 to
    infinity, subtracting those values from your image would cause the
    corrected images to be very dark, even negative.
--  {RE_MEDIAN}\ *:* This option chooses the median value in the image
+-  {RE_MEDIAN}\\ *:* This option chooses the median value in the image
    to rescale so that division increases some values and decreases others.
 """.format(
                 **{

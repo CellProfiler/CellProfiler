@@ -72,7 +72,7 @@ Measurements made by this module
 **Reassigned object measurements:**
 
 -  *Parent:* The label number of the parent object.
--  *Location\_X, Location\_Y:* The pixel (X,Y) coordinates of the center
+-  *Location\\_X, Location\\_Y:* The pixel (X,Y) coordinates of the center
    of mass of the reassigned objects.
 
 Technical notes
@@ -266,7 +266,7 @@ above):
    the threshold. For instance, if the intensity of one centroid is 0.75
    and the other is 0.50 and the *minimum intensity fraction* has been
    chosen to be 0.9, all points along the line would need to have an
-   intensity of min(0.75, 0.50) \* 0.9 = 0.50 \* 0.9 = 0.45.
+   intensity of min(0.75, 0.50) \\* 0.9 = 0.50 \\* 0.9 = 0.45.
    This method works well for round cells whose maximum intensity is in
    the center of the cell: a single cell that was incorrectly segmented
    into two objects will typically not have a dim line between the

@@ -108,7 +108,7 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
 
     def test_02_03_score_one_nan(self):
         m = cellprofiler_core.measurement.Measurements()
-        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([np.NaN], float))
+        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([np.nan], float))
         rules = Rules()
         rules.rules += [
             Rule(

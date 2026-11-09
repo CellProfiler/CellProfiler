@@ -3,18 +3,6 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-cdef extern from "Python.h":
-    ctypedef int Py_intptr_t
-
-cdef extern from "numpy/arrayobject.h":
-    ctypedef class numpy.ndarray [object PyArrayObject]:
-        cdef char *data
-        cdef int nd
-        cdef Py_intptr_t *dimensions
-        cdef Py_intptr_t *strides
-    cdef int  PyArray_ITEMSIZE(np.ndarray)
-    cdef void * PyArray_DATA(np.ndarray)
-
 np.import_array()
 
 __eps = np.sqrt(np.finfo(np.float64).eps)
@@ -127,7 +115,7 @@ def augmenting_row_reduction(
     free = np.ascontiguousarray(np.zeros(np.max(y)+1, np.uint32), np.uint32)
     cdef:
         int *p_i = <int *>(ii.data)
-        int *p_free = <int *>(PyArray_DATA(free))
+        int *p_free = <int *>(np.PyArray_DATA(free))
         int nfree = 0
         int i
         int j
@@ -213,8 +201,7 @@ def augmenting_row_reduction(
                     nfree += 1
             p_x_base[i] = j1
             p_y_base[j1] = i
-    free.resize(nfree)
-    return free
+    return free[:nfree].copy()
 
 def augment(
     int n,
@@ -286,13 +273,13 @@ def augment(
         double *p_v_base  = <double *>(v.data)
         double *p_c_base  = <double *>(c.data)
         double *p_c
-        double *p_d_base  = <double *>(PyArray_DATA(d))
-        int *p_pred_base  = <int *>(PyArray_DATA(pred))
-        int *p_to_do      = <int *>(PyArray_DATA(to_do))
-        int *p_scan       = <int *>(PyArray_DATA(scan))
-        int *p_ready      = <int *>(PyArray_DATA(ready))
-        int *p_done       = <int *>(PyArray_DATA(done))
-        int *p_on_to_do   = <int *>(PyArray_DATA(on_to_do))
+        double *p_d_base  = <double *>(np.PyArray_DATA(d))
+        int *p_pred_base  = <int *>(np.PyArray_DATA(pred))
+        int *p_to_do      = <int *>(np.PyArray_DATA(to_do))
+        int *p_scan       = <int *>(np.PyArray_DATA(scan))
+        int *p_ready      = <int *>(np.PyArray_DATA(ready))
+        int *p_done       = <int *>(np.PyArray_DATA(done))
+        int *p_on_to_do   = <int *>(np.PyArray_DATA(on_to_do))
         double inf = np.sum(c) + 1 # This is larger than any path through.
         double umin, temp, h, u1
     

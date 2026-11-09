@@ -1,7 +1,6 @@
 import glob
 import sys
 import os.path
-import logging
 
 import jinja2
 import importlib.resources
@@ -15,8 +14,7 @@ import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.utilities.icon
 from cellprofiler.gui.help.content import image_resource_dataUrl
-
-logger = logging.getLogger(__name__)
+from cellprofiler.gui._wx_compat import create_webview
 
 class WelcomeFrame(wx.Frame):
     def __init__(self, parent):
@@ -33,26 +31,7 @@ class WelcomeFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, self.__on_close)
 
-        # Set to first supportable backend
-        backends = [
-            (wx.html2.WebViewBackendIE, 'WebViewBackendIE'),
-            (wx.html2.WebViewBackendWebKit, 'WebViewBackendWebKit'),
-            (wx.html2.WebViewBackendDefault, 'WebViewBackendDefault'),
-        ]
-        major, minor = list(map(int, wx.__version__.split('.')[0:2]))
-        if major >= 4 and minor >= 2:
-            backends = [(wx.html2.WebViewBackendEdge, 'WebViewBackendEdge')] + backends
-
-        # Find an available backend
-        backend = None
-        for id, name in backends:
-            available = wx.html2.WebView.IsBackendAvailable(id)
-            logger.debug("WebView backend 'wx.html2.{}' availability: {}\n".format(name, available))
-            if available and backend is None:
-                backend = id
-        logger.debug("Using WebView backend: '{}'\n".format(str(backend, 'ascii')))
-
-        self.content = wx.html2.WebView.New(self, backend=backend)
+        self.content = create_webview(self)
         self.content.EnableContextMenu(False)
         self.__display_welcome()
 

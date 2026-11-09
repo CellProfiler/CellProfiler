@@ -2,7 +2,9 @@ import numpy
 from numpy.typing import NDArray
 import scipy.ndimage
 import skimage.morphology
+from cellprofiler_library.functions.morphology import binary_dilation, get_footprint, remove_small_holes
 import matplotlib.cm
+import matplotlib.pyplot
 import mahotas
 import centriole.cpmorphology
 from typing import Optional, Literal, Tuple, Union, List, Dict, Any
@@ -282,7 +284,7 @@ def watershed(
             return watershed_image
 
     # Create and check structuring element for seed dilation
-    strel = getattr(skimage.morphology, structuring_element.casefold())(
+    strel = get_footprint(structuring_element.casefold(),
         structuring_element_size
     )
 
@@ -351,7 +353,7 @@ def watershed(
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
-        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = binary_dilation(seeds, strel)
     else:
         raise NotImplementedError(
             f"watershed method {watershed_method} is not supported"
@@ -370,12 +372,12 @@ def watershed(
             )
             seeds = numpy.zeros(seed_image.shape, dtype=bool)
             seeds[tuple(seed_coords.T)] = True
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
 
         elif seed_method.casefold() == "regional":
             seeds = mahotas.regmax(seed_image, maxima_footprint)
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
         else:
             raise NotImplementedError(
@@ -433,7 +435,7 @@ def fill_object_holes(labels, diameter, planewise=False):
             for obj in numpy.unique(plane):
                 if obj == 0:
                     continue
-                filled_mask = skimage.morphology.remove_small_holes(
+                filled_mask = remove_small_holes(
                     plane == obj, min_obj_size
                 )
                 plane[filled_mask] = obj
@@ -442,7 +444,7 @@ def fill_object_holes(labels, diameter, planewise=False):
         for obj in numpy.unique(array):
             if obj == 0:
                 continue
-            filled_mask = skimage.morphology.remove_small_holes(
+            filled_mask = remove_small_holes(
                 array == obj, min_obj_size
             )
             array[filled_mask] = obj
@@ -455,7 +457,7 @@ def fill_convex_hulls(labels):
     for prop in data:
         label = prop["label"]
         bbox = prop["bbox"]
-        cmask = prop["convex_image"]
+        cmask = prop["image_convex"]
         if len(bbox) <= 4:
             output[bbox[0] : bbox[2], bbox[1] : bbox[3]][cmask] = label
         else:
@@ -597,7 +599,7 @@ def filter_on_size(
     object_count = numpy.max(labeled_image)
     # Check if there are no labelled objects
     if object_count > 0:
-        areas = scipy.ndimage.measurements.sum(
+        areas = scipy.ndimage.sum(
             numpy.ones(labeled_image.shape),
             labeled_image,
             numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32),
@@ -757,7 +759,7 @@ def separate_neighboring_objects(
             image_resize_factor,
         )
     else:
-        raise ValueError(f"Unsupported unclump method: {unclump_method}")
+        raise ValueError(f"Unsupported unclump method: {unclump_method.value if isinstance(unclump_method, UnclumpMethod) else unclump_method}")
 
     # Create the image for watershed
     if watershed_method == WatershedMethod.INTENSITY:
@@ -774,7 +776,7 @@ def separate_neighboring_objects(
         # No image used
         pass
     else:
-        raise ValueError(f"Unsupported watershed method: {watershed_method}")
+        raise ValueError(f"Unsupported watershed method: {watershed_method.value if isinstance(watershed_method, WatershedMethod) else watershed_method}")
     #
     # Create a marker array where the unlabeled image has a label of
     # -(nobjects+1)
@@ -1037,7 +1039,7 @@ def image_mode_color(
     else:
         cm_name = colormap_value
 
-    cm = matplotlib.cm.get_cmap(cm_name)
+    cm = matplotlib.pyplot.get_cmap(cm_name)
 
     mapper = matplotlib.cm.ScalarMappable(cmap=cm)
 
@@ -1152,7 +1154,7 @@ def erode_objects_with_structuring_element(
             for label in missing_labels:
                 binary = labels == label
                 # Find pixels furthest from the object's edge using distance transform
-                midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
+                midpoint = scipy.ndimage.distance_transform_edt(binary)
                 # Preserve pixels at maximum distance (most central)
                 y_data[midpoint == numpy.max(midpoint)] = label
     
@@ -1369,9 +1371,9 @@ def keep_per_object(
         tricky_values = numpy.zeros((len(values) + 1,))
         tricky_values[1:] = values
         if wants_max:
-            tricky_values[0] = -numpy.Inf
+            tricky_values[0] = -numpy.inf
         else:
-            tricky_values[0] = numpy.Inf
+            tricky_values[0] = numpy.inf
         src_values = tricky_values[src_labels]
         #
         # Now find the location of the best for each of the enclosing objects
@@ -1715,7 +1717,7 @@ def filter_using_image(
         i = c_i
         j = c_j
     else:
-        raise ValueError(f"Unknown algorithm specified in where_algorithm parameter: {where_algorithm}")
+        raise ValueError(f"Unknown algorithm specified in where_algorithm parameter: {where_algorithm.value if isinstance(where_algorithm, ObjectIntensityMethod) else where_algorithm}")
     #
     # Add in connections from self to self
     #

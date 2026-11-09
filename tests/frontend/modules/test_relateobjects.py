@@ -111,11 +111,11 @@ def test_02_01_relate_zeros():
     parents_of = m.get_current_measurement(
         CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
     )
-    assert(numpy.product(parents_of.shape) == 0)
+    assert(numpy.prod(parents_of.shape) == 0)
     child_count = m.get_current_measurement(
         PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
     )
-    assert(numpy.product(child_count.shape) == 0)
+    assert(numpy.prod(child_count.shape) == 0)
     features_and_columns_match(workspace)
 
 def test_02_01_relate_one():
@@ -130,12 +130,12 @@ def test_02_01_relate_one():
     parents_of = m.get_current_measurement(
         CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
     )
-    assert(numpy.product(parents_of.shape) == 1)
+    assert(numpy.prod(parents_of.shape) == 1)
     assert(parents_of[0] == 1)
     child_count = m.get_current_measurement(
         PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
     )
-    assert(numpy.product(child_count.shape) == 1)
+    assert(numpy.prod(child_count.shape) == 1)
     assert(child_count[0] == 1)
     features_and_columns_match(workspace)
 
@@ -156,12 +156,12 @@ def test_02_02_relate_wrong_size():
     parents_of = m.get_current_measurement(
         CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
     )
-    assert(numpy.product(parents_of.shape) == 1)
+    assert(numpy.prod(parents_of.shape) == 1)
     assert(parents_of[0] == 1)
     child_count = m.get_current_measurement(
         PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
     )
-    assert(numpy.product(child_count.shape) == 1)
+    assert(numpy.prod(child_count.shape) == 1)
     assert(child_count[0] == 1)
     features_and_columns_match(workspace)
 
@@ -177,14 +177,14 @@ def test_02_03_relate_ijv():
     parents_of = m.get_current_measurement(
         CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
     )
-    assert(numpy.product(parents_of.shape) == 3)
+    assert(numpy.prod(parents_of.shape) == 3)
     assert(parents_of[0] == 1)
     assert(parents_of[1] == 1)
     assert(parents_of[2] == 2)
     child_count = m.get_current_measurement(
         PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
     )
-    assert(numpy.product(child_count.shape) == 2)
+    assert(numpy.prod(child_count.shape) == 2)
     assert(child_count[0] == 2)
     assert(child_count[1] == 1)
 
@@ -500,12 +500,12 @@ def test_relate_and_make_new_objects():
     parents_of = m.get_current_measurement(
         CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
     )
-    assert(numpy.product(parents_of.shape )== 1)
+    assert(numpy.prod(parents_of.shape )== 1)
     assert(parents_of[0] == 1)
     child_count = m.get_current_measurement(
         PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
     )
-    assert(numpy.product(child_count.shape) == 1)
+    assert(numpy.prod(child_count.shape) == 1)
     assert(child_count[0] == 1)
     features_and_columns_match(workspace)
 

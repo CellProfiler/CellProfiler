@@ -1,4 +1,5 @@
 import numpy
+import scipy.ndimage
 import numpy.testing
 import pytest
 import skimage.morphology
@@ -60,7 +61,11 @@ def test_run(object_set_with_data, module, workspace_with_data):
         if n == 0:
             continue
 
-        filled_mask = skimage.morphology.remove_small_holes(expected == n, size)
+        components, _ = scipy.ndimage.label(expected != n)
+        sizes = numpy.bincount(components.ravel())
+        small = sizes <= size
+        small[0] = False
+        filled_mask = (expected == n) | small[components]
         expected[filled_mask] = n
 
     numpy.testing.assert_array_equal(actual, expected)

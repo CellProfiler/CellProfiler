@@ -6,6 +6,7 @@ runtime-version: '49'
 command: cellprofiler
 default-branch: {{CP_VERSION_BASE}}
 modules:
+  - libcanberra/libcanberra.json
   - name: pixi-install
     buildsystem: simple
     build-commands:
@@ -24,6 +25,18 @@ modules:
       - echo "${FLATPAK_DEST}/activate.sh python -m cellprofiler -L 10" > cellprofiler
       - install -Dm0755 cellprofiler ${FLATPAK_DEST}/bin/cellprofiler
       # pip install the sources only, the deps are already installed in the unpacked enviornment above
+      - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/appose
+      - |
+        ${FLATPAK_DEST}/env/bin/python - <<'PYTHON'
+        import importlib.metadata
+        from pathlib import Path
+        import tomllib
+        import appose
+
+        expected = tomllib.loads(Path('appose/pyproject.toml').read_text())['project']['version']
+        assert importlib.metadata.version('appose') == expected
+        assert callable(appose.file) and callable(appose.NDArray)
+        PYTHON
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/centriole
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/library
       - pip3 --python ${FLATPAK_DEST}/env/bin/python install --no-index --no-build-isolation --no-deps --prefix=${FLATPAK_DEST}/env ${FLATPAK_BUILDER_BUILDDIR}/src/subpackages/core
@@ -38,11 +51,18 @@ modules:
       - cp distribution/linux/org.cellprofiler.CellProfiler.desktop /app/share/applications/org.cellprofiler.CellProfiler.desktop
     build-options:
       env:
-        - SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER={{CP_VERSION}}
+        SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CENTRIOLE: '{{CP_VERSION}}'
+        SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER_LIBRARY: '{{CP_VERSION}}'
+        SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER_CORE: '{{CP_VERSION}}'
+        SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CELLPROFILER: '{{CP_VERSION}}'
     sources:
       - type: git
         url: https://github.com/CellProfiler/CellProfiler.git
         branch: {{CP_BRANCH}}
+      - type: git
+        url: {{APPOSE_GIT_URL}}
+        commit: {{APPOSE_COMMIT}}
+        dest: appose
       - type: file
         path: environment.sh
         dest: .
@@ -56,10 +76,10 @@ finish-args:
   - --filesystem=xdg-documents:rw
   # persist flatpak's ~/.jgo in host's ~/.var/app/org.cellprofiler.CellProfiler/.jgo across runs
   - --persist=.jgo
-  # by default set to gail:atk-bridge, which causes a load of canberra-gtk-module, which is not shipped in the flatpak
   - --unset-env=GTK_MODULES
   # find pixi provided libs, like libjpeg.so.8
-  - --env=LD_LIBRARY_PATH=/app/env/lib
+  - --env=LD_LIBRARY_PATH=/app/lib:/app/env/lib
+  - --env=GTK_PATH=/app/lib/gtk-3.0
   # prevent direct memory access buffer protocol, to stop webkit from sharing graphics buffer with main UI process
   # especially for Ubuntu with X11 and NVIDIA drivers, or older version of Mesa on the host, the "handshake" required fails
   # don't use shared-memory buffer protocol and fallback to traditional texture-sharing or software-fallback path

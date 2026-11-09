@@ -53,9 +53,9 @@ LONG_OBJ_FEATURE = (
     "obj_measurement_with_a_column_name_that_exceeds_64_characters_in_width"
 )
 WIERD_IMG_FEATURE = (
-    'image_measurement_with_"!@%*\n~!\t\ra\+=' "and other &*^% in it.........."
+    'image_measurement_with_"!@%*\n~!\t\ra\\+=' "and other &*^% in it.........."
 )
-WIERD_OBJ_FEATURE = 'measurement w"!@%*\n~!\t\ra\+=' "and other &*^% in it"
+WIERD_OBJ_FEATURE = 'measurement w"!@%*\n~!\t\ra\\+=' "and other &*^% in it"
 GROUP_IMG_FEATURE = "group_imagemeasurement"
 GROUP_OBJ_FEATURE = "group_objmeasurement"
 MISSING_FROM_MEASUREMENTS = "Missing from measurements"
@@ -1917,12 +1917,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -2134,12 +2134,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -2615,13 +2615,13 @@ class TestExportToDatabase(unittest.TestCase):
         a numpy.float32 to a float.
         """
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        fim = workspace.measurements.get_all_measurements(
-            "Image", FLOAT_IMG_MEASUREMENT
+        fim = workspace.measurements.get_measurement(
+            "Image", FLOAT_IMG_MEASUREMENT, workspace.measurements.get_image_numbers()
         )
         for i in range(len(fim)):
             fim[i] = numpy.float32(fim[i])
-        iim = workspace.measurements.get_all_measurements(
-            "Image", INT_IMG_MEASUREMENT
+        iim = workspace.measurements.get_measurement(
+            "Image", INT_IMG_MEASUREMENT, workspace.measurements.get_image_numbers()
         )
         for i in range(len(iim)):
             iim[i] = numpy.int32(iim[i])
@@ -3149,12 +3149,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[0] = numpy.NaN
+        om[0] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -3253,12 +3253,12 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
-        om[:] = numpy.NaN
+        om[:] = numpy.nan
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             assert isinstance(
@@ -3331,7 +3331,7 @@ class TestExportToDatabase(unittest.TestCase):
         m.add_measurement(
             "Image",
             FLOAT_IMG_MEASUREMENT,
-            numpy.NaN,
+            numpy.nan,
             True,
             1,
         )

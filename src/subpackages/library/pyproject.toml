@@ -40,7 +40,7 @@ and mathematical code, and is usable as a standalone library"""
 readme = "README.md"
 # we don't place upper bound pin for python:
 # https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 # TODO: should be dynamic, top level, shared across all
 license = {file = "LICENSE"}
 keywords = ["computer vision", "image analysis", "biology", "cell", "cellprofiler"]
@@ -49,20 +49,21 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering :: Image Processing",
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "numpy>=1.26.4,<2",
-    "scikit-image>=0.20.0",
+    "numpy>=1.26.4",
+    "scikit-image>=0.25",
+    "tifffile>=2022.7.28",
     "scikit-learn>=1.3.0",
-    "scipy>=1.9.1,<1.11",
+    "scipy>=1.9.1",
     "mahotas>=1.4.13",
     "centriole>=5.dev",
-    "matplotlib>=3.1.3,<4",
+    "matplotlib>=3.9.4",
     "packaging>=20.0",
     "pydantic>=2.11.4",
 ]
@@ -71,7 +72,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 build = ["build", "pyinstaller", "twine"]
 # TODO: should be handled by nox or tox
-test = ["pytest~=7.4.1"]
+test = ["pytest>=8.4.2"]
 
 [project.urls]
 Homepage = "https://cellprofiler.org/"

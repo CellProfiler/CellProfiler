@@ -11,7 +11,7 @@ class Menu(wx.Menu):
         super(Menu, self).__init__()
 
     def append(self, title, contents=None, event_fn=None):
-        id = wx.NewId()
+        id = wx.NewIdRef()
 
         self.Append(id, title)
 

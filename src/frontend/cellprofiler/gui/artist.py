@@ -466,6 +466,11 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.__objects = objects or []
         self.__masks = masks or []
         self.__interpolation = interpolation
+        # NOTE: CPImageArtist creates temporary context windows, binding their handlers to a longer-lived
+        # window, which stay in place after the context window is destoyed. The id needs to be retained
+        # otherwise wx could reuse an ID while still in use by a still-listening handler, leading to misrouted
+        # events. Hence we place them here to prevent their reuse.
+        self.__menu_ids = []
         self.filterrad = 0  # This was 4.0 but WHY?!?!
 
     def set_interpolation(self, interpolation):
@@ -808,6 +813,13 @@ class CPImageArtist(matplotlib.artist.Artist):
                 om.points.set_clip_path(self.axes.patch)
                 om.points.draw(renderer)
 
+    def __new_menu_id(self):
+        import wx
+
+        menu_id = wx.NewIdRef()
+        self.__menu_ids.append(menu_id)
+        return menu_id
+
     def add_to_menu(self, target, menu):
         """Add to a context menu for a WX ui
 
@@ -825,7 +837,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             (self.MI_BILINEAR, INTERPOLATION_BILINEAR),
             (self.MI_BICUBIC, INTERPOLATION_BICUBIC),
         ):
-            my_id = wx.NewId()
+            my_id = self.__new_menu_id()
             submenu_item = interpolation_menu.AppendRadioItem(my_id, label)
             target.Bind(
                 wx.EVT_MENU,
@@ -883,7 +895,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         for key, sequence in breaks:
             label = label_fmt % key
             if idx >= len(menu_items) or menu_items[idx].ItemLabel != label:
-                item = menu.Insert(idx, wx.NewId(), label)
+                item = menu.Insert(idx, wx.ID_ANY, label)
                 item.Enable(False)
                 menu_items.insert(idx, item)
             idx += 1
@@ -898,7 +910,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                     or menu_items[idx].IsSeparator()
                 ):
                     sub_menu = wx.Menu()
-                    my_id = wx.NewId()
+                    my_id = self.__new_menu_id()
                     if len(name) == 0:
                         # otherwise bad things happen on Mac
                         # Can't have blank name and non-stock ID
@@ -940,7 +952,7 @@ class CPImageArtist(matplotlib.artist.Artist):
     def __initialize_image_sub_menu(self, event, sub_menu, data):
         import wx
 
-        item = sub_menu.Append(wx.NewId(), self.MI_NORMALIZATION)
+        item = sub_menu.Append(wx.ID_ANY, self.MI_NORMALIZATION)
         item.Enable(False)
         window = self.__get_window_from_event(event)
         for label, target in (
@@ -948,7 +960,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             (self.MI_LINEAR, NORMALIZE_LINEAR),
             (self.MI_LOG, NORMALIZE_LOG),
         ):
-            my_id = wx.NewId()
+            my_id = self.__new_menu_id()
             sub_menu.AppendRadioItem(my_id, label)
             window.Bind(
                 wx.EVT_MENU,
@@ -969,7 +981,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 id=my_id,
             )
         sub_menu.AppendSeparator()
-        my_id = wx.NewId()
+        my_id = self.__new_menu_id()
         item = sub_menu.Append(my_id, self.MI_MODE)
         item.Enable(False)
         for label, target in (
@@ -989,7 +1001,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 data.mode = target
                 self.refresh()
 
-            my_id = wx.NewId()
+            my_id = self.__new_menu_id()
             item = sub_menu.AppendRadioItem(my_id, label)
             update_mode(item)
             window.Bind(wx.EVT_MENU, on_mode, id=my_id)
@@ -1009,7 +1021,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         import wx
 
         assert isinstance(data, ColorMixin)
-        my_id = wx.NewId()
+        my_id = self.__new_menu_id()
         item = sub_menu.Append(my_id, self.MI_COLOR)
         window = self.__get_window_from_event(event)
 
@@ -1030,7 +1042,7 @@ class CPImageArtist(matplotlib.artist.Artist):
     def __add_alpha_item(self, event, sub_menu, data, msg):
         import wx
 
-        my_id = wx.NewId()
+        my_id = self.__new_menu_id()
         item = sub_menu.Append(my_id, self.MI_ALPHA)
         window = self.__get_window_from_event(event)
 
@@ -1076,7 +1088,7 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         assert isinstance(data, ObjectsData)
         assert isinstance(sub_menu, wx.Menu)
-        item = sub_menu.Append(wx.NewId(), "Display mode")
+        item = sub_menu.Append(wx.ID_ANY, "Display mode")
         item.Enable(False)
         window = self.__get_window_from_event(event)
         for label, mode in (
@@ -1084,7 +1096,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             (self.MI_OUTLINES, MODE_OUTLINES),
             (self.MI_OVERLAY, MODE_OVERLAY),
         ):
-            my_id = wx.NewId()
+            my_id = self.__new_menu_id()
             sub_menu.AppendRadioItem(my_id, label)
             window.Bind(
                 wx.EVT_MENU,
@@ -1123,7 +1135,7 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         assert isinstance(data, MaskData)
         assert isinstance(sub_menu, wx.Menu)
-        item = sub_menu.Append(wx.NewId(), self.MI_MODE)
+        item = sub_menu.Append(wx.ID_ANY, self.MI_MODE)
         item.Enable(False)
         window = self.__get_window_from_event(event)
         for label, target in (
@@ -1135,7 +1147,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             set_fn = lambda event, data=data, mode=target: self.__on_mask_mode(
                 event, data, mode
             )
-            my_id = wx.NewId()
+            my_id = self.__new_menu_id()
             item = sub_menu.AppendRadioItem(my_id, label)
             self.__on_update_mask_mode(item, data, target)
             window.Bind(wx.EVT_MENU, set_fn, id=my_id)
@@ -1295,7 +1307,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
                 my_range = numpy.arange(len(unique))
             else:
                 my_range = numpy.arange(1, len(unique))
-            idx.shape = l.shape
+            idx = idx.reshape(l.shape)
             pts, offs, counts = centriole.cpmorphology.get_outline_pts(idx, my_range)
             pts = pts + 0.5  # Target the centers of the pixels.
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j

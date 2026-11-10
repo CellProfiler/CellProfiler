@@ -54,6 +54,13 @@ write directly to the database) that can be used to create the Per\\_Well
 table. **Note** that the “Per\\_Well” mean/median/stdev values are only usable
 for database type MySQL, not SQLite.
 
+When writing to a SQLite database, **ExportToDatabase** creates the
+tables as `STRICT tables <https://www.sqlite.org/stricttables.html>`_.
+STRICT tables enforce the declared type of each column (e.g., a column
+declared as an integer can no longer end up holding a text value),
+which helps catch data problems earlier. This requires SQLite 3.37.0
+(2021-11-27) or later.
+
 At the secure shell where you normally log in to MySQL, type the
 following, replacing the italics with references to your database and
 files, to import these CellProfiler measurements to your database:
@@ -191,6 +198,33 @@ DB_MYSQL = "MySQL"
 DB_ORACLE = "Oracle"
 DB_SQLITE = "SQLite"
 DB_MYSQL_CSV = "MySQL / CSV"
+
+
+def get_sqlite_strict_coltype(coltype):
+    """Map a column type used elsewhere in this module to one of the
+    type names permitted in a SQLite STRICT table.
+
+    SQLite's STRICT tables only accept the column type names INTEGER,
+    REAL, TEXT, BLOB and ANY (see https://www.sqlite.org/stricttables.html).
+    This module otherwise uses MySQL-flavored type names (e.g. "float",
+    "varchar(45)", "mediumblob", "longtext") that are not recognized by
+    SQLite in STRICT mode, so they need to be translated.
+
+    coltype - a column type string such as those returned by
+              Measurements.get_measurement_columns() or hard-coded
+              elsewhere in this module.
+    """
+    coltype_lower = coltype.lower()
+    if coltype_lower == COLTYPE_FLOAT:
+        return "REAL"
+    if coltype_lower in (COLTYPE_BLOB, COLTYPE_MEDIUMBLOB, COLTYPE_LONGBLOB):
+        return "BLOB"
+    if coltype_lower.startswith(COLTYPE_VARCHAR) or coltype_lower == "longtext":
+        return "TEXT"
+    # "integer", "text", "integer primary key", "integer not null", etc.
+    # are already valid STRICT type names/column-defs as-is.
+    return coltype
+
 
 ##############################################
 #
@@ -3012,6 +3046,18 @@ available:
             if setting.value
         ]
 
+    @property
+    def is_sqlite_output(self):
+        """True if this module is emitting SQLite (rather than MySQL) SQL
+
+        Used to pick between the two SQL dialects this module
+        generates: SQLite tables are always created as STRICT tables
+        with SQLite's restricted set of type names, while MySQL tables
+        use MySQL's own type names and never have STRICT applied (it
+        is not a MySQL feature).
+        """
+        return self.db_type == DB_SQLITE
+
     #
     # Create per_image and per_object tables in MySQL
     #
@@ -3110,6 +3156,7 @@ available:
 
     def get_experiment_table_statements(self, workspace):
         statements = []
+        is_sqlite = self.is_sqlite_output
         if self.db_type == DB_MYSQL:
             autoincrement = "AUTO_INCREMENT"
             need_text_size = True
@@ -3119,9 +3166,10 @@ available:
         create_experiment_table_statement = """
 CREATE TABLE IF NOT EXISTS %s (
     experiment_id integer primary key %s,
-    name text)""" % (
+    name text)%s""" % (
             T_EXPERIMENT,
             autoincrement,
+            " STRICT" if is_sqlite else "",
         )
         statements.append(create_experiment_table_statement)
         if need_text_size:
@@ -3139,12 +3187,16 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         else:
             create_experiment_properties = (
                 """
-CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+CREATE TABLE IF NOT EXISTS %%(T_EXPERIMENT_PROPERTIES)s (
     experiment_id integer not null,
     object_name text not null,
     field text not null,
-    value longtext,
-    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))"""
+    value %s,
+    constraint %%(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))%s"""
+                % (
+                    get_sqlite_strict_coltype("longtext") if is_sqlite else "longtext",
+                    " STRICT" if is_sqlite else "",
+                )
                 % globals()
             )
 
@@ -3179,15 +3231,22 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
             )
         )
         experiment_coldefs = [
-            "%s %s" % (x[1], "TEXT" if x[2].startswith(COLTYPE_VARCHAR) else x[2],)
+            "%s %s"
+            % (
+                x[1],
+                get_sqlite_strict_coltype("TEXT" if x[2].startswith(COLTYPE_VARCHAR) else x[2])
+                if is_sqlite
+                else ("TEXT" if x[2].startswith(COLTYPE_VARCHAR) else x[2]),
+            )
             for x in experiment_columns
         ]
         create_per_experiment = """
 CREATE TABLE %s (
-%s)
+%s)%s
 """ % (
             self.get_table_name(EXPERIMENT),
             ",\n".join(experiment_coldefs),
+            " STRICT" if is_sqlite else "",
         )
         statements.append(create_per_experiment)
         column_names = []
@@ -3226,6 +3285,7 @@ CREATE TABLE %s (
 
     def get_create_image_table_statement(self, pipeline, image_set_list):
         """Return a SQL statement that generates the image table"""
+        is_sqlite = self.is_sqlite_output
         statement = "CREATE TABLE " + self.get_table_name("Image") + " (\n"
         statement += "%s INTEGER" % C_IMAGE_NUMBER
 
@@ -3238,11 +3298,24 @@ CREATE TABLE %s (
             ):
                 if ftype.startswith(COLTYPE_VARCHAR):
                     ftype = "TEXT"
+                elif is_sqlite:
+                    if feature.startswith(C_THUMBNAIL + "_"):
+                        # Thumbnails are stored as base64-encoded text
+                        # (see write_data_to_db), not raw bytes, so the
+                        # STRICT column type must be TEXT -- the normal
+                        # blob-family mapping would reject the base64
+                        # string values at insert time.
+                        ftype = "TEXT"
+                    else:
+                        ftype = get_sqlite_strict_coltype(ftype)
                 feature_name = "%s_%s" % (obname, feature)
                 statement += ",\n%s %s" % (mappings[feature_name], ftype)
+        agg_coltype = get_sqlite_strict_coltype(COLTYPE_FLOAT) if is_sqlite else COLTYPE_FLOAT
         for column in self.get_aggregate_columns(pipeline, image_set_list):
-            statement += ",\n%s %s" % (mappings[column[3]], COLTYPE_FLOAT,)
+            statement += ",\n%s %s" % (mappings[column[3]], agg_coltype,)
         statement += ",\nPRIMARY KEY (%s) )" % C_IMAGE_NUMBER
+        if is_sqlite:
+            statement += " STRICT"
         return statement
 
     def get_create_object_table_statement(self, object_name, pipeline, image_set_list):
@@ -3250,6 +3323,7 @@ CREATE TABLE %s (
 
         object_name - None = PerObject, otherwise a specific table
         """
+        is_sqlite = self.is_sqlite_output
         if object_name is None:
             object_table = self.get_table_name(OBJECT)
         else:
@@ -3272,8 +3346,12 @@ CREATE TABLE %s (
                 obname, feature, ftype = column_def[:3]
                 if obname == ob_table and not self.ignore_feature(obname, feature):
                     feature_name = "%s_%s" % (obname, feature)
+                    if is_sqlite:
+                        ftype = get_sqlite_strict_coltype(ftype)
                     statement += ",\n%s %s" % (mappings[feature_name], ftype)
         statement += ",\nPRIMARY KEY (%s, %s) )" % (C_IMAGE_NUMBER, object_pk)
+        if is_sqlite:
+            statement += " STRICT"
         return statement
 
     def get_create_object_view_statement(self, object_names, pipeline, image_set_list):
@@ -3360,6 +3438,7 @@ CREATE TABLE %s (
         Returns a list of statements to execute.
         """
         statements = []
+        is_sqlite = self.is_sqlite_output
         #
         # View name + drop view if appropriate
         #
@@ -3393,11 +3472,15 @@ CREATE TABLE %s (
             "varchar(255)",
             "varchar(255)",
         ]
+        if is_sqlite:
+            types = [get_sqlite_strict_coltype(t) for t in types]
         rtt_unique_name = self.get_table_name(CONSTRAINT_RT_UNIQUE)
         statement = "CREATE TABLE %s " % relationship_type_table_name
         statement += "(" + ", ".join(["%s %s" % (c, t) for c, t in zip(columns, types)])
         statement += ", CONSTRAINT %s UNIQUE ( " % rtt_unique_name
         statement += ", ".join(columns) + " ))"
+        if is_sqlite:
+            statement += " STRICT"
         statements.append(statement)
         #
         # Create a row in this table for each relationship
@@ -3444,6 +3527,8 @@ CREATE TABLE %s (
         )
         statement += " ,CONSTRAINT %s UNIQUE" % self.get_table_name(CONSTRAINT_R_UNIQUE)
         statement += " ( " + ", ".join(columns) + " ))"
+        if is_sqlite:
+            statement += " STRICT"
         statements.append(statement)
         #
         # Create indexes for both the first and second objects

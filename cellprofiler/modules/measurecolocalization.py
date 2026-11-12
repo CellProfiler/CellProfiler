@@ -23,7 +23,7 @@ between the following:
 
 A good primer on colocalization theory can be found on the `SVI website`_.
 
-You can find a helpful review on colocalization from Aaron *et al*. `here`_.
+You can find a helpful review on colocalization from Aaron *et al*. `here <https://jcs.biologists.org/content/joces/131/3/jcs211847.full.pdf>`__.
 
 |
 
@@ -75,7 +75,6 @@ References
 
    
 .. _SVI website: http://svi.nl/ColocalizationTheory
-.. _here: https://jcs.biologists.org/content/joces/131/3/jcs211847.full.pdf
 """
 
 import numpy

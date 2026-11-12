@@ -176,11 +176,10 @@ References
    enclosing n given points in a plane”, *Proceedings of the Edinburgh
    Mathematical Society*, vol 3, p. 30
 -  Hu MK (1962), “Visual pattern recognition by moment invariants”, *IRE
-   transactions on information theory*, 8(2), pp.179-187 `(link)`_
+   transactions on information theory*, 8(2), pp.179-187 `(link) <https://ieeexplore.ieee.org/abstract/document/1057692>`__
 
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
-.. _(link): https://ieeexplore.ieee.org/abstract/document/1057692
 .. |MOSS_image0| image:: {ECCENTRICITY_ICON}
 """.format(
     **{

@@ -49,7 +49,7 @@ Measurements made by this module
 
    Thirteen measurements are then calculated for the image by performing
    mathematical operations on the co-occurrence matrix (the formulas can
-   be found `here`_):
+   be found `here <http://murphylab.web.cmu.edu/publications/boland/boland_node26.html>`__):
 
    -  *AngularSecondMoment:* Measure of image homogeneity. A higher
       value of this feature indicates that the intensity varies less in
@@ -139,7 +139,6 @@ References
    Image Classification” *IEEE Transaction on Systems Man, Cybernetics*,
    SMC-3(6):610-621. `(link) <https://doi.org/10.1109/TSMC.1973.4309314>`__
 
-.. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 .. _GeoGebra: https://www.geogebra.org/ 
 .. |MT_image0| image:: {MEASURE_TEXTURE_3D_INFO}
 .. |MT_image1| image:: {MEASURE_TEXTURE_3D_INFO2}

@@ -284,8 +284,13 @@ temporary directory and assign its path as a value to this variable."""
                 image_pixels = image.pixel_data
                 skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
-            if self.executable_file.value[-4:] == ".app":
-                executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
+            if self.executable_file.value.endswith(".app"):
+                exec_dir = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS")
+                # use Universal2 binary (both x64 and arm64 binaries)
+                executable = os.path.join(exec_dir, "fiji-macos")
+                # fall back to legacy Fiji bundle structure
+                if not os.path.isfile(executable):
+                    executable = os.path.join(exec_dir, "ImageJ-macosx")
             else:
                 executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value)
             cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]

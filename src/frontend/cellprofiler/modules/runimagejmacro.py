@@ -289,6 +289,10 @@ temporary directory and assign its path as a value to this variable."""
 
             if self.executable_file.value[-4:] == ".app":
                 executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
+                if not os.path.isfile(executable):
+                    fiji_executable = os.path.join(os.path.dirname(executable), "fiji-macos")
+                    if os.path.isfile(fiji_executable):
+                        executable = fiji_executable
             else:
                 executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value)
             cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]

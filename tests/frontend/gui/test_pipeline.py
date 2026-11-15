@@ -5,12 +5,10 @@ import textwrap
 
 from cellprofiler.gui.pipeline import Pipeline
 
-# Right single quotation mark, em dash and the combining sequence suggested in
-# #4879. Written as escapes so that this file is pure ASCII.
+# Non-ASCII note from #4879, written as escapes to keep this file ASCII.
 NOTE = "cells\u2019 flow \u2014 y\u0316\u0320\u034d\u0318\u0347\u0357\u030f\u033d\u030e\u035e"
 
-# The script is plain ASCII so that it survives an ASCII locale. The note is
-# passed in as an ASCII literal and rebuilt inside the child process.
+# ASCII-only so it survives an ASCII locale; the note goes in as an escaped literal.
 SCRIPT = textwrap.dedent(
     """
     import sys
@@ -33,7 +31,7 @@ SCRIPT = textwrap.dedent(
 
 
 def test_save_non_ascii_note_with_ascii_locale(tmp_path):
-    """Saving must not depend on the platform default encoding (#4879, #5123)"""
+    """Saving must not depend on the platform default encoding"""
     path = tmp_path / "pipeline.cppipe"
     path.write_text("existing pipeline", encoding="utf-8")
 

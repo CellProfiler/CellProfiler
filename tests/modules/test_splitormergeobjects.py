@@ -273,6 +273,29 @@ def test_split_one():
     assert values[0] == 1
 
 
+def test_split_touching_objects_stay_separate():
+    labels = numpy.zeros((10, 20), int)
+    labels[2:5, 3:8] = 1
+    labels[2:5, 8:13] = 2
+    labels[6:8, 3:8] = 2
+    labels_out, workspace = rruunn(
+        labels, cellprofiler.modules.splitormergeobjects.OPTION_SPLIT
+    )
+    assert len(numpy.unique(labels_out[labels_out > 0])) == 3
+    assert len(numpy.unique(labels_out[labels == 1])) == 1
+    assert len(numpy.unique(labels_out[2:5, 8:13])) == 1
+    assert len(numpy.unique(labels_out[6:8, 3:8])) == 1
+    assert labels_out[2, 3] != labels_out[2, 8]
+    assert labels_out[2, 8] != labels_out[6, 3]
+    m = workspace.measurements
+    parents = m.get_current_measurement(
+        OUTPUT_OBJECTS_NAME, FF_PARENT % INPUT_OBJECTS_NAME
+    )
+    assert parents[labels_out[2, 3] - 1] == 1
+    assert parents[labels_out[2, 8] - 1] == 2
+    assert parents[labels_out[6, 3] - 1] == 2
+
+
 def test_split_one_into_two():
     labels = numpy.zeros((10, 20), int)
     labels[2:5, 3:8] = 1

@@ -642,6 +642,34 @@ def test_two_neighbors():
     assert round(abs(v[0] - 90), 7) == 0
 
 
+def test_two_neighbors_3d():
+    olabels = numpy.zeros((3, 10, 20), int)
+    olabels[0, 5, 5] = 1
+    nlabels = numpy.zeros((3, 10, 20), int)
+    nlabels[0, 5, 15] = 1
+    nlabels[2, 8, 5] = 2
+    workspace, module = make_workspace(
+        olabels,
+        DistanceMethod.EXPAND,
+        distance=20,
+        neighbors_labels=nlabels,
+    )
+    module.run(workspace)
+    m = workspace.measurements
+    for measurement, expected in (
+        (Measurement.FIRST_CLOSEST_OBJECT_NUMBER, 2),
+        (Measurement.SECOND_CLOSEST_OBJECT_NUMBER, 1),
+        (Measurement.FIRST_CLOSEST_DISTANCE, numpy.sqrt(13)),
+        (Measurement.SECOND_CLOSEST_DISTANCE, 10),
+        (Measurement.ANGLE_BETWEEN_NEIGHBORS, 90),
+    ):
+        v = m.get_current_measurement(
+            OBJECTS_NAME, module.get_measurement_name(measurement)
+        )
+        assert len(v) == 1
+        assert round(abs(v[0] - expected), 7) == 0
+
+
 def test_different_neighbors_touching():
     olabels = numpy.zeros((20, 10), int)
     olabels[2:5, 2:5] = 1

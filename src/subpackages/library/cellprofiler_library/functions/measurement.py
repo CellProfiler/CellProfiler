@@ -3200,15 +3200,11 @@ def get_first_and_second_object_numbers(
     first_object_number = numpy.zeros(nkept_objects, int)
     second_object_number = numpy.zeros(nkept_objects, int)
     if nkept_objects > (1 if neighbors_are_objects else 0):
-        di = (
-            ocenters[object_indexes[:, numpy.newaxis], 0]
-            - ncenters[neighbor_indexes[numpy.newaxis, :], 0]
+        difference = (
+            ocenters[object_indexes][:, numpy.newaxis, :]
+            - ncenters[neighbor_indexes][numpy.newaxis, :, :]
         )
-        dj = (
-            ocenters[object_indexes[:, numpy.newaxis], 1]
-            - ncenters[neighbor_indexes[numpy.newaxis, :], 1]
-        )
-        distance_matrix = numpy.sqrt(di * di + dj * dj)
+        distance_matrix = numpy.sqrt(numpy.sum(difference ** 2, axis=2))
         distance_matrix[~has_pixels, :] = numpy.inf
         distance_matrix[:, ~neighbor_has_pixels] = numpy.inf
         #
@@ -3241,11 +3237,11 @@ def get_first_and_second_x_y_vectors_and_angle(
         NDArray[numpy.float64],
         NDArray[numpy.float64]
     ]:
+    ndim = ncenters.shape[1]
+    ocenters = ocenters.reshape(-1, ndim)
     angle = numpy.zeros((nobjects,))
-    first_x_vector = numpy.zeros((nobjects,))
-    second_x_vector = numpy.zeros((nobjects,))
-    first_y_vector = numpy.zeros((nobjects,))
-    second_y_vector = numpy.zeros((nobjects,))
+    first_vector = numpy.zeros((nobjects, ndim))
+    second_vector = numpy.zeros((nobjects, ndim))
     #
     # order[:,0] should be arange(nobjects)
     # order[:,1] should be the nearest neighbor
@@ -3256,34 +3252,28 @@ def get_first_and_second_x_y_vectors_and_angle(
     # (0, 1, 2) unless there are less than 3 neighbors
     partition_keys = tuple(range(min(nneighbors, 3)))
     for i in range(nobjects):
-        dr = numpy.sqrt((ocenters[i, 0] - ncenters[j, 0])**2 + (ocenters[i, 1] - ncenters[j, 1])**2)
+        dr = numpy.sqrt(numpy.sum((ocenters[i] - ncenters[j]) ** 2, axis=1))
         order[i, :] = numpy.argpartition(dr, partition_keys)[:3]
 
     first_neighbor = 1 if neighbors_are_objects else 0
     first_object_index = order[:, first_neighbor]
-    first_x_vector = ncenters[first_object_index, 1] - ocenters[:, 1]
-    first_y_vector = ncenters[first_object_index, 0] - ocenters[:, 0]
+    first_vector = ncenters[first_object_index] - ocenters
     if nneighbors > first_neighbor + 1:
         second_neighbor = first_neighbor + 1
         second_object_index = order[:, second_neighbor]
-        second_x_vector = ncenters[second_object_index, 1] - ocenters[:, 1]
-        second_y_vector = ncenters[second_object_index, 0] - ocenters[:, 0]
-        v1 = numpy.array((first_x_vector, first_y_vector))
-        v2 = numpy.array((second_x_vector, second_y_vector))
+        second_vector = ncenters[second_object_index] - ocenters
         #
         # Project the unit vector v1 against the unit vector v2
         #
-        dot = numpy.sum(v1 * v2, 0) / numpy.sqrt(
-            numpy.sum(v1 ** 2, 0) * numpy.sum(v2 ** 2, 0)
+        dot = numpy.sum(first_vector * second_vector, 1) / numpy.sqrt(
+            numpy.sum(first_vector ** 2, 1) * numpy.sum(second_vector ** 2, 1)
         )
         angle = numpy.arccos(dot) * 180.0 / numpy.pi
-    first_x_vector = first_x_vector[object_indexes]
-    second_x_vector = second_x_vector[object_indexes]
-    first_y_vector = first_y_vector[object_indexes]
-    second_y_vector = second_y_vector[object_indexes]
+    first_vector = first_vector[object_indexes]
+    second_vector = second_vector[object_indexes]
     angle = angle[object_indexes]
-    first_closest_distance = numpy.sqrt(first_x_vector ** 2 + first_y_vector ** 2)
-    second_closest_distance = numpy.sqrt(second_x_vector ** 2 + second_y_vector ** 2)
+    first_closest_distance = numpy.sqrt(numpy.sum(first_vector ** 2, 1))
+    second_closest_distance = numpy.sqrt(numpy.sum(second_vector ** 2, 1))
     return (
         first_closest_distance,
         second_closest_distance,

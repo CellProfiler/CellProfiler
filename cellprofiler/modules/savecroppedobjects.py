@@ -5,7 +5,9 @@ SaveCroppedObjects
 **SaveCroppedObjects** exports each object as an individual image. Pixels corresponding to an exported object are
 assigned the value from the input image. All other pixels (i.e., background pixels and pixels corresponding to other
 objects) are assigned the value 0. The dimensions of each image are the same as the original image. Multi-channel color
-images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode).
+images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode). Multichannel
+images created as Stacks in **GrayToColor** are saved as ImageJ hyperstacks with one plane per channel when saved as
+TIFF.
 
 The filename for an exported image is formatted in one of two ways. 
 By default, when the *Prefix saved crop image name with input image name* option is enabled, the format is
@@ -232,24 +234,29 @@ a folder named after the input objects.
                     check_contrast=False
                 )
 
-            elif self.file_format.value == O_TIFF_8:
-                save_filename = filename +".{}".format("tiff")
-                
-                skimage.io.imsave(
-                    save_filename,
-                    skimage.img_as_ubyte(mask),
-                    compress=6,
-                    check_contrast=False,
-                )
-
-            elif self.file_format.value == O_TIFF_16:
+            elif self.file_format.value in (O_TIFF_8, O_TIFF_16):
                 save_filename = filename + ".{}".format("tiff")
-                
+
+                if self.file_format.value == O_TIFF_8:
+                    pixels = skimage.img_as_ubyte(mask)
+                else:
+                    pixels = skimage.img_as_uint(mask)
+
+                save_kwargs = {"compress": 6}
+                if (
+                    self.export_option == SAVE_PER_OBJECT
+                    and x.channelstack
+                    and not x.volumetric
+                    and pixels.ndim == 3
+                ):
+                    pixels = numpy.transpose(pixels, (2, 0, 1))
+                    save_kwargs = {"imagej": True}
+
                 skimage.io.imsave(
                     save_filename,
-                    skimage.img_as_uint(mask),
-                    compress=6,
+                    pixels,
                     check_contrast=False,
+                    **save_kwargs,
                 )
 
             filenames.append(save_filename)

@@ -1,6 +1,7 @@
 import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
+import skimage.measure
 from cellprofiler_core.constants.measurement import (
     C_PARENT,
     FF_CHILDREN_COUNT,
@@ -351,8 +352,8 @@ above):
         assert isinstance(objects, Objects)
         labels = objects.segmented
         if self.relabel_option == OPTION_SPLIT:
-            output_labels, count = scipy.ndimage.label(
-                labels > 0, numpy.ones((3, 3), bool)
+            output_labels = skimage.measure.label(
+                labels, background=0, connectivity=labels.ndim
             )
         else:
             if self.merge_option == UNIFY_DISTANCE:

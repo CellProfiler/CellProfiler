@@ -301,6 +301,16 @@ def test_split_one_into_two():
     assert values[0] == 2
 
 
+def test_split_touching_objects_stay_separate():
+    labels = numpy.zeros((10, 20), int)
+    labels[2:5, 3:8] = 1
+    labels[2:5, 8:12] = 2
+    labels_out, workspace = rruunn(labels, RelabelOption.SPLIT.value)
+    assert numpy.all(labels_out == labels)
+    m = workspace.measurements
+    assert m.get_current_image_measurement(FF_COUNT % OUTPUT_OBJECTS_NAME) == 2
+
+
 def test_unify_zero():
     labels, workspace = rruunn(
         numpy.zeros((10, 20), int),

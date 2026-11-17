@@ -1,6 +1,7 @@
 import numpy
 from numpy.typing import NDArray
 import scipy.ndimage
+import skimage.measure
 import skimage.morphology
 from cellprofiler_library.functions.morphology import binary_dilation, get_footprint, remove_small_holes
 import matplotlib.cm
@@ -1734,10 +1735,7 @@ def filter_using_image(
     return new_labels
 
 def split_objects(labels: ObjectSegmentation) -> ObjectSegmentation:
-    output_labels, count = scipy.ndimage.label(
-            labels > 0, numpy.ones((3, 3), bool)
-        )
-    return output_labels
+    return skimage.measure.label(labels, background=0, connectivity=labels.ndim)
 
 def merge_unify_distance(
         labels: ObjectSegmentation,

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import logging
 import platform
 import sys
 
@@ -14,6 +15,8 @@ from cellprofiler_core.utilities.java import start_java
 from cellprofiler_core.utilities.java import stop_java
 
 from .dialog import Telemetry
+
+LOGGER = logging.getLogger(__name__)
 
 def init_telemetry():
     dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
@@ -51,6 +54,8 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
+        self.dock_icon = None
+
         start_java()
 
         super(App, self).__init__(*args, **kwargs)
@@ -75,6 +80,9 @@ class App(wx.App):
         # wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(__version__))
+
+        if sys.platform == "darwin":
+            self.set_dock_icon()
 
         self.frame = CPFrame(None, -1, "CellProfiler")
 
@@ -111,7 +119,21 @@ class App(wx.App):
 
         return True
 
+    def set_dock_icon(self):
+        import wx.adv
+        from .utilities.icon import get_cp_icon
+
+        try:
+            self.dock_icon = wx.adv.TaskBarIcon(wx.adv.TBI_DOCK)
+            self.dock_icon.SetIcon(get_cp_icon(), "CellProfiler")
+        except Exception:
+            LOGGER.warning("Failed to set the Dock icon", exc_info=True)
+
     def OnExit(self):
+        if self.dock_icon is not None:
+            self.dock_icon.Destroy()
+            self.dock_icon = None
+
         stop_java()
 
         return 0

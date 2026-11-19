@@ -10,6 +10,16 @@ import sys
 import tempfile
 import urllib.parse
 
+if sys.platform.startswith("linux") and "GDK_BACKEND" not in os.environ:
+    if os.environ.get("WAYLAND_DISPLAY"):
+        # GTK3's Wayland drag-and-drop segfaults when files are dropped on the
+        # Images tab (CellProfiler#5232). Unfixed as of GTK 3.24.52, and GTK3
+        # upstream is security-fix-only. XWayland's drag-and-drop is unaffected,
+        # so prefer it. The list form falls back to Wayland rather than failing
+        # to start when XWayland is unavailable. Must run before GTK is
+        # initialised, i.e. before anything imports wx.
+        os.environ["GDK_BACKEND"] = "x11,wayland"
+
 import bioformats.formatreader
 import h5py
 import matplotlib

@@ -1293,7 +1293,7 @@ class CPFrame(wx.Frame):
         top_left_win.Layout()
 
     def __set_icon(self):
-        self.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
+        self.SetIcons(cellprofiler.gui.utilities.icon.get_cp_icon_bundle())
 
     def __on_data_tool_help(self, event, tool_name):
         module = instantiate_module(tool_name)

@@ -3,8 +3,8 @@ import logging
 import os
 import re
 import sys
+import urllib.parse
 import urllib.request
-from urllib.request import url2pathname as os_url2pathname
 import warnings
 
 import h5py
@@ -1460,18 +1460,53 @@ class Measurements:
         if not self.has_feature(EXPERIMENT, M_PATH_MAPPINGS,):
             return url
         d = json.loads(self.get_experiment_measurement(M_PATH_MAPPINGS))
-        full_name = os_url2pathname(url[5:])
-        full_name_c = full_name if d[K_CASE_SENSITIVE] else full_name.lower()
-        if d[K_LOCAL_SEPARATOR] != os.path.sep:
-            full_name = full_name.replace(d[K_LOCAL_SEPARATOR], os.path.sep)
+        source_separator = d[K_LOCAL_SEPARATOR]
+        package = d.get(
+            K_URL2PATHNAME_PACKAGE_NAME,
+            "nturl2path" if source_separator == "\\" else "urllib.request",
+        )
+        # Decode using the author's platform, not the machine running the batch.
+        # Never import a module named by an untrusted measurements file.
+        if package not in ("nturl2path", "urllib.request", "urllib"):
+            return url
+        # Since Python 3.14, urllib.request implements both platforms' codecs.
+        if package == "nturl2path" or source_separator == "\\":
+            import nturl2path
+
+            full_name = nturl2path.url2pathname(url[5:])
+        else:
+            # POSIX url2pathname semantics, also when running on Windows.
+            path = url[5:]
+            if path.startswith("///"):
+                path = path[2:]  # Empty URI authority; retain the root slash.
+            elif path.startswith("//localhost/"):
+                path = path[11:]
+            full_name = urllib.parse.unquote(
+                path,
+                encoding=sys.getfilesystemencoding(),
+                errors=sys.getfilesystemencodeerrors(),
+            )
+
+        def normalize_separators(path):
+            if source_separator == "\\":
+                path = path.replace("/", "\\")
+            return path.replace(source_separator, os.path.sep)
+
+        full_name = normalize_separators(full_name)
+        mapped = False
         for local_directory, remote_directory in d[K_PATH_MAPPINGS]:
+            full_name_c = full_name if d[K_CASE_SENSITIVE] else full_name.lower()
+            local_directory = normalize_separators(local_directory)
             if d[K_CASE_SENSITIVE]:
                 if full_name_c.startswith(local_directory):
                     full_name = remote_directory + full_name[len(local_directory) :]
+                    mapped = True
             else:
                 if full_name_c.startswith(local_directory.lower()):
                     full_name = remote_directory + full_name[len(local_directory) :]
-        url = "file:" + urllib.request.pathname2url(full_name)
+                    mapped = True
+        if mapped:
+            return "file:" + urllib.request.pathname2url(full_name)
         return url
 
     ###########################################################

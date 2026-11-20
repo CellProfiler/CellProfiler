@@ -1,13 +1,16 @@
 import io
 
 import numpy
+import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.measuretexture
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+from cellprofiler_core.setting import ValidationError
 from cellprofiler_library.opts.measuretexture import HaralickFeatures, MeasurementTarget
 
 INPUT_IMAGE_NAME = "Cytoplasm"
@@ -41,6 +44,55 @@ def make_workspace(image, labels, convert=True, mask=None):
     objects.segmented = labels
     object_set.add_objects(objects, INPUT_OBJECTS_NAME)
     return workspace, module
+
+
+@pytest.mark.parametrize(
+    "gray_levels, dimensions, target, empty",
+    [
+        (257, 2, MeasurementTarget.IMAGES, False),
+        (1, 3, MeasurementTarget.OBJECTS, False),
+        (257, 2, MeasurementTarget.OBJECTS, True),
+        (512, 3, MeasurementTarget.BOTH, True),
+    ],
+)
+def test_invalid_gray_levels_leave_measurements_unchanged(
+    gray_levels, dimensions, target, empty, monkeypatch, tmp_path
+):
+    monkeypatch.setattr(
+        cellprofiler_core.preferences,
+        "get_temporary_directory",
+        lambda: str(tmp_path),
+    )
+    image = numpy.linspace(0.1, 1, 4**dimensions).reshape((4,) * dimensions)
+    labels = numpy.full(image.shape, 0 if empty else 1, dtype=int)
+    workspace, module = make_workspace(image, labels)
+    measurements = workspace.measurements
+    try:
+        original_image = workspace.image_set.get_image(INPUT_IMAGE_NAME).pixel_data.copy()
+        original_labels = workspace.get_objects(INPUT_OBJECTS_NAME).segmented.copy()
+        module.images_or_objects.value = target
+        module.gray_levels.value = gray_levels
+        module.scale_groups[0].scale.value = 1
+        measurements.add_image_measurement("Existing", 42)
+        before = {
+            name: set(measurements.get_feature_names(name))
+            for name in measurements.get_object_names()
+        }
+        with pytest.raises(ValidationError, match="Must be at (least 2|most 256)"):
+            module.run(workspace)
+        assert {
+            name: set(measurements.get_feature_names(name))
+            for name in measurements.get_object_names()
+        } == before
+        assert measurements.get_current_image_measurement("Existing") == 42
+        numpy.testing.assert_array_equal(
+            workspace.image_set.get_image(INPUT_IMAGE_NAME).pixel_data, original_image
+        )
+        numpy.testing.assert_array_equal(
+            workspace.get_objects(INPUT_OBJECTS_NAME).segmented, original_labels
+        )
+    finally:
+        measurements.close()
 
 
 def test_load_v2():

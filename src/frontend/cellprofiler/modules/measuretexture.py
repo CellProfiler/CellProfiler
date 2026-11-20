@@ -483,6 +483,8 @@ measured and will result in a undefined value in the output file.
         return columns
 
     def run(self, workspace):
+        self.gray_levels.test_valid(workspace.pipeline)
+
         workspace.display_data.col_labels = [
             "Image",
             "Object",

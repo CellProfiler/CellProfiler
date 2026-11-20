@@ -1844,9 +1844,15 @@ def set_temporary_directory(tempdir, globally=False):
     tempfile.tempdir = tempdir
 
 
-__progress_data = threading.local()
-__progress_data.last_report = time.time()
-__progress_data.callbacks = None
+class _ProgressData(threading.local):
+    # __init__ runs on first use in each thread, so threads other than the
+    # one that imported this module start out with no callbacks
+    def __init__(self):
+        self.last_report = time.time()
+        self.callbacks = None
+
+
+__progress_data = _ProgressData()
 __interpolation_mode = None
 
 

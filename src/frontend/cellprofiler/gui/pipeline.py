@@ -29,7 +29,7 @@ class Pipeline(pipeline.Pipeline):
             super(Pipeline, self).respond_to_version_mismatch_error(message)
 
     def save(self, fd_or_filename, save_image_plane_details=True):
-        with open(fd_or_filename, "wt") as fd:
+        with open(fd_or_filename, "wt", encoding="utf-8") as fd:
             if fd_or_filename.endswith(".json"):
                 dump(self, fd, save_image_plane_details=False)
             else:

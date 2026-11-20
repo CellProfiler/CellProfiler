@@ -5241,6 +5241,75 @@ class TestExportToDatabase(unittest.TestCase):
                     module.connection.close()
                 finally_fn()
 
+    def test_write_sqlite_strict_tables(self):
+        """SQLite tables are always created as STRICT tables"""
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True,
+            relationship_type=MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=RTEST_SOME,
+        )
+        cursor = None
+        connection = None
+        try:
+            assert isinstance(
+                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+            )
+            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = (
+                cellprofiler.modules.exporttodatabase.O_ALL
+            )
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = (
+                cellprofiler.modules.exporttodatabase.OT_COMBINE
+            )
+            module.want_image_thumbnails.value = True
+            module.thumbnail_image_names.load_choices(workspace.pipeline)
+            module.thumbnail_image_names.value = (
+                module.thumbnail_image_names.choices[0]
+            )
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            cursor.execute(
+                "select name, sql from sqlite_master where type = 'table'"
+            )
+            table_sql = dict(cursor.fetchall())
+            assert len(table_sql) > 0
+            for name, sql in table_sql.items():
+                if name.startswith("sqlite_"):
+                    # Internal SQLite bookkeeping tables (e.g.
+                    # sqlite_sequence for AUTOINCREMENT) aren't ones
+                    # we create and are never STRICT.
+                    continue
+                assert sql.rstrip().upper().endswith("STRICT"), (
+                    "table %s was not created as STRICT" % name
+                )
+            # Thumbnails (stored as base64 text) must still round-trip.
+            image_table = module.table_prefix.value + "Per_Image"
+            cursor.execute(
+                "select Image_Thumbnail_%s from %s" % (IMAGE_NAME, image_table)
+            )
+            row = cursor.fetchone()
+            assert row is not None
+            PIL.Image.open(io.BytesIO(base64.b64decode(row[0])))
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor") and module.cursor is not None:
+                module.cursor.close()
+            if hasattr(module, "connection") and module.connection is not None:
+                module.connection.close()
+            finally_fn()
+
     def test_write_sqlite_duplicates(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, not at the Broad.")

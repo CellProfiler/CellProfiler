@@ -52,11 +52,11 @@ jobs:
         working-directory: ./distribution/macos
         run: |
           echo $PATH
-          sed -i '' 's/4.0.0/4.2.8.1/' Info.plist
+          sed -i '' 's/4.0.0/4.2.9/' Info.plist
           make
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.8.1.zip
+          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.9.zip
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.20-8\x64
         if: ${{ matrix.os == 'windows-2022' }}
@@ -81,17 +81,17 @@ jobs:
       - if: ${{ matrix.os == 'windows-2022' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.2.8.1" "distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion="4.2.9" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-15-intel' }}
         uses: actions/upload-artifact@v6
         with:
-          name: CellProfiler-macOS-4.2.8.1.zip
-          path: ./distribution/macos/dist/CellProfiler-macOS-4.2.8.1.zip
+          name: CellProfiler-macOS-4.2.9.zip
+          path: ./distribution/macos/dist/CellProfiler-macOS-4.2.9.zip
       - if: ${{ matrix.os == 'windows-2022' }}
         uses: actions/upload-artifact@v6
         with:
-          name: CellProfiler-Windows-4.2.8.1.exe
-          path: ./distribution/windows/Output/CellProfiler-Windows-4.2.8.1.exe
+          name: CellProfiler-Windows-4.2.9.exe
+          path: ./distribution/windows/Output/CellProfiler-Windows-4.2.9.exe
     strategy:
       matrix:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
@@ -108,11 +108,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v8
         with:
-          name: CellProfiler-macOS-4.2.8.1.zip
+          name: CellProfiler-macOS-4.2.9.zip
           path: ./
       - uses: actions/download-artifact@v8
         with:
-          name: CellProfiler-Windows-4.2.8.1.exe
+          name: CellProfiler-Windows-4.2.9.exe
           path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,18 +122,18 @@ jobs:
         with:
           draft: true
           prerelease: true
-          name: v4.2.8.1
+          name: v4.2.9
           files: |
-            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.8.1.zip
-            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.8.1.exe
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.9.zip
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.9.exe
       # artifacts attached to the action no long necessary
       # since they have been uploaded to releases
       - uses: geekyeggo/delete-artifact@v5
         id: delete-artifacts
         with:
           name: |
-            CellProfiler-macOS-4.2.8.1.zip
-            CellProfiler-Windows-4.2.8.1.exe
+            CellProfiler-macOS-4.2.9.zip
+            CellProfiler-Windows-4.2.9.exe
 name: create-release
 on:
   push:

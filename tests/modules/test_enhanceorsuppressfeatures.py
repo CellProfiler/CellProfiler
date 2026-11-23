@@ -128,6 +128,56 @@ def test_enhance(accuracy, image, module, workspace):
     numpy.testing.assert_array_equal(expected, actual)
 
 
+@pytest.mark.parametrize("object_size", [12, 13, 14, 15])
+@pytest.mark.parametrize("dimensions", [2, 3])
+def test_enhance_speckles_fast_matches_slow(object_size, dimensions):
+    shape = (40, 40) if dimensions == 2 else (20, 30, 30)
+
+    data = scipy.ndimage.gaussian_filter(
+        numpy.random.RandomState(0).uniform(size=shape), 2
+    )
+
+    results = {}
+
+    for accuracy in ("Slow", "Fast"):
+        image = cellprofiler_core.image.Image(data, dimensions=dimensions)
+
+        module = cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures()
+
+        module.x_name.value = "input"
+
+        module.y_name.value = "output"
+
+        module.method.value = "Enhance"
+
+        module.enhance_method.value = "Speckles"
+
+        module.speckle_accuracy.value = accuracy
+
+        module.object_size.value = object_size
+
+        image_set_list = cellprofiler_core.image.ImageSetList()
+
+        image_set = image_set_list.get_image_set(0)
+
+        image_set.add("input", image)
+
+        workspace = cellprofiler_core.workspace.Workspace(
+            pipeline=cellprofiler_core.pipeline.Pipeline(),
+            module=module,
+            image_set=image_set,
+            object_set=cellprofiler_core.object.ObjectSet(),
+            measurements=cellprofiler_core.measurement.Measurements(),
+            image_set_list=image_set_list,
+        )
+
+        module.run(workspace)
+
+        results[accuracy] = image_set.get_image("output").pixel_data
+
+    numpy.testing.assert_allclose(results["Fast"], results["Slow"])
+
+
 def test_enhance_volume(accuracy, image, module, workspace):
     data = numpy.zeros((20, 20, 30))
 

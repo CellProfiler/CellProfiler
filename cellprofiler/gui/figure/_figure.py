@@ -1,5 +1,6 @@
 import csv
 import logging
+import math
 import os
 import sys
 import textwrap
@@ -739,6 +740,12 @@ class Figure(wx.Frame):
                 )
             else:
                 self.set_grids(subplots)
+
+    def set_grid_subplots(self, n_plots, dimensions=2):
+        columns = max(1, int(math.ceil(math.sqrt(n_plots))))
+        rows = max(1, int(math.ceil(n_plots / columns)))
+        self.set_subplots((columns, rows), dimensions=dimensions)
+        return columns, rows
 
     @allow_sharexy
     def subplot(self, x, y, sharex=None, sharey=None):

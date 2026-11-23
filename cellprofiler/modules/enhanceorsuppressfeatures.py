@@ -442,7 +442,14 @@ the output easier to display.
             #              = img - maximum_filter(minimum_filter)
             minimum = scipy.ndimage.filters.minimum_filter(data, footprint=selem)
 
-            maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=selem)
+            # adjust origin to account for radius parity:
+            # odd radius produces even-sized footprint, which scipy places the center of in index n//2
+            # the half-pixel offsets add instead of cancelling - see issue #4840
+            origin = [-1 if s % 2 == 0 else 0 for s in selem.shape]
+
+            maximum = scipy.ndimage.filters.maximum_filter(
+                minimum, footprint=selem, origin=origin
+            )
 
             result = data - maximum
 

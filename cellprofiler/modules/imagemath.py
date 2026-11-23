@@ -651,9 +651,9 @@ is applied before other operations.""",
 
         display_names = workspace.display_data.display_names
 
-        columns = (len(pixel_data) + 1) // 2
-
-        figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
+        columns, _ = figure.set_grid_subplots(
+            len(pixel_data), dimensions=workspace.display_data.dimensions
+        )
 
         for i in range(len(pixel_data)):
             if pixel_data[i].shape[-1] in (3, 4):

@@ -32,7 +32,10 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install numpy==1.23.1 matplotlib==3.1.3
           pip install pyinstaller==4.10
-          git clone --branch 4.2.x https://github.com/CellProfiler/distribution.git 
+          git clone --branch 4.2.x https://github.com/CellProfiler/distribution.git
+      # manual runs build against the 4.2.x branch of core, so builds can be verified before publishing core to PyPI
+      - if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: pip install "cellprofiler-core @ git+https://github.com/CellProfiler/core.git@4.2.x"
       # this is a separate step because we need to set the CPPFLAGS and LDFLAGS env variables *after* installing mysql, in the next step
       - if: ${{ matrix.os == 'macos-15-intel' }}
         run: |
@@ -129,6 +132,7 @@ jobs:
       # artifacts attached to the action no long necessary
       # since they have been uploaded to releases
       - uses: geekyeggo/delete-artifact@v5
+        if: ${{ !inputs.keep_artifacts }}
         id: delete-artifacts
         with:
           name: |
@@ -144,5 +148,10 @@ on:
       debug_enabled:
         type: boolean
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+      keep_artifacts:
+        type: boolean
+        description: 'Keep the built .zip/.exe as run artifacts instead of deleting them'
         required: false
         default: false

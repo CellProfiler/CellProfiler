@@ -1,3 +1,5 @@
+import ast
+
 from ._setting import Setting
 from ._validation_error import ValidationError
 
@@ -17,7 +19,7 @@ class Joiner(Setting):
 
     The conceptual value is a list of dictionaries of unicode string keys
     and values (or value = None). This can be encoded using str() and
-    can be decoded using eval.
+    can be decoded using ast.literal_eval.
     """
 
     def __init__(self, text, value="[]", allow_none=True, **kwargs):
@@ -41,8 +43,15 @@ class Joiner(Setting):
 
         return a list of dictionaries where the key is the table or image name
         and the value is the column or metadata
+
+        raises ValueError if the value is not a Python literal. The value
+        comes from pipeline and project files, so it is never evaluated as
+        code.
         """
-        return eval(self.value_text, {"__builtins__": None}, {})
+        try:
+            return ast.literal_eval(self.value_text)
+        except (SyntaxError, TypeError, MemoryError, RecursionError) as e:
+            raise ValueError("Invalid join value: %r" % (self.value_text,)) from e
 
     def default(self):
         """Concoct a default join as a guess if setting is uninitialized"""
@@ -82,7 +91,10 @@ class Joiner(Setting):
         """Test the joiner setting to ensure that the join is supported
 
         """
-        join = self.parse()
+        try:
+            join = self.parse()
+        except ValueError:
+            raise ValidationError("The join setting could not be read", self)
         if len(join) == 0:
             raise ValidationError(
                 "This setting needs to be initialized by choosing items from each column",
